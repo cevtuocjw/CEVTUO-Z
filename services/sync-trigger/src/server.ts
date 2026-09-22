@@ -24,7 +24,7 @@ const BIND = process.env.CEVTUO_BIND ?? '127.0.0.1';
  * because this endpoint spends real Actions minutes.
  */
 const ALLOWED_ORIGINS = new Set(
-  (process.env.CEVTUO_ALLOWED_ORIGINS ?? 'https://apps.cevtuogrnd.com,http://localhost:10086')
+  (process.env.CEVTUO_ALLOWED_ORIGINS ?? 'https://z.cevtuogrnd.com,https://apps.cevtuogrnd.com,http://localhost:10086')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
