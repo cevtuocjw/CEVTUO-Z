@@ -195,6 +195,22 @@ export function scrubError(input: unknown, maxLength = 200): { code: string; mes
  * collide again on every attempt, so a pure exponential backoff just re-sends the
  * same thundering herd slightly later. Randomising the delay spreads them out.
  */
+/**
+ * An error that retrying cannot fix — a 400 saying the property does not exist,
+ * a 403 saying you are blocked.
+ *
+ * ⚠️ This exists because there was no way to say "do not retry". Callers wrote
+ * `if (res.status === 418) throw new Error(...)` with a comment claiming it
+ * avoided the backoff, but `withRetry` retried it anyway: the comment described
+ * an intention the primitive could not express. Tag the error instead.
+ */
+export class PermanentError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PermanentError';
+  }
+}
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
   {
@@ -210,6 +226,10 @@ export async function withRetry<T>(
       return await fn();
     } catch (error) {
       lastError = error;
+      // Permanent failures break out on attempt 1. Retrying a "this property
+      // does not exist" 400 four times is pure latency — and in the poster
+      // backfill it was hundreds of wasted requests.
+      if (error instanceof PermanentError) break;
       if (attempt === attempts) break;
       const backoff = baseDelayMs * 2 ** (attempt - 1);
       const delay = backoff + Math.floor(Math.random() * jitterMs);

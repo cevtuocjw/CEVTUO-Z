@@ -25,7 +25,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { withRetry, writeBytesIfChanged } from '@cevtuo/pipeline-core';
+import { PermanentError, withRetry, writeBytesIfChanged } from '@cevtuo/pipeline-core';
 
 /** Posters are displayed at ~200px; 400 gives headroom for 2x screens. */
 const TARGET_WIDTH = 400;
@@ -137,15 +137,14 @@ export async function rehostPoster(
     async () => {
       const res = await fetch(url, { headers: fetchHeadersFor(url) });
       if (!res.ok) {
-        // 418 is Douban's anti-bot answer to a bare request. Retrying won't help,
-        // so fail immediately with a message that says what actually happened
-        // rather than burning four backoff attempts on it.
+        // 418 is Douban's anti-bot answer to a bare request. Retrying won't help.
+        // ⚠️ PermanentError, not a plain Error with a name: this comment used to
+        // claim it failed immediately, but withRetry had no idea what
+        // 'BlockedError' meant and backed off 5 times regardless.
         if (res.status === 418 || res.status === 403) {
-          const err = new Error(
+          throw new PermanentError(
             `HTTP ${res.status} — image host rejected the request (anti-bot; needs Referer/UA)`,
           );
-          err.name = 'BlockedError';
-          throw err;
         }
         throw new Error(`HTTP ${res.status}`);
       }

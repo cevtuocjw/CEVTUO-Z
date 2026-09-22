@@ -27,7 +27,7 @@
 import { join } from 'node:path';
 
 import { CALENDAR_COLLECTIONS, COOF_PROPERTIES, type CoofTitle } from '@cevtuo/schema';
-import { readJson, repoPath, scrubError, withRetry } from '@cevtuo/pipeline-core';
+import { PermanentError, readJson, repoPath, scrubError, withRetry } from '@cevtuo/pipeline-core';
 
 import { DoubanClient } from '../douban';
 import { queryDatabaseAll } from '../notion';
@@ -145,7 +145,17 @@ for (const [i, item] of queue.entries()) {
           }),
         });
         if (res.status === 429) throw new Error('rate limited (429)');
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 160)}`);
+        if (!res.ok) {
+          const body = (await res.text()).slice(0, 160);
+          // ⚠️ A 400 saying the property does not exist is PERMANENT. 856 rows
+          // predate the POSTER field entirely, so every one of them would
+          // otherwise burn four backoff attempts (~9s each) to reach the same
+          // conclusion. Tag it and move on.
+          if (res.status === 400 && /does not exist|validation_error/.test(body)) {
+            throw new PermanentError(`该集合没有 POSTER 属性，跳过 (${body.slice(0, 80)})`);
+          }
+          throw new Error(`HTTP ${res.status}: ${body}`);
+        }
       },
       { attempts: 4, baseDelayMs: 1200, jitterMs: 800, label: `notion patch ${item.pageId.slice(0, 8)}` },
     );

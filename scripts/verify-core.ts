@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { rm } from 'node:fs/promises';
 
-import { contentHash, dayKey, isoInstant, nextScheduledAt, scrubError, stableJson, writeIfChanged } from '@cevtuo/pipeline-core';
+import { PermanentError, contentHash, dayKey, isoInstant, nextScheduledAt, scrubError, stableJson, withRetry, writeIfChanged } from '@cevtuo/pipeline-core';
 
 let failures = 0;
 
@@ -78,6 +78,54 @@ eq('dayKey uses the local zone, not UTC', dayKey(new Date('2026-09-22T18:30:00Z'
 
 // Day boundary: 16:00Z is already the 23rd in +08:00.
 eq('dayKey rolls over at the zone boundary', dayKey(new Date('2026-09-22T16:00:00Z')), '2026-09-23');
+
+console.log('\n── withRetry / PermanentError ────────────────');
+
+// The guarantee: a failure retrying cannot fix must cost exactly ONE attempt.
+// This was silently untrue before — callers tagged errors with a name and a
+// comment claiming they were skipped, while withRetry backed off regardless.
+{
+  let calls = 0;
+  let threw = false;
+  try {
+    await withRetry(
+      async () => {
+        calls++;
+        throw new PermanentError('property does not exist');
+      },
+      { attempts: 4, baseDelayMs: 1, label: 'perm' },
+    );
+  } catch (e) {
+    threw = e instanceof PermanentError;
+  }
+  eq('permanent failure is attempted exactly once', calls, 1);
+  check('and still propagates the error', threw);
+}
+
+{
+  let calls = 0;
+  try {
+    await withRetry(
+      async () => {
+        calls++;
+        throw new Error('transient');
+      },
+      { attempts: 3, baseDelayMs: 1, label: 'trans' },
+    );
+  } catch {
+    /* expected */
+  }
+  eq('a transient failure still gets every attempt', calls, 3);
+}
+
+{
+  let calls = 0;
+  const out = await withRetry(async () => {
+    calls++;
+    return 'ok';
+  }, { attempts: 3, baseDelayMs: 1, label: 'ok' });
+  eq('success on the first try does not retry', [calls, out], [1, 'ok']);
+}
 
 console.log('\n── nextScheduledAt ───────────────────────────');
 
