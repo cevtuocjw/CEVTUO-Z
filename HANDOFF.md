@@ -58,10 +58,11 @@ CEVTUO-Z/
 │  └─ src/cli/{sync,enrich-posters}.ts
 ├─ apps/dashboard/     ← Taro App（weapp + h5）
 │  └─ src/styles/      ← tokens / glass / breakpoints / wallpaper
+├─ services/sync-trigger/  ← /api/sync + /api/status（见下）
 ├─ data/               ← 管道产物，提交进仓库，由 Pages 托管
 ├─ assets/logo/        ← 玫瑰原图 + 尖锐 Z 标志
 ├─ assets/icons/       ← 已导出的各平台图标
-└─ .github/workflows/  ← ⚠️ 还没建！见「待办」
+└─ .github/workflows/  ← sync.yml：cron 每 5 小时 + workflow_dispatch
 ```
 
 ---
@@ -82,14 +83,24 @@ CEVTUO-Z/
 | 海报重托管（Notion URL 1h 过期） | 完成，36KB/张 |
 | **幂等性：重复运行零改动** | 完成，**git 独立验证通过** |
 | 豆瓣海报补全 | 完成（1060 条缺海报，后台跑） |
+| **sync.yml**（cron 每 5 小时 + 手动触发） | 完成，三步 shell 逐条实跑验证 |
+| **sync-trigger 服务**（无 Cloudflare 方案） | 完成，**47 项自检全过**，HTTP 实测通过 |
 
 ## 待办 ⏳
 
-1. **`.github/workflows/sync.yml`** —— 自动同步（cron 每 5 小时 + 手动触发）。**这是"自动同步"功能，必须有。**
-2. **Cloudflare Worker** —— `/api/sync`（手动同步按钮）+ `/api/status`（同步状态）。需要 Cloudflare 账号。
-3. **COOF 页面** —— 接真实数据、11 集合切换、海报网格、点击弹窗。
-4. CNSR / CE-PaperR / Chealth 三个页面。
-5. README。
+1. **建 GitHub 仓库并 push** —— 仓库、Secret、Pages 三件需要 GitHub 账号。
+2. **COOF 页面** —— 接真实数据、11 集合切换、海报网格、点击弹窗。
+3. CNSR / CE-PaperR / Chealth 三个页面。
+4. README。
+
+### 关于 Cloudflare：没有账号，已改走本机方案
+
+`services/sync-trigger/` 的逻辑写在 `src/core.ts`，与运行环境无关；`server.ts` 跑在
+Mac 上（Bun），`worker.ts` 是 Cloudflare 适配层（未部署）。将来有账号了，
+**部署是加适配器不是重写**。
+
+⚠️ **小程序端用手动按钮接不了**：微信要求 request 域名白名单 + ICP 备案域名，
+`127.0.0.1` 和裸 IP 都不行。H5 / Android 今天就能用。小程序靠每 5 小时的自动同步兜底。
 
 ---
 
@@ -118,6 +129,22 @@ git add -A && git diff --cached --quiet && echo "零改动 ✓"
 - **豆瓣图片裸请求返回 418** → 必须带 `User-Agent` + `Referer: https://movie.douban.com/`
 - 下载失败**不能写成 `null`** —— 下次跑会翻回路径，每轮产生提交
 
+### 工作流 / 服务侧的坑
+
+- **`workflow_dispatch` 的 inputs 必须真接线**。sync.yml 原本声明了 `source` 下拉框
+  （`[coof, all]`）却在步骤里写死 `--source coof` —— 选 `all` 只会静默地跑 `coof`。
+  **写了 input 就要用它**，否则它是个骗人的控件。
+- **别在 sync 步骤里放 `TARO_APP_DATA_BASE`** —— 只有 `enrich-posters.ts` 用它，
+  sync 路径根本不碰，留着会让人以为海报 URL 会被重写。
+  海报**故意只存相对路径**（`data/coof/posters/<id>.jpg`），拼接是 app 侧的事。
+- **`dispatches` 接口返回 204 且没有 body** ⇒ run id 拿不到，只能派发后再列一次 runs。
+  宁可返回 `null` 也不猜 —— 猜错会让用户点进别人的 run。
+- **`nextScheduledAt` / `scrubError` 只在 `pipeline-core` 里有一份**。
+  自己再写一遍必然漂移：我写的 ms-based 版本在整点边界会返回"现在"，
+  于是 app 永远显示"下次同步：现在"。
+- **本机服务的默认绑定必须是 `127.0.0.1`** —— 它持有 GitHub token，
+  `0.0.0.0` 会把破坏半径扩大到整个局域网。
+
 ### Notion 数据侧的坑
 - **集合的「页面 id」≠「数据库 id」**。拿页面 id 查数据库返回 404，长得像权限问题。真实 id 在 `packages/schema/src/collections.ts`
 - `time`（片长）和 `YEAR` 是 **rich_text 不是 number**，要 parse
@@ -138,6 +165,8 @@ git add -A && git diff --cached --quiet && echo "零改动 ✓"
 |---|---|
 | 健康数据走 Worker 鉴权，不放 Pages | **GitHub Pages 即使私有仓库也是公网可读** |
 | Worker 用 `actions: write` 而非 `contents: write` | 泄露时前者只能触发工作流，后者能改写整个仓库 |
+| **GitHub token 只放服务端，绝不进客户端** | 小程序包可反编译、H5 是明文 JS ⇒ 客户端里的凭据就是公开的 |
+| 同步服务的逻辑与适配器分离 | 没有 Cloudflare 账号，先跑本机；将来部署是加适配器不是重写 |
 | 抖音式的是 Taro 而非 Flutter/RN | 只有 Taro 能同时出小程序 + Android 且 UI 代码全共享 |
 | 海报重托管而非存 Notion URL | URL 1 小时过期，实测 |
 | 豆瓣补全是一次性工具，不进 5 小时定时 | 内容是静态的，不该永远骚扰豆瓣 |

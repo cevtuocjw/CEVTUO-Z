@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Cloudflare Worker. The ONLY place a token can be hidden — mini-program packages are decompilable and H5 JS is plaintext, so any credential in the client is public. Hosts /api/sync (trigger), /api/status (freshness) and the token-gated /api/chealth/*.",
+  "description": "Sync trigger + status. The ONLY place a token can be hidden — mini-program packages are decompilable and H5 JS is plaintext, so any credential in the client is public. Hosts /api/sync (trigger) and /api/status (freshness). Logic in src/core.ts is adapter-neutral; server.ts runs it on the Mac, worker.ts on Cloudflare.",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "bun run src/server.ts"
+  },
+  "exports": {
+    "./core": "./src/core.ts"
   },
   "dependencies": {
-    "@cevtuo/schema": "workspace:*"
+    "@cevtuo/schema": "workspace:*",
+    "@cevtuo/pipeline-core": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",

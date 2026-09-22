@@ -12,6 +12,9 @@
         "@babel/preset-env": "^7.24.4",
         "@babel/preset-react": "^7.24.1",
         "@babel/preset-typescript": "^7.24.1",
+        "@cevtuo/pipeline-core": "workspace:*",
+        "@cevtuo/schema": "workspace:*",
+        "@cevtuo/sync-trigger": "workspace:*",
         "@types/bun": "^1.4.2",
         "@types/node": "^22.10.2",
         "typescript": "^5.7.2",
@@ -79,6 +82,7 @@
       "name": "@cevtuo/sync-trigger",
       "version": "0.1.0",
       "dependencies": {
+        "@cevtuo/pipeline-core": "workspace:*",
         "@cevtuo/schema": "workspace:*",
       },
       "devDependencies": {
