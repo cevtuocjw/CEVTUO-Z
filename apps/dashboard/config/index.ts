@@ -31,7 +31,6 @@ export default defineConfig(async (merge, { command, mode }) => {
     alias: {
       '@': path.resolve(__dirname, '..', 'src'),
       '@cevtuo/schema': path.resolve(__dirname, '..', '..', '..', 'packages', 'schema', 'src', 'index.ts'),
-      '@cevtuo/schema/paths': path.resolve(__dirname, '..', '..', '..', 'packages', 'schema', 'src', 'paths.ts'),
     },
     copy: {
       patterns: [],

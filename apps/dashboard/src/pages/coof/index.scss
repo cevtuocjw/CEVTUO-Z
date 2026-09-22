@@ -1,0 +1,291 @@
+// COOF page styles.
+//
+// ⚠️ `display:flex; flex-direction:...` is written explicitly on every container.
+// The WeChat WebView renderer and the H5 renderer have different defaults, so
+// relying on the default makes the mini-program and H5 diverge.
+//
+// ⚠️ Colours use the legacy comma syntax `rgba(r,g,b,a)`, not `rgb(r g b / a)`.
+// Skyline does not understand the space-separated form. (Skyline is off, but
+// these files are shared and the cost of the legacy syntax is zero.)
+//
+// ⚠️ Media queries use real px. `postcss-pxtransform` is disabled for this app
+// on purpose — see the note in apps/dashboard/config/index.ts.
+
+@use '../../styles/tokens.scss' as t;
+@use '../../styles/breakpoints.scss' as b;
+@use '../../styles/glass.scss' as g;
+
+// ── Calendar switcher ─────────────────────────────────────────
+.cal {
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+  // 8 solid calendars do not fit a 361dp cover screen, so this scrolls.
+  white-space: nowrap;
+  padding: t.$space-2 t.$space-4 0;
+}
+
+.cal__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+// ── Poster grid ───────────────────────────────────────────────
+.grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  padding: t.$space-3 t.$space-4 t.$space-6;
+  gap: t.$space-3;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  // Two up on the cover screen, more as it widens. Percentages rather than a
+  // fixed column count so a 1px rounding error cannot push a tile to its own row.
+  width: calc(50% - #{t.$space-3} / 2);
+}
+
+// 2 / 3 / 3 columns — matching `b.block-grid`'s tiers, so COOF lines up with the
+// other three brand pages instead of inventing its own rhythm.
+@include b.medium-up {
+  .tile {
+    width: calc(33.333% - #{t.$space-3} * 2 / 3);
+  }
+}
+
+@include b.expanded-up {
+  .tile {
+    width: calc(33.333% - #{t.$space-3} * 2 / 3);
+  }
+}
+
+.tile__art {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  // 2:3 is the standard poster ratio; fixing it keeps the grid even even when a
+  // poster is missing or oddly cropped.
+  padding-top: 150%;
+  border-radius: t.$radius-tile;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.tile__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tile__placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tile__placeholder-text {
+  font-size: t.$font-display;
+  font-weight: t.$weight-bold;
+  color: rgba(255, 255, 255, 0.18);
+}
+
+.tile__badge {
+  position: absolute;
+  right: t.$space-1;
+  bottom: t.$space-1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 2px t.$space-1;
+  border-radius: t.$radius-chip;
+  // Solid, not glass: a glass badge over a bright poster loses contrast.
+  background-color: rgba(0, 0, 0, 0.62);
+}
+
+.tile__badge-text {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-semibold;
+  color: #ffd479;
+}
+
+.tile__title {
+  // ⚠️ `-webkit-box` here, NOT `flex` — `-webkit-line-clamp` only takes effect on
+  // a box, and declaring flex as well would silently void the clamp.
+  display: -webkit-box;
+  margin-top: t.$space-2;
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  color: var(--text-primary);
+  // Two lines then ellipsis — a three-line title would make one tile taller
+  // than its neighbours and break the row.
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.tile__meta {
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+// ── Loading / error ───────────────────────────────────────────
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-7 t.$space-4;
+}
+
+.state--error {
+  align-items: flex-start;
+}
+
+.state__title {
+  font-size: t.$font-title;
+  font-weight: t.$weight-semibold;
+  color: var(--danger);
+}
+
+.state__body {
+  margin-top: t.$space-2;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+// ── Detail sheet ──────────────────────────────────────────────
+.sheet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 50;
+}
+
+.sheet__panel {
+  @include g.glass-sheet;
+
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 82vh;
+  padding: t.$space-5 t.$space-4;
+  padding-bottom: calc(#{t.$space-5} + var(--safe-bottom));
+  border-top-left-radius: t.$radius-sheet;
+  border-top-right-radius: t.$radius-sheet;
+  overflow-y: auto;
+}
+
+.sheet__head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.sheet__poster {
+  width: 92px;
+  height: 138px;
+  border-radius: t.$radius-tile;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.sheet__poster--empty {
+  display: flex;
+  flex-direction: row;
+}
+
+.sheet__headtext {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: t.$space-3;
+}
+
+.sheet__title {
+  font-size: t.$font-heading;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+}
+
+.sheet__sub {
+  margin-top: t.$space-1;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.sheet__rating {
+  margin-top: t.$space-2;
+  font-size: t.$font-caption;
+  font-weight: t.$weight-semibold;
+  color: #ffd479;
+}
+
+.sheet__rows {
+  display: flex;
+  flex-direction: column;
+  margin-top: t.$space-4;
+  border-top-width: 0;
+  border-top-style: solid;
+  border-top-color: var(--divider);
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: t.$space-2 0;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+}
+
+.row__k {
+  width: 84px;
+  flex-shrink: 0;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+.row__v {
+  flex: 1;
+  font-size: t.$font-caption;
+  color: var(--text-primary);
+}
+
+.sheet__close {
+  @include g.glass-inset;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: t.$space-5;
+  padding: t.$space-3;
+  border-radius: t.$radius-chip;
+  font-size: t.$font-body;
+  color: var(--text-primary);
+}

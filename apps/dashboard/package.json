@@ -16,7 +16,11 @@
     "build:h5": "taro build --type h5",
     "typecheck": "tsc --noEmit"
   },
-  "browserslist": ["last 3 versions", "Android >= 8", "ios >= 12"],
+  "browserslist": [
+    "last 3 versions",
+    "Android >= 8",
+    "ios >= 12"
+  ],
   "dependencies": {
     "@babel/runtime": "^7.24.4",
     "@cevtuo/schema": "workspace:*",
@@ -40,6 +44,7 @@
     "@types/react": "^18.3.12",
     "@types/webpack-env": "^1.18.5",
     "babel-preset-taro": "4.0.9",
+    "html-webpack-plugin": "^5.6.3",
     "postcss": "^8.4.38",
     "sass": "^1.83.0",
     "webpack": "5.91.0"
