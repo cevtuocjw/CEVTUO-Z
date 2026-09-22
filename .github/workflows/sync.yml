@@ -1,0 +1,128 @@
+# CEVTUO-Z — 数据同步
+#
+# 这是「自动同步」功能本身。两种触发方式：
+#   · schedule        每 5 小时自动跑
+#   · workflow_dispatch  手动（小程序里的「同步」按钮经 Cloudflare Worker 调它）
+#
+# ⚠️ 这份工作流只在「数据真的变了」时才提交。
+# 这不是优化，是设计前提：无条件提交会让每次定时运行都产生一个 commit，
+# 既淹没真实改动，又烧掉 GitHub Pages 每小时 10 次构建的配额。
+# 保证由三层构成（见 HANDOFF.md）：stableJson 排序 key、writeIfChanged、
+# 以及「sync-meta 只在数据变了时才写」。
+
+name: sync
+
+on:
+  schedule:
+    # GitHub 的 cron 是 UTC。每 5 小时一次。
+    # ⚠️ GitHub 官方说明 schedule 在高峰期会延迟，可能偏 10–30 分钟，
+    #    所以 App 里显示的是「预计下次」而不是承诺时间。
+    - cron: '0 */5 * * *'
+
+  workflow_dispatch:
+    inputs:
+      source:
+        description: '要同步的数据源'
+        type: choice
+        # ⚠️ 只列 coof。sync.ts 对 SOURCE !== 'coof' 直接 exit 1，
+        #    所以这里放一个 'all' 会是个骗人的选项：选它要么报错、要么（不接线时）
+        #    静默只跑 coof。等真实现了别的源再加回这里。
+        options: [coof]
+        default: coof
+      force_meta:
+        description: '强制写 sync-meta（即使数据没变）'
+        type: boolean
+        default: false
+
+# 同一个并发组 + 不取消正在跑的 = 天然防抖。
+# 手动触发撞上定时任务时会排队，而不是把正在跑的任务杀掉。
+concurrency:
+  group: sync-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: ./node_modules/.bin/tsc -b
+
+      - name: Sync
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          # source 来自 dispatch 输入（schedule 触发时 inputs 为空 → 默认 coof）。
+          # 必须真接线：写死 --source coof 会让上面的下拉框变成装饰品。
+          ARGS="--source ${{ inputs.source || 'coof' }}"
+          if [ "${{ inputs.force_meta }}" = "true" ]; then ARGS="$ARGS --force-meta"; fi
+          bun run pipeline/src/cli/sync.ts $ARGS
+
+      # ⚠️ 这一步是整套设计的兑现点：
+      # 没有改动就直接退出，不产生 commit，也不触发 Pages 构建。
+      - name: Commit if changed
+        id: commit
+        run: |
+          git config user.name  "cevtuo-sync[bot]"
+          git config user.email "cevtuo-sync@users.noreply.github.com"
+
+          git add -A data/
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "无数据变更 —— 不提交（这正是预期行为）"
+            exit 0
+          fi
+
+          # 统计这次真正动了什么，便于在 Actions 摘要里看清
+          SUMMARY=$(git diff --cached --stat | tail -1)
+          git commit -m "sync: coof data $(date -u +%Y-%m-%dT%H:%MZ)
+
+          $SUMMARY
+
+          Triggered by: ${{ github.event_name }}
+          Run: ${{ github.run_id }}"
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "已提交: $SUMMARY"
+
+      - name: Push
+        if: steps.commit.outputs.changed == 'true'
+        run: git push
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### 同步结果"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| 触发方式 | \`${{ github.event_name }}\` |"
+            echo "| 是否产生提交 | ${{ steps.commit.outputs.changed == 'true' && '是' || '否（数据未变）' }} |"
+            echo ""
+            if [ -f data/sync-meta.json ]; then
+              echo "**数据源状态**"
+              echo '```json'
+              # python3, not bun: this step has no bun on PATH, and referencing it
+              # would fail only when sync-meta exists — i.e. exactly on the runs
+              # that did the most work.
+              python3 -c "import json;print(json.dumps(json.load(open('data/sync-meta.json'))['sources'],indent=2,ensure_ascii=False))"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

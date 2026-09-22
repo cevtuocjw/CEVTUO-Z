@@ -79,7 +79,39 @@ async function transcode(bytes: Uint8Array): Promise<Uint8Array | null> {
 }
 
 /**
- * Download one poster and write it to `dataDir/coof/posters/<id>.webp`.
+ * Request headers for an image URL.
+ *
+ * ⚠️ Douban returns **HTTP 418** to a bare fetch — verified: the same URL gives
+ * 200 with a browser User-Agent and a Referer, and 418 without. Notion's S3 has
+ * no such requirement but does not object to the extras, so one header set covers
+ * both hosts. Without this, every Douban poster "downloads" as a 13-byte error
+ * page and the failure looks like a network problem rather than a missing header.
+ */
+function fetchHeadersFor(url: string): Record<string, string> {
+  const headers: Record<string, string> = { 'User-Agent': USER_AGENT };
+  if (url.includes('doubanio.com') || url.includes('douban.com')) {
+    headers.Referer = 'https://movie.douban.com/';
+    headers.Accept = 'image/avif,image/webp,image/jpeg,image/*,*/*;q=0.8';
+  }
+  return headers;
+}
+
+/**
+ * A file counts as a usable poster only if it is non-trivial and actually a JPEG.
+ *
+ * ⚠️ The magic-byte check is not paranoia. `sips -s format webp` once exited 0
+ * while writing PNG data into `.webp` files, so an extension-based check would
+ * have accepted 145 mislabelled files. Verify the bytes, not the name.
+ */
+async function readValidJpeg(absPath: string): Promise<number | null> {
+  const buf = await readFile(absPath).catch(() => null);
+  if (!buf || buf.byteLength < 512) return null;
+  const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+  return isJpeg ? buf.byteLength : null;
+}
+
+/**
+ * Download one poster and write it to `dataDir/coof/posters/<id>.jpg`.
  *
  * Returns the origin-relative path on success, `null` on any failure.
  */
@@ -91,28 +123,52 @@ export async function rehostPoster(
   const relPath = `data/coof/posters/${movieId}.jpg`;
   const absPath = join(dataDir, 'coof', 'posters', `${movieId}.jpg`);
 
-  // ⚠️ On failure, reuse whatever we already have on disk rather than reporting
-  // null. A single flaky socket would otherwise rewrite `poster` to null, and the
-  // NEXT run would flip it back to a path — one new commit per run from nothing
-  // but network jitter. Observed: 3–5 of 148 downloads fail per run, all
-  // transient, which was enough to dirty the payload on every scheduled sync and
-  // silently defeat the whole no-commit-storm design.
-  const existing = await readFile(absPath).catch(() => null);
+  // A poster's Notion page id never changes, so a poster already on disk is
+  // final. Re-downloading all of them every run made a full sync issue ~340
+  // requests where ~5 were needed, and that volume is what pushed the S3 front
+  // end into resetting connections (193 of 342 failed on the first full run).
+  // Skipping known-good files is both faster and markedly more reliable.
+  const existing = await readValidJpeg(absPath);
+  if (existing) {
+    return { path: relPath, bytes: existing, downloaded: false };
+  }
 
   const bytes = await withRetry(
     async () => {
-      const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const res = await fetch(url, { headers: fetchHeadersFor(url) });
+      if (!res.ok) {
+        // 418 is Douban's anti-bot answer to a bare request. Retrying won't help,
+        // so fail immediately with a message that says what actually happened
+        // rather than burning four backoff attempts on it.
+        if (res.status === 418 || res.status === 403) {
+          const err = new Error(
+            `HTTP ${res.status} — image host rejected the request (anti-bot; needs Referer/UA)`,
+          );
+          err.name = 'BlockedError';
+          throw err;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
       return new Uint8Array(await res.arrayBuffer());
     },
-    // Transient socket resets under concurrency, not HTTP errors — a clean
-    // sequential sample returned 200 for every reachable URL.
-    { attempts: 3, baseDelayMs: 400, label: `poster ${movieId.slice(0, 8)}` },
+    {
+      attempts: 5,
+      // Jitter matters: all workers retry in lockstep otherwise, so they collide
+      // again on every attempt and the backoff buys nothing.
+      baseDelayMs: 700,
+      jitterMs: 600,
+      label: `poster ${movieId.slice(0, 8)}`,
+    },
   ).catch(() => null);
 
   if (!bytes) {
-    return existing
-      ? { path: relPath, bytes: existing.byteLength, downloaded: false }
+    // ⚠️ Non-destructive: report the old path rather than null. A single flaky
+    // socket would otherwise rewrite `poster` to null, and the next run would
+    // flip it back — one new commit per run from nothing but network jitter,
+    // silently defeating the whole no-commit-storm design.
+    const fallback = await readFile(absPath).catch(() => null);
+    return fallback
+      ? { path: relPath, bytes: fallback.byteLength, downloaded: false }
       : { path: null, bytes: 0, downloaded: false };
   }
 
@@ -132,10 +188,18 @@ export async function rehostPoster(
  * Notion's S3 front end starts refusing connections well before a few hundred
  * parallel requests, and a serial loop over ~500 posters takes minutes.
  */
+/**
+ * Re-host a batch of posters with bounded concurrency.
+ *
+ * ⚠️ Concurrency is deliberately low. At 8 workers a full 342-poster run had 193
+ * connection failures; Notion's S3 front end resets sockets well before the
+ * request rate looks high on paper. Combined with skipping posters already on
+ * disk, a steady-state run now issues a handful of requests instead of hundreds.
+ */
 export async function rehostPosters(
   items: Array<{ id: string; url: string | null }>,
   dataDir: string,
-  concurrency = 8,
+  concurrency = 5,
 ): Promise<Map<string, string | null>> {
   const results = new Map<string, string | null>();
   const queue = items.filter((i): i is { id: string; url: string } => Boolean(i.url));
@@ -148,14 +212,18 @@ export async function rehostPosters(
     while (cursor < queue.length) {
       const item = queue[cursor++];
       if (!item) break;
-      const { path } = await rehostPoster(item.id, item.url, dataDir);
+      const { path, downloaded: isNew } = await rehostPoster(item.id, item.url, dataDir);
       results.set(item.id, path);
-      if (path) downloaded++;
-      else failed++;
+      if (isNew) downloaded++;
+      else if (!path) failed++;
     }
   }
 
   await Promise.all(Array.from({ length: Math.min(concurrency, queue.length || 1) }, worker));
-  console.log(`    海报: 成功 ${downloaded}, 失败 ${failed}, 无图 ${items.length - queue.length}`);
+
+  const skipped = queue.length - downloaded - failed;
+  console.log(
+    `    海报: 新下载 ${downloaded}, 已存在 ${skipped}, 失败 ${failed}, 无图 ${items.length - queue.length}`,
+  );
   return results;
 }

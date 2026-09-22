@@ -1,0 +1,652 @@
+{
+  "collection": "COOF2024",
+  "collections": [
+    {
+      "count": 149,
+      "latestAt": "2026-09-19",
+      "name": "COOF2026",
+      "path": "data/coof/COOF2026/index.json"
+    },
+    {
+      "count": 204,
+      "latestAt": "2025-12-29",
+      "name": "COOF2025",
+      "path": "data/coof/COOF2025/index.json"
+    },
+    {
+      "count": 152,
+      "latestAt": "2024-12-31",
+      "name": "COOF2024",
+      "path": "data/coof/COOF2024/index.json"
+    },
+    {
+      "count": 145,
+      "latestAt": null,
+      "name": "COOF2023",
+      "path": "data/coof/COOF2023/index.json"
+    },
+    {
+      "count": 236,
+      "latestAt": null,
+      "name": "COOF2022",
+      "path": "data/coof/COOF2022/index.json"
+    },
+    {
+      "count": 107,
+      "latestAt": null,
+      "name": "COOF2021",
+      "path": "data/coof/COOF2021/index.json"
+    },
+    {
+      "count": 216,
+      "latestAt": null,
+      "name": "COOF2020",
+      "path": "data/coof/COOF2020/index.json"
+    }
+  ],
+  "counts": {
+    "rated": 0,
+    "total": 152
+  },
+  "dataVersion": "06052f969ffa",
+  "genres": [
+    {
+      "count": 95,
+      "name": "剧情"
+    },
+    {
+      "count": 45,
+      "name": "惊悚"
+    },
+    {
+      "count": 35,
+      "name": "犯罪"
+    },
+    {
+      "count": 31,
+      "name": "动作"
+    },
+    {
+      "count": 18,
+      "name": "悬疑"
+    },
+    {
+      "count": 17,
+      "name": "历史"
+    },
+    {
+      "count": 17,
+      "name": "喜剧"
+    },
+    {
+      "count": 14,
+      "name": "传记"
+    },
+    {
+      "count": 14,
+      "name": "冒险"
+    },
+    {
+      "count": 12,
+      "name": "科幻"
+    },
+    {
+      "count": 12,
+      "name": "纪录片"
+    },
+    {
+      "count": 10,
+      "name": "恐怖"
+    },
+    {
+      "count": 8,
+      "name": "奇幻"
+    },
+    {
+      "count": 7,
+      "name": "爱情"
+    },
+    {
+      "count": 6,
+      "name": "战争"
+    },
+    {
+      "count": 4,
+      "name": "动画"
+    },
+    {
+      "count": 3,
+      "name": "短片"
+    },
+    {
+      "count": 3,
+      "name": "西部"
+    },
+    {
+      "count": 2,
+      "name": "歌舞"
+    },
+    {
+      "count": 2,
+      "name": "神秘"
+    },
+    {
+      "count": 2,
+      "name": "运动"
+    },
+    {
+      "count": 1,
+      "name": "古装"
+    },
+    {
+      "count": 1,
+      "name": "同性"
+    },
+    {
+      "count": 1,
+      "name": "脱口秀"
+    }
+  ],
+  "hero": {
+    "cast": [],
+    "collection": "COOF2024",
+    "country": [
+      "日本"
+    ],
+    "director": [],
+    "genres": [
+      "剧情",
+      "动作",
+      "古装"
+    ],
+    "id": "16d09462-a4af-803f-a31b-c624a6b5b96f",
+    "mediaType": "影",
+    "note": null,
+    "order": null,
+    "poster": null,
+    "rating": null,
+    "runtimeMin": 134,
+    "status": "watched",
+    "title": "浪客剑心 るろうに剣心",
+    "watchedAt": "2024-12-31",
+    "year": 2012
+  },
+  "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "古装"
+      ],
+      "id": "16d09462-a4af-803f-a31b-c624a6b5b96f",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 134,
+      "status": "watched",
+      "title": "浪客剑心 るろうに剣心",
+      "watchedAt": "2024-12-31",
+      "year": 2012
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "动画"
+      ],
+      "id": "16d09462-a4af-80a1-8766-e16b5a9749cc",
+      "mediaType": "影",
+      "note": "Aniplex",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 7,
+      "status": "watched",
+      "title": "鬼滅の刃 柱稽古編 4",
+      "watchedAt": "2024-12-31",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "16a09462-a4af-801a-9bd9-e3dccc1b754b",
+      "mediaType": "影",
+      "note": "Apple tv+",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "双狼 Wolfs",
+      "watchedAt": "2024-12-28",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "西部",
+        "冒险"
+      ],
+      "id": "16a09462-a4af-8002-90b5-f76ed8e8efe3",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 163,
+      "status": "watched",
+      "title": "被解救的姜戈 Django Unchained",
+      "watchedAt": "2024-12-28",
+      "year": 2012
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "16a09462-a4af-801e-b022-fd05556fd189",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 119,
+      "status": "watched",
+      "title": "随身危机 Carry-On",
+      "watchedAt": "2024-12-28",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "芬兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "16a09462-a4af-809c-b224-ec2492eaa21b",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 163,
+      "status": "watched",
+      "title": "风暴岛的玛雅 Stormskärs Maja not finished",
+      "watchedAt": "2024-12-28",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "新西兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "16909462-a4af-80ff-a863-ff03545be972",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "一次失误 A Mistake",
+      "watchedAt": "2024-12-27",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "爱尔兰",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "历史"
+      ],
+      "id": "16909462-a4af-80a3-97b3-eeeb44977d2c",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "像这样的小事 Small Things Like These",
+      "watchedAt": "2024-12-27",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "法国",
+        "德国",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "同性"
+      ],
+      "id": "16909462-a4af-8021-9451-d8ee89e93d2d",
+      "mediaType": "影",
+      "note": "Cannas",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "外语 Langue étrangère",
+      "watchedAt": "2024-12-27",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "美国",
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "恐怖"
+      ],
+      "id": "16909462-a4af-80e6-aff4-f19403e32789",
+      "mediaType": "影",
+      "note": "A24",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 111,
+      "status": "watched",
+      "title": "异教徒 Heretic",
+      "watchedAt": "2024-12-27",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "16909462-a4af-8070-8d9e-cf0d7cafeb23",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "焦土 Verbrannte Erde",
+      "watchedAt": "2024-12-27",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "英国",
+        "美国",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "喜剧"
+      ],
+      "id": "15b09462-a4af-80f2-bef5-dd7ac1393d53",
+      "mediaType": "影",
+      "note": "CMQ",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 135,
+      "status": "watched",
+      "title": "真爱至上",
+      "watchedAt": "2024-12-12",
+      "year": 2003
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "15609462-a4af-80e0-aae4-e5c6cb3d3d55",
+      "mediaType": null,
+      "note": "amazon prime",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "James May: Our Man in Japan Season 1",
+      "watchedAt": "2024-12-08",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "瑞典"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪",
+        "动作",
+        "悬疑"
+      ],
+      "id": "15609462-a4af-80c5-bb28-d671c62e9fe9",
+      "mediaType": null,
+      "note": "Netflix",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "天降大劫 Helikopterrånet",
+      "watchedAt": "2024-12-08",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "中国台湾",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "歌舞",
+        "奇幻"
+      ],
+      "id": "15309462-a4af-8091-802c-ccc444f79510",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "洞",
+      "watchedAt": "2024-12-05",
+      "year": 1998
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "15209462-a4af-80d4-9f34-c7db57e8ee4a",
+      "mediaType": "影",
+      "note": "Netflix",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "立即购买：消费的阴谋 Buy Now! The Shopping Conspiracy",
+      "watchedAt": "2024-12-05",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "短片",
+        "传记"
+      ],
+      "id": "15309462-a4af-80a6-9a81-fd628fe82174",
+      "mediaType": "影",
+      "note": "Cannas",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 40,
+      "status": "watched",
+      "title": "这不是我 C’est pas moi",
+      "watchedAt": "2024-12-05",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "中国大陆"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "15209462-a4af-800e-a8bf-deeaf7a749d0",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 122,
+      "status": "watched",
+      "title": "里斯本丸沉没",
+      "watchedAt": "2024-12-04",
+      "year": 2023
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "15209462-a4af-800f-8068-deaa464f8204",
+      "mediaType": "影",
+      "note": "amazon prime",
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "露西与戴斯 Lucy & Desi",
+      "watchedAt": "2024-12-04",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2024",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "14f09462-a4af-806b-8a79-c0590fe1b431",
+      "mediaType": "影",
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "秘密会议 Conclave",
+      "watchedAt": "2024-12-01",
+      "year": 2024
+    }
+  ],
+  "schemaVersion": 1
+}

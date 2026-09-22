@@ -1,0 +1,663 @@
+{
+  "collection": "COOF2025",
+  "collections": [
+    {
+      "count": 149,
+      "latestAt": "2026-09-19",
+      "name": "COOF2026",
+      "path": "data/coof/COOF2026/index.json"
+    },
+    {
+      "count": 204,
+      "latestAt": "2025-12-29",
+      "name": "COOF2025",
+      "path": "data/coof/COOF2025/index.json"
+    },
+    {
+      "count": 152,
+      "latestAt": "2024-12-31",
+      "name": "COOF2024",
+      "path": "data/coof/COOF2024/index.json"
+    },
+    {
+      "count": 145,
+      "latestAt": null,
+      "name": "COOF2023",
+      "path": "data/coof/COOF2023/index.json"
+    },
+    {
+      "count": 236,
+      "latestAt": null,
+      "name": "COOF2022",
+      "path": "data/coof/COOF2022/index.json"
+    },
+    {
+      "count": 107,
+      "latestAt": null,
+      "name": "COOF2021",
+      "path": "data/coof/COOF2021/index.json"
+    },
+    {
+      "count": 216,
+      "latestAt": null,
+      "name": "COOF2020",
+      "path": "data/coof/COOF2020/index.json"
+    }
+  ],
+  "counts": {
+    "rated": 0,
+    "total": 204
+  },
+  "dataVersion": "d4f937349f32",
+  "genres": [
+    {
+      "count": 128,
+      "name": "剧情"
+    },
+    {
+      "count": 43,
+      "name": "惊悚"
+    },
+    {
+      "count": 40,
+      "name": "犯罪"
+    },
+    {
+      "count": 33,
+      "name": "喜剧"
+    },
+    {
+      "count": 22,
+      "name": "纪录片"
+    },
+    {
+      "count": 20,
+      "name": "动作"
+    },
+    {
+      "count": 18,
+      "name": "悬疑"
+    },
+    {
+      "count": 12,
+      "name": "传记"
+    },
+    {
+      "count": 12,
+      "name": "爱情"
+    },
+    {
+      "count": 11,
+      "name": "历史"
+    },
+    {
+      "count": 9,
+      "name": "冒险"
+    },
+    {
+      "count": 9,
+      "name": "动画"
+    },
+    {
+      "count": 8,
+      "name": "恐怖"
+    },
+    {
+      "count": 8,
+      "name": "科幻"
+    },
+    {
+      "count": 7,
+      "name": "短片"
+    },
+    {
+      "count": 6,
+      "name": "奇幻"
+    },
+    {
+      "count": 3,
+      "name": "西部"
+    },
+    {
+      "count": 2,
+      "name": "战争"
+    },
+    {
+      "count": 1,
+      "name": "古装"
+    },
+    {
+      "count": 1,
+      "name": "同性"
+    },
+    {
+      "count": 1,
+      "name": "家庭"
+    },
+    {
+      "count": 1,
+      "name": "情色"
+    },
+    {
+      "count": 1,
+      "name": "话剧"
+    },
+    {
+      "count": 1,
+      "name": "音乐"
+    }
+  ],
+  "hero": {
+    "cast": [],
+    "collection": "COOF2025",
+    "country": [
+      "美国"
+    ],
+    "director": [],
+    "genres": [
+      "剧情",
+      "动作",
+      "犯罪"
+    ],
+    "id": "2da09462-a4af-8017-a3e0-dff5f6210c48",
+    "mediaType": "影",
+    "note": "cinema longhua",
+    "order": 191,
+    "poster": null,
+    "rating": null,
+    "runtimeMin": 113,
+    "status": "watched",
+    "title": "惊天魔盗团3 Now You See Me: Now You Don't",
+    "watchedAt": "2025-12-29",
+    "year": 2025
+  },
+  "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "犯罪"
+      ],
+      "id": "2da09462-a4af-8017-a3e0-dff5f6210c48",
+      "mediaType": "影",
+      "note": "cinema longhua",
+      "order": 191,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 113,
+      "status": "watched",
+      "title": "惊天魔盗团3 Now You See Me: Now You Don't",
+      "watchedAt": "2025-12-29",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动画",
+        "悬疑",
+        "犯罪",
+        "冒险"
+      ],
+      "id": "2da09462-a4af-8092-a95a-e76de54478f9",
+      "mediaType": "影",
+      "note": "kr",
+      "order": 190,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "疯狂动物城2 Zootopia 2",
+      "watchedAt": "2025-12-26",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动画",
+        "冒险"
+      ],
+      "id": "2cc09462-a4af-80d2-97c0-c52e59ca2a79",
+      "mediaType": "影",
+      "note": "K. r",
+      "order": 189,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 109,
+      "status": "watched",
+      "title": "疯狂动物城 Zootopia",
+      "watchedAt": "2025-12-15",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "挪威",
+        "德国",
+        "丹麦",
+        "法国",
+        "瑞典",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "2c609462-a4af-80d4-8fc4-ef2251464797",
+      "mediaType": "影",
+      "note": "戛纳电影节",
+      "order": 188,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 135,
+      "status": "watched",
+      "title": "情感价值 Affeksjonsverdi",
+      "watchedAt": "2025-12-11",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "波兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "战争"
+      ],
+      "id": "2c109462-a4af-8042-9a40-e2fa006c9ae5",
+      "mediaType": null,
+      "note": null,
+      "order": 187,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "东门 第一季 Przesmyk sezon 1",
+      "watchedAt": "2025-12-06",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "2c109462-a4af-80b4-baa5-fdb98401a210",
+      "mediaType": "影",
+      "note": "戛纳电影节 78",
+      "order": 186,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 149,
+      "status": "watched",
+      "title": "望向太阳 In die Sonne schauen",
+      "watchedAt": "2025-12-06",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "2c109462-a4af-8090-9731-d1c8f70ef18c",
+      "mediaType": "影",
+      "note": null,
+      "order": 185,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "双重曝光 Double Exposure",
+      "watchedAt": "2025-12-06",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "法国",
+        "柬埔寨",
+        "中国台湾",
+        "卡塔尔",
+        "土耳其"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "历史"
+      ],
+      "id": "2c109462-a4af-806e-8260-c9e44515529e",
+      "mediaType": "影",
+      "note": "戛纳电影节",
+      "order": 184,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 113,
+      "status": "watched",
+      "title": "会见波尔布特 Rendez-vous avec Pol Pot",
+      "watchedAt": "2025-12-06",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "爱尔兰",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记"
+      ],
+      "id": "2c109462-a4af-80d6-affc-d29cd6b72647",
+      "mediaType": "影",
+      "note": "戛纳电影节",
+      "order": 183,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "饥饿 Hunger",
+      "watchedAt": "2025-12-06",
+      "year": 2008
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "法国",
+        "德国",
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "奇幻"
+      ],
+      "id": "2b309462-a4af-804a-9405-eafaa03460a4",
+      "mediaType": "影",
+      "note": "柏林电影节",
+      "order": 182,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 118,
+      "status": "watched",
+      "title": "the ice tower La Tour de glace",
+      "watchedAt": "2025-11-22",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "2b309462-a4af-8066-a5d8-edc0d6500ab4",
+      "mediaType": "影",
+      "note": null,
+      "order": 181,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 126,
+      "status": "watched",
+      "title": "roofman",
+      "watchedAt": "2025-11-22",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国",
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "2b309462-a4af-80e7-9e74-d045bd1f4a42",
+      "mediaType": "影",
+      "note": "威尼斯电影节",
+      "order": 180,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 139,
+      "status": "watched",
+      "title": "After the Hunt",
+      "watchedAt": "2025-11-22",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "捷克",
+        "斯洛伐克",
+        "奥地利"
+      ],
+      "director": [],
+      "genres": [
+        "传记",
+        "纪录片"
+      ],
+      "id": "2ad09462-a4af-80ea-8bc0-d576b5ccc4e7",
+      "mediaType": "影",
+      "note": "柏林电影节",
+      "order": 179,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "im not everything i want to beJeste nejsem, kým chci být",
+      "watchedAt": "2025-11-16",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "29f09462-a4af-8086-963b-f18113fe06f6",
+      "mediaType": null,
+      "note": "BBC",
+      "order": 178,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 2,
+      "status": "watched",
+      "title": "家裂：巴塞罗那 The Split:Barcelona",
+      "watchedAt": "2025-11-02",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "29f09462-a4af-80d5-ac2c-d62e250916c8",
+      "mediaType": "影",
+      "note": "第72届圣塞巴斯蒂安国际电影节获奖",
+      "order": 177,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "秋日何时来 Quand vient l'automne",
+      "watchedAt": "2025-11-02",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "29f09462-a4af-80ed-ae1e-e71d054532ff",
+      "mediaType": null,
+      "note": "itv",
+      "order": 176,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "双雌大盗 Frauds",
+      "watchedAt": "2025-11-02",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "英国",
+        "澳大利亚",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "29e09462-a4af-806a-828b-fa377b5f22d9",
+      "mediaType": "影",
+      "note": null,
+      "order": 175,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "玫瑰 The Roses",
+      "watchedAt": "2025-11-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国",
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "音乐",
+        "犯罪"
+      ],
+      "id": "29e09462-a4af-80d4-b173-ec713e93ba14",
+      "mediaType": "影",
+      "note": "第35届哥谭独立电影奖提名名单",
+      "order": 174,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "潜伏者 Lurker",
+      "watchedAt": "2025-11-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "29e09462-a4af-80b3-865f-ea0afb7bde37",
+      "mediaType": "影",
+      "note": null,
+      "order": 173,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "伦敦大道 London Boulevard",
+      "watchedAt": "2025-11-01",
+      "year": 2010
+    },
+    {
+      "cast": [],
+      "collection": "COOF2025",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "恐怖"
+      ],
+      "id": "29e09462-a4af-80cf-ae63-e08c843667f3",
+      "mediaType": "影",
+      "note": null,
+      "order": 172,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 89,
+      "status": "watched",
+      "title": "毒瘾危害 Hazard",
+      "watchedAt": "2025-11-01",
+      "year": 2024
+    }
+  ],
+  "schemaVersion": 1
+}

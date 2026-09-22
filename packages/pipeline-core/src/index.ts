@@ -188,10 +188,21 @@ export function scrubError(input: unknown, maxLength = 200): { code: string; mes
 // Misc helpers
 // ─────────────────────────────────────────────────────────────
 
-/** Retry with exponential backoff — Notion and Drive both rate-limit. */
+/**
+ * Retry with exponential backoff — Notion and S3 both rate-limit and reset.
+ *
+ * ⚠️ `jitterMs` is not decoration. When N workers retry on the same schedule they
+ * collide again on every attempt, so a pure exponential backoff just re-sends the
+ * same thundering herd slightly later. Randomising the delay spreads them out.
+ */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  { attempts = 4, baseDelayMs = 500, label = 'request' }: { attempts?: number; baseDelayMs?: number; label?: string } = {},
+  {
+    attempts = 4,
+    baseDelayMs = 500,
+    jitterMs = 0,
+    label = 'request',
+  }: { attempts?: number; baseDelayMs?: number; jitterMs?: number; label?: string } = {},
 ): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -200,7 +211,8 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error;
       if (attempt === attempts) break;
-      const delay = baseDelayMs * 2 ** (attempt - 1);
+      const backoff = baseDelayMs * 2 ** (attempt - 1);
+      const delay = backoff + Math.floor(Math.random() * jitterMs);
       console.warn(`  ${label} failed (attempt ${attempt}/${attempts}), retrying in ${delay}ms`);
       await new Promise((r) => setTimeout(r, delay));
     }
