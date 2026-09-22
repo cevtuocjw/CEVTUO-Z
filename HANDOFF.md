@@ -88,10 +88,13 @@ CEVTUO-Z/
 
 ## 待办 ⏳
 
-1. **建 GitHub 仓库并 push** —— 仓库、Secret、Pages 三件需要 GitHub 账号。
-2. **COOF 页面** —— 接真实数据、11 集合切换、海报网格、点击弹窗。
-3. CNSR / CE-PaperR / Chealth 三个页面。
-4. README。
+1. **阿里云深圳服务器 + ICP 备案** —— 见 `docs/HOSTING.md`。
+   **卡在用户本人操作**(扫码登录 + 支付 + 实名认证),自动化浏览器登录态已过期。
+2. **Pages 部署断层** —— H5 产物在 `apps/dashboard/dist/`,Pages 只发根目录,
+   所以现在就算开 Pages 也只有 `data/` 没有 app。**故意没开**,等 COOF 页面做完一起配。
+3. **COOF 页面** —— 接真实数据、11 集合切换、海报网格、点击弹窗。
+4. CNSR / CE-PaperR / Chealth 三个页面。
+5. README(根目录 + 服务端部署文档)。
 
 ### 部署与备案
 
