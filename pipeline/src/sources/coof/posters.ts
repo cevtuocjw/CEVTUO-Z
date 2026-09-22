@@ -25,7 +25,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { writeBytesIfChanged } from '@cevtuo/pipeline-core';
+import { withRetry, writeBytesIfChanged } from '@cevtuo/pipeline-core';
 
 /** Posters are displayed at ~200px; 400 gives headroom for 2x screens. */
 const TARGET_WIDTH = 400;
@@ -91,22 +91,39 @@ export async function rehostPoster(
   const relPath = `data/coof/posters/${movieId}.jpg`;
   const absPath = join(dataDir, 'coof', 'posters', `${movieId}.jpg`);
 
-  try {
-    const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
-    if (!res.ok) return { path: null, bytes: 0, downloaded: false };
+  // ⚠️ On failure, reuse whatever we already have on disk rather than reporting
+  // null. A single flaky socket would otherwise rewrite `poster` to null, and the
+  // NEXT run would flip it back to a path — one new commit per run from nothing
+  // but network jitter. Observed: 3–5 of 148 downloads fail per run, all
+  // transient, which was enough to dirty the payload on every scheduled sync and
+  // silently defeat the whole no-commit-storm design.
+  const existing = await readFile(absPath).catch(() => null);
 
-    const original = new Uint8Array(await res.arrayBuffer());
-    const encoded = (await transcode(original)) ?? original;
+  const bytes = await withRetry(
+    async () => {
+      const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return new Uint8Array(await res.arrayBuffer());
+    },
+    // Transient socket resets under concurrency, not HTTP errors — a clean
+    // sequential sample returned 200 for every reachable URL.
+    { attempts: 3, baseDelayMs: 400, label: `poster ${movieId.slice(0, 8)}` },
+  ).catch(() => null);
 
-    await mkdir(dirname(absPath), { recursive: true });
-    // The binary variant keeps an unchanged poster from touching its mtime, which
-    // is what stops a no-op sync from producing a diff for every single poster.
-    const outcome = await writeBytesIfChanged(absPath, encoded);
-
-    return { path: relPath, bytes: encoded.byteLength, downloaded: outcome === 'written' };
-  } catch {
-    return { path: null, bytes: 0, downloaded: false };
+  if (!bytes) {
+    return existing
+      ? { path: relPath, bytes: existing.byteLength, downloaded: false }
+      : { path: null, bytes: 0, downloaded: false };
   }
+
+  const encoded = (await transcode(bytes)) ?? bytes;
+
+  await mkdir(dirname(absPath), { recursive: true });
+  // The binary variant keeps an unchanged poster from touching its mtime, which
+  // is what stops a no-op sync from producing a diff for every single poster.
+  const outcome = await writeBytesIfChanged(absPath, encoded);
+
+  return { path: relPath, bytes: encoded.byteLength, downloaded: outcome === 'written' };
 }
 
 /**
