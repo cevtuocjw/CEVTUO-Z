@@ -1,0 +1,84 @@
+@use './styles/tokens.scss' as t;
+@use './styles/wallpaper.scss' as w;
+
+// ─────────────────────────────────────────────────────────────
+// Root — emit the token set once.
+// ─────────────────────────────────────────────────────────────
+
+page,
+body,
+#app {
+  @include t.root-tokens;
+
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--page-bg);
+
+  color: var(--text-primary);
+  font-size: t.$font-body;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+
+  // Mini programs need an explicit font stack; there is no system default that
+  // covers both the WeChat renderer and Android WebView consistently.
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Noto Sans SC',
+    'Microsoft YaHei', sans-serif;
+}
+
+// ── Theme resolution ─────────────────────────────────────────
+//
+// Precedence: explicit override class > system preference > dark default.
+// `theme-auto` (the default) is handled by the media query below.
+
+.theme-override-dark {
+  @include t.theme-override-dark;
+}
+.theme-override-light {
+  @include t.theme-override-light;
+}
+
+@media (prefers-color-scheme: light) {
+  page,
+  body,
+  #app {
+    &:not(.theme-override-dark) {
+      @include t.theme-override-light;
+    }
+  }
+}
+
+// ── Wallpaper ────────────────────────────────────────────────
+//
+// Positioned with explicit top/left/right/bottom, never `inset` — Skyline
+// supports the four longhands but not the shorthand.
+
+.cevtuo-wallpaper {
+  @include w.wallpaper;
+  @include w.wallpaper-dark;
+
+  @media (prefers-color-scheme: light) {
+    .theme-auto & {
+      @include w.wallpaper-light;
+    }
+  }
+}
+
+.theme-light .cevtuo-wallpaper {
+  @include w.wallpaper-light;
+}
+.theme-dark .cevtuo-wallpaper {
+  @include w.wallpaper-dark;
+}
+
+// ── Reset ────────────────────────────────────────────────────
+//
+// ⚠️ No `*` selector: Skyline does not support it. Every container states its
+// own display/flex-direction in its component styles instead.
+
+view,
+text,
+scroll-view,
+image {
+  box-sizing: border-box;
+}

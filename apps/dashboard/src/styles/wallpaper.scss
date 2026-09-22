@@ -1,0 +1,59 @@
+// ─────────────────────────────────────────────────────────────
+// Wallpaper — the layer that rescues Tiers B and C.
+//
+// Tier A gets its vividness from `saturate(180%)` inside the backdrop-filter.
+// Tiers B and C cannot do that, so if the wallpaper underneath were a muted
+// gradient the glass would collapse to flat grey.
+//
+// The fix is to move the saturation DOWN into the wallpaper: the gradient stops
+// below are already fully vivid, so a blur-only (Tier B) card still picks up
+// rich colour through the blur, and an opaque (Tier C) card still reads as
+// sitting on a coloured surface.
+//
+// ⚠️ Do NOT use `filter: saturate()` on this layer instead — a full-screen
+// fixed element with a filter is a real compositing cost on Android.
+//
+// ⚠️ Position with top/left/right/bottom explicitly. Skyline supports those
+// four properties but NOT the `inset` shorthand.
+// ─────────────────────────────────────────────────────────────
+
+@use 'tokens.scss' as t;
+
+@mixin wallpaper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  opacity: var(--wallpaper-a);
+  transition-property: opacity;
+  transition-duration: 240ms;
+  transition-timing-function: ease-out;
+}
+
+// Dark theme: deep space with slow colour blooms in the corners. The blooms
+// give the glass something to pick up; a flat black backdrop would make every
+// card look identical regardless of tier.
+@mixin wallpaper-dark {
+  background-color: #0a0b0f;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(88, 120, 255, 0.42) 0%, rgba(88, 120, 255, 0) 46%),
+    radial-gradient(circle at 92% 18%, rgba(196, 92, 255, 0.30) 0%, rgba(196, 92, 255, 0) 42%),
+    radial-gradient(circle at 72% 92%, rgba(0, 200, 190, 0.26) 0%, rgba(0, 200, 190, 0) 48%),
+    radial-gradient(circle at 22% 78%, rgba(255, 120, 90, 0.20) 0%, rgba(255, 120, 90, 0) 44%),
+    linear-gradient(160deg, #0d1020 0%, #0a0b0f 55%, #0c0e14 100%);
+}
+
+// Light theme: soft pastel wash. Stops stay saturated for the same reason.
+@mixin wallpaper-light {
+  background-color: #eef0f5;
+  background-image:
+    radial-gradient(circle at 10% 6%, rgba(120, 160, 255, 0.55) 0%, rgba(120, 160, 255, 0) 50%),
+    radial-gradient(circle at 94% 14%, rgba(220, 140, 255, 0.45) 0%, rgba(220, 140, 255, 0) 46%),
+    radial-gradient(circle at 76% 94%, rgba(90, 220, 210, 0.40) 0%, rgba(90, 220, 210, 0) 50%),
+    radial-gradient(circle at 18% 82%, rgba(255, 170, 140, 0.38) 0%, rgba(255, 170, 140, 0) 46%),
+    linear-gradient(160deg, #f4f6fb 0%, #eef0f5 60%, #e8ebf3 100%);
+}

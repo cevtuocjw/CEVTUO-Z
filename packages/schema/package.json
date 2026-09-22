@@ -1,0 +1,16 @@
+{
+  "name": "@cevtuo/schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Single source of truth for every payload shape. The pipeline runs these validators; the app imports TYPES ONLY (zod's runtime is ~60KB and must never enter the mini-program bundle).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./paths": "./src/paths.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  }
+}

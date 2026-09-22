@@ -1,0 +1,168 @@
+// ─────────────────────────────────────────────────────────────
+// CEVTUO-Z design tokens
+//
+// Two layers, deliberately:
+//
+//   $static  — SCSS variables, resolved at build time. Safe everywhere.
+//   --custom — CSS custom properties, needed at RUNTIME because the glass
+//              intensity slider must re-derive blur/alpha live.
+//
+// ⚠️ WXSS / Skyline constraints these tokens obey:
+//   · colours use the LEGACY comma form `rgba(r, g, b, a)` — Skyline rejects the
+//     modern space-separated `rgb(r g b / a)` syntax
+//   · no `em`, no `*` selector, no attribute selectors, no `currentColor`
+//   · every container declares `display:flex; flex-direction:...` explicitly.
+//     Skyline defaults to flex-column/border-box/relative; the WebView renderer
+//     defaults to block/content-box/static. Identical source renders differently
+//     across the two, so being explicit is mandatory, not stylistic.
+// ─────────────────────────────────────────────────────────────
+
+// ── Static scales ────────────────────────────────────────────
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 24px;
+$space-6: 32px;
+$space-7: 48px;
+
+$radius-card: 20px;
+$radius-sheet: 28px;
+$radius-tile: 16px;
+$radius-chip: 999px;
+
+$font-display: 34px;
+$font-title: 22px;
+$font-heading: 17px;
+$font-body: 15px;
+$font-caption: 13px;
+$font-micro: 11px;
+
+$weight-regular: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
+// ── Foldable breakpoints ─────────────────────────────────────
+//
+// Galaxy Z Fold 5 measures ~361dp on the cover screen and ~673dp unfolded.
+// 600px sits between them with ~85% margin on each side, so neither state is
+// anywhere near the boundary — a slightly different device won't flip tiers.
+//
+// ⚠️ WIDTH ONLY. Never combine with orientation: the inner screen's natural
+// orientation is landscape-ish (2176x1812), so an orientation-conditioned
+// breakpoint would make the layout jump when the device is merely rotated.
+//
+// ⚠️ These are plain width media queries, which the WeChat **WebView** renderer
+// supports. Skyline supports ONLY DarkMode media queries — if Skyline is ever
+// enabled these silently stop matching and the foldable layout breaks. That is
+// the single biggest reason v1 stays on the WebView renderer.
+$bp-medium: 600px; // cover screen → unfolded inner screen
+$bp-expanded: 840px; // tablet / desktop H5
+
+// ── Runtime custom properties ────────────────────────────────
+//
+// `--gi` is the glass intensity (0…1) as a UNITLESS number so it can be scaled
+// inside calc(). Persisted via Taro.setStorageSync('gi', v).
+//
+// `.tier-a|b|c` land on the root at boot from components/glass/tier.ts after
+// feature detection — see glass.scss for what each tier renders.
+
+@mixin glass-runtime-vars {
+  --gi: 0.65;
+
+  --glass-blur: calc(4px + var(--gi) * 24px); //    4 → 28px
+  --glass-sat: calc(100% + var(--gi) * 80%); //    100 → 180%
+  --glass-tint-a: calc(0.10 + var(--gi) * 0.30); // 0.10 → 0.40
+  --glass-border-a: calc(0.28 + var(--gi) * 0.34);
+  --glass-highlight-a: calc(0.22 + var(--gi) * 0.33);
+
+  // The wallpaper grows more opaque as glass strength falls, so a Tier-C solid
+  // card still reads as sitting on a coloured surface rather than flat grey.
+  --wallpaper-a: calc(0.55 + var(--gi) * 0.45);
+}
+
+// ── Themes ───────────────────────────────────────────────────
+// Both themes define the same variable names; only values change.
+
+@mixin theme-dark {
+  --tint-r: 18;
+  --tint-g: 20;
+  --tint-b: 24;
+
+  --text-primary: rgba(255, 255, 255, 0.96);
+  --text-secondary: rgba(255, 255, 255, 0.64);
+  --text-tertiary: rgba(255, 255, 255, 0.42);
+  --text-inverse: rgba(12, 14, 18, 0.94);
+
+  --page-bg: #0a0b0f;
+  --hairline: rgba(255, 255, 255, 0.10);
+  --divider: rgba(255, 255, 255, 0.07);
+
+  // Tier-C fallback opacity.
+  --glass-solid-a: 0.88;
+
+  --accent: #6ea8ff;
+  --accent-soft: rgba(110, 168, 255, 0.16);
+  --positive: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  // Declared once and reused. Skyline collapses multi-shadow to the FIRST one,
+  // so the first shadow is always the one that must carry the design.
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-raised: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+@mixin theme-light {
+  --tint-r: 255;
+  --tint-g: 255;
+  --tint-b: 255;
+
+  --text-primary: rgba(10, 12, 16, 0.94);
+  --text-secondary: rgba(10, 12, 16, 0.62);
+  --text-tertiary: rgba(10, 12, 16, 0.40);
+  --text-inverse: rgba(255, 255, 255, 0.96);
+
+  --page-bg: #eef0f5;
+  --hairline: rgba(255, 255, 255, 0.55);
+  --divider: rgba(10, 12, 16, 0.08);
+
+  // Light mode needs MORE fallback opacity — a 0.88-alpha white card over a
+  // pale wallpaper is illegible.
+  --glass-solid-a: 0.94;
+
+  --accent: #2f6bd8;
+  --accent-soft: rgba(47, 107, 216, 0.12);
+  --positive: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  --shadow-card: 0 8px 24px rgba(20, 24, 40, 0.10);
+  --shadow-raised: 0 16px 40px rgba(20, 24, 40, 0.16);
+}
+
+/// Emit once, from app.scss.
+@mixin root-tokens {
+  @include glass-runtime-vars;
+  @include theme-dark;
+
+  --radius-card: #{$radius-card};
+  --radius-sheet: #{$radius-sheet};
+  --radius-tile: #{$radius-tile};
+  --radius-chip: #{$radius-chip};
+
+  // `env()` works in both renderers; Skyline supports the safe-area-inset-*
+  // family explicitly, which is exactly what we need.
+  --safe-bottom: calc(env(safe-area-inset-bottom) + #{$space-5});
+  --safe-top: env(safe-area-inset-top);
+}
+
+// Explicit overrides win over the system default. `theme-auto` is the default
+// state and defers to the prefers-color-scheme block below.
+@mixin theme-override-dark {
+  @include theme-dark;
+}
+@mixin theme-override-light {
+  @include theme-light;
+}

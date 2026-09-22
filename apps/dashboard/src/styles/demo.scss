@@ -1,0 +1,165 @@
+// Shared styling for every page shell. Kept in one file so the four brand pages
+// don't each carry a near-identical copy.
+
+@use 'tokens.scss' as t;
+@use 'breakpoints.scss' as b;
+@use 'glass.scss' as g;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 100vh;
+  width: 100%;
+
+  @include b.page-padding;
+  padding-bottom: var(--safe-bottom);
+}
+
+// ── Nav ──────────────────────────────────────────────────────
+.nav {
+  @include g.glass-nav;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding-left: t.$space-4;
+  padding-right: t.$space-4;
+  box-sizing: border-box;
+}
+
+.nav__brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.nav__mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: t.$space-2;
+  border-radius: 9px;
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  font-size: t.$font-caption;
+  font-weight: t.$weight-bold;
+}
+
+.nav__title {
+  font-size: t.$font-heading;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+}
+
+.nav__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.nav__stamp {
+  font-size: t.$font-micro;
+  color: var(--text-secondary);
+}
+
+// ── Page header ──────────────────────────────────────────────
+.page__head {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  @include b.page-top-offset;
+  margin-bottom: t.$space-5;
+}
+
+.page__title {
+  font-size: t.$font-display;
+  font-weight: t.$weight-bold;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+
+.page__sub {
+  margin-top: t.$space-1;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+// ── Block grid ───────────────────────────────────────────────
+.grid {
+  @include b.block-grid(2, 3, t.$space-4);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.block__spacer {
+  height: t.$space-5;
+}
+
+// ── Cards ────────────────────────────────────────────────────
+.card {
+  @include g.glass;
+  @include g.glass-modifiers;
+
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: t.$space-4;
+  height: 100%;
+}
+
+.card__label {
+  font-size: t.$font-micro;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.card__value {
+  margin-top: t.$space-2;
+  font-size: t.$font-title;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+}
+
+.card__note {
+  margin-top: t.$space-1;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+// ── Chips ────────────────────────────────────────────────────
+.chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: t.$space-3;
+}
+
+.chip {
+  @include g.glass-inset;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: t.$space-1 t.$space-3;
+  margin-right: t.$space-2;
+  margin-bottom: t.$space-2;
+  font-size: t.$font-micro;
+  color: var(--text-secondary);
+}
+
+.chip--on {
+  border-color: var(--accent);
+  color: var(--accent);
+}

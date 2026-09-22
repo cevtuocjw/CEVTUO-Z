@@ -1,0 +1,28 @@
+{
+  "brands": {
+    "coof": {
+      "changedAt": "2026-09-22T11:32+08:00",
+      "dataVersion": "677b222b0cfa",
+      "parts": {
+        "COOF2026": "ceb3e262a71c"
+      }
+    }
+  },
+  "cadence": "PT5H",
+  "generatedAt": "2026-09-22T11:32+08:00",
+  "nextScheduledAt": "2026-09-22T13:00+08:00",
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "changed": true,
+      "id": "notion-coof",
+      "itemsIn": 149,
+      "lastAttemptAt": "2026-09-22T11:32+08:00",
+      "lastSuccessAt": "2026-09-22T11:32+08:00",
+      "latencyMs": 21879,
+      "staleAfterHours": 15,
+      "status": "ok"
+    }
+  ],
+  "trigger": "local"
+}

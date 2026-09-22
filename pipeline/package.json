@@ -1,0 +1,15 @@
+{
+  "name": "@cevtuo/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Data pipeline: Notion → COOF/CNSR, KOReader → CE-PaperR, Health Sync Drive + Strava → Chealth. Emits the static JSON in data/.",
+  "scripts": {
+    "sync": "bun run src/cli/sync.ts"
+  },
+  "dependencies": {
+    "@cevtuo/pipeline-core": "workspace:*",
+    "@cevtuo/schema": "workspace:*",
+    "zod": "^3.24.1"
+  }
+}

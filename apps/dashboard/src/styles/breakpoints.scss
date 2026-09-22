@@ -1,0 +1,159 @@
+// ─────────────────────────────────────────────────────────────
+// Foldable layout system
+//
+// Galaxy Z Fold 5 — the device this is designed against:
+//   cover screen  ~361 x 904 dp   → compact
+//   unfolded      ~673 x 748 dp   → medium
+//   tablet / H5   >=840 dp        → expanded
+//
+// ⚠️ WIDTH ONLY, never orientation. The inner screen's natural orientation is
+// landscape-ish, so conditioning on orientation would make the entire layout
+// jump on a mere rotation.
+//
+// ⚠️ WeChat has no foldable API, and Skyline supports only DarkMode media
+// queries — so `min-width` media queries are the lowest common denominator that
+// works on both the mini program (WebView renderer) and the Android WebView.
+// ─────────────────────────────────────────────────────────────
+
+@use 'sass:math';
+@use 'tokens.scss' as t;
+
+// ── Tier mixins ──────────────────────────────────────────────
+//
+// Usage is mobile-first: base styles target the cover screen, then enhance.
+//   .coof { @include compact-only { ... } }
+//   @include medium-up { ... }
+
+/// Cover screen only (<600px).
+@mixin compact-only {
+  @media (max-width: #{t.$bp-medium - 1px}) {
+    @content;
+  }
+}
+
+/// Unfolded inner screen and up (>=600px).
+@mixin medium-up {
+  @media (min-width: t.$bp-medium) {
+    @content;
+  }
+}
+
+/// Tablet / desktop H5 (>=840px).
+@mixin expanded-up {
+  @media (min-width: t.$bp-expanded) {
+    @content;
+  }
+}
+
+/// Unfolded but not yet tablet (600–839px) — the Fold 5's inner screen.
+@mixin medium-only {
+  @media (min-width: t.$bp-medium) and (max-width: #{t.$bp-expanded - 1px}) {
+    @content;
+  }
+}
+
+// ── Grid helper ──────────────────────────────────────────────
+//
+// Every page is a block list; the column count is the only thing that changes
+// between tiers. Keeping this in one mixin is what makes "the same page renders
+// well on both screens" a property of the system rather than per-page effort.
+
+/// Multi-column block grid.
+///   compact → 1 column, medium → 2, expanded → 3 (or $expanded override).
+@mixin block-grid($medium: 2, $expanded: 3, $gap: t.$space-4) {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+
+  > .block {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: $gap;
+  }
+
+  @include medium-up {
+    flex-direction: row;
+    flex-wrap: wrap;
+    // Compensate for the outer margins with negative gutters, so blocks stay
+    // flush with the page padding.
+    margin-left: -$gap;
+    margin-right: -$gap;
+
+    > .block {
+      $w: math.percentage(math.div(1, $medium));
+      width: calc(#{$w} - #{$gap});
+      margin-left: $gap;
+      margin-right: 0;
+      margin-bottom: $gap;
+    }
+  }
+
+  @include expanded-up {
+    > .block {
+      $w: math.percentage(math.div(1, $expanded));
+      width: calc(#{$w} - #{$gap});
+    }
+  }
+}
+
+/// A block that spans the full row regardless of the current column count —
+/// used for hero blocks and full-width charts.
+@mixin block-span-all {
+  @include medium-up {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+/// Two-column split used on the unfolded screen: a narrow rail beside content.
+/// Collapses to a single column on the cover screen.
+@mixin split-with-rail($rail: 200px) {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+
+  > .rail {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  @include medium-up {
+    flex-direction: row;
+
+    > .rail {
+      width: $rail;
+      flex-shrink: 0;
+      margin-right: t.$space-4;
+    }
+    > .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+  }
+}
+
+// ── Page scaffolding ─────────────────────────────────────────
+
+/// Standard page padding. Tightens on the cover screen where every pixel of
+/// horizontal room matters.
+@mixin page-padding {
+  padding-left: t.$space-4;
+  padding-right: t.$space-4;
+
+  @include medium-up {
+    padding-left: t.$space-5;
+    padding-right: t.$space-5;
+  }
+}
+
+/// Clears the fixed glass nav bar plus the safe area.
+@mixin page-top-offset($navHeight: 56px) {
+  padding-top: calc(#{$navHeight} + var(--safe-top) + #{t.$space-4});
+}

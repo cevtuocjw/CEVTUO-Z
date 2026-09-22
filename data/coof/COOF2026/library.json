@@ -1,0 +1,3522 @@
+{
+  "collection": "COOF2026",
+  "dataVersion": "34c1f58af5c7",
+  "schemaVersion": 1,
+  "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3e009462-a4af-8158-9527-ea3c73ae69d7",
+      "mediaType": "影",
+      "note": null,
+      "order": 148,
+      "poster": "data/coof/posters/3e009462-a4af-8158-9527-ea3c73ae69d7.jpg",
+      "rating": null,
+      "runtimeMin": 86,
+      "status": "watched",
+      "title": "镜的第三乐章 Miroirs No. 3",
+      "watchedAt": "2026-09-19",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "惊悚"
+      ],
+      "id": "3e009462-a4af-80a6-972f-e17c3d344ac1",
+      "mediaType": "影",
+      "note": "一群美国前军人与政治活动家联手，将遭绑架的墨西哥帮派成员散布到各城市，企图借此引发犯罪混乱，从而为激进的政治议程争取支持",
+      "order": 147,
+      "poster": "data/coof/posters/3e009462-a4af-80a6-972f-e17c3d344ac1.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "边界线 Borderline",
+      "watchedAt": "2026-09-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "克罗地亚",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "惊悚"
+      ],
+      "id": "3e009462-a4af-8069-a3bc-ec4d5181d9f5",
+      "mediaType": "影",
+      "note": "德国禁 elon recommend on x afd",
+      "order": 146,
+      "poster": "data/coof/posters/3e009462-a4af-8069-a3bc-ec4d5181d9f5.jpg",
+      "rating": null,
+      "runtimeMin": 89,
+      "status": "watched",
+      "title": "公民义警 Citizen Vigilante",
+      "watchedAt": "2026-09-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "墨西哥"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "3db09462-a4af-804c-9180-ec150ce826da",
+      "mediaType": "影",
+      "note": "Netflix. 奥斯卡金像奖提名",
+      "order": 145,
+      "poster": "data/coof/posters/3db09462-a4af-804c-9180-ec150ce826da.jpg",
+      "rating": null,
+      "runtimeMin": 174,
+      "status": "watched",
+      "title": "诗人 Bardo, falsa crónica de unas cuantas verdades",
+      "watchedAt": "2026-09-13",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "3db09462-a4af-8093-bb01-f1119a157590",
+      "mediaType": "影",
+      "note": "海岛国际电影节获奖",
+      "order": 144,
+      "poster": "data/coof/posters/3db09462-a4af-8093-bb01-f1119a157590.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "桑格豪森的渴望 Sehnsucht in Sangerhausen",
+      "watchedAt": "2026-09-13",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "西德"
+      ],
+      "director": [],
+      "genres": [
+        "恐怖",
+        "奇幻"
+      ],
+      "id": "3db09462-a4af-808d-8e6a-d84f0d4dc08b",
+      "mediaType": "影",
+      "note": null,
+      "order": 143,
+      "poster": "data/coof/posters/3db09462-a4af-808d-8e6a-d84f0d4dc08b.jpg",
+      "rating": null,
+      "runtimeMin": 107,
+      "status": "watched",
+      "title": "诺斯费拉图：夜晚的幽灵 Nosferatu: Phantom der Nacht",
+      "watchedAt": "2026-09-14",
+      "year": 1979
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "动画",
+        "家庭"
+      ],
+      "id": "3da09462-a4af-8026-bb1d-fe1b4e1bf665",
+      "mediaType": "影",
+      "note": "凯撒奖",
+      "order": 142,
+      "poster": "data/coof/posters/3da09462-a4af-8026-bb1d-fe1b4e1bf665.jpg",
+      "rating": null,
+      "runtimeMin": 81,
+      "status": "watched",
+      "title": "我住在凡尔赛的日子 La vie de château - Mon enfance à Versailles",
+      "watchedAt": "2026-09-13",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "阿根廷"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "3da09462-a4af-8086-8702-f59df37544b5",
+      "mediaType": "影",
+      "note": "第73届圣塞巴斯蒂安国际电影节获奖",
+      "order": 141,
+      "poster": "data/coof/posters/3da09462-a4af-8086-8702-f59df37544b5.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "我们是伯利恒 Belén",
+      "watchedAt": "2026-09-12",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3da09462-a4af-800a-94b7-cab770e7ad87",
+      "mediaType": "影",
+      "note": "第78届洛迦诺国际电影节获奖",
+      "order": 140,
+      "poster": "data/coof/posters/3da09462-a4af-800a-94b7-cab770e7ad87.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "我的喜悦夏天 Gioia Mia",
+      "watchedAt": "2026-09-12",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作",
+        "犯罪"
+      ],
+      "id": "3da09462-a4af-806a-885c-e2c4c5a9168a",
+      "mediaType": "影",
+      "note": "hulu",
+      "order": 139,
+      "poster": "data/coof/posters/3da09462-a4af-806a-885c-e2c4c5a9168a.jpg",
+      "rating": null,
+      "runtimeMin": 107,
+      "status": "watched",
+      "title": "Mike & Nick & Nick & Alice",
+      "watchedAt": "2026-09-12",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "3d909462-a4af-80ef-ace0-e4ea85eb2f0e",
+      "mediaType": "影",
+      "note": null,
+      "order": 138,
+      "poster": "data/coof/posters/3d909462-a4af-80ef-ace0-e4ea85eb2f0e.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "替补悍警 Normal",
+      "watchedAt": "2026-09-12",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "西德"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "恐怖"
+      ],
+      "id": "3d909462-a4af-8015-80c8-cd9a34fde8fc",
+      "mediaType": "影",
+      "note": null,
+      "order": 137,
+      "poster": "data/coof/posters/3d909462-a4af-8015-80c8-cd9a34fde8fc.jpg",
+      "rating": null,
+      "runtimeMin": 124,
+      "status": "watched",
+      "title": "着魔 Possession",
+      "watchedAt": "2026-09-12",
+      "year": 1981
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3d909462-a4af-80b4-89bd-e419ee818fda",
+      "mediaType": "影",
+      "note": null,
+      "order": 136,
+      "poster": "data/coof/posters/3d909462-a4af-80b4-89bd-e419ee818fda.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "One Night Only",
+      "watchedAt": "2026-09-12",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3d909462-a4af-80ef-96ad-fbf5284e5e9e",
+      "mediaType": "影",
+      "note": "Gana",
+      "order": 135,
+      "poster": "data/coof/posters/3d909462-a4af-80ef-96ad-fbf5284e5e9e.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "一切从头来过 La Condition",
+      "watchedAt": "2026-09-12",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "喜剧"
+      ],
+      "id": "3d309462-a4af-804d-ab8f-c9d25aa737b5",
+      "mediaType": "影",
+      "note": null,
+      "order": 134,
+      "poster": "data/coof/posters/3d309462-a4af-804d-ab8f-c9d25aa737b5.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "致命之旅 Over Your Dead Body",
+      "watchedAt": "2026-09-06",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3d209462-a4af-80d6-b7bf-e31ebdd2c1ea",
+      "mediaType": "影",
+      "note": null,
+      "order": 132,
+      "poster": "data/coof/posters/3d209462-a4af-80d6-b7bf-e31ebdd2c1ea.jpg",
+      "rating": null,
+      "runtimeMin": 128,
+      "status": "watched",
+      "title": "伪钞之王 L’Affaire Bojarski",
+      "watchedAt": "2026-09-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "惊悚"
+      ],
+      "id": "3cc09462-a4af-80eb-903b-f9c6a6ccb03f",
+      "mediaType": "影",
+      "note": null,
+      "order": 131,
+      "poster": "data/coof/posters/3cc09462-a4af-80eb-903b-f9c6a6ccb03f.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "如何大赚一笔 How to Make a Killing",
+      "watchedAt": "2026-08-30",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "科幻"
+      ],
+      "id": "3cc09462-a4af-80b2-bae9-e4e40bdde7ea",
+      "mediaType": "影",
+      "note": null,
+      "order": 130,
+      "poster": "data/coof/posters/3cc09462-a4af-80b2-bae9-e4e40bdde7ea.jpg",
+      "rating": null,
+      "runtimeMin": 97,
+      "status": "watched",
+      "title": "The Perfect Lover 人格",
+      "watchedAt": "2026-08-30",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "罗马尼亚"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3cb09462-a4af-800c-bdf8-e3107234c1e3",
+      "mediaType": "影",
+      "note": "Ganna+",
+      "order": 129,
+      "poster": "data/coof/posters/3cb09462-a4af-800c-bdf8-e3107234c1e3.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "女仆日记 Journal d’une femme de chambre",
+      "watchedAt": "2026-08-29",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记",
+        "历史"
+      ],
+      "id": "3ca09462-a4af-8046-a7f6-c3fa8d7702be",
+      "mediaType": "影",
+      "note": null,
+      "order": 128,
+      "poster": "data/coof/posters/3ca09462-a4af-8046-a7f6-c3fa8d7702be.jpg",
+      "rating": null,
+      "runtimeMin": 175,
+      "status": "watched",
+      "title": "卡蜜儿·克劳岱尔 Camille Claudel",
+      "watchedAt": "2026-08-28",
+      "year": 1988
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "喜剧"
+      ],
+      "id": "3c409462-a4af-8067-9017-e166f01cb8d9",
+      "mediaType": "影",
+      "note": null,
+      "order": 127,
+      "poster": "data/coof/posters/3c409462-a4af-8067-9017-e166f01cb8d9.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "爱情抓马 The Drama",
+      "watchedAt": "2026-08-22",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "同性"
+      ],
+      "id": "3c409462-a4af-80cb-93fa-d636f0436451",
+      "mediaType": "影",
+      "note": null,
+      "order": 126,
+      "poster": "data/coof/posters/3c409462-a4af-80cb-93fa-d636f0436451.jpg",
+      "rating": null,
+      "runtimeMin": 97,
+      "status": "watched",
+      "title": "爱的证明 Des preuves d'amour",
+      "watchedAt": "2026-08-22",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3c409462-a4af-8099-84f0-e738ecfa14c0",
+      "mediaType": "影",
+      "note": null,
+      "order": 125,
+      "poster": "data/coof/posters/3c409462-a4af-8099-84f0-e738ecfa14c0.jpg",
+      "rating": null,
+      "runtimeMin": 52,
+      "status": "watched",
+      "title": "Models: The Film",
+      "watchedAt": "2026-08-22",
+      "year": 1991
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "加拿大",
+        "冰岛",
+        "新西兰",
+        "摩洛哥",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "历史",
+        "奇幻",
+        "冒险"
+      ],
+      "id": "3c409462-a4af-80c5-a872-c50a17069ba2",
+      "mediaType": "影",
+      "note": null,
+      "order": 124,
+      "poster": "data/coof/posters/3c409462-a4af-80c5-a872-c50a17069ba2.jpg",
+      "rating": null,
+      "runtimeMin": 173,
+      "status": "watched",
+      "title": "奥德赛 The Odyssey",
+      "watchedAt": "2026-08-21",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "中国大陆"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "战争"
+      ],
+      "id": "3c409462-a4af-80f6-b622-decd77121398",
+      "mediaType": "影",
+      "note": "Q dongGUAN",
+      "order": 123,
+      "poster": "data/coof/posters/3c409462-a4af-80f6-b622-decd77121398.jpg",
+      "rating": null,
+      "runtimeMin": 140,
+      "status": "watched",
+      "title": "欢迎来龙餐馆",
+      "watchedAt": "2026-08-15",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "法国",
+        "拉脱维亚"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记",
+        "爱情"
+      ],
+      "id": "3bd09462-a4af-80b9-b83f-f5ff77c16ef0",
+      "mediaType": "影",
+      "note": "Ganna",
+      "order": 122,
+      "poster": "data/coof/posters/3bd09462-a4af-80b9-b83f-f5ff77c16ef0.jpg",
+      "rating": null,
+      "runtimeMin": 128,
+      "status": "watched",
+      "title": "水之年代 The Chronology of Water",
+      "watchedAt": "2026-08-15",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3b709462-a4af-807a-8c6e-d70071ea711f",
+      "mediaType": "影",
+      "note": null,
+      "order": 121,
+      "poster": "data/coof/posters/3b709462-a4af-807a-8c6e-d70071ea711f.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "Dior et moi",
+      "watchedAt": "2026-08-09",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3b709462-a4af-80fb-b72f-d5a593801bb7",
+      "mediaType": "影",
+      "note": null,
+      "order": 120,
+      "poster": "data/coof/posters/3b709462-a4af-80fb-b72f-d5a593801bb7.jpg",
+      "rating": null,
+      "runtimeMin": 37,
+      "status": "watched",
+      "title": "legendary designer hedi slimane",
+      "watchedAt": "2026-08-09",
+      "year": null
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3b609462-a4af-8022-a664-c600a268211a",
+      "mediaType": "影",
+      "note": null,
+      "order": 119,
+      "poster": "data/coof/posters/3b609462-a4af-8022-a664-c600a268211a.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "余波",
+      "watchedAt": "2026-08-08",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "瑞士",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3b609462-a4af-8081-ab26-e89ee5fd30a2",
+      "mediaType": "影",
+      "note": "Ganna",
+      "order": 118,
+      "poster": "data/coof/posters/3b609462-a4af-8081-ab26-e89ee5fd30a2.jpg",
+      "rating": null,
+      "runtimeMin": 123,
+      "status": "watched",
+      "title": "锡尔斯玛利亚 Clouds of Sils Maria",
+      "watchedAt": "2026-08-08",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作",
+        "科幻"
+      ],
+      "id": "3b609462-a4af-800f-92a4-ccbf22c0badb",
+      "mediaType": "影",
+      "note": null,
+      "order": 117,
+      "poster": "data/coof/posters/3b609462-a4af-800f-92a4-ccbf22c0badb.jpg",
+      "rating": null,
+      "runtimeMin": 109,
+      "status": "watched",
+      "title": "世界尽头 The World's End",
+      "watchedAt": "2026-08-08",
+      "year": 2013
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "3b609462-a4af-805b-86f7-f4658c21b4ce",
+      "mediaType": "影",
+      "note": "HBO",
+      "order": 116,
+      "poster": "data/coof/posters/3b609462-a4af-805b-86f7-f4658c21b4ce.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "凯多湖的消失 Caddo Lake",
+      "watchedAt": "2026-08-08",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "3b009462-a4af-80d4-90f4-d2cb7b4c5ff5",
+      "mediaType": null,
+      "note": "欧容",
+      "order": 115,
+      "poster": "data/coof/posters/3b009462-a4af-80d4-90f4-d2cb7b4c5ff5.jpg",
+      "rating": null,
+      "runtimeMin": 122,
+      "status": "watched",
+      "title": "局外人 L'Étranger",
+      "watchedAt": "2026-08-02",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [],
+      "id": "3a909462-a4af-8040-bd46-df543f5cc084",
+      "mediaType": "影",
+      "note": null,
+      "order": 114,
+      "poster": "data/coof/posters/3a909462-a4af-8040-bd46-df543f5cc084.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "金谍行动 In the Grey",
+      "watchedAt": "2026-07-26",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "中国香港",
+        "中国大陆"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "运动"
+      ],
+      "id": "39c09462-a4af-80f9-984e-e150eb705fb3",
+      "mediaType": "影",
+      "note": null,
+      "order": 113,
+      "poster": "data/coof/posters/39c09462-a4af-80f9-984e-e150eb705fb3.jpg",
+      "rating": null,
+      "runtimeMin": 106,
+      "status": "watched",
+      "title": "功夫女足",
+      "watchedAt": "2026-07-13",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "智利",
+        "德国",
+        "西班牙",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "同性"
+      ],
+      "id": "39409462-a4af-80ea-a910-d8130116a8bf",
+      "mediaType": "影",
+      "note": "CANAL+",
+      "order": 112,
+      "poster": "data/coof/posters/39409462-a4af-80ea-a910-d8130116a8bf.jpg",
+      "rating": null,
+      "runtimeMin": 109,
+      "status": "watched",
+      "title": "弗拉明戈的神秘眼神 La misteriosa mirada del flamenco",
+      "watchedAt": "2026-07-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "悬疑",
+        "歌舞"
+      ],
+      "id": "39409462-a4af-8050-b050-ce79bb8a627f",
+      "mediaType": "影",
+      "note": "CANAL+",
+      "order": 111,
+      "poster": "data/coof/posters/39409462-a4af-8050-b050-ce79bb8a627f.jpg",
+      "rating": null,
+      "runtimeMin": 111,
+      "status": "watched",
+      "title": "八美图 8 femmes",
+      "watchedAt": "2026-07-05",
+      "year": 2002
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "韩国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "38e09462-a4af-8072-876c-c4224c3785d5",
+      "mediaType": "影",
+      "note": "Miy_a ji na",
+      "order": 110,
+      "poster": "data/coof/posters/38e09462-a4af-8072-876c-c4224c3785d5.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "独自在夜晚的海边 밤의 해변에서 혼자",
+      "watchedAt": "2026-06-28",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "动画",
+        "奇幻",
+        "冒险"
+      ],
+      "id": "38e09462-a4af-8071-8043-c7736f9f370c",
+      "mediaType": "影",
+      "note": "miy_a jina",
+      "order": 109,
+      "poster": "data/coof/posters/38e09462-a4af-8071-8043-c7736f9f370c.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "Toy Story 5",
+      "watchedAt": "2026-06-27",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "38409462-a4af-809d-8031-d384b3e5a3c1",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 108,
+      "poster": "data/coof/posters/38409462-a4af-809d-8031-d384b3e5a3c1.jpg",
+      "rating": null,
+      "runtimeMin": 111,
+      "status": "watched",
+      "title": "幸运有八只触手 Remarkably Bright Creatures",
+      "watchedAt": "2026-06-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "科幻",
+        "惊悚"
+      ],
+      "id": "38409462-a4af-80b1-bd0c-e3a6b345df9c",
+      "mediaType": "影",
+      "note": null,
+      "order": 107,
+      "poster": "data/coof/posters/38409462-a4af-80b1-bd0c-e3a6b345df9c.jpg",
+      "rating": null,
+      "runtimeMin": 156,
+      "status": "watched",
+      "title": "挽救计划 Project Hail Mary",
+      "watchedAt": "2026-06-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "法国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "历史",
+        "战争"
+      ],
+      "id": "38409462-a4af-8012-a49f-d368823c3680",
+      "mediaType": "影",
+      "note": null,
+      "order": 106,
+      "poster": "data/coof/posters/38409462-a4af-8012-a49f-d368823c3680.jpg",
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "诺曼底72小时 Pressure",
+      "watchedAt": "2026-06-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "科幻",
+        "悬疑"
+      ],
+      "id": "38409462-a4af-80ff-8a3a-d26fcc185f9b",
+      "mediaType": "影",
+      "note": null,
+      "order": 105,
+      "poster": "data/coof/posters/38409462-a4af-80ff-8a3a-d26fcc185f9b.jpg",
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "极限审判 Mercy",
+      "watchedAt": "2026-06-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "37f09462-a4af-803b-bd50-d25ffb308915",
+      "mediaType": "影",
+      "note": "金球奖提名 A24",
+      "order": 104,
+      "poster": "data/coof/posters/37f09462-a4af-803b-bd50-d25ffb308915.jpg",
+      "rating": null,
+      "runtimeMin": 104,
+      "status": "watched",
+      "title": "Dream Scenario",
+      "watchedAt": "2026-06-14",
+      "year": 2023
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "菲律宾"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "37809462-a4af-80d0-b7fd-d45184793bd5",
+      "mediaType": "影",
+      "note": null,
+      "order": 103,
+      "poster": "data/coof/posters/37809462-a4af-80d0-b7fd-d45184793bd5.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "Pamasahe",
+      "watchedAt": "2026-06-07",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "37809462-a4af-8093-a0cf-f794870f2e6d",
+      "mediaType": "影",
+      "note": "ganna",
+      "order": 102,
+      "poster": "data/coof/posters/37809462-a4af-8093-a0cf-f794870f2e6d.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "137号案件 Dossier 137",
+      "watchedAt": "2026-06-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "37809462-a4af-80ae-a4f5-c4fdee5b1f55",
+      "mediaType": "影",
+      "note": null,
+      "order": 101,
+      "poster": "data/coof/posters/37809462-a4af-80ae-a4f5-c4fdee5b1f55.jpg",
+      "rating": null,
+      "runtimeMin": 70,
+      "status": "watched",
+      "title": "利摩日阳台 Un balcon à Limoges",
+      "watchedAt": "2026-06-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "歌舞剧"
+      ],
+      "id": "37809462-a4af-806a-9073-eb290e36c6f1",
+      "mediaType": "影",
+      "note": null,
+      "order": 100,
+      "poster": "data/coof/posters/37809462-a4af-806a-9073-eb290e36c6f1.jpg",
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "Molière, le spectacle musical莫里哀",
+      "watchedAt": "2026-06-07",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "巴西"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "36709462-a4af-8031-b244-f2b046d01b01",
+      "mediaType": "影",
+      "note": null,
+      "order": 99,
+      "poster": "data/coof/posters/36709462-a4af-8031-b244-f2b046d01b01.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "群山水手 Marinheiro das Montanhas",
+      "watchedAt": "2026-05-21",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "中国台湾"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "犯罪"
+      ],
+      "id": "36709462-a4af-802f-9854-fc40b82dad48",
+      "mediaType": "影",
+      "note": null,
+      "order": 98,
+      "poster": "data/coof/posters/36709462-a4af-802f-9854-fc40b82dad48.jpg",
+      "rating": null,
+      "runtimeMin": 134,
+      "status": "watched",
+      "title": "周处除三害",
+      "watchedAt": "2026-05-21",
+      "year": 2023
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "36309462-a4af-808d-8696-e4dd4ff07bfc",
+      "mediaType": "影",
+      "note": null,
+      "order": 97,
+      "poster": "data/coof/posters/36309462-a4af-808d-8696-e4dd4ff07bfc.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "蛇草莓 蛇イチゴ",
+      "watchedAt": "2026-05-17",
+      "year": 2003
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "挪威"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "36309462-a4af-80f4-821d-cb7f1bcee229",
+      "mediaType": "影",
+      "note": "圣丹斯电影节",
+      "order": 96,
+      "poster": "data/coof/posters/36309462-a4af-80f4-821d-cb7f1bcee229.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "Blind",
+      "watchedAt": "2026-05-17",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "荷兰",
+        "美国",
+        "捷克"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "科幻",
+        "惊悚"
+      ],
+      "id": "36309462-a4af-8013-bb46-d42eb72f5ddc",
+      "mediaType": "影",
+      "note": null,
+      "order": 95,
+      "poster": "data/coof/posters/36309462-a4af-8013-bb46-d42eb72f5ddc.jpg",
+      "rating": null,
+      "runtimeMin": 85,
+      "status": "watched",
+      "title": "Frankenstein’s Army",
+      "watchedAt": "2026-05-17",
+      "year": 2013
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "捷克",
+        "波兰",
+        "德国",
+        "法国",
+        "土耳其"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记",
+        "历史"
+      ],
+      "id": "36309462-a4af-8004-b565-d35abfe02e08",
+      "mediaType": "影",
+      "note": null,
+      "order": 95,
+      "poster": "data/coof/posters/36309462-a4af-8004-b565-d35abfe02e08.jpg",
+      "rating": null,
+      "runtimeMin": 127,
+      "status": "watched",
+      "title": "Franz",
+      "watchedAt": "2026-05-17",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "36309462-a4af-8055-b391-e029d4a5e0c0",
+      "mediaType": "影",
+      "note": "117",
+      "order": 94,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "People We Meet on Vacation",
+      "watchedAt": "2026-05-17",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "战争"
+      ],
+      "id": "36209462-a4af-8072-972e-ecc2cfeb2ed2",
+      "mediaType": "影",
+      "note": null,
+      "order": 93,
+      "poster": "data/coof/posters/36209462-a4af-8072-972e-ecc2cfeb2ed2.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "马克思和莱昂的疯狂故事 La folle histoire de Max et Léon",
+      "watchedAt": "2026-05-16",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "韩国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "35709462-a4af-80c6-93f0-c8c5e23d004f",
+      "mediaType": "影",
+      "note": "多伦多电影节 百想",
+      "order": 92,
+      "poster": "data/coof/posters/35709462-a4af-80c6-93f0-c8c5e23d004f.jpg",
+      "rating": null,
+      "runtimeMin": 119,
+      "status": "watched",
+      "title": "世界的主人 세계의 주인",
+      "watchedAt": "2026-05-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "爱情",
+        "奇幻",
+        "剧情"
+      ],
+      "id": "35709462-a4af-804a-8ede-ff6326ca8ee3",
+      "mediaType": "影",
+      "note": "华沙电影节",
+      "order": 91,
+      "poster": "data/coof/posters/35709462-a4af-804a-8ede-ff6326ca8ee3.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "理想之魂 L’Ame Idéale",
+      "watchedAt": "2026-05-05",
+      "year": 20025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "惊悚",
+        "冒险"
+      ],
+      "id": "35709462-a4af-80c3-b59e-f0ce7e3a3c10",
+      "mediaType": "影",
+      "note": null,
+      "order": 90,
+      "poster": "data/coof/posters/35709462-a4af-80c3-b59e-f0ce7e3a3c10.jpg",
+      "rating": null,
+      "runtimeMin": 170,
+      "status": "watched",
+      "title": "碟中谍8：最终清算 Mission: Impossible - The Final Reckoning",
+      "watchedAt": "2026-05-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "巴西"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "35709462-a4af-80b6-9c2f-f6d408d10b55",
+      "mediaType": "影",
+      "note": "genna",
+      "order": 89,
+      "poster": "data/coof/posters/35709462-a4af-80b6-9c2f-f6d408d10b55.jpg",
+      "rating": null,
+      "runtimeMin": 140,
+      "status": "watched",
+      "title": "看不见的女人 A vida invisível de Eurídice Gusmão",
+      "watchedAt": "2026-05-05",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "惊悚"
+      ],
+      "id": "35709462-a4af-80fb-9845-d13356432911",
+      "mediaType": "影",
+      "note": null,
+      "order": 88,
+      "poster": "data/coof/posters/35709462-a4af-80fb-9845-d13356432911.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "Plainclothes",
+      "watchedAt": "2026-05-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "冒险",
+        "科幻"
+      ],
+      "id": "35709462-a4af-8028-8bca-d79b82e7b500",
+      "mediaType": "影",
+      "note": null,
+      "order": 87,
+      "poster": "data/coof/posters/35709462-a4af-8028-8bca-d79b82e7b500.jpg",
+      "rating": null,
+      "runtimeMin": 143,
+      "status": "watched",
+      "title": "移动迷宫3：死亡解药 Maze Runner: The Death Cure",
+      "watchedAt": "2026-05-05",
+      "year": 2018
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "科幻",
+        "冒险"
+      ],
+      "id": "35609462-a4af-806f-a017-d9f9d83308c6",
+      "mediaType": "影",
+      "note": null,
+      "order": 86,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 131,
+      "status": "watched",
+      "title": "移动迷宫2 Maze Runner: The Scorch Trials",
+      "watchedAt": "2026-05-04",
+      "year": 2015
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "科幻",
+        "冒险"
+      ],
+      "id": "35609462-a4af-80ff-9187-e63b4e94e0fa",
+      "mediaType": "影",
+      "note": null,
+      "order": 85,
+      "poster": "data/coof/posters/35609462-a4af-80ff-9187-e63b4e94e0fa.jpg",
+      "rating": null,
+      "runtimeMin": 113,
+      "status": "watched",
+      "title": "The Maze Runner",
+      "watchedAt": "2026-05-04",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "悬疑",
+        "犯罪",
+        "喜剧"
+      ],
+      "id": "35509462-a4af-8019-b433-d574e5377621",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 84,
+      "poster": "data/coof/posters/35509462-a4af-8019-b433-d574e5377621.jpg",
+      "rating": null,
+      "runtimeMin": 144,
+      "status": "watched",
+      "title": "Wake Up Dead Man: A Knives Out Mystery‎",
+      "watchedAt": "2026-05-03",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "35509462-a4af-800d-aa5e-de65479776fe",
+      "mediaType": "影",
+      "note": null,
+      "order": 83,
+      "poster": "data/coof/posters/35509462-a4af-800d-aa5e-de65479776fe.jpg",
+      "rating": null,
+      "runtimeMin": 104,
+      "status": "watched",
+      "title": "Code 3",
+      "watchedAt": "2026-05-03",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本",
+        "英国",
+        "波兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑"
+      ],
+      "id": "35509462-a4af-8073-8a77-cbb34a3f03bd",
+      "mediaType": "影",
+      "note": "genna",
+      "order": 82,
+      "poster": "data/coof/posters/35509462-a4af-8073-8a77-cbb34a3f03bd.jpg",
+      "rating": null,
+      "runtimeMin": 123,
+      "status": "watched",
+      "title": "遠い山なみの光",
+      "watchedAt": "2026-05-03",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "犯罪"
+      ],
+      "id": "35409462-a4af-8061-9578-fad0928f189a",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 81,
+      "poster": "data/coof/posters/35409462-a4af-8061-9578-fad0928f189a.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "The Mastermind",
+      "watchedAt": "2026-05-02",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "法国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪",
+        "历史"
+      ],
+      "id": "35409462-a4af-802c-b4e4-cecba6aa8c67",
+      "mediaType": "影",
+      "note": "Netflix",
+      "order": 80,
+      "poster": "data/coof/posters/35409462-a4af-802c-b4e4-cecba6aa8c67.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "Peaky Blinders: The Immortal Man",
+      "watchedAt": "2026-05-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "意大利",
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "35309462-a4af-80af-b65d-e8f6f8901be0",
+      "mediaType": "影",
+      "note": null,
+      "order": 79,
+      "poster": "data/coof/posters/35309462-a4af-80af-b65d-e8f6f8901be0.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "三声再见 Tre Ciotole",
+      "watchedAt": "2026-05-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "同性"
+      ],
+      "id": "35309462-a4af-80e6-909f-ecae7236cccf",
+      "mediaType": "影",
+      "note": null,
+      "order": 78,
+      "poster": "data/coof/posters/35309462-a4af-80e6-909f-ecae7236cccf.jpg",
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "Montréal, ma belle",
+      "watchedAt": "2026-05-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大",
+        "澳大利亚",
+        "美国",
+        "冰岛"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "动作"
+      ],
+      "id": "35209462-a4af-8091-8f80-dd887e3c1b95",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 77,
+      "poster": "data/coof/posters/35209462-a4af-8091-8f80-dd887e3c1b95.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "巅峰猎杀 Apex",
+      "watchedAt": "2026-04-30",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "巴西",
+        "法国",
+        "荷兰",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "剧情",
+        "悬疑",
+        "犯罪"
+      ],
+      "id": "35209462-a4af-805a-b64b-f45e8ddec349",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 76,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 161,
+      "status": "watched",
+      "title": "密探 O Agente Secreto",
+      "watchedAt": "2026-04-30",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "奇幻",
+        "冒险"
+      ],
+      "id": "34709462-a4af-80cc-aeeb-f0f182b10d66",
+      "mediaType": null,
+      "note": "HBO",
+      "order": 75,
+      "poster": "data/coof/posters/34709462-a4af-80cc-aeeb-f0f182b10d66.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "A Knight of the Seven Kingdoms Season 1",
+      "watchedAt": "2026-04-19",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片",
+        "舞蹈"
+      ],
+      "id": "34709462-a4af-803f-9ea9-c74b3dbf0a3c",
+      "mediaType": "影",
+      "note": null,
+      "order": 74,
+      "poster": "data/coof/posters/34709462-a4af-803f-9ea9-c74b3dbf0a3c.jpg",
+      "rating": null,
+      "runtimeMin": 82,
+      "status": "watched",
+      "title": "Force of Nature Natalia",
+      "watchedAt": "2026-04-19",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "南非",
+        "印度"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "奇幻",
+        "冒险"
+      ],
+      "id": "34609462-a4af-80a0-aabf-f4284aad8925",
+      "mediaType": "影",
+      "note": null,
+      "order": 72,
+      "poster": "data/coof/posters/34609462-a4af-80a0-aabf-f4284aad8925.jpg",
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "The Fall",
+      "watchedAt": "2026-04-19",
+      "year": 2006
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "短片"
+      ],
+      "id": "34609462-a4af-8003-aec0-ca33f2a29aa3",
+      "mediaType": "影",
+      "note": null,
+      "order": 71,
+      "poster": "data/coof/posters/34609462-a4af-8003-aec0-ca33f2a29aa3.jpg",
+      "rating": null,
+      "runtimeMin": 33,
+      "status": "watched",
+      "title": "Tomber Falling",
+      "watchedAt": "2026-04-19",
+      "year": 2018
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "34609462-a4af-8047-8bee-fab1fbf06f81",
+      "mediaType": "影",
+      "note": null,
+      "order": 70,
+      "poster": "data/coof/posters/34609462-a4af-8047-8bee-fab1fbf06f81.jpg",
+      "rating": null,
+      "runtimeMin": 99,
+      "status": "watched",
+      "title": "Reservoir Dogs",
+      "watchedAt": "2026-04-18",
+      "year": 1992
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪",
+        "惊悚"
+      ],
+      "id": "34609462-a4af-80ff-8cbb-e167fb7478b1",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 69,
+      "poster": "data/coof/posters/34609462-a4af-80ff-8cbb-e167fb7478b1.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "冰血暴 Fargo",
+      "watchedAt": "2026-04-18",
+      "year": 1996
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "乍得",
+        "法国",
+        "比利时",
+        "奥地利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "34609462-a4af-8047-88e7-ff6ad302ec4b",
+      "mediaType": "影",
+      "note": null,
+      "order": 68,
+      "poster": "data/coof/posters/34609462-a4af-8047-88e7-ff6ad302ec4b.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "旱季 Daratt",
+      "watchedAt": "2026-04-18",
+      "year": 2006
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "印度",
+        "伊朗"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "家庭"
+      ],
+      "id": "34609462-a4af-80e6-a1b7-d07fa4c3f247",
+      "mediaType": "影",
+      "note": null,
+      "order": 67,
+      "poster": "data/coof/posters/34609462-a4af-80e6-a1b7-d07fa4c3f247.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "Beyond the Clouds",
+      "watchedAt": "2026-04-18",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚",
+        "科幻",
+        "恐怖"
+      ],
+      "id": "34609462-a4af-8010-8a03-cff022ba7771",
+      "mediaType": "影",
+      "note": null,
+      "order": 66,
+      "poster": "data/coof/posters/34609462-a4af-8010-8a03-cff022ba7771.jpg",
+      "rating": null,
+      "runtimeMin": 93,
+      "status": "watched",
+      "title": "Undertone",
+      "watchedAt": "2026-04-18",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "战争"
+      ],
+      "id": "34609462-a4af-8058-aa7e-d15965d1ad2d",
+      "mediaType": "影",
+      "note": null,
+      "order": 65,
+      "poster": "data/coof/posters/34609462-a4af-8058-aa7e-d15965d1ad2d.jpg",
+      "rating": null,
+      "runtimeMin": 121,
+      "status": "watched",
+      "title": "Lone Survivor",
+      "watchedAt": "2026-04-18",
+      "year": 2013
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "葡萄牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "34009462-a4af-8081-94dc-c3072725ba94",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 64,
+      "poster": "data/coof/posters/34009462-a4af-8081-94dc-c3072725ba94.jpg",
+      "rating": null,
+      "runtimeMin": 133,
+      "status": "watched",
+      "title": "测不准原理 O Princípio da Incerteza",
+      "watchedAt": "2026-04-12",
+      "year": 2002
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "传记",
+        "剧情"
+      ],
+      "id": "34009462-a4af-806d-b9c5-c962952d4498",
+      "mediaType": "影",
+      "note": "凯撒电影节",
+      "order": 63,
+      "poster": "data/coof/posters/34009462-a4af-806d-b9c5-c962952d4498.jpg",
+      "rating": null,
+      "runtimeMin": 126,
+      "status": "watched",
+      "title": "花落花开 Séraphine",
+      "watchedAt": "2026-04-12",
+      "year": 2008
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "34009462-a4af-8074-b25d-cb265cd99abf",
+      "mediaType": null,
+      "note": "HBO",
+      "order": 62,
+      "poster": "data/coof/posters/34009462-a4af-8074-b25d-cb265cd99abf.jpg",
+      "rating": null,
+      "runtimeMin": 7,
+      "status": "watched",
+      "title": "DTF St. Louis",
+      "watchedAt": "2026-04-12",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪",
+        "传记"
+      ],
+      "id": "33a09462-a4af-8063-947f-c5a780026681",
+      "mediaType": "影",
+      "note": "奥斯卡",
+      "order": 61,
+      "poster": "data/coof/posters/33a09462-a4af-8063-947f-c5a780026681.jpg",
+      "rating": null,
+      "runtimeMin": 122,
+      "status": "watched",
+      "title": "Black Mass",
+      "watchedAt": "2026-04-06",
+      "year": 2015
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "犯罪"
+      ],
+      "id": "33a09462-a4af-807a-b004-c72235781435",
+      "mediaType": "影",
+      "note": null,
+      "order": 60,
+      "poster": "data/coof/posters/33a09462-a4af-807a-b004-c72235781435.jpg",
+      "rating": null,
+      "runtimeMin": 141,
+      "status": "watched",
+      "title": "Crime 101",
+      "watchedAt": "2026-04-06",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "爱尔兰"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚"
+      ],
+      "id": "33909462-a4af-802b-92ee-c4555b1fb37d",
+      "mediaType": "影",
+      "note": null,
+      "order": 59,
+      "poster": "data/coof/posters/33909462-a4af-802b-92ee-c4555b1fb37d.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "挫败的人生劫案 Aontas",
+      "watchedAt": "2026-04-05",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "33909462-a4af-8027-8378-c429154308c6",
+      "mediaType": "影",
+      "note": null,
+      "order": 58,
+      "poster": "data/coof/posters/33909462-a4af-8027-8378-c429154308c6.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "轮回 Samsara",
+      "watchedAt": "2026-04-05",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "悬疑",
+        "犯罪"
+      ],
+      "id": "33909462-a4af-80ed-9289-c62da7ab8b22",
+      "mediaType": "影",
+      "note": "Netflix",
+      "order": 57,
+      "poster": "data/coof/posters/33909462-a4af-80ed-9289-c62da7ab8b22.jpg",
+      "rating": null,
+      "runtimeMin": 112,
+      "status": "watched",
+      "title": "全信没收 The Rip",
+      "watchedAt": "2026-04-05",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "33909462-a4af-808f-9d71-faa32d00dfea",
+      "mediaType": "影",
+      "note": null,
+      "order": 56,
+      "poster": "data/coof/posters/33909462-a4af-808f-9d71-faa32d00dfea.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "Wardriver",
+      "watchedAt": "2026-04-05",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "33909462-a4af-8005-95aa-efb9171b9175",
+      "mediaType": "影",
+      "note": null,
+      "order": 55,
+      "poster": "data/coof/posters/33909462-a4af-8005-95aa-efb9171b9175.jpg",
+      "rating": null,
+      "runtimeMin": 137,
+      "status": "watched",
+      "title": "呼啸山庄 Wuthering Heights",
+      "watchedAt": "2026-04-05",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "葡萄牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "33909462-a4af-8014-8613-ef78c89c0d08",
+      "mediaType": "影",
+      "note": "罗马电影节",
+      "order": 54,
+      "poster": "data/coof/posters/33909462-a4af-8014-8613-ef78c89c0d08.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "Centro histórico",
+      "watchedAt": "2026-04-05",
+      "year": 2012
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "伊朗"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "33809462-a4af-80ab-bc12-c47eb48a7819",
+      "mediaType": "影",
+      "note": "威尼斯电影节",
+      "order": 53,
+      "poster": "data/coof/posters/33809462-a4af-80ab-bc12-c47eb48a7819.jpg",
+      "rating": null,
+      "runtimeMin": 126,
+      "status": "watched",
+      "title": "高墙之外 شب، داخلی، دیوار",
+      "watchedAt": "2026-04-04",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "伊拉克",
+        "美国",
+        "卡塔尔"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记"
+      ],
+      "id": "33809462-a4af-80d5-8b5c-ce7cefea539e",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 52,
+      "poster": "data/coof/posters/33809462-a4af-80d5-8b5c-ce7cefea539e.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "总统的蛋糕 مملكة القصب",
+      "watchedAt": "2026-04-04",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "科幻",
+        "短片",
+        "奇幻"
+      ],
+      "id": "33809462-a4af-80fc-b182-e43c1ee4373a",
+      "mediaType": "影",
+      "note": "奥斯卡金像奖",
+      "order": 51,
+      "poster": "data/coof/posters/33809462-a4af-80fc-b182-e43c1ee4373a.jpg",
+      "rating": null,
+      "runtimeMin": 36,
+      "status": "watched",
+      "title": "Deux personnes échangeant de la salive",
+      "watchedAt": "2026-04-04",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "同性",
+        "音乐"
+      ],
+      "id": "33809462-a4af-8037-b39a-f9df444e593a",
+      "mediaType": "影",
+      "note": null,
+      "order": 50,
+      "poster": "data/coof/posters/33809462-a4af-8037-b39a-f9df444e593a.jpg",
+      "rating": null,
+      "runtimeMin": 118,
+      "status": "watched",
+      "title": "Velvet Goldmine",
+      "watchedAt": "2026-04-04",
+      "year": 1998
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "匈牙利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "33809462-a4af-80c7-bfe3-dc2538ab2a47",
+      "mediaType": "影",
+      "note": null,
+      "order": 49,
+      "poster": "data/coof/posters/33809462-a4af-80c7-bfe3-dc2538ab2a47.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "VAN valami furcsa és megmagyarázhtatlan",
+      "watchedAt": "2026-04-04",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "33809462-a4af-806e-a80c-c30c3fc38a26",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 48,
+      "poster": "data/coof/posters/33809462-a4af-806e-a80c-c30c3fc38a26.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "Laurent dans le vent",
+      "watchedAt": "2026-04-04",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "惊悚",
+        "恐怖"
+      ],
+      "id": "31c09462-a4af-8070-bfe7-eb44a7d617c6",
+      "mediaType": "影",
+      "note": "奥斯卡提名",
+      "order": 47,
+      "poster": "data/coof/posters/31c09462-a4af-8070-bfe7-eb44a7d617c6.jpg",
+      "rating": null,
+      "runtimeMin": 137,
+      "status": "watched",
+      "title": "罪人 Sinners",
+      "watchedAt": "2026-03-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "瑞典"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记",
+        "历史",
+        "战争"
+      ],
+      "id": "31c09462-a4af-8094-a7fe-f19be3fe97e9",
+      "mediaType": "影",
+      "note": "Netflix",
+      "order": 46,
+      "poster": "data/coof/posters/31c09462-a4af-8094-a7fe-f19be3fe97e9.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "瑞典救援暗线 Den svenska länken",
+      "watchedAt": "2026-03-07",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "中国台湾",
+        "中国大陆"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "31b09462-a4af-8045-937b-e9eac5e1a62c",
+      "mediaType": "影",
+      "note": "威尼斯电影节 舒淇",
+      "order": 45,
+      "poster": "data/coof/posters/31b09462-a4af-8045-937b-e9eac5e1a62c.jpg",
+      "rating": null,
+      "runtimeMin": 124,
+      "status": "watched",
+      "title": "女孩",
+      "watchedAt": "2026-03-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "30f09462-a4af-801b-8c06-cad8c37a76e8",
+      "mediaType": "影",
+      "note": null,
+      "order": 44,
+      "poster": "data/coof/posters/30f09462-a4af-801b-8c06-cad8c37a76e8.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "Collateral",
+      "watchedAt": "2026-02-22",
+      "year": 2004
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国",
+        "奥地利",
+        "荷兰",
+        "马耳他"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "犯罪",
+        "惊悚"
+      ],
+      "id": "30f09462-a4af-80be-9f22-f67fb4b84caa",
+      "mediaType": "影",
+      "note": null,
+      "order": 43,
+      "poster": "data/coof/posters/30f09462-a4af-80be-9f22-f67fb4b84caa.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "怒海仁心 Styx",
+      "watchedAt": "2026-02-22",
+      "year": 2018
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "音乐"
+      ],
+      "id": "30f09462-a4af-801e-90db-d4bf2eea1ec0",
+      "mediaType": "影",
+      "note": null,
+      "order": 42,
+      "poster": "data/coof/posters/30f09462-a4af-801e-90db-d4bf2eea1ec0.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "Taking Woodstock",
+      "watchedAt": "2026-02-22",
+      "year": 2009
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "恐怖"
+      ],
+      "id": "30e09462-a4af-80b2-9b08-ed1a589144df",
+      "mediaType": "影",
+      "note": null,
+      "order": 41,
+      "poster": "data/coof/posters/30e09462-a4af-80b2-9b08-ed1a589144df.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "The Fan",
+      "watchedAt": "2026-02-21",
+      "year": 1981
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国",
+        "奥地利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "30e09462-a4af-803e-aefc-f2e21102bd39",
+      "mediaType": "影",
+      "note": null,
+      "order": 40,
+      "poster": "data/coof/posters/30e09462-a4af-803e-aefc-f2e21102bd39.jpg",
+      "rating": null,
+      "runtimeMin": 162,
+      "status": "watched",
+      "title": "Toni Erdmann",
+      "watchedAt": "2026-02-21",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "30e09462-a4af-80f8-aa36-d95a36f2cb2f",
+      "mediaType": "影",
+      "note": null,
+      "order": 39,
+      "poster": "data/coof/posters/30e09462-a4af-80f8-aa36-d95a36f2cb2f.jpg",
+      "rating": null,
+      "runtimeMin": 92,
+      "status": "watched",
+      "title": "Maggie's Plan",
+      "watchedAt": "2026-02-21",
+      "year": 2015
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "冰岛",
+        "荷兰",
+        "克罗地亚",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30e09462-a4af-8081-8993-f5d78fc4888e",
+      "mediaType": "影",
+      "note": "欧洲电影节",
+      "order": 38,
+      "poster": "data/coof/posters/30e09462-a4af-8081-8993-f5d78fc4888e.jpg",
+      "rating": null,
+      "runtimeMin": 80,
+      "status": "watched",
+      "title": "折射 Ljósbrot",
+      "watchedAt": "2026-02-21",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "捷克斯洛伐克"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30c09462-a4af-8084-909a-efc1452bb854",
+      "mediaType": "影",
+      "note": "新思潮",
+      "order": 37,
+      "poster": "data/coof/posters/30c09462-a4af-8084-909a-efc1452bb854.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "网中的太阳 Slnko v sieti",
+      "watchedAt": "2026-02-19",
+      "year": 1963
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "短片"
+      ],
+      "id": "30c09462-a4af-80d1-a22c-ed3e82f4c9c7",
+      "mediaType": "影",
+      "note": null,
+      "order": 36,
+      "poster": "data/coof/posters/30c09462-a4af-80d1-a22c-ed3e82f4c9c7.jpg",
+      "rating": null,
+      "runtimeMin": 21,
+      "status": "watched",
+      "title": "Skin",
+      "watchedAt": "2026-02-19",
+      "year": 2018
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "30c09462-a4af-80d6-9844-e307fec8a9a6",
+      "mediaType": "影",
+      "note": null,
+      "order": 35,
+      "poster": "data/coof/posters/30c09462-a4af-80d6-9844-e307fec8a9a6.jpg",
+      "rating": null,
+      "runtimeMin": 88,
+      "status": "watched",
+      "title": "The Dutchman",
+      "watchedAt": "2026-02-19",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "泰国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "同性"
+      ],
+      "id": "30c09462-a4af-806f-b4ed-e0ee64df8771",
+      "mediaType": "影",
+      "note": "东京国际电影节",
+      "order": 34,
+      "poster": "data/coof/posters/30c09462-a4af-806f-b4ed-e0ee64df8771.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "红色生活 เรดไลฟ์",
+      "watchedAt": "2026-02-19",
+      "year": 2023
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "瑞典",
+        "比利时",
+        "丹麦",
+        "波黑"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30c09462-a4af-8051-9d6d-c4559069724f",
+      "mediaType": "影",
+      "note": "东京电影节",
+      "order": 33,
+      "poster": "data/coof/posters/30c09462-a4af-8051-9d6d-c4559069724f.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "Mother 特蕾莎修女",
+      "watchedAt": "2026-02-19",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "情色"
+      ],
+      "id": "30a09462-a4af-80fc-a3a3-c20c9940ed3c",
+      "mediaType": "影",
+      "note": null,
+      "order": 32,
+      "poster": "data/coof/posters/30a09462-a4af-80fc-a3a3-c20c9940ed3c.jpg",
+      "rating": null,
+      "runtimeMin": 92,
+      "status": "watched",
+      "title": "午夜狂欢 Les rencontres d'après minuit",
+      "watchedAt": "2026-02-17",
+      "year": 2013
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "30a09462-a4af-8034-b5cf-e360eeb319c0",
+      "mediaType": "影",
+      "note": null,
+      "order": 31,
+      "poster": "data/coof/posters/30a09462-a4af-8034-b5cf-e360eeb319c0.jpg",
+      "rating": null,
+      "runtimeMin": 97,
+      "status": "watched",
+      "title": "Fackham Hall",
+      "watchedAt": "2026-02-17",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30a09462-a4af-800d-b5d6-fcfa7f137a36",
+      "mediaType": "影",
+      "note": null,
+      "order": 30,
+      "poster": "data/coof/posters/30a09462-a4af-800d-b5d6-fcfa7f137a36.jpg",
+      "rating": null,
+      "runtimeMin": 104,
+      "status": "watched",
+      "title": "The Thing With Feathers",
+      "watchedAt": "2026-02-17",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "传记"
+      ],
+      "id": "30a09462-a4af-8039-8c8d-d88780d6edfa",
+      "mediaType": "影",
+      "note": null,
+      "order": 29,
+      "poster": "data/coof/posters/30a09462-a4af-8039-8c8d-d88780d6edfa.jpg",
+      "rating": null,
+      "runtimeMin": 81,
+      "status": "watched",
+      "title": "奥菲斯的遗嘱 Le testament d'Orphée ou ne me demandez pas pourquoi",
+      "watchedAt": "2026-02-17",
+      "year": 1960
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "芬兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "运动"
+      ],
+      "id": "30709462-a4af-8070-8092-d587fe6380ab",
+      "mediaType": "影",
+      "note": "A24",
+      "order": 28,
+      "poster": "data/coof/posters/30709462-a4af-8070-8092-d587fe6380ab.jpg",
+      "rating": null,
+      "runtimeMin": 149,
+      "status": "watched",
+      "title": "Marty Supreme",
+      "watchedAt": "2026-02-14",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "希腊"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "30709462-a4af-80d1-a138-dd231333edc8",
+      "mediaType": "影",
+      "note": null,
+      "order": 27,
+      "poster": "data/coof/posters/30709462-a4af-80d1-a138-dd231333edc8.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "Listen Up Philip",
+      "watchedAt": "2026-02-14",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "墨西哥",
+        "德国",
+        "英国",
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "历史"
+      ],
+      "id": "30709462-a4af-8081-8d29-d4f1b3ba5764",
+      "mediaType": "影",
+      "note": "Ganna+",
+      "order": 26,
+      "poster": "data/coof/posters/30709462-a4af-8081-8d29-d4f1b3ba5764.jpg",
+      "rating": null,
+      "runtimeMin": 135,
+      "status": "watched",
+      "title": "约瑟夫·门格勒的消失 Das Verschwinden des Josef Mengele",
+      "watchedAt": "2026-02-14",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "音乐"
+      ],
+      "id": "30609462-a4af-80bc-b8ce-f5d9015d65d6",
+      "mediaType": "影",
+      "note": "canal+",
+      "order": 25,
+      "poster": "data/coof/posters/30609462-a4af-80bc-b8ce-f5d9015d65d6.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "两架钢琴 Deux pianos",
+      "watchedAt": "2026-02-13",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30109462-a4af-80ef-b6cb-d9cbbaf06df4",
+      "mediaType": "影",
+      "note": "威尼斯电影节",
+      "order": 24,
+      "poster": "data/coof/posters/30109462-a4af-80ef-b6cb-d9cbbaf06df4.jpg",
+      "rating": null,
+      "runtimeMin": 133,
+      "status": "watched",
+      "title": "恩典 La grazia",
+      "watchedAt": "2026-02-08",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "歌舞"
+      ],
+      "id": "30109462-a4af-8061-957f-ee1c449590c9",
+      "mediaType": "影",
+      "note": null,
+      "order": 23,
+      "poster": "data/coof/posters/30109462-a4af-8061-957f-ee1c449590c9.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "柳媚花娇 Les Demoiselles de Rochefort",
+      "watchedAt": "2026-02-08",
+      "year": 1967
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "情色",
+        "同性"
+      ],
+      "id": "30109462-a4af-8048-aa86-fee8a6ae22a7",
+      "mediaType": "影",
+      "note": null,
+      "order": 22,
+      "poster": "data/coof/posters/30109462-a4af-8048-aa86-fee8a6ae22a7.jpg",
+      "rating": null,
+      "runtimeMin": 109,
+      "status": "watched",
+      "title": "罗马的房子 Habitación en Roma",
+      "watchedAt": "2026-02-08",
+      "year": 2010
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30109462-a4af-8030-9c0c-caca9bc0c165",
+      "mediaType": "影",
+      "note": "柏林电影节",
+      "order": 21,
+      "poster": "data/coof/posters/30109462-a4af-8030-9c0c-caca9bc0c165.jpg",
+      "rating": null,
+      "runtimeMin": 104,
+      "status": "watched",
+      "title": "莱布尼茨：一幅失落画作的编年史 Leibniz – Chronik eines verschollenen Bildes",
+      "watchedAt": "2026-02-08",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "意大利",
+        "西班牙",
+        "希腊",
+        "俄罗斯"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "30009462-a4af-80e8-a7ea-f8af629f1b85",
+      "mediaType": "影",
+      "note": null,
+      "order": 20,
+      "poster": "data/coof/posters/30009462-a4af-80e8-a7ea-f8af629f1b85.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "三重间谍 Triple agent",
+      "watchedAt": "2026-02-07",
+      "year": 2004
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "30009462-a4af-809e-91bf-dbd089a99fac",
+      "mediaType": "影",
+      "note": "国家地理",
+      "order": 19,
+      "poster": "data/coof/posters/30009462-a4af-809e-91bf-dbd089a99fac.jpg",
+      "rating": null,
+      "runtimeMin": 75,
+      "status": "watched",
+      "title": "The Devil's Climb",
+      "watchedAt": "2026-02-07",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "墨西哥"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "30009462-a4af-8099-acc3-fe962c1b47fe",
+      "mediaType": "影",
+      "note": null,
+      "order": 18,
+      "poster": "data/coof/posters/30009462-a4af-8099-acc3-fe962c1b47fe.jpg",
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "面朝大海Ventanas al mar",
+      "watchedAt": "2026-02-07",
+      "year": 2012
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "爱情",
+        "短片"
+      ],
+      "id": "30009462-a4af-8030-86c3-d466880c8e88",
+      "mediaType": "影",
+      "note": null,
+      "order": 17,
+      "poster": "data/coof/posters/30009462-a4af-8030-86c3-d466880c8e88.jpg",
+      "rating": null,
+      "runtimeMin": 12,
+      "status": "watched",
+      "title": "Beat",
+      "watchedAt": "2026-02-07",
+      "year": 2013
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "30009462-a4af-8051-b881-fc831b92fb40",
+      "mediaType": "影",
+      "note": null,
+      "order": 16,
+      "poster": "data/coof/posters/30009462-a4af-8051-b881-fc831b92fb40.jpg",
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "Single on the 25th",
+      "watchedAt": "2026-02-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "惊悚"
+      ],
+      "id": "30009462-a4af-8013-a9b4-dd7fa735f12b",
+      "mediaType": "影",
+      "note": null,
+      "order": 15,
+      "poster": "data/coof/posters/30009462-a4af-8013-a9b4-dd7fa735f12b.jpg",
+      "rating": null,
+      "runtimeMin": 89,
+      "status": "watched",
+      "title": "Black Diamond",
+      "watchedAt": "2026-02-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "30009462-a4af-802a-a9c2-d4cd10257915",
+      "mediaType": "影",
+      "note": null,
+      "order": 14,
+      "poster": "data/coof/posters/30009462-a4af-802a-a9c2-d4cd10257915.jpg",
+      "rating": null,
+      "runtimeMin": 104,
+      "status": "watched",
+      "title": "In Whose Name?",
+      "watchedAt": "2026-02-07",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "2ff09462-a4af-8079-bda5-eb5ff10e38e6",
+      "mediaType": "影",
+      "note": null,
+      "order": 13,
+      "poster": "data/coof/posters/2ff09462-a4af-8079-bda5-eb5ff10e38e6.jpg",
+      "rating": null,
+      "runtimeMin": 82,
+      "status": "watched",
+      "title": "SKIT",
+      "watchedAt": "2026-02-06",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "2ff09462-a4af-80a3-8af1-d5ac531a0f70",
+      "mediaType": "影",
+      "note": "哥谭独立电影奖提名",
+      "order": 12,
+      "poster": "data/coof/posters/2ff09462-a4af-80a3-8af1-d5ac531a0f70.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "彼岸 Preparation for the Next Life",
+      "watchedAt": "2026-02-06",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "2fc09462-a4af-8098-bbd0-f7f6d110f7da",
+      "mediaType": "影",
+      "note": "像高达一样寂寞",
+      "order": 11,
+      "poster": "data/coof/posters/2fc09462-a4af-8098-bbd0-f7f6d110f7da.jpg",
+      "rating": null,
+      "runtimeMin": 100,
+      "status": "watched",
+      "title": "戈达尔的影像 Godard seul le cinéma",
+      "watchedAt": "2026-02-03",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "传记"
+      ],
+      "id": "2fb09462-a4af-803e-8ebe-ec16742da137",
+      "mediaType": "影",
+      "note": "戛纳",
+      "order": 10,
+      "poster": "data/coof/posters/2fb09462-a4af-803e-8ebe-ec16742da137.jpg",
+      "rating": null,
+      "runtimeMin": 96,
+      "status": "watched",
+      "title": "Nino",
+      "watchedAt": "2026-02-02",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "音乐"
+      ],
+      "id": "2fa09462-a4af-807b-a9f2-f929b16f48fe",
+      "mediaType": "影",
+      "note": "第67届圣塞巴斯蒂安国际电影节获奖",
+      "order": 9,
+      "poster": "data/coof/posters/2fa09462-a4af-807b-a9f2-f929b16f48fe.jpg",
+      "rating": null,
+      "runtimeMin": 99,
+      "status": "watched",
+      "title": "试演 Das Vorspiel",
+      "watchedAt": "2026-02-01",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "2fa09462-a4af-8067-a633-ed999d2d3f9c",
+      "mediaType": "影",
+      "note": "威尼斯电影节获奖73奖",
+      "order": 8,
+      "poster": "data/coof/posters/2fa09462-a4af-8067-a633-ed999d2d3f9c.jpg",
+      "rating": null,
+      "runtimeMin": 122,
+      "status": "watched",
+      "title": "入学考试 Le concours",
+      "watchedAt": "2026-02-01",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "波兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "2fa09462-a4af-80f0-99fe-cb82a4c5f884",
+      "mediaType": "影",
+      "note": null,
+      "order": 8,
+      "poster": "data/coof/posters/2fa09462-a4af-80f0-99fe-cb82a4c5f884.jpg",
+      "rating": null,
+      "runtimeMin": 122,
+      "status": "watched",
+      "title": "暗杀教皇 Zamach na papieza",
+      "watchedAt": "2026-02-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国",
+        "尼日利亚"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片",
+        "音乐",
+        "传记"
+      ],
+      "id": "2fa09462-a4af-80b2-acb6-e7bcb3780a78",
+      "mediaType": "影",
+      "note": "hbo documentary",
+      "order": 7,
+      "poster": "data/coof/posters/2fa09462-a4af-80b2-acb6-e7bcb3780a78.jpg",
+      "rating": null,
+      "runtimeMin": 83,
+      "status": "watched",
+      "title": "Wizkid: Long Live Lagos",
+      "watchedAt": "2026-02-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "2f909462-a4af-8057-804f-f8fd1781dc8e",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 6,
+      "poster": "data/coof/posters/2f909462-a4af-8057-804f-f8fd1781dc8e.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "摩纳哥谋杀案：银行家死亡之谜 Murder in Monaco",
+      "watchedAt": "2026-02-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作",
+        "犯罪"
+      ],
+      "id": "2f909462-a4af-80b4-a737-d6ebb52fff46",
+      "mediaType": "影",
+      "note": null,
+      "order": 5,
+      "poster": "data/coof/posters/2f909462-a4af-80b4-a737-d6ebb52fff46.jpg",
+      "rating": null,
+      "runtimeMin": 106,
+      "status": "watched",
+      "title": "天堂唱片店 Paradise Records",
+      "watchedAt": "2026-01-31",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "多米尼加"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "动画",
+        "奇幻"
+      ],
+      "id": "2f909462-a4af-8037-b8e2-c8a4c64fbdbd",
+      "mediaType": "影",
+      "note": null,
+      "order": 4,
+      "poster": "data/coof/posters/2f909462-a4af-8037-b8e2-c8a4c64fbdbd.jpg",
+      "rating": null,
+      "runtimeMin": 81,
+      "status": "watched",
+      "title": "奥利维娅与云 Olivia & Las Nubes",
+      "watchedAt": "2026-01-31",
+      "year": 2024
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "2de09462-a4af-80da-a385-cb5903091dfb",
+      "mediaType": null,
+      "note": "kr 第一集",
+      "order": 3,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "弥留之国的爱丽丝 第三季 今際の国のアリス3",
+      "watchedAt": "2026-01-03",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "中国大陆"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "2de09462-a4af-8021-a3c9-f717afda1073",
+      "mediaType": "影",
+      "note": "Kr 前段",
+      "order": 2,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 125,
+      "status": "watched",
+      "title": "震耳欲聋",
+      "watchedAt": "2026-01-03",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动画"
+      ],
+      "id": "2da09462-a4af-80e7-87eb-cb0bc1894625",
+      "mediaType": "影",
+      "note": "kr",
+      "order": 1,
+      "poster": "data/coof/posters/2da09462-a4af-80e7-87eb-cb0bc1894625.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "电锯人剧场版：蕾塞篇Gekijouban Chainsaw Man",
+      "watchedAt": "2026-01-01",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [],
+      "director": [],
+      "genres": [],
+      "id": "3e009462-a4af-801a-be05-d78530d3f8f2",
+      "mediaType": null,
+      "note": null,
+      "order": null,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": null,
+      "status": "watched",
+      "title": "(无标题)",
+      "watchedAt": null,
+      "year": null
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="CEVTUO-Z">
+  <title>CEVTUO-Z</title>
+
+  <!--
+    Geometric reversed Z.
+
+    Coordinates are derived by mirroring a normal Z about x=256 and rounding to a
+    32px module grid, so every vertex is an integer and the corners stay machined:
+
+        normal Z            reversed Z (this file)
+        NW (160,160)   ->   NE (352,160)   top bar, outer right
+        NE (352,160)   ->   NW (160,160)
+        SW (160,352)   ->   SE (352,352)
+        SE (352,352)   ->   SW (160,352)
+
+    Drawn as a stroked path rather than a filled outline: stroke-linejoin="miter"
+    with a high miterlimit keeps the corners genuinely sharp, whereas a filled
+    path lets renderers round them at small sizes.
+
+    The path is centred on (256,256) with the 34px stroke width accounted for, so
+    the optical centre matches the geometric one.
+  -->
+
+  <!--
+    Counter-diagonal: bottom-LEFT → top-RIGHT. This rising direction is what makes
+    the glyph read as reversed — a normal Z falls the other way. Endpoints are
+    inset (176/336 rather than 160/352) so the square line caps tuck under the bars
+    instead of poking out past them.
+  -->
+  <path
+    d="M 168 336 L 344 176"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="34"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    stroke-miterlimit="10"
+  />
+
+  <!-- Top bar. -->
+  <path
+    d="M 368 160 H 144"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="34"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    stroke-miterlimit="10"
+  />
+
+  <!-- Bottom bar. -->
+  <path
+    d="M 368 352 H 144"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="34"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    stroke-miterlimit="10"
+  />
+</svg>

@@ -1,0 +1,217 @@
+// ─────────────────────────────────────────────────────────────
+// Liquid Glass — one visual system, three degradation tiers.
+//
+// The whole point of this file is that the SAME markup renders correctly on:
+//   Tier A — Android WebView / desktop H5 / iOS WKWebView  (full effect)
+//   Tier B — WeChat Skyline  (blur only, no saturate)
+//   Tier C — no backdrop-filter at all  (opaque fallback)
+//
+// Tier detection lives in components/glass/tier.ts and writes `.tier-a|b|c`
+// onto the root element at boot.
+//
+// ⚠️ Detection failure MUST default to Tier C, never Tier A. A card with a
+// `backdrop-filter` that silently does nothing over a transparent background is
+// a translucent, unreadable mess; an opaque card is merely plainer. Fail opaque.
+// ─────────────────────────────────────────────────────────────
+
+@use 'tokens.scss' as t;
+
+// ─────────────────────────────────────────────────────────────
+// Base surface — the part every tier shares
+// ─────────────────────────────────────────────────────────────
+
+@mixin glass-base {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+
+  border-radius: var(--radius-card);
+  border-width: 1px;
+  border-style: solid;
+  // Skyline accepts the legacy rgba() comma form; it rejects `rgb(r g b / a)`.
+  border-color: rgba(255, 255, 255, var(--glass-border-a));
+
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), var(--glass-tint-a));
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+// The top highlight is what sells "glass" even when blur is unavailable — it
+// reads as light catching the upper bevel. This is the closest we can get to
+// Liquid Glass's edge refraction, which needs a real displacement shader that
+// neither renderer can run.
+@mixin glass-highlight {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, var(--glass-highlight-a)) 22%,
+      rgba(255, 255, 255, var(--glass-highlight-a)) 78%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tier A — full effect
+//
+// `saturate()` is what gives the material its colour amplification. Tiers B and
+// C cannot do it, which is exactly why the wallpaper underneath (see
+// wallpaper.scss) carries pre-saturated colour stops — that is the trick that
+// keeps the lower tiers from looking grey.
+// ─────────────────────────────────────────────────────────────
+
+@mixin tier-a-glass {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tier B — single-function blur only (WeChat Skyline)
+//
+// Skyline's backdrop-filter supports no multi-function list, no drop-shadow,
+// no url(), and blurs inconsistently when combined with opacity.
+// ─────────────────────────────────────────────────────────────
+
+@mixin tier-b-glass {
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tier C — no backdrop-filter
+//
+// Push opacity up until the card is legible on its own. The wallpaper stays
+// visible around it, so it still reads as a surface rather than a blank panel.
+// ─────────────────────────────────────────────────────────────
+
+@mixin tier-c-glass {
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), var(--glass-solid-a));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Public API
+// ─────────────────────────────────────────────────────────────
+
+/// The standard glass surface. Apply to a <View>.
+@mixin glass($radius: var(--radius-card)) {
+  @include glass-base;
+  @include glass-highlight;
+
+  border-radius: $radius;
+
+  .tier-a & {
+    @include tier-a-glass;
+  }
+  .tier-b & {
+    @include tier-b-glass;
+  }
+  .tier-c & {
+    @include tier-c-glass;
+  }
+}
+
+/// A lighter-weight surface for inner elements sitting on glass — chips,
+/// inline rows. Deliberately skips the highlight (it would be visual noise at
+/// this size) and uses the smaller radius.
+@mixin glass-inset {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+
+  border-radius: var(--radius-tile);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.7));
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.6));
+
+  .tier-a & {
+    @include tier-a-glass;
+  }
+  .tier-b & {
+    @include tier-b-glass;
+  }
+  .tier-c & {
+    background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), var(--glass-solid-a));
+  }
+}
+
+/// Modifier classes layered on top of any glass surface.
+@mixin glass-modifiers {
+  &.glass--raised {
+    box-shadow: var(--shadow-raised);
+  }
+
+  /// Renders at reduced contrast — used for blocks below the current fold tier
+  /// that are present but deliberately de-emphasised.
+  &.glass--muted {
+    opacity: 0.62;
+  }
+
+  /// Interactive press state. Kept as a class (not :active) because the
+  /// mini-program renderer does not reliably fire :active on <View>.
+  &.glass--pressed {
+    opacity: 0.82;
+  }
+
+  &.glass--tappable {
+    transition-property: opacity, transform;
+    transition-duration: 140ms;
+    transition-timing-function: ease-out;
+  }
+}
+
+/// The navigation bar. `position: fixed` rather than `sticky` — Skyline does
+/// not support sticky at all.
+@mixin glass-nav {
+  @include glass-base;
+  @include glass-highlight;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  border-radius: 0;
+  border-top-width: 0;
+  border-left-width: 0;
+  border-right-width: 0;
+
+  padding-top: var(--safe-top);
+
+  .tier-a & {
+    @include tier-a-glass;
+  }
+  .tier-b & {
+    @include tier-b-glass;
+  }
+  .tier-c & {
+    @include tier-c-glass;
+  }
+}
+
+/// The near-fullscreen modal sheet (movie detail, note detail).
+@mixin glass-sheet {
+  @include glass-base;
+
+  border-radius: var(--radius-sheet);
+  padding-bottom: var(--safe-bottom);
+
+  .tier-a & {
+    @include tier-a-glass;
+  }
+  .tier-b & {
+    @include tier-b-glass;
+  }
+  .tier-c & {
+    @include tier-c-glass;
+  }
+}

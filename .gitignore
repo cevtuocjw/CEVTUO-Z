@@ -1,0 +1,61 @@
+# ── dependencies ──────────────────────────────────────────────
+node_modules/
+.pnp/
+.pnp.js
+
+# ── build output ──────────────────────────────────────────────
+dist/
+build/
+*.tsbuildinfo
+.taro-cache/
+.swc/
+
+# ── secrets — NEVER commit ────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+credentials.json
+service-account*.json
+.dev.vars
+.wrangler/
+
+# ── health data is PRIVATE — must never reach a public Pages site ──
+# GitHub Pages is world-readable even when this repo is private.
+# Chealth data lives in Cloudflare KV behind a bearer token instead.
+data/chealth/
+services/sync-trigger/.cache/
+
+# ── kindle artefacts ──────────────────────────────────────────
+# KOReader's stats DB is WAL-mode; never commit raw copies.
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+integrations/macos-bridge/tmp/
+
+# ── android ───────────────────────────────────────────────────
+integrations/android-shell/.gradle/
+integrations/android-shell/build/
+integrations/android-shell/app/build/
+local.properties
+*.apk
+*.keystore
+*.jks
+
+# ── macOS ─────────────────────────────────────────────────────
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ── editors ───────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+
+# ── logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*
