@@ -11,34 +11,58 @@
  * filed and serving, the mini-program must read from that server's domain.
  */
 
-import Taro from '@tarojs/taro';
-
 // App-local copy of the shared path contract — see ./paths.ts for why it is
 // not imported, and ./paths.contract.ts for the guard that keeps them in sync.
 import { DATA_PATHS } from './paths';
 
-
-/** Deployed origin for the H5/Android build. */
+/** Deployed origin, used by the mini-program and as the last-resort fallback. */
 const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
 
 /**
- * Dev origin. The H5 dev server does not serve `data/`, so point at whatever is
- * serving the repo root (a static server, or the filed domain once it is up).
+ * Data origin.
+ *
+ * ⚠️ Resolved per platform, NOT hardcoded, because the same bundle runs in four
+ * places with four different answers. Hardcoding production here is what made
+ * the first local build fetch `apps.cevtuogrnd.com` and fail with a bare
+ * "Failed to fetch" while the network log showed a perfectly good 200 for the
+ * same data on localhost.
+ *
+ * ⚠️ The mini-program branch is still unresolved: WeChat requires request
+ * domains to be ICP-filed, and Pages never is. Until the filed mainland server
+ * is serving, the mini-program has no valid origin — see docs/HOSTING.md.
  */
-const DEV_ORIGIN = 'http://127.0.0.1:8080';
-
 function origin(): string {
-  // `process.env.NODE_ENV` is inlined by the Taro/webpack build.
-  if (process.env.NODE_ENV === 'production') return PROD_ORIGIN;
-  return DEV_ORIGIN;
+  // ⚠️ There is deliberately NO `process.env.TARO_APP_DATA_ORIGIN` override here.
+  //
+  // Webpack does not define `process` in this build. Reading `process.env.X`
+  // throws `process is not defined` at RUNTIME — not at build time, so the
+  // compiler and the bundler both stay quiet and the page just dies. A staging
+  // override would have to be threaded through Taro's `defineConstants`; until
+  // something actually needs it, an override that only ever breaks is worse
+  // than no override.
+
+  // 1. H5 / Android WebView: same-origin whenever the app is served next to
+  //    `data/`, which is how both the Pages deploy and the local test layout
+  //    work. Deriving it means the H5 build is correct on any host without a
+  //    per-host rebuild.
+  //
+  // ⚠️ This check MUST come before the mini-program check, and must not be
+  //    written as `process.env.TARO_ENV === 'weapp'`.
+  //
+  //    Webpack does not define `process.env` in this build — reading it threw
+  //    `process is undefined` at runtime — so the env comparison never matched,
+  //    fell through, and returned PROD_ORIGIN. The resulting silent failure was
+  //    a page that fetched the production host from localhost and rendered
+  //    "加载失败: Failed to fetch" while the local server logged a clean 200 for
+  //    the identical URL. Feature-detecting the runtime is both simpler and
+  //    immune to whatever the bundler chooses to inline.
+  if (typeof location !== 'undefined' && location.origin) return location.origin;
+
+  // 3. Mini-program: no DOM, so no location. Pages is unusable there anyway
+  //    (WeChat requires ICP-filed request domains) — see docs/HOSTING.md.
+  return PROD_ORIGIN;
 }
 
-/**
- * Join an origin-relative path onto the active origin.
- *
- * Posters come out of the pipeline as `data/coof/posters/x.jpg` with no leading
- * slash, so this must not assume one.
- */
 export const assetUrl = (relPath: string): string =>
   `${origin()}/${relPath.replace(/^\/+/, '')}`;
 
@@ -81,11 +105,23 @@ export interface CoofLibrary {
 
 async function getJson<T>(path: string): Promise<T> {
   const url = assetUrl(path);
-  const res = await Taro.request<T>({ url, method: 'GET' });
-  if (res.statusCode !== 200) {
-    throw new Error(`加载失败 ${res.statusCode}: ${path}`);
+
+  // ⚠️ `Taro.request` is deliberately NOT used here.
+  //
+  // On H5 it resolves through Taro's request adapter, which requires the global
+  // `Taro` to be present on `window`; in this build it is not, so every call
+  // throws `Cannot read properties of undefined (reading 'request')` and the page
+  // renders "加载失败: Failed to fetch" while the network shows a clean 200.
+  //
+  // `fetch` is implemented natively on both targets we ship to (mini-program
+  // base library ≥2.18 and every WebView we support), so it is the smaller
+  // surface. If a target ever lacks it, add the adapter there rather than
+  // reintroducing the global dependency here.
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`加载失败 HTTP ${res.status}：${path}`);
   }
-  return res.data;
+  return (await res.json()) as T;
 }
 
 export const fetchCoofIndex = (collection: string): Promise<CoofIndex> =>

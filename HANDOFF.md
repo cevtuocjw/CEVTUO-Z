@@ -88,13 +88,14 @@ CEVTUO-Z/
 
 ## 待办 ⏳
 
-1. **阿里云深圳服务器 + ICP 备案** —— 见 `docs/HOSTING.md`。
-   **卡在用户本人操作**(扫码登录 + 支付 + 实名认证),自动化浏览器登录态已过期。
-2. **Pages 部署断层** —— H5 产物在 `apps/dashboard/dist/`,Pages 只发根目录,
-   所以现在就算开 Pages 也只有 `data/` 没有 app。**故意没开**,等 COOF 页面做完一起配。
-3. **COOF 页面** —— 接真实数据、11 集合切换、海报网格、点击弹窗。
-4. CNSR / CE-PaperR / Chealth 三个页面。
-5. README(根目录 + 服务端部署文档)。
+1. **COOF 路由白屏** —— 见上面「未解决」。**当前第一优先。**
+2. **Android APK** —— 需先解决 JDK + SDK(见「工具链现状」)。手机已连 ADB,可装真机。
+3. **CNSR / CE-PaperR / Chealth** —— 仍是空壳。
+4. **首页卡片点击跳转** —— COOF 卡片目前没有 onClick。
+5. **部署** —— 有了正确布局(见「怎么跑」),可以上 Pages 或阿里云。
+6. **ICP 备案** —— DNS 三条 A 记录已暂停并验证;等管局缓存后重试提交。
+   阿里云操作**需用户扫码登录**。
+7. README。
 
 ### 部署与备案
 
@@ -167,6 +168,108 @@ git add -A && git diff --cached --quiet && echo "零改动 ✓"
 - 颜色用**旧式 `rgba(r,g,b,a)` 逗号语法**，Skyline 不认 `rgb(r g b / a)`
 - 每个容器**显式写 `display:flex; flex-direction:...`**（两个渲染器默认值不同）
 - App 只 `import type` 自 schema —— **zod 运行时 60KB，绝不能进小程序包**
+
+---
+
+## 🆕 Web 跑起来了 —— 以及 Taro 的四个坑(2026-09-22)
+
+### 怎么跑
+
+```bash
+cd apps/dashboard && ./node_modules/.bin/taro build --type h5
+
+# ⚠️ 部署布局是必须的:dist/* 放到站点根,data/ 放它旁边
+mkdir -p /tmp/site
+cp -R apps/dashboard/dist/* /tmp/site/
+cp -R data /tmp/site/data
+cd /tmp/site && python3 -m http.server 8080
+# 打开 http://127.0.0.1:8080/
+```
+
+**首页已验证可跑**:COOF 148 部 / CNSR 1024 条 / CE-PAPERR 36h / CHEALTH 8412 步。
+
+### 坑 1:`dist/` 不生成 `index.html`
+
+Taro 算 `sourceDir = appPath + sourceRoot` = **`apps/dashboard/src/`**,而模板原本在
+`apps/dashboard/index.html` —— **差一层目录**,`existsSync` 为假 ⇒ HTML **静默不生成**。
+
+**`index.html` 必须放在 `apps/dashboard/src/` 下**(已放好)。这是「部署断层」的真正根因。
+
+### 坑 2:`publicPath: '/'` 导致白屏
+
+HTML 引用 `/js/app.js`,但 app 不在站点根 ⇒ **404** ⇒ 白屏。
+实测确认:`/js/app.js` → 404,`子目录/js/app.js` → 200。
+要么把 dist 放根(上面「怎么跑」的做法),要么改 `publicPath`。
+
+### 坑 3:`html-webpack-plugin` 未声明
+
+Taro 的 `H5WebpackPlugin` 直接 `require` 它,但依赖里没有。**已补进 devDependencies。**
+
+### 坑 4:app 不能运行时 import `packages/`
+
+- **Taro 的 babel-loader 只覆盖 app 目录** ⇒ 从 `packages/` 取的东西不过转译,webpack 挂在 `as const`
+- **`@cevtuo/schema/paths` 别名是坏的** —— webpack 先匹配前缀别名 `@cevtuo/schema` → `index.ts`,
+  再拼 `/paths` ⇒ `.../index.ts/paths`,不是文件
+- **`@cevtuo/schema` → `index.ts` 会拖进 60KB zod** —— 绝不能进小程序包
+
+**解法**:app 自带 `src/platform/paths.ts`,并用 `src/platform/paths.contract.ts` 做
+**编译期契约校验**(两份定义漂移 ⇒ `tsc` 报错)。同文件还断言 **Chealth 路径永远不得进 app**。
+
+### ⚠️ 绝不要用 `process.env.TARO_ENV` 判断平台
+
+**Taro 的 H5 构建里 `process` 根本不存在**,`process.env.X` 会**运行时**抛
+`process is not defined` —— 编译器和打包器都不报,页面直接死。
+判平台请**特性检测**(`typeof location !== 'undefined'`),或把常量走 `defineConstants`。
+
+数据 origin 现按 `location.origin` 解析(见 `src/platform/data.ts`),因此同一份构建
+在任何 host 上都对,不需要按 host 重新构建。
+
+### ❗ 未解决:COOF 路由白屏
+
+- 首页正常渲染
+- `#/pages/coof/index` 路由**挂载了**(app div 存在)但**内容为空**
+- **无 JS 报错**、无失败请求
+- 首页的 COOF 卡片**点击无跳转**(还没接 onClick)
+
+下次从这里开始。候选:路由配置、`useBreakpoint` 在非首页的行为、
+或 `index.scss` 的 `-webkit-box` / `calc()` 在 H5 下的表现。
+
+---
+
+## 📱 Android:工具链现状(2026-09-22 勘察)
+
+**好消息:手机已连 ADB,不用模拟器。**
+
+```
+adb-RFCY71VRZKJ  model:SM_F9660   ← Galaxy Z Fold 5,正是本项目的目标机型
+```
+
+**构建 APK 缺什么**:
+
+| 需要 | 现状 |
+|---|---|
+| Java / JDK | ❌ **未安装**(`java -version` → Unable to locate a Java Runtime) |
+| Android SDK | ❌ 无 `~/Library/Android/sdk` |
+| Gradle | ❌ 无 |
+| Android Studio | ❌ 未安装 |
+| `adb` | ✅ `/opt/homebrew/bin/adb` |
+
+⚠️ **`brew install` 在本机被策略拦截** ⇒ 装 JDK/SDK 必须走 `cli_search` → `cli_install`
+(aqua/pipx/npm/github 配方),**或让用户装 Android Studio**。
+
+**两条路**:
+- **PWA**(快):Chrome 加到主屏幕,有图标、全屏、可安装 —— 但不是 APK
+- **真 APK**:需先解决 JDK + SDK。`integrations/android-shell/` 是**空目录**,壳还没建
+
+---
+
+## 🔐 凭据与外部依赖
+
+- **GitHub PAT 已存 osxkeychain**,含 `workflow` scope ⇒ 能 push 工作流文件
+  ⚠️ 该 PAT 是 classic 全勾(含 `admin:enterprise`/`delete:packages` 等 18 项),
+  **远超需要的 `repo,workflow`,建议收回**
+- **阿里云登录态只存在于用户真实 Chrome**,自动化 Chrome 的副本**拿不到会话级 Cookie**
+  ⇒ 涉及阿里云的操作**必须用户在场扫码登录**
 
 ---
 

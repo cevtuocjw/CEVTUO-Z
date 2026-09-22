@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no,address=no" />
+    <meta name="theme-color" content="#0a0b0f" />
+    <title>CEVTUO-Z</title>
+    <script>
+      // Runs before first paint so the wallpaper/theme is correct immediately.
+      // The authoritative tier detection re-runs in app.tsx via Taro APIs; this
+      // only prevents a flash of the wrong theme.
+      (function () {
+        try {
+          var mql = window.matchMedia('(prefers-color-scheme: light)');
+          var apply = function () {
+            document.documentElement.classList.toggle('theme-light', mql.matches);
+            document.documentElement.classList.toggle('theme-dark', !mql.matches);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', mql.matches ? '#eef0f5' : '#0a0b0f');
+          };
+          apply();
+          mql.addEventListener
+            ? mql.addEventListener('change', apply)
+            : mql.addListener && mql.addListener(apply);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
