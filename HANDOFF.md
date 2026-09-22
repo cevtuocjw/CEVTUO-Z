@@ -93,6 +93,14 @@ CEVTUO-Z/
 3. CNSR / CE-PaperR / Chealth 三个页面。
 4. README。
 
+### 部署与备案
+
+❗ **决策、依据、卡点全在 `docs/HOSTING.md`** —— 下次会话先读那个。
+
+结论:买阿里云**深圳**轻量服务器 + 走 ICP 备案。理由是查证过的硬约束:
+微信官方规定小程序域名**必须 ICP 备案**,而备案**只对内地服务器发放**。
+英国朋友走 GitHub Pages 那条线,**不受备案影响**。
+
 ### 关于 Cloudflare：没有账号，已改走本机方案
 
 `services/sync-trigger/` 的逻辑写在 `src/core.ts`，与运行环境无关；`server.ts` 跑在
