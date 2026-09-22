@@ -28,6 +28,7 @@ import {
   contentHash,
   isoInstant,
   nextScheduledAt,
+  readJson,
   repoPath,
   scrubError,
   stableJson,
@@ -248,10 +249,26 @@ const meta = {
 };
 SyncMetaSchema.parse(meta);
 
+// ⚠️ sync-meta is written ONLY when something else actually changed.
+//
+// It carries `generatedAt` / `lastAttemptAt`, so it is different on every run by
+// construction. Committing it unconditionally means every scheduled run produces
+// a commit — which is precisely the commit storm the whole design exists to
+// prevent, and it would burn GitHub Pages' 10-builds-per-hour budget too.
+//
+// The app still gets fresh timing: `GET /api/status` on the Worker reads the
+// GitHub Actions runs API directly, so it is MORE current than a committed file
+// could ever be. The committed meta is a fallback for when the Worker is down,
+// and for that purpose "the last run that changed something" is the right value.
+const metaPath = join(DATA_DIR, 'sync-meta.json');
 if (!DRY_RUN) {
-  const m = await writeIfChanged(join(DATA_DIR, 'sync-meta.json'), stableJson(meta));
-  if (m === 'written') written++;
-  else unchanged++;
+  if (written > 0 || has('force-meta') || !(await readJson(metaPath))) {
+    const m = await writeIfChanged(metaPath, stableJson(meta));
+    if (m === 'written') written++;
+    else unchanged++;
+  } else {
+    console.log('  · sync-meta.json 未写 (本次无数据变更；状态以 Worker /api/status 为准)');
+  }
 }
 
 const elapsed = Date.now() - started;
