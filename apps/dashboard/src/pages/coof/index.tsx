@@ -319,7 +319,7 @@ export default function Coof() {
               }}
             >
               {view === 'grid' ? (
-              <View className="grid">
+              <View className="pgrid">
                 {titles.map((t) => (
                   <View key={t.id} className="tile" onClick={() => setDetail(t)}>
                     <View className="tile__art">

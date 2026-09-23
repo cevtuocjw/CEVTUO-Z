@@ -93,16 +93,33 @@
 // (wasted height). Raising the floor with the viewport caps the column count at
 // the wide end, so the posters stay legible instead of just multiplying.
 //
-// ⚠️ Declared on `.grid` rather than `:root` so it is scoped to this component
+// ⚠️ Declared on `.pgrid` rather than `:root` so it is scoped to this component
 // and cannot be inherited by anything else that uses `--tile-min` later.
-.grid {
-  // ⚠️ 118px, not larger. The compact tier must still fit TWO posters across a
-  // 361–390px cover screen after the page padding and the rail's reserved band
-  // are taken out (~276px of usable width). At 132px `auto-fill` could only
-  // place one column, so the phone showed a single giant poster per row — the
-  // opposite of the "wasted space" this was meant to fix. Measured after the
-  // change: 2 columns at 390px.
-  --tile-min: 118px;
+// ⚠️ Named `pgrid`, NOT `grid`.
+//
+// `styles/demo.scss` already defines `.grid` (a 2/3-column block grid with a
+// 16px gutter, via `b.block-grid`). The COOF page did not import demo.scss, so
+// the two never met — until the page gained the import to fix its missing chip
+// styles. Both sheets then loaded and `block-grid`'s `margin: -16px` landed on
+// this element, shifting the whole grid 16px left of its parent. The parent
+// clips horizontally, so the left 8px of every tile — including the first
+// character of each title — was cut off, and the per-item margins from the same
+// mixin made the tiles sit inconsistently inside their cells.
+//
+// A shared class name across two sheets that are now both loaded is not a style
+// conflict the browser reports anywhere; it just silently applies both.
+.pgrid {
+  // ⚠️ The floor must be derived from the width that ACTUALLY reaches the grid,
+  // not from the viewport. Measured on a 390px phone after every padding:
+  //   .page 390 → −16/−16 → .stack 358
+  //   .section  → −16/−34 → 308
+  //   .section__body → −48 → 260
+  //   → 244 usable for the grid's content box
+  // Three columns need `3 × tile-min + 2 × 12 (gap) ≤ 244`, so the ceiling is
+  // ~73px. Anything larger silently collapses a column.
+  // NOTE for whoever tunes this next: measure `.pgrid`'s own content box first.
+  // The viewport width is not the input this number takes.
+  --tile-min: 72px;
 
   display: grid;
   box-sizing: border-box;
@@ -128,15 +145,17 @@
 // Unfolded inner screen (~673dp) — wide enough for a larger poster before the
 // column count is allowed to increase.
 @include b.medium-up {
-  .grid {
-    --tile-min: 156px;
+  .pgrid {
+    // ~481px reaches the grid at 673px; 4 columns need `4 × m + 36 ≤ 481`.
+    --tile-min: 105px;
   }
 }
 
 // Desktop / tablet. The floor grows again so a wide window gains column WIDTH
 // rather than an unbounded number of columns.
 @include b.expanded-up {
-  .grid {
+  .pgrid {
+    // ~1232px reaches the grid at 1440px — 6 uniform columns of ~193px.
     --tile-min: 190px;
   }
 }
