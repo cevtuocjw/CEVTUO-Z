@@ -347,11 +347,23 @@ function CnsrTree({ source }: { source: CnsrSource }) {
                                         {e.images.length ? (
                                           <View className="cn__imgs">
                                             {e.images.map((im, i) => (
+                                              // ⚠️ `aspectFit`, not `widthFix`.
+                                              //
+                                              // At full column width a phone
+                                              // screenshot or a tall product
+                                              // shot became a band taller than
+                                              // the notes around it, and
+                                              // `widthFix` sizes by width alone
+                                              // so a very tall image simply ran
+                                              // off the column. `aspectFit`
+                                              // inside a capped box keeps the
+                                              // whole picture visible whatever
+                                              // its shape.
                                               <Image
                                                 className="cn__img"
                                                 key={i}
                                                 src={assetUrl(im.src)}
-                                                mode="widthFix"
+                                                mode="aspectFit"
                                                 lazyLoad
                                               />
                                             ))}

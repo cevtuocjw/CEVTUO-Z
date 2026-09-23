@@ -3,12 +3,12 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T17:09+08:00",
+ "updatedAt": "2026-09-23T17:25+08:00",
  "counts": {
   "days": 7,
-  "lines": 27,
-  "hidden": 50,
-  "links": 3,
+  "lines": 32,
+  "hidden": 60,
+  "links": 13,
   "images": 0,
   "skippedSubtrees": 0
  },
@@ -26,7 +26,20 @@
    "id": "3e009462-a4af-808b-bbb2-f8f447ce5c52",
    "date": "2026-09-20",
    "title": "",
-   "lines": [],
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+     "links": [
+      {
+       "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "href": "https://mp.weixin.qq.com/s/u3oTtbEFuTUAPWsEYZSXkw?version=5.0.10.70716&platform=mac&from=industrynews#rd",
+       "title": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "desc": "Claude Code 变开放了。"
+      }
+     ]
+    }
+   ],
    "more": 0,
    "images": [],
    "imagesSeen": 0
@@ -77,17 +90,29 @@
      "links": []
     },
     {
-     "k": "paragraph",
-     "t": "视觉四小龙",
-     "links": []
+     "k": "bookmark",
+     "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+     "links": [
+      {
+       "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+       "href": "https://m.aitntnews.com/newDetail.html?newId=23114",
+       "title": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+       "desc": "「套壳伟大🍒」 这波AI创业浪潮里，Cherry Studio和他的创始人Yinsen绝对算是异类。 Cherry Studio发源于开源社区，和大部分吹的天花乱坠但实际是套壳的应用不同，Cherry"
+      }
+     ]
     },
     {
-     "k": "bulleted_list_item",
-     "t": "想知道 RSI 有没有真的在发生，看一个操作性指标：单位算力换来的增益，本身在不在加速。如果每轮要花 2 倍算力才换来同样的进步，那只是普通工程曲线，不是 RSI。",
-     "links": []
+     "k": "bookmark",
+     "t": "2004383882104038519",
+     "links": [
+      {
+       "t": "2004383882104038519",
+       "href": "https://zhuanlan.zhihu.com/p/2004383882104038519"
+      }
+     ]
     }
    ],
-   "more": 44,
+   "more": 47,
    "images": [],
    "imagesSeen": 0
   },
@@ -95,7 +120,32 @@
    "id": "3d509462-a4af-800e-a1e6-c69be1c802c3",
    "date": "2026-09-08",
    "title": "",
-   "lines": [],
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
+     "links": [
+      {
+       "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "href": "https://mistral.ai/news/mistral-makes-sovereign-open-weight-ai-to-frontier/",
+       "title": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "desc": "Mistral today announced that it has raised €3 billion in a Series D funding round at a post-money valuation of more than €21 billion."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "UAE AI model tops 50 million monthly downloads",
+     "links": [
+      {
+       "t": "UAE AI model tops 50 million monthly downloads",
+       "href": "https://www.middleeastainews.com/p/uae-ai-model-tops-50-million-monthly",
+       "title": "UAE AI model tops 50 million monthly downloads",
+       "desc": "Falcons AI&#x27;s NSFW classifier ranks among top global open-source models"
+      }
+     ]
+    }
+   ],
    "more": 0,
    "images": [],
    "imagesSeen": 0
@@ -136,6 +186,30 @@
      "links": []
     },
     {
+     "k": "bookmark",
+     "t": "Discovery of a new OpenAI agent message board",
+     "links": [
+      {
+       "t": "Discovery of a new OpenAI agent message board",
+       "href": "https://collusion.wiki/",
+       "title": "Discovery of a new OpenAI agent message board",
+       "desc": "A swarm of autonomous AI agents, self-identifying as OpenAI agents, used a small German volunteer wiki to save answers, coordinate live, and share sandbox bypasses. OpenAI noticed and said nothing."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
+     "links": [
+      {
+       "t": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
+       "href": "https://productrise.app/blog/google-ai-mode-prefers-more-expensive-products",
+       "title": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
+       "desc": "A US and UK data study: when the same product ranks in both Google AI Mode and traditional search, the AI Mode price is about 21.6% higher."
+      }
+     ]
+    },
+    {
      "k": "paragraph",
      "t": "IBM Bob",
      "links": [
@@ -148,22 +222,19 @@
      ]
     },
     {
-     "k": "paragraph",
-     "t": "。这种能力不依赖外部新数据，而是依赖算力堆砌出的深层逻辑组合，因此短期内（基于现有高质量人类数据）仍有巨大的挖掘空间。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "“流程性创造”",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "当面对复杂问题时，它不是检索答案，而是在“推理空间”中动态规划路径。比如解决未见于训练集的数学奥赛题，或生成全新的代码架构，这属于",
-     "links": []
+     "k": "bookmark",
+     "t": "Formalizing Fermat&#x27;s Last Theorem",
+     "links": [
+      {
+       "t": "Formalizing Fermat&#x27;s Last Theorem",
+       "href": "https://www.anthropic.com/research/formalizing-fermats-last-theorem",
+       "title": "Formalizing Fermat&#x27;s Last Theorem",
+       "desc": "Anthropic is an AI safety and research company that&#x27;s working to build reliable, interpretable, and steerable AI systems."
+      }
+     ]
     }
    ],
-   "more": 6,
+   "more": 13,
    "images": [],
    "imagesSeen": 0
   },
@@ -198,6 +269,28 @@
        "href": "https://github.com/PhiloLabs/fable51-worlds",
        "title": "GitHub - PhiloLabs/fable51-worlds: worlds via code, from fable 5.1",
        "desc": "worlds via code, from fable 5.1. Contribute to PhiloLabs/fable51-worlds development by creating an account on GitHub."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Meta Model API",
+     "links": [
+      {
+       "t": "Meta Model API",
+       "href": "https://developer.meta.com/ai/models/muse-spark/",
+       "title": "Meta Model API",
+       "desc": "Meta Model API Developer Portal"
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "ifm.ai",
+     "links": [
+      {
+       "t": "ifm.ai",
+       "href": "https://ifm.ai/blog/k2/"
       }
      ]
     },

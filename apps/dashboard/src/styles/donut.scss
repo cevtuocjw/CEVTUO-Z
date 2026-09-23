@@ -66,13 +66,17 @@
   border-top-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.9));
   border-top-left-radius: var(--radius-sheet);
   border-top-right-radius: var(--radius-sheet);
-  // ⚠️ 0.97, not `var(--glass-solid-a)` (0.88). Measured on the poster grid: at
-  // 0.88 the covers still read through the sheet, and a legend sitting on top of
-  // a photograph is a legend nobody can scan. The blur below supplies the glass;
-  // the alpha has to supply the legibility.
-  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0.97);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  // ⚠️ GLASS, not a slab.
+  //
+  // This was alpha 0.97 — chosen when the sheet opened over the COOF poster
+  // grid and legibility was the only concern. At 0.97 the material disappears:
+  // it reads as a black panel, not as the frosted surface every other element
+  // in this design is made of. The blur is what carries legibility now, so it
+  // is pushed well past the card default while the tint comes down to
+  // something you can see the page through.
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 1.7));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.45)) saturate(var(--glass-sat));
+  backdrop-filter: blur(calc(var(--glass-blur) * 1.45)) saturate(var(--glass-sat));
   animation: ys-up 340ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 

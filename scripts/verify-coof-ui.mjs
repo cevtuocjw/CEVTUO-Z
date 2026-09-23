@@ -272,7 +272,18 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
     };
   });
   check('sheet opens with two rings', sheet.blocks === 2 && sheet.rings === 2, `${sheet.blocks} blocks, ${sheet.rings} rings`);
-  check('sheet hides the page behind it', sheet.bgAlpha >= 0.94, `background alpha ${sheet.bgAlpha}`);
+  // ⚠️ A RANGE, and it was inverted deliberately.
+  //
+  // This asserted `alpha >= 0.94` — "the sheet hides the page behind it". That
+  // is how the sheet became an opaque slab, and the user's next report was
+  // exactly that: black, not glass. Glass needs blur AND some transparency;
+  // a test that demands opacity will keep re-creating the thing being
+  // complained about.
+  check(
+    'sheet is glass, not an opaque slab',
+    sheet.bgAlpha >= 0.2 && sheet.bgAlpha <= 0.8,
+    `background alpha ${sheet.bgAlpha}（需 0.2–0.8）`,
+  );
   check('sheet is not a full-width stripe', sheet.panelW <= 1040, `panel ${sheet.panelW}px of ${viewport.width}px`);
   // ⚠️ Only on a window wide enough to hold two lists. Asserting it everywhere
   // would fail the phone, which is correct as one column.

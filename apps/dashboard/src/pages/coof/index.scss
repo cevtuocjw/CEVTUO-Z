@@ -423,12 +423,21 @@
 }
 
 .picker__panel {
+  // ⚠️ `@include g.glass-sheet`, not `background-color: var(--surface-raised)`.
+  //
+  // `--surface-raised` is defined NOWHERE in this project — grep finds only
+  // this one use. A `var()` with no value and no fallback makes the whole
+  // declaration invalid, so the panel had no background at all and the dark
+  // page behind it read straight through: a black slab, not a sheet. The same
+  // mixin the detail sheet uses gives it the material the rest of the system
+  // has.
+  @include g.glass-sheet;
+
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
   padding: t.$space-3 t.$space-4 calc(#{t.$space-5} + env(safe-area-inset-bottom, 0px));
-  background-color: var(--surface-raised);
   border-top-left-radius: var(--radius-sheet);
   border-top-right-radius: var(--radius-sheet);
   max-height: 70vh;

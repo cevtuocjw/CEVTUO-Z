@@ -285,13 +285,14 @@ function visit(b, st) {
     return;
   }
 
-  if (!text || IGNORED.has(b.type)) return;
-
-  // ⚠️ A link must never reach the screen as a bare `https://…`.
+  // ⚠️⚠️ The link branch comes BEFORE the empty-text guard, and that order is
+  // the whole fix for "most links never show up".
   //
-  // Three shapes produce one, and all three are turned into a NAME carried by
-  // the link: a bookmark/embed block whose URL lives outside its rich text, and
-  // a paragraph the user pasted a URL into.
+  // A `bookmark` block keeps its URL in `bookmark.url` and its label in
+  // `bookmark.caption` — NOT in rich_text. Measured on Shopping: 146 bookmark
+  // blocks, every one with a real URL and an EMPTY caption. So `textOf` returns
+  // '' for essentially all of them, and with the guard first they all returned
+  // early and were dropped without a word. Two links survived out of 146.
   if (LINK_BLOCK.has(b.type)) {
     const url = b[b.type]?.url;
     if (url) {
@@ -300,6 +301,8 @@ function visit(b, st) {
     }
     return;
   }
+
+  if (!text || IGNORED.has(b.type)) return;
 
   if (BARE_URL.test(text)) {
     const [url, ...rest] = text.split(/\s+/);

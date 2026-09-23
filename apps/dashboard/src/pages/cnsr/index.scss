@@ -628,15 +628,25 @@
 }
 
 // ── Images (Shopping only) ───────────────────────────────────
+// ⚠️ Centred and capped, not full-bleed.
+//
+// A note's image is an illustration inside a column of text; at full width it
+// dominated the day it belonged to and, on a phone, pushed the rest of the note
+// off screen. The cap is in pixels rather than a percentage because the column
+// is 296px on a laptop and ~330px on a phone — a percentage would make the
+// image a different size in each, which is the opposite of "大小合适".
 .cn__imgs {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: t.$space-2;
   margin-top: t.$space-2;
 }
 
 .cn__img {
   width: 100%;
+  max-width: 200px;
+  height: 200px;
   border-radius: var(--radius-tile);
   background-color: var(--accent-soft);
 }
@@ -793,7 +803,12 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background-color: rgba(0, 0, 0, 0.5);
+  // A light scrim, and the page behind it is BLURRED rather than blacked.
+  // ⚠️ At 0.5 flat black the backdrop was doing the work the glass panel should
+  // be doing, and the two together read as a dark slab on a dark page.
+  background-color: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   animation: cnsr-fade 220ms ease-out both;
 }
 
@@ -818,9 +833,12 @@
   border-top-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.9));
   border-top-left-radius: var(--radius-sheet);
   border-top-right-radius: var(--radius-sheet);
-  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0.97);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  // ⚠️ Glass, not an opaque slab. See the note in styles/donut.scss — 0.97 was
+  // chosen for legibility and cost the material; the blur carries legibility
+  // now, so the tint can come down far enough to see the page through it.
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 1.7));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.45)) saturate(var(--glass-sat));
+  backdrop-filter: blur(calc(var(--glass-blur) * 1.45)) saturate(var(--glass-sat));
   animation: cnsr-up 320ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 

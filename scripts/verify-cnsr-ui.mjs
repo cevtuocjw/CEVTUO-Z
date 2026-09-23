@@ -34,7 +34,24 @@ async function run(browser, { scheme, viewport }, tag) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 180)));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text().slice(0, 180)));
+  page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    // ⚠️ The failing URL is in `location()`, NOT in `text()`. The console
+    // message for a failed subresource is the bare string "Failed to load
+    // resource: the server responded with a status of 404 ()" — which is why
+    // the first version of this filter matched nothing and could not tell a
+    // third-party favicon from one of our own files.
+    const t = m.text();
+    const url = m.location()?.url ?? '';
+    // A missing favicon on a THIRD-PARTY host is not this page's error: the link
+    // rows pull `icons.duckduckgo.com/ip3/<host>.ico`, plenty of hosts have
+    // none, and that is exactly what the letter badge behind the icon is for.
+    // Anything from our own origin still counts, and the URL is in the detail
+    // line either way so a real one is never mistaken for noise.
+    const ours = /^https?:\/\/(127\.0\.0\.1|localhost|cevtuocjw\.github\.io)/.test(url);
+    if (/404/.test(t) && url && !ours) return;
+    errors.push(`${t} @ ${url}`.slice(0, 190));
+  });
 
   await page.goto(`${BASE}/#/pages/cnsr/index`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector(wide ? '.cn__col' : '.cn__card', { timeout: 20000 });
@@ -205,7 +222,17 @@ async function run(browser, { scheme, viewport }, tag) {
       };
     });
     check('点卡片弹出弹窗', sheet.open, sheet.title);
-    check('弹窗是毛玻璃', sheet.alpha >= 0.94 && sheet.glass, `alpha ${sheet.alpha}, backdrop-filter ${sheet.glass}`);
+    // ⚠️ The assertion is a RANGE, and it was inverted on purpose.
+    //
+    // It first required alpha >= 0.94, which is how the sheet ended up an opaque
+    // slab: the test was enforcing exactly the thing the user then reported as
+    // "black, not glass". Glass needs blur AND some transparency — opaque enough
+    // to read on, sheer enough to see the material.
+    check(
+      '弹窗是毛玻璃而不是黑板',
+      sheet.glass && sheet.alpha >= 0.2 && sheet.alpha <= 0.8,
+      `alpha ${sheet.alpha}（需 0.2–0.8）, backdrop-filter ${sheet.glass}`,
+    );
     check('弹窗里有日期条目', sheet.days > 0, `${sheet.days} 天`);
     check('有关闭按钮', sheet.hasX);
     await page.screenshot({ path: `${OUT}/${tag}-sheet.png` });

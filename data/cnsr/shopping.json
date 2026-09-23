@@ -3,12 +3,12 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T17:09+08:00",
+ "updatedAt": "2026-09-23T17:25+08:00",
  "counts": {
   "days": 5,
-  "lines": 17,
+  "lines": 22,
   "hidden": 0,
-  "links": 2,
+  "links": 7,
   "images": 3,
   "skippedSubtrees": 0
  },
@@ -22,6 +22,18 @@
      "k": "paragraph",
      "t": "CENTRESTAGE ELITES 香港展会",
      "links": []
+    },
+    {
+     "k": "bookmark",
+     "t": "KIT WAN STUDIOS",
+     "links": [
+      {
+       "t": "KIT WAN STUDIOS",
+       "href": "https://kitwanstudios.com/",
+       "title": "KIT WAN STUDIOS",
+       "desc": "Kit Wan is an Oslo-based fashion designer and visual artist from Hong Kong. Exploring manga, high-tech, sci-fi and mechanical aesthetics, Wan’s cult-like body of work navigates the contemporary world "
+      }
+     ]
     }
    ],
    "more": 0,
@@ -139,6 +151,18 @@
      "links": []
     },
     {
+     "k": "bookmark",
+     "t": "OpenTrailPaper",
+     "links": [
+      {
+       "t": "OpenTrailPaper",
+       "href": "https://opentrailpaper.com/",
+       "title": "OpenTrailPaper",
+       "desc": "Open-source bike computer firmware for the LilyGO T5S3 4.7\" E-Paper PRO, with offline maps, GPX routes, FIT recording and Bluetooth sensors."
+      }
+     ]
+    },
+    {
      "k": "paragraph",
      "t": "tt35636239",
      "links": [
@@ -166,7 +190,44 @@
    "id": "3d209462-a4af-80bf-8869-e13de15737de",
    "date": "2026-09-05",
    "title": "",
-   "lines": [],
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
+     "links": [
+      {
+       "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
+       "href": "https://www.robinsonpelham.com/?srsltid=AfmBOoq3XtOkd8xtu7XHGryNpHMA8AqIp9YDTo49sFBHIXsiCNRfE8iq",
+       "title": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
+       "desc": "Robinson Pelham was born out of a mutual desire to create beautiful, timeless pieces that spark joy. More than 25 years later, our bold, colourful and versatile bespoke and ready-to-wear jewellery is "
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Shaun Leane Jewellery",
+     "links": [
+      {
+       "t": "Shaun Leane Jewellery",
+       "href": "https://shaunleane.com/?gad_source=1&gad_campaignid=24032989863&gbraid=0AAAAADBi1VyCJ_ZFl1ZvKx_9ANX_khzlW&gclid=Cj0KCQjw--7UBhCpARIsAGJBptjT5cZjiP2StA-bBg0oA-F_Gubv8VGj-M2rr0Cuod9Ai8IgXowCgQQaAjjEEALw_wcB",
+       "title": "Shaun Leane Jewellery",
+       "desc": "Free UK Standard Delivery - Discover Shaun Leane Statement Making Jewellery. Collectable pieces for everyday wear"
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
+     "links": [
+      {
+       "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
+       "href": "https://www.meccano.com/product/meccano-pro-aston-martin-aramco-formula-one-race-car/",
+       "title": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
+       "desc": "Introducing the Meccano Pro Aston Martin Aramco Formula 1 Race Car, the perfect engineering challenge for passionate builders. This advanced building set has 1203 real metal parts and 2 real tools to "
+      }
+     ]
+    }
+   ],
    "more": 0,
    "images": [],
    "imagesSeen": 0
