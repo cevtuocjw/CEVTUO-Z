@@ -26,22 +26,60 @@ $space-5: 24px;
 $space-6: 32px;
 $space-7: 48px;
 
-$radius-card: 20px;
-$radius-sheet: 28px;
-$radius-tile: 16px;
-$radius-chip: 999px;
+// ── Radii ────────────────────────────────────────────────────
+//
+// ⚠️ Deliberately near-square. The house style is editorial — a strict grid,
+// hairline rules and flat surfaces — so a soft 20px radius fights every other
+// decision in the system. Corners are square enough to read as intentional at
+// thumbnail size, with just enough softening (2–4px) to avoid the aliasing a
+// hard 0 produces on Android WebView.
+//
+// Rive Droite reference: cards there are rectangles, not pills. The only
+// exceptions are genuinely pill-shaped things, which is why the two chip radii
+// are still large.
+$radius-card: 4px;
+$radius-sheet: 6px;
+$radius-tile: 2px;
+$radius-chip: 2px;
+// Reserved for the rare element that is genuinely a pill (status dots, toggle
+// tracks). Do not use it for ordinary chips.
+$radius-pill: 999px;
 
-$font-display: 34px;
-$font-title: 22px;
-$font-heading: 17px;
-$font-body: 15px;
-$font-caption: 13px;
-$font-micro: 11px;
+// ── Type scale ───────────────────────────────────────────────
+//
+// ⚠️ Sizes are px, never em/rem: `postcss-pxtransform` is disabled app-wide
+// (see config/index.ts) and the foldable breakpoints depend on real device px.
+//
+// The scale is compressed at the top and spread at the bottom relative to a
+// default web scale, because the display sizes carry the editorial headline
+// moment and the caption sizes carry the dense label work.
+$font-display: 40px;
+$font-title: 20px;
+$font-heading: 16px;
+$font-body: 14px;
+$font-caption: 12px;
+$font-micro: 10px;
+
+// Tracking. Small uppercase type needs POSITIVE tracking to stay legible;
+// large display type needs NEGATIVE tracking to read as one mass. Applying the
+// same value to both is the single most common way a design reads as generic.
+$track-display: -0.02em;
+$track-label: 0.14em;
+$track-nav: 0.08em;
 
 $weight-regular: 400;
 $weight-medium: 500;
 $weight-semibold: 600;
 $weight-bold: 700;
+
+// ⚠️ Stacks are declared in full at every use site rather than relying on a
+// system default: the WeChat renderer and Android WebView do not agree on one,
+// and a bare `serif` on Android resolves to Noto Serif, which is not the
+// intended face. `Georgia` is the reliable cross-platform serif; the CJK faces
+// after it catch Chinese glyphs, which the Latin serifs above do not cover.
+$font-family-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Noto Sans SC',
+  'Microsoft YaHei', sans-serif;
+$font-family-display: Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif SC', 'SimSun', serif;
 
 // ── Foldable breakpoints ─────────────────────────────────────
 //
@@ -71,11 +109,14 @@ $bp-expanded: 840px; // tablet / desktop H5
 @mixin glass-runtime-vars {
   --gi: 0.65;
 
-  --glass-blur: calc(4px + var(--gi) * 24px); //    4 → 28px
-  --glass-sat: calc(100% + var(--gi) * 80%); //    100 → 180%
-  --glass-tint-a: calc(0.10 + var(--gi) * 0.30); // 0.10 → 0.40
-  --glass-border-a: calc(0.28 + var(--gi) * 0.34);
-  --glass-highlight-a: calc(0.22 + var(--gi) * 0.33);
+  --glass-blur: calc(6px + var(--gi) * 22px); //    6 → 28px
+  // ⚠️ Capped well below the old 180%. Heavy saturation amplification is the
+  // "frosted plastic" signal; at 180% the wallpaper's orange quadrant went
+  // lurid and the orange/rose gradient turned into a single flat blob.
+  --glass-sat: calc(100% + var(--gi) * 20%); //      100 → 120%
+  --glass-tint-a: calc(0.08 + var(--gi) * 0.24); //  0.08 → 0.32
+  --glass-border-a: calc(0.14 + var(--gi) * 0.20);
+  --glass-highlight-a: calc(0.16 + var(--gi) * 0.22);
 
   // The wallpaper grows more opaque as glass strength falls, so a Tier-C solid
   // card still reads as sitting on a coloured surface rather than flat grey.
@@ -102,16 +143,36 @@ $bp-expanded: 840px; // tablet / desktop H5
   // Tier-C fallback opacity.
   --glass-solid-a: 0.88;
 
-  --accent: #6ea8ff;
-  --accent-soft: rgba(110, 168, 255, 0.16);
+  // ⚠️ The accent is deliberately NOT a hue. The house style is monochrome —
+  // colour on this surface comes from the wallpaper and the posters, and a blue
+  // UI accent competed with both. Accent is "the loudest neutral", which is
+  // what an editorial system uses for emphasis.
+  --accent: rgba(255, 255, 255, 0.92);
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  // Status colours stay semantic — an error must not read as emphasis.
   --positive: #4ade80;
   --warning: #fbbf24;
   --danger: #f87171;
 
-  // Declared once and reused. Skyline collapses multi-shadow to the FIRST one,
-  // so the first shadow is always the one that must carry the design.
-  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.18);
-  --shadow-raised: 0 16px 40px rgba(0, 0, 0, 0.28);
+  // ⚠️ Near-zero on purpose. A flat plane with a crisp edge is the whole idea;
+  // a 24px drop shadow is the "material card" look this system is moving away
+  // from. What remains is only enough to separate a surface from an equally
+  // dark wallpaper underneath it.
+  //
+  // Skyline collapses multi-shadow to the FIRST one, so the first shadow is
+  // always the one that must carry the design.
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-raised: 0 2px 8px rgba(0, 0, 0, 0.26);
+
+  // ⚠️ A halo, not a drop shadow. The surface behind the type is a photograph
+  // whose local brightness varies across the viewport, so a fixed text colour
+  // alone cannot guarantee contrast — the same white heading sits on a bright
+  // sky at the top and a dark shadow at the bottom. A soft halo in the OPPOSITE
+  // direction of the light gives every glyph its own local contrast, which is
+  // the only thing that holds on a variable background. Dark theme = white type
+  // = dark halo.
+  --text-halo: rgba(6, 7, 10, 0.72);
+  --text-halo-strong: rgba(6, 7, 10, 0.92);
 }
 
 @mixin theme-light {
@@ -132,14 +193,19 @@ $bp-expanded: 840px; // tablet / desktop H5
   // pale wallpaper is illegible.
   --glass-solid-a: 0.94;
 
-  --accent: #2f6bd8;
-  --accent-soft: rgba(47, 107, 216, 0.12);
+  // Mirror of the dark-theme choice: accent is the loudest neutral, not a hue.
+  --accent: rgba(10, 12, 16, 0.90);
+  --accent-soft: rgba(10, 12, 16, 0.06);
   --positive: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
 
-  --shadow-card: 0 8px 24px rgba(20, 24, 40, 0.10);
-  --shadow-raised: 0 16px 40px rgba(20, 24, 40, 0.16);
+  --shadow-card: 0 1px 2px rgba(20, 24, 40, 0.06);
+  --shadow-raised: 0 2px 8px rgba(20, 24, 40, 0.10);
+
+  // Mirror of the dark theme: near-black type takes a pale halo.
+  --text-halo: rgba(255, 255, 255, 0.86);
+  --text-halo-strong: rgba(255, 255, 255, 0.96);
 }
 
 /// Emit once, from app.scss.
@@ -151,11 +217,16 @@ $bp-expanded: 840px; // tablet / desktop H5
   --radius-sheet: #{$radius-sheet};
   --radius-tile: #{$radius-tile};
   --radius-chip: #{$radius-chip};
+  --radius-pill: #{$radius-pill};
 
   // `env()` works in both renderers; Skyline supports the safe-area-inset-*
   // family explicitly, which is exactly what we need.
-  --safe-bottom: calc(env(safe-area-inset-bottom) + #{$space-5});
-  --safe-top: env(safe-area-inset-top);
+  // ⚠️ Both need an explicit `0px` fallback. A bare `env(safe-area-inset-top)`
+  // is invalid where the UA does not know the variable, and an invalid value
+  // makes any `calc()` that CONTAINS it invalid too — so `--safe-top` alone was
+  // enough to drop the panel's whole `padding-top` on desktop, silently.
+  --safe-bottom: calc(env(safe-area-inset-bottom, 0px) + #{$space-5});
+  --safe-top: env(safe-area-inset-top, 0px);
 }
 
 // Explicit overrides win over the system default. `theme-auto` is the default

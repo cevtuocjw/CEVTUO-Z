@@ -10,6 +10,65 @@
     <meta name="format-detection" content="telephone=no,address=no" />
     <meta name="theme-color" content="#0a0b0f" />
     <title>CEVTUO-Z</title>
+    <!--
+      ⚠️ The wallpaper is declared HERE, not in the stylesheet, and not inline
+      on <body>.
+
+      Three reasons, all load-bearing:
+
+      1. Path resolution. This document is the site root, so `static/...`
+         resolves correctly at any mount depth. The same URL written in CSS
+         resolves against the stylesheet's own directory and 404s — see the
+         `copy` note in config/index.ts.
+      2. First paint. It is inline in the head, so the background is requested
+         as the document parses, before the JS bundle is fetched and hydrated.
+         Leaving it to the stylesheet flashes the fallback colour on cold load.
+      3. Theme overrides. `.theme-light body` cannot beat a `style=""` attribute
+         without `!important`; as stylesheet rules the two have equal weight and
+         source order decides.
+
+      `background-attachment: fixed` keeps it viewport-locked while the page
+      scrolls — what `position: fixed` on the wallpaper layer used to do, minus
+      the cost of promoting a full-screen element to its own layer.
+    -->
+    <style>
+      /*
+        One background image per page, published as a custom property.
+
+        ⚠️ The image is NOT applied to `body` any more. `html` and `body` both
+        carry `overflow: hidden` (the scroll lives in `.stack`), and Chrome
+        refuses to paint a `background-attachment: fixed` background on a box
+        with clipped overflow — the images silently vanished. Publishing the URL
+        as a variable lets a `position: fixed` layer paint it instead, which is
+        immune to that rule and costs nothing extra.
+
+        ⚠️ Declared here rather than in a stylesheet because this document is the
+        site root, so `static/...` resolves correctly at any mount depth. The
+        same URL written in CSS resolves against the STYLESHEET's directory and
+        404s — that bug has already cost two rounds.
+      */
+      html {
+        --page-bg: url('static/home.jpg');
+        background-color: #2b2830;
+      }
+      html[data-page='coof'] {
+        --page-bg: url('static/coof.jpg');
+      }
+      html[data-page='cnsr'] {
+        --page-bg: url('static/cnsr.jpg');
+      }
+      html[data-page='paperr'] {
+        --page-bg: url('static/paperr.jpg');
+      }
+      html[data-page='chealth'] {
+        --page-bg: url('static/chealth.jpg');
+      }
+
+      /* ⚠️ There is deliberately no `html.theme-light body` rule. Light mode is
+         handled by the scrim in styles/wallpaper.scss. A body-level overlap
+         would win or lose against the per-page rules above purely by source
+         order (equal specificity), which is not a stable way to decide a theme. */
+    </style>
     <script>
       // Runs before first paint so the wallpaper/theme is correct immediately.
       // The authoritative tier detection re-runs in app.tsx via Taro APIs; this
@@ -29,8 +88,56 @@
             : mql.addListener && mql.addListener(apply);
         } catch (e) {}
       })();
+
+      /*
+        Page identity, so the stylesheet above can pick the background image.
+
+        ⚠️ Derived from the hash rather than set by the page component. Setting
+        it from React would mean the background only appears after hydration —
+        the first panel of every navigation would paint the PREVIOUS page's
+        image and then swap. Reading the hash here means the right image is
+        requested as the document parses.
+
+        ⚠️ `hashchange` is required, not optional. Taro's H5 router is
+        hash-based and does not reload the document between pages, so without
+        this listener the background would freeze on whichever page was loaded
+        first.
+
+        ⚠️ The route is `#/pages/<name>/index`. Anything that does not match
+        (an empty hash on first load, a stray anchor) leaves `data-page` unset,
+        and the default image on `body` applies.
+      */
+      (function () {
+        try {
+          var apply = function () {
+            var m = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
+            if (m) document.documentElement.setAttribute('data-page', m[1]);
+            else document.documentElement.removeAttribute('data-page');
+          };
+          apply();
+          window.addEventListener('hashchange', apply);
+        } catch (e) {}
+      })();
     </script>
   </head>
+  <!--
+    ⚠️ The wallpaper is set HERE, on the root element, not in the stylesheet.
+
+    Two reasons, both load-bearing:
+
+    1. Path resolution. The template lives at the site root, so `static/...`
+       resolves correctly at any mount depth. The same URL written in CSS
+       resolves against the stylesheet's own directory instead and 404s.
+    2. First paint. This is inline in the HTML, so the background is requested
+       as the document parses — before the JS bundle is fetched, parsed and
+       hydrated. Putting it only in the CSS leaves a flash of the fallback
+       colour on every cold load.
+
+    `background-attachment: fixed` keeps it viewport-locked while the page
+    scrolls, which is what `position: fixed` on the wallpaper layer used to do —
+    and it is cheaper, because it avoids promoting a full-screen element to its
+    own compositing layer.
+  -->
   <body>
     <div id="app"></div>
   </body>

@@ -37,7 +37,8 @@ import {
 
 import { queryDatabaseAll } from '../notion';
 import { normalizeAll } from '../sources/coof/normalize';
-import { rehostPosters } from '../sources/coof/posters';
+import { existingPosterPath, rehostPosters } from '../sources/coof/posters';
+import { coofLibraryVersion } from '../sources/coof/version';
 
 const CADENCE_HOURS = 5;
 const RECENT_LIMIT = 20;
@@ -145,16 +146,38 @@ if (!loaded.length) {
 
 // Pass 2 — re-host every poster across all loaded collections in one batch, so
 // concurrency is shared instead of restarting per collection.
+//
+// ⚠️ Built from `l.titles`, NOT from `l.posterUrls`. Iterating the URL map made
+// `rehostPosters`' adopt-from-disk branch unreachable: a row with no Notion
+// poster URL never entered this list, so it never entered the result map, and
+// pass 3's `posterMap.get(id) ?? null` wrote null straight over the backfilled
+// JPEG sitting on disk. Measured on a real run: COOF2024 145 → 0 posters and
+// COOF2023 38 → 0, with every image file still present and untouched.
+//
+// The adopt branch was added for exactly this case and its own comment claims
+// the list "used to" filter on `i.url` — that filter was here all along. Both
+// halves have to agree, so the complete list is the one that gets passed.
 const allPosters: Array<{ id: string; url: string | null }> = [];
 for (const l of loaded) {
-  for (const [id, url] of l.posterUrls) allPosters.push({ id, url });
+  for (const t of l.titles) allPosters.push({ id: t.id, url: l.posterUrls.get(t.id) ?? null });
 }
 if (!DRY_RUN) {
   console.log(`\n  ▸ 下载海报 (${allPosters.length} 张) …`);
   posterMap = await rehostPosters(allPosters, DATA_DIR);
 } else {
+  // Resolve from disk without downloading, so the dry run predicts the same
+  // thing the real run would write. A row with a URL is kept unconditionally:
+  // `rehostPoster` returns the existing path when the file is on disk and
+  // otherwise reports what it would fetch — never null for a row that has one.
   console.log(`\n  ▸ 海报 ${allPosters.length} 张 — DRY RUN 跳过下载`);
-  posterMap = new Map(allPosters.map((p) => [p.id, p.url ? `data/coof/posters/${p.id}.jpg` : null]));
+  const adopted = await Promise.all(
+    allPosters.map(async (p) => {
+      if (p.url) return [p.id, `data/coof/posters/${p.id}.jpg`] as const;
+      const path = await existingPosterPath(p.id, DATA_DIR);
+      return [p.id, path] as const;
+    }),
+  );
+  posterMap = new Map(adopted);
 }
 
 // Collection summaries — shared by every index file so the switcher needs no
@@ -193,7 +216,7 @@ for (const l of loaded) {
 
   const library = {
     schemaVersion: 1 as const,
-    dataVersion: contentHash({ collection: l.key, ids: titles.map((t) => t.id) }),
+    dataVersion: coofLibraryVersion(l.key, titles),
     collection: l.key,
     titles,
   };

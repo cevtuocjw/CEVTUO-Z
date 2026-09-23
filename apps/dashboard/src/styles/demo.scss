@@ -1,9 +1,28 @@
 // Shared styling for every page shell. Kept in one file so the four brand pages
 // don't each carry a near-identical copy.
+//
+// ─────────────────────────────────────────────────────────────
+// House style — "dry, printed, indexed".
+//
+// The organising idea is a printed catalogue rather than an app dashboard:
+//
+//   · Type does the work. A serif display face against wide-tracked uppercase
+//     micro-labels; nothing in between competes.
+//   · Surfaces are flat with hairline rules. No floating cards, no drop
+//     shadows — a card that floats is a card that looks like every other app.
+//   · Corners are near-square (see the radii in tokens.scss).
+//   · Rules are full-bleed dividers, not borders drawn around boxes.
+//
+// ⚠️ The glass system is still applied underneath (see glass.scss). It has to
+// stay: the three-tier degradation is what keeps the app legible on a WebView
+// without backdrop-filter. What changed is its intensity — the glass is now a
+// restrained tint on a flat plane, not a glowing translucent tile.
+// ─────────────────────────────────────────────────────────────
 
 @use 'tokens.scss' as t;
 @use 'breakpoints.scss' as b;
 @use 'glass.scss' as g;
+@use 'recent.scss' as r;
 
 .page {
   display: flex;
@@ -17,6 +36,10 @@
 }
 
 // ── Nav ──────────────────────────────────────────────────────
+//
+// ⚠️ `glass-nav` is kept for the blur, but its bottom border is the ONLY rule
+// separating the bar from the content. It is a real hairline, not the 1px
+// translucent bevel the mixin draws, because a masthead needs a crisp edge.
 .nav {
   @include g.glass-nav;
 
@@ -24,10 +47,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: 52px;
   padding-left: t.$space-4;
   padding-right: t.$space-4;
   box-sizing: border-box;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
 }
 
 .nav__brand {
@@ -36,24 +62,36 @@
   align-items: center;
 }
 
+// The wordmark. Square, hairline-ruled, wide-tracked — a printer's mark rather
+// than an app icon. ⚠️ `--radius-tile` (2px), NOT `--radius-pill`: a circular
+// badge here reads as a notification dot.
 .nav__mark {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-right: t.$space-2;
-  border-radius: 9px;
-  background-color: var(--accent-soft);
-  color: var(--accent);
-  font-size: t.$font-caption;
-  font-weight: t.$weight-bold;
+  width: 24px;
+  height: 24px;
+  margin-right: t.$space-3;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--text-primary);
+  border-radius: var(--radius-tile);
+  background-color: transparent;
+  color: var(--text-primary);
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: 0;
 }
 
 .nav__title {
-  font-size: t.$font-heading;
-  font-weight: t.$weight-semibold;
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  // ⚠️ `menu` rather than `none`. A wide-tracked label needs its words spaced
+  // too, and it is the only text-transform-adjacent value both renderers honour
+  // consistently on a tracked uppercase string.
+  text-transform: uppercase;
+  letter-spacing: t.$track-nav;
   color: var(--text-primary);
 }
 
@@ -65,7 +103,8 @@
 
 .nav__stamp {
   font-size: t.$font-micro;
-  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
 }
 
 // ── Page header ──────────────────────────────────────────────
@@ -75,23 +114,39 @@
   box-sizing: border-box;
   width: 100%;
   @include b.page-top-offset;
-  margin-bottom: t.$space-5;
+  margin-bottom: t.$space-6;
 }
 
+// The one place the display serif appears. Large, tightly set, negative
+// tracking so the glyphs read as a single block of ink.
 .page__title {
+  font-family: t.$font-family-display;
   font-size: t.$font-display;
-  font-weight: t.$weight-bold;
-  letter-spacing: -0.4px;
+  font-weight: t.$weight-regular;
+  letter-spacing: t.$track-display;
+  line-height: 1.05;
   color: var(--text-primary);
 }
 
+// The standfirst. Wide-tracked uppercase, sitting under a hairline — the
+// newspaper convention for "this is metadata, not prose".
 .page__sub {
-  margin-top: t.$space-1;
-  font-size: t.$font-caption;
-  color: var(--text-secondary);
+  margin-top: t.$space-3;
+  padding-top: t.$space-2;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--divider);
+  font-size: t.$font-micro;
+  text-transform: uppercase;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
 }
 
 // ── Block grid ───────────────────────────────────────────────
+//
+// ⚠️ The gap alone separates the blocks. There is no per-item rule, because the
+// grid wraps at different column counts per tier and a `border-bottom` on a
+// wrapped item draws a stub that ends mid-row.
 .grid {
   @include b.block-grid(2, 3, t.$space-4);
 }
@@ -107,28 +162,62 @@
 }
 
 // ── Cards ────────────────────────────────────────────────────
+//
+// ⚠️ NOT a glass card, and no longer a stat tile either. With the panel layout
+// the numbers moved into `.stats__*`; what is left for `.card` is the single
+// ACTION row at the foot of a panel — a hairline-topped target, not a surface.
+//
+// Square, flush, transparent. It reads as the last row of a table, which is
+// exactly the affordance wanted: the whole row is the target.
 .card {
-  @include g.glass;
-  @include g.glass-modifiers;
-
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   box-sizing: border-box;
-  padding: t.$space-4;
-  height: 100%;
+  width: 100%;
+  margin-top: t.$space-5;
+  padding-top: t.$space-3;
+  padding-bottom: t.$space-3;
+  border-radius: 0;
+  border-width: 0;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--text-primary);
+  background-color: transparent;
+  box-shadow: none;
+  transition-property: opacity;
+  transition-duration: 140ms;
+  transition-timing-function: ease-out;
 }
 
+// ⚠️ Press feedback is a class, not `:active` — the mini-program renderer does
+// not reliably fire `:active` on a <View>.
+.card--pressed {
+  opacity: 0.55;
+}
+
+// The label is the entry's "heading" in small caps. Positive tracking is
+// mandatory at this size — without it the uppercase looks cramped and cheap.
 .card__label {
-  font-size: t.$font-micro;
-  letter-spacing: 0.8px;
+  // ⚠️ Bumped from $font-micro (10px). This row is no longer the tap target —
+  // the whole panel is — but it is still the only thing that SAYS a tap leads
+  // somewhere, so it has to be readable at arm's length.
+  font-size: t.$font-body;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
   text-transform: uppercase;
   color: var(--text-tertiary);
 }
 
+// The number. Display serif again, so the block's value carries the same voice
+// as the page title.
 .card__value {
   margin-top: t.$space-2;
+  font-family: t.$font-family-display;
   font-size: t.$font-title;
-  font-weight: t.$weight-semibold;
+  font-weight: t.$weight-regular;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
@@ -137,6 +226,7 @@
   font-size: t.$font-caption;
   color: var(--text-secondary);
 }
+
 
 // ── Chips ────────────────────────────────────────────────────
 .chips {
@@ -152,10 +242,13 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: t.$space-1 t.$space-3;
+  // Sized as a control, not as a label. Measured: the original 10px type on
+  // 4px padding made a ~22px target, under half the 44px minimum.
+  min-height: 34px;
+  padding: t.$space-2 t.$space-3;
   margin-right: t.$space-2;
   margin-bottom: t.$space-2;
-  font-size: t.$font-micro;
+  font-size: t.$font-caption;
   color: var(--text-secondary);
 }
 

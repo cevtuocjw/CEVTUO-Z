@@ -5,15 +5,59 @@
 // Root — emit the token set once.
 // ─────────────────────────────────────────────────────────────
 
+// ⚠️ `html` needs a definite height or the `height: 100%` below resolves
+// against an auto-height box and collapses to the content height — which turns
+// every panel into its natural size and kills the paging entirely.
+html {
+  height: 100%;
+  // The `.stack` scrolls, not the window. Without this the window can still
+  // scroll a few pixels on overscroll and break the snap alignment.
+  overflow: hidden;
+}
+
+// ⚠️ The token set is emitted TWICE, once per theme, and selected by the theme
+// class on `html` — not once on the page elements with the dark set as a
+// default.
+//
+// The earlier version put `@include root-tokens` (which emits the dark palette)
+// on `page, body, #app`. Because `html` is an ANCESTOR of those, a
+// `html.theme-light { ... }` rule could never win: custom properties on a
+// descendant override an ancestor's, so light mode resolved to white text and a
+// dark page colour no matter what `html` said. Measured: `--text-primary` was
+// `rgba(255,255,255,0.96)` in BOTH themes.
+//
+// Selecting on `html` keeps every declaration at the same element, so the theme
+// class decides by specificity rather than by ancestry.
+html {
+  @include t.root-tokens;
+  @include t.theme-dark;
+}
+
+html.theme-light {
+  @include t.theme-override-light;
+}
+
+html.theme-dark {
+  @include t.theme-dark;
+}
+
 page,
 body,
 #app {
-  @include t.root-tokens;
-
   margin: 0;
   padding: 0;
-  min-height: 100%;
-  background-color: var(--page-bg);
+  // ⚠️ `height`, not `min-height`, and `overflow: hidden`.
+  //
+  // The page is now a paged stack: the SCROLLER is the `.stack` element inside
+  // the shell, not the window. If the root can grow, the window scrolls as well
+  // and the two fight — `scroll-snap-type` only constrains its own scroll
+  // container, so panels would land wherever the window scroll happened to
+  // leave them.
+  height: 100%;
+  overflow: hidden;
+  // `background-color` is deliberately NOT set here any more. The wallpaper is
+  // a photograph declared on `body` in index.html; an opaque colour on the
+  // equal-or-higher root would paint over it.
 
   color: var(--text-primary);
   font-size: t.$font-body;
@@ -21,15 +65,31 @@ body,
   -webkit-font-smoothing: antialiased;
 
   // Mini programs need an explicit font stack; there is no system default that
-  // covers both the WeChat renderer and Android WebView consistently.
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Noto Sans SC',
-    'Microsoft YaHei', sans-serif;
+  // covers both the WeChat renderer and Android WebView consistently. The stack
+  // lives in tokens.scss so the display face can be swapped in one place.
+  font-family: t.$font-family-sans;
+
+  // ⚠️ Set here, not on individual nodes. Both renderers inherit, and an
+  // explicit letter-spacing on the root stops Android WebView from applying its
+  // own default tracking, which differs from iOS and would otherwise make the
+  // uppercase labels (which depend on positive tracking) render at two widths.
+  letter-spacing: 0.01em;
 }
 
 // ── Theme resolution ─────────────────────────────────────────
 //
-// Precedence: explicit override class > system preference > dark default.
-// `theme-auto` (the default) is handled by the media query below.
+// Precedence: explicit override class > resolved theme class > system
+// preference > dark default.
+//
+// ⚠️ The old fallback here was `.theme-auto &`, which could never match —
+// NOTHING in the codebase ever applies `theme-auto`. `applyRootClasses()` always
+// stamps `theme-light` or `theme-dark`, and the inline script in index.html does
+// the same before first paint. So the system-preference branch was dead code.
+//
+// The branch is still useful as a last resort: if the inline script throws and
+// `applyRootClasses` fails, `html` carries no theme class at all and this is
+// what keeps the app off a dark theme over a light wallpaper. It now keys off
+// the ABSENCE of a theme class, which is the condition that actually occurs.
 
 .theme-override-dark {
   @include t.theme-override-dark;
@@ -39,12 +99,8 @@ body,
 }
 
 @media (prefers-color-scheme: light) {
-  page,
-  body,
-  #app {
-    &:not(.theme-override-dark) {
-      @include t.theme-override-light;
-    }
+  html:not(.theme-dark):not(.theme-light):not(.theme-override-dark) {
+    @include t.theme-override-light;
   }
 }
 
@@ -53,21 +109,34 @@ body,
 // Positioned with explicit top/left/right/bottom, never `inset` — Skyline
 // supports the four longhands but not the shorthand.
 
+// ⚠️ The scrim is a child of `.page`, NOT of the root, so `.theme-light &`
+// would be looking for a themed ancestor INSIDE the page and never match. The
+// theme classes are stamped on `html`, which is the ancestor that actually
+// exists — hence `html.theme-light &`. Same reasoning for the bare
+// `prefers-color-scheme` fallback: it must be qualified by `html` so it has the
+// same specificity as the two themed rules and source order decides cleanly.
 .cevtuo-wallpaper {
   @include w.wallpaper;
   @include w.wallpaper-dark;
 
   @media (prefers-color-scheme: light) {
-    .theme-auto & {
+    html:not(.theme-dark):not(.theme-light) & {
       @include w.wallpaper-light;
     }
   }
 }
 
-.theme-light .cevtuo-wallpaper {
+html.theme-light .cevtuo-wallpaper {
   @include w.wallpaper-light;
 }
-.theme-dark .cevtuo-wallpaper {
+
+// ⚠️ The rules above are the PRE-HYDRATION fallback only. Once the page mounts,
+// platform/background.ts replaces `background-image` wholesale with the scrim
+// plus the resolved photo URL, because the photo's path cannot be expressed in
+// a stylesheet — see the note there. Keeping the scrim here as well means the
+// layer is never unstyled during startup.
+
+html.theme-dark .cevtuo-wallpaper {
   @include w.wallpaper-dark;
 }
 

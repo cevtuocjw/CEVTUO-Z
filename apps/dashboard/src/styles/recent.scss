@@ -1,0 +1,76 @@
+// ── Recent poster strip ───────────────────────────────────────
+//
+// Shared by the COOF page and the home page's COOF panel. Two copies would drift;
+// the gap and the fixed item width below are both bug fixes, not preferences.
+//
+// ⚠️ A `@use` is required even though this sits in `styles/` — a partial pulled
+// in by another sheet does NOT inherit that sheet's imports, and without the line
+// below every `t.$…` here fails the build with "no module with the namespace t".
+
+@use 'tokens.scss' as t;
+
+// A "recently watched" rail, not a grid.
+//
+// ⚠️ Horizontal ScrollView for the same reason `.cal` is one: the content is a
+// list of unknown length, and a grid would either wrap into an unpredictable
+// block height or shrink the posters below the size at which they are
+// recognisable.
+.recent {
+  margin-top: t.$space-5;
+  width: 100%;
+  // The strip is the last thing in the panel; without this the horizontal
+  // scroller claims the panel's remaining height and the posters stretch.
+  flex-shrink: 0;
+}
+
+.recent__label {
+  display: block;
+  margin-bottom: t.$space-3;
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.recent__scroll {
+  width: 100%;
+}
+
+.recent__row {
+  display: flex;
+  flex-direction: row;
+  // ⚠️ Same trap as `.cal__row` — without a gap the posters butt together and
+  // read as one wide image.
+  gap: t.$space-3;
+}
+
+.recent__item {
+  // Fixed width: `flex: 1` inside a horizontal scroller makes the items shrink
+  // to nothing on a long list.
+  width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent__img {
+  width: 96px;
+  height: 144px;
+  border-radius: 2px;
+  background-color: var(--surface-sunken, rgba(0, 0, 0, 0.08));
+}
+
+.recent__title {
+  margin-top: t.$space-2;
+  font-size: t.$font-micro;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 6px var(--text-halo);
+  // Two lines max — a long title must not push the strip's height around.
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -156,7 +156,16 @@ export async function queryDatabaseAll(
 export function propText(p: NotionProperty | undefined): string {
   if (!p) return '';
   const rt = p.type === 'title' ? p.title : p.rich_text;
-  return (rt ?? []).map((t) => t.plain_text).join('').trim();
+  if (rt) return rt.map((t) => t.plain_text).join('').trim();
+  // ⚠️ Not every column is rich_text, and the calendars disagree about which
+  // ones are. `YEAR` is rich_text in six of them and a NUMBER in COOF2022;
+  // `KIND` is multi_select in the new calendars and a SELECT in COOF2022.
+  // Reading only rich_text made those cells look empty rather than wrong, so
+  // the values vanished silently.
+  if (typeof p.number === 'number') return String(p.number);
+  if (p.select?.name) return p.select.name;
+  if (typeof p.select?.name === 'string') return p.select.name;
+  return '';
 }
 
 export function propNumber(p: NotionProperty | undefined): number | null {

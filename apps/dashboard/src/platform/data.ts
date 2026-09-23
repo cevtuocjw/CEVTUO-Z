@@ -15,6 +15,17 @@
 // not imported, and ./paths.contract.ts for the guard that keeps them in sync.
 import { DATA_PATHS } from './paths';
 
+// ⚠️ `import type` is load-bearing: it is erased at compile time, so zod's
+// ~60KB runtime never reaches the bundle. Only the inferred TYPES come across.
+// (The schema package documents this as the app's intended usage.)
+import type {
+  CoofCollection,
+  CoofIndex,
+  CoofLibrary,
+  CoofTitle,
+  SyncMeta,
+} from '../../../../packages/schema/src/index';
+
 /** Deployed origin, used by the mini-program and as the last-resort fallback. */
 const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
 
@@ -31,7 +42,7 @@ const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
  * domains to be ICP-filed, and Pages never is. Until the filed mainland server
  * is serving, the mini-program has no valid origin — see docs/HOSTING.md.
  */
-function origin(): string {
+function base(): string {
   // ⚠️ There is deliberately NO `process.env.TARO_APP_DATA_ORIGIN` override here.
   //
   // Webpack does not define `process` in this build. Reading `process.env.X`
@@ -41,10 +52,20 @@ function origin(): string {
   // something actually needs it, an override that only ever breaks is worse
   // than no override.
 
-  // 1. H5 / Android WebView: same-origin whenever the app is served next to
-  //    `data/`, which is how both the Pages deploy and the local test layout
-  //    work. Deriving it means the H5 build is correct on any host without a
-  //    per-host rebuild.
+  // 1. H5 / Android WebView: the mount directory, because `data/` is deployed as
+  //    a SIBLING of the app bundle, not at the origin root.
+  //
+  //    ⚠️ The mount directory, NOT `location.origin`. The build uses a relative
+  //    `publicPath` so it can be served from any subdirectory (see
+  //    config/index.ts). `origin` alone produced `http://host/data/...`, which
+  //    404s whenever the app is not at the root — the error state rendered and
+  //    the network tab showed a clean 404 for a path that visibly exists one
+  //    directory down. Taking the pathname's own directory keeps the two
+  //    consistent: whatever depth the HTML loaded from is the depth `data/` is
+  //    at.
+  //
+  //    The H5 router is hash-based, so the pathname never changes between
+  //    routes and this stays stable mid-navigation.
   //
   // ⚠️ This check MUST come before the mini-program check, and must not be
   //    written as `process.env.TARO_ENV === 'weapp'`.
@@ -56,52 +77,35 @@ function origin(): string {
   //    "加载失败: Failed to fetch" while the local server logged a clean 200 for
   //    the identical URL. Feature-detecting the runtime is both simpler and
   //    immune to whatever the bundler chooses to inline.
-  if (typeof location !== 'undefined' && location.origin) return location.origin;
+  if (typeof location !== 'undefined' && location.origin) {
+    // `/z/index.html` -> `/z`, `/` -> '' — then the caller's leading slash
+    // supplies the separator, so there is never a doubled or missing one.
+    return (location.pathname || '/').replace(/\/[^/]*$/, '');
+  }
 
-  // 3. Mini-program: no DOM, so no location. Pages is unusable there anyway
-  //    (WeChat requires ICP-filed request domains) — see docs/HOSTING.md.
+  // 3. Mini-program: no DOM, so no location. This origin is still wrong — pages
+  //    is unusable there anyway (WeChat requires ICP-filed request domains) —
+  //    see docs/HOSTING.md.
   return PROD_ORIGIN;
 }
 
 export const assetUrl = (relPath: string): string =>
-  `${origin()}/${relPath.replace(/^\/+/, '')}`;
+  `${base()}/${relPath.replace(/^\/+/, '')}`;
 
-export interface CoofTitle {
-  id: string;
-  collection: string;
-  title: string;
-  year: number | null;
-  mediaType: string | null;
-  status: 'watched' | 'wishlist' | 'unknown' | string;
-  watchedAt: string | null;
-  rating: number | null;
-  runtimeMin: number | null;
-  note: string | null;
-  poster: string | null;
-  genres: string[];
-  country: string[];
-  director: string[];
-  cast: string[];
-  order: number | null;
-}
-
-export interface CoofIndex {
-  schemaVersion: number;
-  collection: string;
-  collections: string[];
-  dataVersion: string;
-  counts: { total: number; rated: number };
-  genres: string[];
-  hero: CoofTitle | null;
-  recent: CoofTitle[];
-}
-
-export interface CoofLibrary {
-  schemaVersion: number;
-  collection: string;
-  dataVersion: string;
-  titles: CoofTitle[];
-}
+/**
+ * Payload shapes are **re-exported from the schema**, not re-declared.
+ *
+ * ⚠️ These used to be hand-written `interface`s here, and they drifted: this
+ * file declared `collections: string[]` while the pipeline writes an array of
+ * `{ name, count, latestAt, path }` objects. TypeScript was happy, the build was
+ * happy, and the COOF page died at runtime with
+ * `TypeError: t.localeCompare is not a function` inside `calendarKeys` — a
+ * blank screen with no build error to explain it.
+ *
+ * Deriving them means the app cannot describe a payload differently from the
+ * code that produces it. `import type` keeps zod out of the bundle.
+ */
+export type { CoofCollection, CoofIndex, CoofLibrary, CoofTitle, SyncMeta };
 
 async function getJson<T>(path: string): Promise<T> {
   const url = assetUrl(path);
@@ -124,6 +128,33 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * When the data was last regenerated.
+ *
+ * ⚠️ `sync-meta.json` is written ONLY on a run that actually changed something
+ * (see sync.ts), so this is the last time the data MOVED, not the last time a
+ * sync was attempted. That is exactly what "更新于" should mean — a nightly job
+ * that changes nothing must not make the page claim it was updated.
+ *
+ * Optional at every call site: the page is fully usable without it, so a failure
+ * leaves the line off rather than showing an error on a page that works.
+ */
+export const fetchSyncMeta = (): Promise<SyncMeta> => getJson<SyncMeta>(DATA_PATHS.syncMeta);
+
+/**
+ * "2026-09-23T10:44+08:00" → "2026-09-23 10:44".
+ *
+ * ⚠️ Sliced, not `new Date(...).toLocaleString()`. The stamp already carries the
+ * project's timezone offset (+08:00); re-parsing and re-formatting would render
+ * it in whatever zone the device happens to be in, so a reader in London would
+ * see a different "updated at" than the one the pipeline wrote.
+ */
+export function formatUpdatedAt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(iso);
+  return m ? `${m[1]} ${m[2]}` : null;
+}
+
 export const fetchCoofIndex = (collection: string): Promise<CoofIndex> =>
   getJson<CoofIndex>(DATA_PATHS.coofIndex(collection));
 
@@ -132,9 +163,17 @@ export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
 
 /** Which calendars exist, newest first — the switcher's options. */
 export function calendarKeys(index: CoofIndex): string[] {
-  // `collections` is the authoritative list; sorting by the trailing year keeps
-  // the switcher newest-first without hardcoding the naming scheme.
-  return [...index.collections].sort((a, b) => b.localeCompare(a));
+  // `collections` is the authoritative list.
+  //
+  // ⚠️ Sort by `latestAt` — the newest watched date — NOT by the name string.
+  // The names are "COOF2020".."COOF2026" today, so a name sort happens to give
+  // the right order, but that is a coincidence of the naming scheme rather than
+  // a property of the data: a calendar named anything else would sort wrong.
+  // `latestAt` is nullable (an empty calendar has no dates), so empty calendars
+  // sink to the end rather than jumping to the front.
+  return [...index.collections]
+    .sort((a, b) => (b.latestAt ?? '').localeCompare(a.latestAt ?? ''))
+    .map((c) => c.name);
 }
 
 export function formatRuntime(min: number | null): string | null {

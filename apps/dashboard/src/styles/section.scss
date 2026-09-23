@@ -1,0 +1,688 @@
+// ─────────────────────────────────────────────────────────────
+// Section stack — the page's primary layout.
+//
+// The page is a vertical run of full-height PANELS, one capability each, that
+// snap as you scroll. The nav rail on the right mirrors the stack and doubles as
+// a jump control; the chevron at the bottom of every panel is the "there is more
+// below" cue.
+//
+// ⚠️ Snapping is `scroll-snap-type` on the scroll container, NOT a JS scroll
+// hijack. A hijacked scroll fights the OS gesture (momentum, rubber-banding,
+// accessibility scroll) and on Android WebView it stutters badly. The native
+// property gives the same paged feel and costs nothing.
+//
+// ⚠️ Panel height is `100%` of the SCROLL CONTAINER, not `100vh`. On Android
+// WebView `100vh` includes the area under the collapsed browser chrome, so the
+// last panel ends up taller than the viewport and never fully snaps into place.
+// The container is sized in the page shell instead.
+//
+// ⚠️ Every container restates `display:flex; flex-direction:...`. The WebView
+// and Skyline renderers have different defaults; relying on either makes the
+// mini program and H5 diverge.
+// ─────────────────────────────────────────────────────────────
+
+@use 'tokens.scss' as t;
+@use 'breakpoints.scss' as b;
+@use 'glass.scss' as g;
+
+// ⚠️ Declared before first use. SCSS variables are resolved in source order,
+// not hoisted, so a `$gutter` defined at the bottom of the file would fail to
+// compile at the `.stats` rules above it.
+$gutter: t.$space-3;
+
+// ── The scroll container ─────────────────────────────────────
+.stack {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+
+  // ⚠️ An explicit viewport height, NOT `height: 100%`.
+  //
+  // Taro renders this as a custom element `<taro-scroll-view-core>`, which the
+  // browser treats as `display: inline` — a shrink-to-fit box. A percentage
+  // height against that resolves to `auto`, the element collapses to its
+  // content, and because every panel is then also sized from an auto parent,
+  // the whole stack measured 697px inside a 925px window and nothing scrolled
+  // at all. The panels were 169px tall.
+  //
+  // Viewport units are independent of the ancestor chain, so they work no
+  // matter what the framework wraps this in.
+  height: 100vh;
+  // ⚠️ `dvh` where available: on Android WebView `vh` is locked to the LARGEST
+  // viewport, so with the URL bar visible the stack is taller than the visible
+  // area and the last panel can never fully snap into place. The second
+  // declaration wins only where `dvh` is understood.
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  // The rail is an overlay, so reserve its width here rather than letting it
+  // sit on top of the content.
+  scroll-padding-right: 40px;
+}
+
+// ── A single panel ───────────────────────────────────────────
+.section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  // ⚠️ `flex-start`, NOT `center`. Centring a panel's content is what produced
+  // the large dead bands above and below the poster grid — the body is only as
+  // tall as its content, so centring parked it in the middle of a full-viewport
+  // panel and left the rest empty. The body now stretches instead.
+  justify-content: flex-start;
+  // ⚠️ `flex-shrink: 0` is load-bearing. A flex child in a column defaults to
+  // shrinking, so five 100%-tall panels in a column would each compress to a
+  // fifth of the container and the stack would never scroll at all.
+  flex-shrink: 0;
+  width: 100%;
+  // ⚠️ `min-height` must be the VIEWPORT UNIT, not `100%`, for the same reason
+  // the container uses one: a percentage against a shrink-to-fit parent
+  // computes to `auto`, and an invalid `min-height` is dropped entirely rather
+  // than inherited. Measured: `min-height: 100%` resolved to `0px`.
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+
+  // ⚠️ No nav offset. The top bar was removed when panel titles moved into the
+  // right margin — the margin title now carries the page identity, so a second
+  // masthead at the top was redundant and the offset it required was just
+  // eating a third of the fold.
+  // ⚠️ Clears the fixed top bar. The bar's height is a variable declared on
+  // `.topbar`; hardcoding 48px here as well is how the two drift and the bar
+  // starts overlapping the first line of a panel.
+  padding-top: calc(var(--safe-top) + 48px + #{t.$space-5});
+  // ⚠️ Tighter than it was. The rail only needs ~32px, and the previous values
+  // spent 40px horizontally (which cost the poster grid a whole column on a
+  // phone) and 48px vertically on empty space below the content.
+  padding-bottom: calc(var(--safe-bottom) + #{t.$space-5});
+  padding-left: t.$space-4;
+  // Room for the rail, which overlays the content.
+  padding-right: 34px;
+
+  @include b.medium-up {
+    padding-left: t.$space-6;
+    padding-right: 56px;
+  }
+
+  @include b.expanded-up {
+    padding-left: t.$space-7;
+  }
+}
+
+// ⚠️ The panel title goes on the RIGHT, vertically centred — a running head, the
+// way a catalogue prints the section name in the margin of every spread.
+.section__head {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: absolute;
+  right: 40px;
+  top: 0;
+  bottom: 0;
+  justify-content: center;
+  align-items: flex-end;
+  // The panel's own padding already clears the rail; this only offsets the
+  // title from it.
+  padding-right: t.$space-4;
+  // ⚠️ Not clickable: it overlays the content behind it, and an invisible
+  // full-height strip that swallows taps is a bug you only find much later.
+  pointer-events: none;
+
+  @include b.medium-up {
+    right: 56px;
+  }
+}
+
+// ⚠️ `writing-mode` is what makes the title read vertically down the margin.
+// It rotates the line box rather than the glyphs, so Chinese characters stay
+// upright — which `transform: rotate(90deg)` would not do.
+.section__title {
+  font-family: t.$font-family-display;
+  // ⚠️ Fluid, and the old fixed 20px was wrong on both ends of the range.
+  //
+  // The cap existed because a 40px title runs to ~450px of line box in vertical
+  // writing, which collided with the down cue on the unfolded screen's 748px
+  // height. That is a HEIGHT constraint — and it was being applied to every
+  // viewport, so a laptop rendered the same 20px running head as a phone, where
+  // it reads as far too small against a 1440px-wide panel.
+  //
+  // 2.2vw is below 20px on every phone and unfolded width (390→8.6, 673→14.8),
+  // so the floor keeps small screens exactly as they were; only the wide end
+  // grows, up to 34px. At 34px the longest title ("CHEALTH") is ~380px of line
+  // box, which still clears the cue on a 900px-tall laptop panel.
+  font-size: clamp(t.$font-title, 2.2vw, 34px);
+  font-weight: t.$weight-regular;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+
+  // ⚠️ Capped in BOTH tiers, and there is no `medium-up` bump.
+  //
+  // A panel title set at the display size (40px) in a vertical writing mode
+  // needs 40px of width plus tracking, and its line box is as tall as the
+  // string is long — "CHEALTH" at 40px runs to roughly 450px, which is most of
+  // the unfolded inner screen's 748px height once the panel padding is taken
+  // out. It also collided with the down cue at the foot of the panel.
+  //
+  // 20px reads as a running head, which is what it is, and leaves the display
+  // size to the numbers inside the panel where it carries meaning.
+  line-height: 1;
+
+  // Sits directly on the photo, so it needs the halo more than anything else.
+  text-shadow: 0 1px 10px var(--text-halo-strong);
+}
+
+// The index number above the title — "01", "02". Small, wide-tracked, quiet.
+.section__index {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  // ⚠️ Promoted from --text-tertiary to --text-secondary. At tertiary this read
+  // as a smudge over a busy photo; the index is small type and needs the extra
+  // contrast far more than a heading does.
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin-bottom: t.$space-3;
+}
+
+// The year (or any per-panel state) set vertically UNDER the title.
+//
+// ⚠️ A control, so it is the ONE thing in the margin that is not
+// `pointer-events: none` — the band exists precisely so this can live there
+// without taking width from the grid.
+.section__subtitle {
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin-top: t.$space-3;
+}
+
+.section__subtitle--action {
+  // ⚠️ MUST be re-enabled. `.section__head` carries `pointer-events: none` so the
+  // invisible full-height margin band cannot swallow taps meant for the content
+  // behind it — and this label lives INSIDE that band, so it inherits `none` and
+  // was completely inert. Measured: tapping it opened nothing.
+  //
+  // Re-enabling here is safe because the target is the glyphs themselves, not a
+  // full-height strip: the label is only as tall as the year it prints.
+  pointer-events: auto;
+  cursor: pointer;
+  // Underlined so it reads as tappable — it is the only control in the margin
+  // and there is no button chrome to signal it.
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--text-primary);
+  padding: t.$space-2 t.$space-1;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+// ── Panel body ───────────────────────────────────────────────
+.section__body {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  // ⚠️ Blocks must stay BIG. The whole point of one-panel-per-capability is that
+  // each gets room to breathe; a capped width keeps a single card from becoming
+  // a full-width stripe of text on a desktop viewport.
+  max-width: 900px;
+  // ⚠️ Grow into the panel. Without this the body is content-height and any
+  // `flex: 1` child (the poster grid) has nothing to claim.
+  flex: 1;
+  min-height: 0;
+  // ⚠️ `justify-content: center` HERE, on the body — not on the panel.
+  //
+  // The panel must stay `flex-start` so a tall child (the poster grid) can fill
+  // it. But a short child (the home panels' lede + stats) then sat hard against
+  // the top with the whole lower half of the screen empty — plainly visible in
+  // a phone screenshot. Centring the body's own content vertically gives the
+  // sparse panels their balance back without capping the full-height ones.
+  //
+  // ⚠️ `auto` margins do the centring, not `justify-content`, because a
+  // `flex: 1` grandchild needs to be able to stretch past it. `justify-content`
+  // would also centre the grid, which is the thing that must fill.
+  justify-content: center;
+  // ⚠️ Reserved for the margin title. The panel already reserves the rail, but
+  // the title sits INSIDE that band and the stat grid ran underneath it — the
+  // second column of numbers collided with the vertical "COOF".
+  //
+  // ⚠️ Widened from $space-6 to clear the INDEX NUMBER too. `.section__head` is
+  // absolutely positioned at `right: 40px` with `padding-right: $space-4`, so its
+  // content ends 56px in from the panel edge — and `.stats` below carries a
+  // `margin-right: -$gutter`, which pushes its top border 12px back out into
+  // exactly that band. At a 32px reservation the rotated "01" sat on the end of
+  // the rule; visible in every phone screenshot, invisible to any computed-style
+  // check, because both elements are individually correct.
+  padding-right: t.$space-7;
+}
+
+// ⚠️ The text measure is capped at 900px so a paragraph does not become a
+// full-width stripe on a desktop. A poster grid wants the opposite, so the grid
+// panel opts out — measured on a 1440px laptop this is the difference between
+// 4 columns and 6.
+@include b.expanded-up {
+  .section__body--wide {
+    max-width: 1280px;
+  }
+}
+
+// ⚠️ The pressable body has no border to signal it is a control, so the press
+// has to say so. Applies to the whole panel, which is the point: any tap inside
+// it is the same action.
+.section__body--pressable {
+  cursor: pointer;
+  transition: opacity 120ms ease-out;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+// Provenance. Last line in the panel, quiet — it answers "how current is this"
+// and nothing else, so it must not compete with the numbers above it.
+.section__updated {
+  display: block;
+  margin-top: t.$space-4;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+// ── Masthead ─────────────────────────────────────────────────
+.hero {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: t.$space-5;
+}
+
+.hero__welcome {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.hero__title {
+  font-family: t.$font-family-display;
+  // ⚠️ Fluid for the same reason the margin title is: a fixed size that reads
+  // well on a phone is lost on a 1440px laptop.
+  font-size: clamp(44px, 11vw, 96px);
+  font-weight: t.$weight-bold;
+  line-height: 0.95;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+  text-shadow: 0 1px 14px var(--text-halo-strong);
+  text-transform: uppercase;
+}
+
+// ⚠️ `stats--compact` scales BOTH the value and its spacing. Shrinking only the
+// type leaves the block occupying the same vertical space, so the panel still
+// reads as the index page with smaller numbers in it.
+.stats--compact .stats__value {
+  font-size: clamp(30px, 8vw, 48px);
+  font-weight: t.$weight-semibold;
+}
+
+.stats--compact .stats__label {
+  font-size: t.$font-micro;
+}
+
+.section__lede {
+  font-size: t.$font-body;
+  // ⚠️ `--text-primary`, not secondary. This paragraph sits directly on the
+  // photo with no glass between them, and at secondary it disappeared into the
+  // image on every panel.
+  color: var(--text-primary);
+  max-width: 46ch;
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+// ── Stat blocks ──────────────────────────────────────────────
+.stats {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: t.$space-5;
+  // ⚠️ Negative gutter pairs with the per-item margin so the first and last
+  // items stay flush with the panel padding.
+  margin-left: -$gutter;
+  margin-right: -$gutter;
+}
+
+.stats__item {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  // Two-up on the cover screen; the panel is the full width of a phone there
+  // and a single column of four big numbers would be a very long scroll for
+  // very little information.
+  width: calc(50% - #{$gutter} * 2);
+  margin: $gutter;
+  padding-top: t.$space-3;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--text-primary);
+}
+
+.stats__value {
+  font-family: t.$font-family-display;
+  // ⚠️ Fluid AND bold. Two separate complaints produced this.
+  //
+  // Fluid: the fixed 40px was the same on a phone and a 1440px laptop, where it
+  // reads as far too small against a panel that wide.
+  //
+  // Bold: the numbers are the only concrete thing on the panel — the lede above
+  // them is a heading and the labels below are 10px. At the display face's
+  // regular weight they read as decoration; at this size the weight is what
+  // makes them the first thing the eye lands on.
+  font-size: clamp(48px, 16vw, 92px);
+  font-weight: t.$weight-bold;
+  letter-spacing: t.$track-display;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.stats__label {
+  margin-top: t.$space-2;
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.stats__note {
+  margin-top: t.$space-1;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+// ── Down cue ─────────────────────────────────────────────────
+//
+// ⚠️ Rendered on every panel but the last — see the JSX. A chevron on the final
+// panel would promise content that does not exist.
+.section__cue {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-bottom) + #{t.$space-5});
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  // ⚠️ Not a button. It is a cue, not a control — the rail is the control. A tap
+  // target here would sit directly under the thumb during a scroll gesture.
+  pointer-events: none;
+  flex-direction: column;
+  // The gap between the word and the arrow — they read as one unit.
+  gap: t.$space-1;
+}
+
+// ⚠️ A word, not just a glyph. Measured on a phone screenshot: a lone ▼ at the
+// foot of a tall panel reads as decoration. It is also the ONLY thing telling
+// you there is a second panel at all, because the rail is 9px of quiet squares
+// in the margin.
+.section__cue-text {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+  animation-name: cue-bob;
+  animation-duration: 1800ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.section__cue-mark {
+  // Bumped from $font-title (20px) — at 20px it was mistaken for a stray glyph.
+  font-size: 30px;
+  line-height: 1;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+  animation-name: cue-bob;
+  animation-duration: 1800ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes cue-bob {
+  0% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+}
+
+// ── Nav rail ─────────────────────────────────────────────────
+//
+// Dots on the right edge, vertically centred, one per panel.
+//
+// ⚠️ Only shown when there is more than one panel. A single dot is noise, and
+// the rail is the only thing that tells the user the page is paged at all.
+.rail {
+  position: fixed;
+  right: t.$space-3;
+  top: 50%;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  // Centres the rail on the viewport without a known height — `transform` is
+  // the only way to do that, since `top` would need the element's own height.
+  transform: translateY(-50%);
+
+  @include b.medium-up {
+    right: t.$space-5;
+  }
+}
+
+.rail__dot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  // ⚠️ 32px hit target around a 6px mark. A 6px tap target is unusable, and the
+  // visual size and the touch size have to be decoupled.
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background-color: transparent;
+}
+
+.rail__dot-mark {
+  display: flex;
+  flex-direction: row;
+  // ⚠️ Up from 6px. At 6px on a 2x phone screen the marks were a hairline that
+  // disappeared over the photo; they are the only affordance saying the page is
+  // paged at all, so they have to be findable at a glance.
+  width: 9px;
+  height: 9px;
+  // ⚠️ Square, matching the rest of the system. A dot is round; this system is
+  // not, and these read as index marks rather than bullets.
+  border-radius: var(--radius-tile);
+  border-width: 1px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--text-primary);
+  // ⚠️ A translucent fill, not transparent. An outline-only mark vanishes
+  // wherever the photo happens to be mid-grey — the same value as the border.
+  background-color: var(--text-halo-strong);
+  transition-property: background-color, border-color, height;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+// The current panel's mark fills and elongates — the standard paged-scroll
+// idiom, and the only state change needed on a 6px mark to be legible.
+.rail__dot--on .rail__dot-mark {
+  height: 24px;
+  border-color: var(--text-primary);
+  background-color: var(--text-primary);
+}
+
+// ── Persistent top bar ───────────────────────────────────────
+//
+// ⚠️ `position: fixed`, not `sticky`. Skyline does not support sticky at all,
+// and the scroller here is `.stack`, not the window — a sticky bar inside the
+// stack would scroll away with the panel it belongs to.
+//
+// ⚠️ The panels reserve its height through `--topbar-h`, which is declared here
+// and consumed by `.section`'s padding-top. Hardcoding the number in both places
+// is how a bar ends up overlapping content after one of them is tweaked.
+.topbar {
+  --topbar-h: 48px;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 130;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: calc(var(--topbar-h) + var(--safe-top));
+  padding-top: var(--safe-top);
+  padding-left: t.$space-4;
+  padding-right: t.$space-4;
+
+  // ⚠️ Translucent + blur rather than opaque. The bar sits over the page photo,
+  // and a solid strip across the top cuts the image in half on the cover screen.
+  background-color: rgba(10, 11, 15, 0.55);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+
+  @include b.medium-up {
+    padding-left: t.$space-6;
+    padding-right: t.$space-6;
+  }
+}
+
+// In light mode the dark translucent strip reads as a smudge over a pale photo.
+html.theme-light .topbar {
+  background-color: rgba(246, 243, 240, 0.72);
+}
+
+.topbar__left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+}
+
+.topbar__right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// The back control. Wide-tracked uppercase to match the rest of the chrome,
+// with the arrow carrying the affordance.
+.topbar__back {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  // ⚠️ A real touch target. The glyph alone is ~14px wide, which is below any
+  // usable minimum.
+  padding: t.$space-2 t.$space-3 t.$space-2 0;
+  margin-right: t.$space-2;
+}
+
+.topbar__back-mark {
+  font-size: t.$font-body;
+  line-height: 1;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+.topbar__back-label {
+  margin-left: t.$space-1;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-nav;
+  color: var(--text-secondary);
+}
+
+// The wordmark shown instead of the back control at the bottom of the stack.
+.topbar__mark {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: t.$space-3;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--text-primary);
+  border-radius: var(--radius-tile);
+}
+
+.topbar__mark-text {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  color: var(--text-primary);
+}
+
+.topbar__title {
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-nav;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+  // ⚠️ Truncates rather than wrapping. A wrapping title would grow the fixed
+  // bar and push it over the content it is supposed to sit above.
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar__meta {
+  font-size: t.$font-micro;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  text-shadow: 0 1px 6px var(--text-halo);
+}

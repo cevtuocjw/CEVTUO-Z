@@ -1,123 +1,194 @@
-import { Image, Text, View } from '@tarojs/components';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
-import { useBreakpoint } from '../../hooks/useBreakpoint';
-import { useGlassIntensity } from '../../hooks/useGlassIntensity';
+import { PageStack, Section } from '../../components/Section';
+import { TopBar } from '../../components/TopBar';
+import { Wallpaper } from '../../components/Wallpaper';
+import {
+  assetUrl,
+  fetchCoofIndex,
+  fetchSyncMeta,
+  formatUpdatedAt,
+  type CoofTitle,
+} from '../../platform/data';
 
 import '../../styles/demo.scss';
 
 /**
- * Home — Phase 0 demo.
+ * Home — the index of the four brands.
  *
- * Phase 0 goal is to see the design system and the foldable layout on real
- * hardware before any data is wired up, so every value here is placeholder.
+ * ⚠️ One panel per brand, each filling the viewport. This replaced a grid of
+ * four small cards. The cards were the wrong unit: at four-up on the cover
+ * screen each had ~150px of width, which is not enough to show a number and its
+ * label without shrinking the type below the size the design depends on. A
+ * panel per capability gives each one the full screen and makes the page a
+ * sequence you move through rather than a dashboard you squint at.
  *
- * The block list below is the contract every brand page will follow: declare
- * blocks with a priority, and the grid places them. On the cover screen only
- * hero/primary blocks exist; unfolding promotes the tier and the rest appear.
+ * ⚠️ The numbers below are still placeholders. COOF is the only brand with a
+ * real pipeline; the other three have no data source yet, and the counts here
+ * are the same invented ones this page has always shown. They are visibly
+ * labelled as such on COOF (which opens) and are inert elsewhere.
  */
 
-interface BrandTile {
+interface BrandPanel {
   key: string;
-  label: string;
-  blurb: string;
-  value: string;
-  note: string;
-  /** Rendered on the cover screen. Everything else waits for an unfold. */
-  primary: boolean;
+  /** Panel title, set vertically in the margin. Short — it must not wrap. */
+  title: string;
+  lede: string;
+  stats: { value: string; label: string; note?: string }[];
+  /** Route to open on tap, or null while the brand is still a shell. */
+  route: string | null;
 }
 
-const BRANDS: BrandTile[] = [
-  { key: 'coof', label: 'COOF', blurb: '电影记录', value: '148', note: '部 · 2026 年度', primary: true },
-  { key: 'cnsr', label: 'CNSR', blurb: '笔记与摘录', value: '1,024', note: '条 · 4 个来源', primary: true },
-  { key: 'paperr', label: 'CE-PaperR', blurb: 'Kindle 阅读', value: '36h', note: '本月 · 在读 3 本', primary: true },
-  { key: 'chealth', label: 'Chealth', blurb: '健康数据', value: '8,412', note: '步 · 今日', primary: false },
+const PANELS: BrandPanel[] = [
+  {
+    key: 'coof',
+    title: 'COOF',
+    lede: "CEVTUO's 观影记录",
+    // ⚠️ Placeholders replaced at render time by the live counts (see `stats`).
+    stats: [
+      { value: '—', label: '个年历', note: '2020–2026' },
+      { value: '—', label: '条记录', note: '全部年历' },
+    ],
+    route: '/pages/coof/index',
+  },
+  {
+    key: 'cnsr',
+    title: 'CNSR',
+    lede: '笔记与摘录。按 @date 归档，四个来源汇聚到一处。',
+    stats: [
+      { value: '1,024', label: '总条目', note: '条 · 4 个来源' },
+      { value: '180', label: '单条摘要', note: '字 · 上限' },
+    ],
+    route: null,
+  },
+  {
+    key: 'paperr',
+    title: 'PAPERR',
+    lede: 'Kindle 阅读。阅读时长、在读书目与划线，从设备同步。',
+    stats: [
+      { value: '36h', label: '本月', note: '在读 3 本' },
+      { value: '12', label: '已读完', note: '本 · 本年度' },
+    ],
+    route: null,
+  },
+  {
+    key: 'chealth',
+    title: 'CHEALTH',
+    lede: '健康数据。步数、心率与睡眠，不进入公开仓库，走鉴权接口。',
+    stats: [
+      { value: '8,412', label: '今日步数', note: '步' },
+      { value: '7h12', label: '昨夜睡眠', note: '时 · 分' },
+    ],
+    route: null,
+  },
 ];
 
 export default function Home() {
-  const bp = useBreakpoint();
-  const glass = useGlassIntensity();
+  // ⚠️ Only COOF has a pipeline, so only COOF gets a preview strip. The strip is
+  // decoration and must never be load-blocking: a failure here leaves the panel
+  // exactly as it was before, rather than showing an error on an index page
+  // whose job is to offer four doors.
+  const [recent, setRecent] = useState<CoofTitle[]>([]);
+  const [totals, setTotals] = useState<{ years: number; items: number } | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchCoofIndex('COOF2026')
+      .then((idx) => {
+        if (!alive) return;
+        setRecent(idx.recent.filter((t) => t.poster).slice(0, 10));
+        setTotals({
+          years: idx.collections.length,
+          // ⚠️ The count of the WHOLE archive, not this calendar's — summed
+          // from the per-collection counts the index already carries, so no
+          // extra request and no chance of disagreeing with the COOF page.
+          items: idx.collections.reduce((n, c) => n + c.count, 0),
+        });
+      })
+      .catch(() => {});
+    fetchSyncMeta()
+      .then((m) => alive && setUpdatedAt(formatUpdatedAt(m.generatedAt)))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const tierLabel =
-    bp.tier === 'compact' ? '外屏' : bp.tier === 'medium' ? '内屏展开' : '大屏';
-
-  // Cover screen: primary blocks only. Unfolded: everything.
-  const visible = BRANDS.filter((b) => bp.tier !== 'compact' || b.primary);
+  const open = (route: string | null, title: string) => {
+    // ⚠️ The other three brands have no page content yet. Rather than navigate
+    // into a blank route — which reads as a crash — say so and stay put.
+    if (!route) {
+      Taro.showToast({ title: `${title} 尚未接入`, icon: 'none' });
+      return;
+    }
+    Taro.navigateTo({ url: route });
+  };
 
   return (
     <View className="page">
-      {/* Wallpaper lives behind everything; position:fixed + explicit edges. */}
-      <View className="cevtuo-wallpaper" />
+      <Wallpaper />
+      <TopBar title="CEVTUO-Z" />
 
-      <View className="nav">
-        <View className="nav__brand">
-          <View className="nav__mark">
-            <Text>Z</Text>
-          </View>
-          <Text className="nav__title">CEVTUO-Z</Text>
-        </View>
-        <View className="nav__meta">
-          <Text className="nav__stamp">
-            {tierLabel} · {bp.width}×{bp.height}
-          </Text>
-          <Text className="nav__stamp">玻璃 {glass.percent}%</Text>
-        </View>
-      </View>
+      <PageStack count={PANELS.length}>
+        {PANELS.map((p, i) => (
+          <Section
+            key={p.key}
+            index={i}
+            title={p.title}
+            lede={p.lede}
+            // ⚠️ Live numbers for COOF, the still-invented placeholders for the
+            // three brands with no pipeline. Showing a hardcoded "1209" beside a
+            // live one is how a page starts lying after the next sync.
+            stats={
+              p.key === 'coof' && totals
+                ? [
+                    { value: `${totals.years}`, label: '个年历', note: '2020–2026' },
+                    { value: `${totals.items}`, label: '条记录', note: '全部年历' },
+                  ]
+                : p.stats
+            }
+            updatedAt={p.key === 'coof' ? updatedAt : null}
+            // The last panel gets no chevron: there is nothing below it, and a
+            // cue there promises content that does not exist.
+            showCue={i < PANELS.length - 1}
+            // ⚠️ The handler belongs HERE, on the whole panel body — not on the
+            // `card` below. Tapping the numbers, their labels, or the empty space
+            // beside them all mean "open this brand" to the person doing it, and
+            // a 10px label with a hairline rule is a target you have to aim at.
+            // The card stays as the visible affordance; it no longer owns the tap.
+            onPress={() => open(p.route, p.title)}
+          >
+            {p.key === 'coof' && recent.length ? (
+              <ScrollView className="recent__scroll" scrollX showScrollbar={false}>
+                <View className="recent__row">
+                  {recent.map((t) => (
+                    <View
+                      key={t.id}
+                      className="recent__item"
+                      onClick={() => open(p.route, p.title)}
+                    >
+                      <Image
+                        className="recent__img"
+                        src={assetUrl(t.poster as string)}
+                        mode="aspectFill"
+                        lazyLoad
+                      />
+                      <Text className="recent__title">{t.title}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            ) : null}
 
-      <View className="page__head">
-        <Text className="page__title">下午好</Text>
-        <Text className="page__sub">
-          {bp.columns} 列布局 · 更新于 14:05 · 下次 18:00
-        </Text>
-      </View>
-
-      <View className="grid">
-        {visible.map((b) => (
-          <View className="block" key={b.key}>
-            <View
-              className="card"
-              onClick={() => Taro.showToast({ title: `打开 ${b.label}`, icon: 'none' })}
-            >
-              <Text className="card__label">{b.label}</Text>
-              <Text className="card__value">{b.value}</Text>
-              <Text className="card__note">
-                {b.note} · {b.blurb}
-              </Text>
+            <View className="card">
+              <Text className="card__label">{p.route ? '打开' : '尚未接入'}</Text>
+              <Text className="card__label">{p.route ? '→' : '—'}</Text>
             </View>
-          </View>
+          </Section>
         ))}
-
-        {bp.tier !== 'compact' && (
-          <View className="block">
-            <View className="card glass--raised">
-              <Text className="card__label">DEMO · 仅内屏显示</Text>
-              <Text className="card__value">{glass.percent}%</Text>
-              <Text className="card__note">
-                这块在外屏不渲染，所以取数也会被跳过 —— 没渲染的模块绝不请求。
-              </Text>
-
-              {/* Glass intensity slider. Mini programs have no <input type=range>,
-                  so this is a tap-to-set strip, which works identically on both targets. */}
-              <View
-                className="chips"
-                onClick={(e) => {
-                  const x = e.detail?.x ?? 0;
-                  const w = bp.width - 64;
-                  glass.setPercent(Math.round(Math.min(1, Math.max(0, (x - 16) / w)) * 100));
-                }}
-              >
-                {[20, 40, 60, 80, 100].map((p) => (
-                  <View className={`chip ${glass.percent === p ? 'chip--on' : ''}`} key={p}>
-                    <Text>{p}%</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-        )}
-      </View>
-
-      <View className="block__spacer" />
+      </PageStack>
     </View>
   );
 }

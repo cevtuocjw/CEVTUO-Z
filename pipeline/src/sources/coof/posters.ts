@@ -103,11 +103,25 @@ function fetchHeadersFor(url: string): Record<string, string> {
  * while writing PNG data into `.webp` files, so an extension-based check would
  * have accepted 145 mislabelled files. Verify the bytes, not the name.
  */
-async function readValidJpeg(absPath: string): Promise<number | null> {
+export async function readValidJpeg(absPath: string): Promise<number | null> {
   const buf = await readFile(absPath).catch(() => null);
   if (!buf || buf.byteLength < 512) return null;
   const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
   return isJpeg ? buf.byteLength : null;
+}
+
+/**
+ * The origin-relative path of a poster already on disk, or `null`.
+ *
+ * No network. This is the whole adopt-from-disk rule in one place so the dry
+ * run can predict what a real run would keep instead of guessing from the URL
+ * alone — a dry run that reports "these 867 become null" when the sync would
+ * in fact preserve all of them is worse than no dry run at all.
+ */
+export async function existingPosterPath(id: string, dataDir: string): Promise<string | null> {
+  const relPath = `data/coof/posters/${id}.jpg`;
+  const bytes = await readValidJpeg(join(dataDir, 'coof', 'posters', `${id}.jpg`));
+  return bytes ? relPath : null;
 }
 
 /**
@@ -201,11 +215,37 @@ export async function rehostPosters(
   concurrency = 5,
 ): Promise<Map<string, string | null>> {
   const results = new Map<string, string | null>();
-  const queue = items.filter((i): i is { id: string; url: string } => Boolean(i.url));
-
   let cursor = 0;
   let downloaded = 0;
   let failed = 0;
+  let adopted = 0;
+
+  // ⚠️ Adopt posters already on disk whose Notion row has NO poster URL.
+  //
+  // These used to be dropped before the queue was built — `filter(i => i.url)` —
+  // so they never entered `results`, and sync writes
+  // `poster: posterMap.get(id) ?? null`. Every backfilled poster was therefore
+  // reset to null on the next run, five hours later: the work silently undid
+  // itself with nothing in the logs to say so.
+  //
+  // Two sources of such files: the local Douban backfill (cli/local-posters.ts)
+  // and the ~856 rows in the earliest calendars that predate the POSTER field
+  // entirely. Re-adopting here makes the two writers idempotent without either
+  // having to know about the other.
+  const queue: Array<{ id: string; url: string }> = [];
+  for (const i of items) {
+    if (i.url) {
+      queue.push({ id: i.id, url: i.url });
+      continue;
+    }
+    const onDisk = await existingPosterPath(i.id, dataDir);
+    if (onDisk) {
+      results.set(i.id, onDisk);
+      adopted++;
+    } else {
+      results.set(i.id, null);
+    }
+  }
 
   async function worker(): Promise<void> {
     while (cursor < queue.length) {
@@ -222,7 +262,9 @@ export async function rehostPosters(
 
   const skipped = queue.length - downloaded - failed;
   console.log(
-    `    海报: 新下载 ${downloaded}, 已存在 ${skipped}, 失败 ${failed}, 无图 ${items.length - queue.length}`,
+    `    海报: 新下载 ${downloaded}, 已存在 ${skipped}, 采用本地 ${adopted}, 失败 ${failed}, 无图 ${
+      items.length - queue.length - adopted
+    }`,
   );
   return results;
 }

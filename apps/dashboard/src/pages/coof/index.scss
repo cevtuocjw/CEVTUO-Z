@@ -14,81 +14,165 @@
 @use '../../styles/tokens.scss' as t;
 @use '../../styles/breakpoints.scss' as b;
 @use '../../styles/glass.scss' as g;
+@use '../../styles/recent.scss' as r;
 
 // ── Calendar switcher ─────────────────────────────────────────
 .cal {
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
-  // 8 solid calendars do not fit a 361dp cover screen, so this scrolls.
+  // Seven calendars do not fit a cover screen, so this scrolls.
   white-space: nowrap;
-  padding: t.$space-2 t.$space-4 0;
+  padding: t.$space-2 0 0;
 }
 
 .cal__row {
   display: flex;
   flex-direction: row;
   align-items: center;
+  // ⚠️ Without this the chips butt straight into one another and the row reads
+  // as a single run-on string — measured in a screenshot as
+  // `COOF2026COOF2025COOF2024COOF202…`. They are separate tap targets; they
+  // have to look like it.
+  gap: t.$space-2;
 }
 
 // ── Poster grid ───────────────────────────────────────────────
-.grid {
+//
+// ⚠️ The grid scrolls INSIDE the panel, not with the outer stack. A 149-entry
+// grid living directly in a `scroll-snap-type: y mandatory` container fights the
+// snap on every flick — the outer stack would keep yanking the view back to the
+// panel's top edge instead of letting the list move.
+// Positioning context for the scroll bar, which is absolutely placed against
+// the grid rather than the panel.
+.posters__wrap {
+  position: relative;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.posters {
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
-  padding: t.$space-3 t.$space-4 t.$space-6;
+  width: 100%;
+  // ⚠️ `flex: 1` + `min-height: 0`, NOT a viewport `calc()`.
+  //
+  // The previous `calc(100dvh - 220px)` hardcoded a guess at how much room the
+  // panel's padding and chrome would take. On a phone that guess was far too
+  // large (dead band at the foot) and on a wide screen it was far too small.
+  // Claiming the leftover space means the grid fits whatever the panel actually
+  // has, at any viewport, with no magic number to re-tune per device.
+  //
+  // ⚠️ `min-height: 0` is required alongside it: a flex item's default
+  // `min-height: auto` refuses to shrink below its content, which would make the
+  // list grow the panel instead of scrolling inside it.
+  flex: 1;
+  min-height: 0;
+  // ⚠️ Explicitly off. Without this the inner list inherits the outer
+  // container's mandatory snap and snaps to nothing, which presents as the grid
+  // simply refusing to scroll.
+  scroll-snap-type: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+// ⚠️ CSS Grid with `auto-fill`, NOT a flex-wrap with per-breakpoint percentages.
+//
+// A fixed column count is always wrong somewhere: 3-across on a phone wastes the
+// height, 3-across on a 1400px window wastes the width, and every device in
+// between needs its own rule. `auto-fill` + `minmax` lets the browser place as
+// many columns as the actual container fits, so the count follows the viewport
+// instead of a list of breakpoints someone has to keep updating.
+//
+// ⚠️ The track floor is a variable, raised in steps as the viewport widens.
+//
+// A constant floor is wrong at both ends: ~110px gives 7 cramped columns on a
+// 1400px screen (posters become thumbnails), while ~220px gives 2 on a phone
+// (wasted height). Raising the floor with the viewport caps the column count at
+// the wide end, so the posters stay legible instead of just multiplying.
+//
+// ⚠️ Declared on `.grid` rather than `:root` so it is scoped to this component
+// and cannot be inherited by anything else that uses `--tile-min` later.
+.grid {
+  // ⚠️ 118px, not larger. The compact tier must still fit TWO posters across a
+  // 361–390px cover screen after the page padding and the rail's reserved band
+  // are taken out (~276px of usable width). At 132px `auto-fill` could only
+  // place one column, so the phone showed a single giant poster per row — the
+  // opposite of the "wasted space" this was meant to fix. Measured after the
+  // change: 2 columns at 390px.
+  --tile-min: 118px;
+
+  display: grid;
+  box-sizing: border-box;
+  grid-template-columns: repeat(auto-fill, minmax(var(--tile-min), 1fr));
   gap: t.$space-3;
+  padding: t.$space-2 t.$space-2 t.$space-5;
+  align-content: start;
+  // ⚠️ `stretch` so every tile in a row is the same height; the title/meta
+  // lines below each poster vary from one to two lines, and without this the
+  // rows would jitter.
+  align-items: stretch;
 }
 
 .tile {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  // Two up on the cover screen, more as it widens. Percentages rather than a
-  // fixed column count so a 1px rounding error cannot push a tile to its own row.
-  width: calc(50% - #{t.$space-3} / 2);
+  // No width rule: the grid track decides it. A width here would fight the
+  // track and break the alignment `auto-fill` just computed.
+  width: auto;
 }
 
-// 2 / 3 / 3 columns — matching `b.block-grid`'s tiers, so COOF lines up with the
-// other three brand pages instead of inventing its own rhythm.
+// Unfolded inner screen (~673dp) — wide enough for a larger poster before the
+// column count is allowed to increase.
 @include b.medium-up {
-  .tile {
-    width: calc(33.333% - #{t.$space-3} * 2 / 3);
+  .grid {
+    --tile-min: 156px;
   }
 }
 
+// Desktop / tablet. The floor grows again so a wide window gains column WIDTH
+// rather than an unbounded number of columns.
 @include b.expanded-up {
-  .tile {
-    width: calc(33.333% - #{t.$space-3} * 2 / 3);
+  .grid {
+    --tile-min: 190px;
   }
 }
 
 .tile__art {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: block;
   width: 100%;
-  // 2:3 is the standard poster ratio; fixing it keeps the grid even even when a
-  // poster is missing or oddly cropped.
-  padding-top: 150%;
+  // ⚠️ `aspect-ratio`, and the image below is NOT absolutely positioned.
+  //
+  // Both were tried the other way round and both produced the same visible bug:
+  // each row's title and year lines printed OVER the next row's poster. The box
+  // metrics looked self-consistent while it happened, so this is not a matter of
+  // the track being one pixel short — the poster itself was escaping its tile.
+  // A child that is `position: absolute` in a box whose height comes from
+  // padding is exactly the kind of thing that renders one way in Chrome and
+  // another in the WeChat WebView, so the absolute positioning is gone.
+  //
+  // `aspect-ratio` gives the BOX a real height, and the image is an ordinary
+  // block child of it. Nothing can overflow because nothing is out of flow.
+  aspect-ratio: 2 / 3;
   border-radius: t.$radius-tile;
   overflow: hidden;
   background-color: rgba(255, 255, 255, 0.04);
 }
 
+// ⚠️ In normal flow, filling the art box. See the note on `.tile__art`.
 .tile__img {
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
   width: 100%;
   height: 100%;
 }
 
+// The placeholder occupies the same box as the image it stands in for, so the
+// grid does not reflow between a row that has posters and one that does not.
 .tile__placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -111,8 +195,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 2px t.$space-1;
-  border-radius: t.$radius-chip;
+  padding: 2px t.$space-2;
+  border-radius: var(--radius-tile);
   // Solid, not glass: a glass badge over a bright poster loses contrast.
   background-color: rgba(0, 0, 0, 0.62);
 }
@@ -124,12 +208,19 @@
 }
 
 .tile__title {
+  // ⚠️ `min-width: 0` so the two-line clamp can actually shrink. Without it the
+  // flex item refuses to go below its content width and long CJK titles push the
+  // tile wider than its grid track.
+  min-width: 0;
   // ⚠️ `-webkit-box` here, NOT `flex` — `-webkit-line-clamp` only takes effect on
   // a box, and declaring flex as well would silently void the clamp.
   display: -webkit-box;
   margin-top: t.$space-2;
-  font-size: t.$font-caption;
-  font-weight: t.$weight-medium;
+  font-family: t.$font-family-display;
+  font-size: t.$font-heading;
+  font-weight: t.$weight-regular;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   color: var(--text-primary);
   // Two lines then ellipsis — a three-line title would make one tile taller
   // than its neighbours and break the row.
@@ -140,8 +231,10 @@
 }
 
 .tile__meta {
-  margin-top: 2px;
+  margin-top: t.$space-1;
   font-size: t.$font-micro;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--text-tertiary);
 }
 
@@ -195,8 +288,8 @@
   max-height: 82vh;
   padding: t.$space-5 t.$space-4;
   padding-bottom: calc(#{t.$space-5} + var(--safe-bottom));
-  border-top-left-radius: t.$radius-sheet;
-  border-top-right-radius: t.$radius-sheet;
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
   overflow-y: auto;
 }
 
@@ -288,4 +381,326 @@
   border-radius: t.$radius-chip;
   font-size: t.$font-body;
   color: var(--text-primary);
+}
+
+// ── Year picker ───────────────────────────────────────────────
+//
+// A sheet, matching the detail overlay's shape so the page has one way of
+// interrupting itself rather than two. Deliberately NOT a dropdown anchored to
+// the margin label: the label is 4px wide in vertical writing, and a menu
+// hanging off it would be a 4px-wide pointer target on a phone.
+.picker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.42);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.picker__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding: t.$space-3 t.$space-4 calc(#{t.$space-5} + env(safe-area-inset-bottom, 0px));
+  background-color: var(--surface-raised);
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.picker__head {
+  padding: t.$space-2 0 t.$space-3;
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.picker__item {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  box-sizing: border-box;
+  width: 100%;
+  // ⚠️ 56px minimum, not the text height. This is a thumb target and the rows
+  // sit at the bottom of the screen, where reach is easiest and precision is
+  // worst.
+  min-height: 56px;
+  padding: t.$space-3 t.$space-2;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--rule-hairline);
+}
+
+.picker__item--on {
+  background-color: var(--surface-sunken, rgba(0, 0, 0, 0.04));
+}
+
+.picker__year {
+  font-family: t.$font-family-display;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--text-primary);
+  letter-spacing: t.$track-display;
+  min-width: 96px;
+}
+
+.picker__item--on .picker__year {
+  color: var(--accent);
+}
+
+.picker__full {
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
+
+// ── Scroll position bar ───────────────────────────────────────
+//
+// ⚠️ The rail on the right tracks PANELS, not position within one. A 149-tile
+// grid is many screens tall, so without this the reader has no idea whether
+// they are a third of the way down or nearly finished. Pinned to the grid's
+// right edge, inside the content band — the far-right margin belongs to the
+// vertical title.
+.posters__bar {
+  position: absolute;
+  top: t.$space-2;
+  right: 0;
+  bottom: t.$space-5;
+  width: 2px;
+  border-radius: 1px;
+  background-color: var(--rule-hairline);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.posters__thumb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 1px;
+  background-color: var(--accent);
+  // ⚠️ Floor, not just a percentage. A 149-tile grid is ~28 screens tall, so the
+  // proportional thumb computes to 3.5% of the track — about 4px, which is
+  // invisible and un-grabbable. The floor makes it a mark you can see and the
+  // percentage keeps it honest about position.
+  min-height: 14px;
+}
+
+// ── View switcher ─────────────────────────────────────────────
+//
+// ⚠️ A segmented row, not a picker. Three options is few enough that hiding them
+// behind a tap costs more than it saves — unlike the year, which has seven and
+// is used once per visit.
+.views {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: t.$space-1;
+  margin-bottom: t.$space-3;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--rule-hairline);
+}
+
+.views__tab {
+  // 40px, not the text height — a tab is a thumb target.
+  min-height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 t.$space-3;
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+}
+
+.views__tab--on {
+  color: var(--text-primary);
+  // The active tab is marked by a rule UNDER it, level with the row's own
+  // border — the same device the rest of the page uses for structure.
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--accent);
+  margin-bottom: -1px;
+}
+
+// ── Timeline ──────────────────────────────────────────────────
+.tl, .cal2 {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding: t.$space-2 t.$space-2 t.$space-5;
+}
+
+// ⚠️ Stated, not hidden. Rows with no watch date cannot be placed on a date
+// axis, and a view that silently shows fewer films than the count in the margin
+// reads as a bug in the data rather than a limit of the view.
+.tl__gap {
+  margin-bottom: t.$space-4;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.tl__month {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: t.$space-5;
+}
+
+.tl__head {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: t.$space-2;
+  margin-bottom: t.$space-2;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--text-primary);
+}
+
+.tl__month-label {
+  font-family: t.$font-family-display;
+  font-size: t.$font-heading;
+  color: var(--text-primary);
+  letter-spacing: t.$track-display;
+}
+
+.tl__count {
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
+
+.tl__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-2 0;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--rule-hairline);
+}
+
+.tl__thumb {
+  width: 40px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.tl__thumb--empty {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.tl__thumb-letter {
+  font-size: t.$font-heading;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.tl__text {
+  display: flex;
+  flex-direction: column;
+  // ⚠️ `min-width: 0` lets this shrink; without it a long CJK title pushes the
+  // day number off the row entirely.
+  flex: 1;
+  min-width: 0;
+}
+
+.tl__title {
+  font-size: t.$font-body;
+  color: var(--text-primary);
+  text-shadow: 0 1px 6px var(--text-halo);
+}
+
+.tl__meta {
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+}
+
+.tl__day {
+  font-family: t.$font-family-display;
+  font-size: t.$font-heading;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+// ── Month calendar ────────────────────────────────────────────
+.cal2__month {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: t.$space-5;
+}
+
+.cal2__weekdays,
+.cal2__grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.cal2__weekday {
+  width: calc(100% / 7);
+  text-align: center;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+  padding-bottom: t.$space-1;
+}
+
+.cal2__cell {
+  width: calc(100% / 7);
+  // Square cells so the grid keeps its shape at any panel width. `aspect-ratio`
+  // rather than a fixed height — the grid is 7 cells wide on a phone and on a
+  // laptop alike, so a fixed height would be wrong at one end.
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.cal2__cell--void {
+  visibility: hidden;
+}
+
+.cal2__day {
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.cal2__cell--on .cal2__day {
+  color: var(--text-primary);
+}
+
+// The mark that says "something was watched". A dot rather than a poster
+// thumbnail: at 1/7 of a phone's width a thumbnail is ~40px, at which a film is
+// not identifiable anyway — the shape of the month is the information here.
+.cal2__mark {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--accent);
 }

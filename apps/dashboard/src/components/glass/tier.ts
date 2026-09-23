@@ -104,7 +104,22 @@ export function applyRootClasses(): GlassTier {
 
   try {
     if (typeof document !== 'undefined' && document.documentElement) {
-      document.documentElement.className = classes;
+      // ⚠️ MERGE, never assign. The inline script in index.html stamps
+      // `theme-light` / `theme-dark` before first paint so the wallpaper is the
+      // right tone immediately. Assigning `className` here erased that and
+      // replaced it with this function's answer — which on H5 comes from
+      // `Taro.getAppBaseInfo()`, a different source than `matchMedia`, so the
+      // two could disagree and the page would repaint the wrong theme at boot.
+      //
+      // Removing the stale `theme-*` first keeps this idempotent: without it,
+      // repeated calls (useLaunch + every useDidShow) would accumulate both
+      // theme classes and the later rule in source order would win by accident.
+      const el = document.documentElement;
+      el.className = el.className
+        .split(/\s+/)
+        .filter((c) => c && c !== 'theme-light' && c !== 'theme-dark' && !c.startsWith('tier-'))
+        .concat(classes.split(' '))
+        .join(' ');
     }
     // Mini programs style from the page root; set it there too.
     const page = Taro.getCurrentInstance()?.page;

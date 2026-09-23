@@ -1,23 +1,22 @@
 // ─────────────────────────────────────────────────────────────
-// Wallpaper — the layer that rescues Tiers B and C.
+// Wallpaper — the photo layer, plus the scrim that keeps text legible.
 //
-// Tier A gets its vividness from `saturate(180%)` inside the backdrop-filter.
-// Tiers B and C cannot do that, so if the wallpaper underneath were a muted
-// gradient the glass would collapse to flat grey.
+// ⚠️ This layer paints the IMAGE itself. It did not always.
 //
-// The fix is to move the saturation DOWN into the wallpaper: the gradient stops
-// below are already fully vivid, so a blur-only (Tier B) card still picks up
-// rich colour through the blur, and an opaque (Tier C) card still reads as
-// sitting on a coloured surface.
+// The image was on `body`, which looked simpler and was wrong: `html` and
+// `body` both carry `overflow: hidden` (the scroll lives in `.stack`, not the
+// window), and Chrome will not paint a `background-attachment: fixed` background
+// on a box with clipped overflow. The photos silently disappeared with nothing
+// in the console. A `position: fixed` layer has no such restriction.
 //
-// ⚠️ Do NOT use `filter: saturate()` on this layer instead — a full-screen
-// fixed element with a filter is a real compositing cost on Android.
+// The URL arrives as `--page-bg`, published per route in index.html — see there
+// for why the declaration lives in the document rather than a stylesheet.
 //
-// ⚠️ Position with top/left/right/bottom explicitly. Skyline supports those
-// four properties but NOT the `inset` shorthand.
+// ⚠️ The scrim is a SECOND gradient layered over the photo, not a replacement.
+// It is what carries contrast for the glass tiers: Tier A gets its vividness
+// from `saturate()` inside the backdrop-filter, Tiers B and C cannot, so the
+// surface underneath has to carry the contrast itself.
 // ─────────────────────────────────────────────────────────────
-
-@use 'tokens.scss' as t;
 
 @mixin wallpaper {
   position: fixed;
@@ -25,35 +24,60 @@
   left: 0;
   right: 0;
   bottom: 0;
+  // ⚠️ Must stay negative. `.page` is a plain unpositioned flex column, so a
+  // positioned layer at `z-index: 0` would paint ABOVE the whole page and hide
+  // the panels behind it.
   z-index: -1;
   pointer-events: none;
 
-  opacity: var(--wallpaper-a);
-  transition-property: opacity;
-  transition-duration: 240ms;
-  transition-timing-function: ease-out;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  // ⚠️ The four longhands are spelled out rather than folded into
+  // `background`. Skyline's shorthand parsing is unreliable, and `cover` is the
+  // only thing keeping a portrait image from tiling on a desktop viewport.
+  background-color: #2b2830;
+
+  // ⚠️ Fixed opacity, NOT `var(--wallpaper-a)`.
+  //
+  // The variable scales with glass strength and drops to 0.55 at the low end —
+  // which washed the photo out to 55% and left the scrim barely present. The
+  // scrim's own gradients below already carry the intended strength, so the
+  // extra multiplier only made the page look broken. When the image was on
+  // `body` this variable was invisible; moving it here exposed it.
+  opacity: 1;
 }
 
-// Dark theme: deep space with slow colour blooms in the corners. The blooms
-// give the glass something to pick up; a flat black backdrop would make every
-// card look identical regardless of tier.
+// ── Dark theme ────────────────────────────────────────────────
+//
+// A gentle vignette rather than a flat darkening: heavy in the corners, light
+// through the middle, so the photo stays visible while the edges — where the
+// margin title and the rail sit — stay quiet enough for light type.
 @mixin wallpaper-dark {
-  background-color: #0a0b0f;
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(88, 120, 255, 0.42) 0%, rgba(88, 120, 255, 0) 46%),
-    radial-gradient(circle at 92% 18%, rgba(196, 92, 255, 0.30) 0%, rgba(196, 92, 255, 0) 42%),
-    radial-gradient(circle at 72% 92%, rgba(0, 200, 190, 0.26) 0%, rgba(0, 200, 190, 0) 48%),
-    radial-gradient(circle at 22% 78%, rgba(255, 120, 90, 0.20) 0%, rgba(255, 120, 90, 0) 44%),
-    linear-gradient(160deg, #0d1020 0%, #0a0b0f 55%, #0c0e14 100%);
+    linear-gradient(
+      to bottom,
+      rgba(10, 11, 15, 0.34) 0%,
+      rgba(10, 11, 15, 0.10) 38%,
+      rgba(10, 11, 15, 0.52) 100%
+    ),
+    var(--page-photo);
 }
 
-// Light theme: soft pastel wash. Stops stay saturated for the same reason.
+// ── Light theme ───────────────────────────────────────────────
+//
+// A warm paper wash. Light mode puts near-black type on glass, and these photos
+// bottom out dark enough to swallow it.
+//
+// ⚠️ The first stop must stay high (>0.85). At the 0.62 this started at, a dark
+// photo with near-black text on top was unreadable.
 @mixin wallpaper-light {
-  background-color: #eef0f5;
   background-image:
-    radial-gradient(circle at 10% 6%, rgba(120, 160, 255, 0.55) 0%, rgba(120, 160, 255, 0) 50%),
-    radial-gradient(circle at 94% 14%, rgba(220, 140, 255, 0.45) 0%, rgba(220, 140, 255, 0) 46%),
-    radial-gradient(circle at 76% 94%, rgba(90, 220, 210, 0.40) 0%, rgba(90, 220, 210, 0) 50%),
-    radial-gradient(circle at 18% 82%, rgba(255, 170, 140, 0.38) 0%, rgba(255, 170, 140, 0) 46%),
-    linear-gradient(160deg, #f4f6fb 0%, #eef0f5 60%, #e8ebf3 100%);
+    linear-gradient(
+      to bottom,
+      rgba(246, 243, 240, 0.90) 0%,
+      rgba(242, 240, 238, 0.93) 46%,
+      rgba(238, 237, 236, 0.97) 100%
+    ),
+    var(--page-photo);
 }

@@ -32,6 +32,14 @@ export default defineConfig(async (merge, { command, mode }) => {
       '@': path.resolve(__dirname, '..', 'src'),
       '@cevtuo/schema': path.resolve(__dirname, '..', '..', '..', 'packages', 'schema', 'src', 'index.ts'),
     },
+    // ⚠️ The wallpaper is NOT copied via `copy.patterns`. Taro 4's webpack5
+    // runner accepts the option but does not wire it up for H5 — a
+    // `patterns: [{ from: 'static/', to: 'static/' }]` here copied nothing and
+    // failed silently, leaving the template pointing at a file that was never
+    // emitted.
+    //
+    // It is copied by the `build:h5` script instead (see package.json). That is
+    // more explicit and does not depend on undocumented plugin behaviour.
     copy: {
       patterns: [],
       options: {},
@@ -69,7 +77,18 @@ export default defineConfig(async (merge, { command, mode }) => {
       // (Skyline is opted into per-page via `renderer: 'skyline'`; we never set it.)
     },
     h5: {
-      publicPath: '/',
+      // ⚠️ Relative, NOT '/'. With '/', every emitted asset URL is absolute
+      // (`/js/app.js`, `/static/images/assets/wallpaper.jpg`) and the app 404s
+      // into a blank screen anywhere except a true domain root. That silently
+      // ruled out serving it from a subdirectory, which is how it is tested
+      // locally and how it will sit behind nginx next to other projects.
+      //
+      // This is safe because the H5 router is hash-based: routes live in the
+      // fragment (`#/pages/coof/index`), so `location.pathname` stays at the
+      // mount point and a relative base never resolves somewhere else mid-route.
+      // ⚠️ If a non-hash router mode is ever adopted, switch this to a computed
+      // absolute base instead — relative paths break on nested history routes.
+      publicPath: './',
       staticDirectory: 'static',
       output: {
         filename: 'js/[name].[hash:8].js',
