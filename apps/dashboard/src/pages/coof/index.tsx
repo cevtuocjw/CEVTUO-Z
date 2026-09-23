@@ -22,8 +22,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, ScrollView, Text, View } from '@tarojs/components';
 
-import { PageHero, PageStack, Section } from '../../components/Section';
+import { MonthlyWave } from '../../components/MonthlyWave';
+import { PageHero, PageStack, Section, type PageStackApi } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
+import { YearDonuts } from '../../components/YearDonuts';
 import { Wallpaper } from '../../components/Wallpaper';
 import {
   assetUrl,
@@ -87,6 +89,32 @@ export default function Coof() {
   const gridRef = useRef<HTMLElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  /**
+   * Which calendar the breakdown sheet is showing, or null when it is closed.
+   *
+   * ⚠️ Deliberately NOT the same state as `collection`. Tapping a chip used to
+   * switch the page outright; it now opens a question about that year, and the
+   * reader may well close the sheet without going there. Switching `collection`
+   * on open would leave the poster list under the sheet showing a year the
+   * reader never asked to see.
+   */
+  const [yearKey, setYearKey] = useState<string | null>(null);
+  const [yearTitles, setYearTitles] = useState<CoofTitle[]>([]);
+  const [yearLoading, setYearLoading] = useState(false);
+  const [yearError, setYearError] = useState<string | null>(null);
+  const stackApi = useRef<PageStackApi | null>(null);
+
+  /**
+   * Calendars already fetched, keyed by name.
+   *
+   * ⚠️ A ref, not state. It is a cache, so writing it must not re-render — and
+   * opening the same chip twice must not refetch. The index payload carries
+   * genre TOTALS but no country column at all, so the sheet's numbers can only
+   * come from a library fetch; seven of them on one panel would be seven
+   * requests a reader never asked for.
+   */
+  const libs = useRef<Map<string, CoofTitle[]>>(new Map());
 
   // Load the index first — it carries the calendar list the switcher needs.
   useEffect(() => {
@@ -169,7 +197,47 @@ export default function Coof() {
     [index],
   );
 
+  // Seed the cache with whatever the poster panel already loaded, so opening
+  // the current year's chip is instant and costs nothing.
+  useEffect(() => {
+    if (collection && titles.length) libs.current.set(collection, titles);
+  }, [collection, titles]);
+
+  // The sheet's own fetch. Cached hits are synchronous, so a revisit does not
+  // flash "载入中" over data that is already in memory.
+  useEffect(() => {
+    if (!yearKey) return undefined;
+    const cached = libs.current.get(yearKey);
+    if (cached) {
+      setYearTitles(cached);
+      setYearError(null);
+      return undefined;
+    }
+
+    let alive = true;
+    setYearLoading(true);
+    setYearError(null);
+    setYearTitles([]);
+    fetchCoofLibrary(yearKey)
+      .then((lib) => {
+        libs.current.set(yearKey, lib.titles);
+        if (alive) setYearTitles(lib.titles);
+      })
+      .catch((e: Error) => alive && setYearError(`载入失败：${e.message}`))
+      .finally(() => alive && setYearLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [yearKey]);
+
   const onSelect = useCallback((key: string) => setCollection(key), []);
+
+  // ⚠️ The chips open the sheet instead of switching year. Both readings were
+  // tried: switching outright made the overview a control panel with no
+  // content, and the request is explicit that a chip tap is a question ("what
+  // was this year made of") whose answer is the rings. The jump button inside
+  // the sheet is what goes to the list.
+  const openYear = useCallback((key: string) => setYearKey(key), []);
 
   // ⚠️ The WHOLE archive, not this calendar's count. `index.counts.total` is
   // one calendar's size (149 for COOF2026); the panel claims "条记录 · 全部年历",
@@ -185,17 +253,27 @@ export default function Coof() {
       <Wallpaper />
       <TopBar title="COOF" />
 
-      <PageStack count={2}>
+      <PageStack count={2} apiRef={stackApi}>
         <Section
           index={0}
           title="COOF"
           hero={<PageHero brand="COOF" />}
+          // ⚠️ `compact` AND `dense`. `compact` is what separates this page from
+          // the home index, whose whole job is the giant numerals; `dense` is
+          // what makes room on this row for the chart beside them.
           compact
+          dense
           lede="CEVTUO's 观影记录"
           stats={[
             { value: `${calendars.length}`, label: '个年历', note: '2020–2026' },
             { value: `${archiveTotal}`, label: '条记录', note: '全部年历' },
           ]}
+          // ⚠️ Rendered even before the year is known. Mounting it late would
+          // move the numbers into a different layout a frame after paint, which
+          // reads as the page flinching. An empty chart is the honest state.
+          statsAside={
+            <MonthlyWave titles={titles} year={collection.replace(/^COOF/, '')} />
+          }
           cueText="下滑到下一页查看具体观影记录"
           updatedAt={updatedAt}
         >
@@ -212,7 +290,7 @@ export default function Coof() {
                 <View
                   key={key}
                   className={`chip ${key === collection ? 'chip--on' : ''}`}
-                  onClick={() => onSelect(key)}
+                  onClick={() => openYear(key)}
                 >
                   <Text>{key}</Text>
                 </View>
@@ -376,6 +454,26 @@ export default function Coof() {
           )}
         </Section>
       </PageStack>
+
+      {yearKey ? (
+        <YearDonuts
+          year={yearKey}
+          titles={yearTitles}
+          loading={yearLoading}
+          error={yearError}
+          onClose={() => setYearKey(null)}
+          onJump={() => {
+            // ⚠️ Order matters: close first, then switch, then scroll. The
+            // sheet is `position: fixed`, so leaving it up while the stack
+            // animates underneath both wastes the animation and — because the
+            // grid resets its own scrollTop when the year changes — makes the
+            // two movements happen where nobody can see them.
+            setYearKey(null);
+            onSelect(yearKey);
+            stackApi.current?.scrollTo(1);
+          }}
+        />
+      ) : null}
 
       {picking ? (
         <View className="picker" onClick={() => setPicking(false)}>

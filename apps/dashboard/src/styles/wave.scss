@@ -1,0 +1,235 @@
+// Monthly viewing volume — the smooth line on the COOF overview panel.
+//
+// ⚠️ Sits BESIDE the stat block rather than under it. The overview panel was
+// already the tallest one on the page (hero + lede + stats + chips + the recent
+// strip), and a full-width chart stacked underneath would push the panel past
+// the viewport on a phone — the cue at the foot is absolutely positioned, so the
+// overflow would land on top of it rather than scrolling.
+//
+// ⚠️ Paint comes from CSS, not from SVG attributes. `stroke`/`stop-color` are
+// declared here against `--accent` so the chart follows the theme class on
+// `html` like every other surface; hardcoded `#fff` in the markup would be
+// invisible in light mode.
+
+@use 'tokens.scss' as t;
+@use 'breakpoints.scss' as b;
+
+.wave {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  // ⚠️ Required inside the flex row it lives in: without it the chart refuses
+  // to shrink below its content width and overflows the panel on a phone.
+  min-width: 0;
+  width: 100%;
+}
+
+.wave__title {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.wave__hit {
+  position: relative;
+  margin-top: t.$space-2;
+  // ⚠️ `pan-y`, NOT `none`. The chart is mid-panel, and `touch-action: none`
+  // would swallow the upward swipe that moves the reader to the next panel —
+  // a dead band in the middle of the screen. `pan-y` hands vertical gestures
+  // back to the paged stack while horizontal drags stay ours.
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+// Touch affordance: the plot lifts while a finger is on it. This is the
+// "enlarges" half of the touch behaviour — without it a drag on a chart this
+// small gives no sign that the chart, rather than the page, is taking input.
+.wave__hit--live {
+  transform: scale(1.05);
+}
+
+.wave__plot {
+  position: relative;
+  width: 100%;
+  // ⚠️ Shorter than it wants to be. Both viewports measured within a few pixels
+  // of the panel's scroll cue, and the month scale below costs a row of its own
+  // — this is the pixel budget the chart's height pays for it.
+  //
+  // Measured: at 74px this still ran 24px past the cue on a 390×844 screen,
+  // which would have put the "更新于" line behind the cue text.
+  height: 62px;
+
+  @include b.medium-up {
+    height: 100px;
+  }
+}
+
+.wave__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wave__line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  // ⚠️ Load-bearing. The viewBox is a fixed 320×92 stretched to whatever the
+  // panel gives it (`preserveAspectRatio="none"`), which would otherwise scale
+  // the stroke with the container — a hairline on a phone, a slab on a laptop.
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1400;
+  animation: wave-draw 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+// The line draws itself left to right on mount, and again on every change of
+// year — the plot is keyed by year, so switching calendars replays this.
+@keyframes wave-draw {
+  from {
+    stroke-dashoffset: 1400;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.wave__area {
+  animation: wave-fade 900ms ease-out 320ms both;
+}
+
+@keyframes wave-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ⚠️ Raised from 0.26. Over this wallpaper — a photograph of red flowers, bright
+// in places and dark in others — a 0.26 wash was simply not visible, and the
+// chart read as a bare squiggle floating on the image rather than as a filled
+// area. Measured against the actual panel, not against a flat backdrop.
+.wave__stop--a {
+  stop-color: var(--accent);
+  stop-opacity: 0.34;
+}
+
+.wave__stop--b {
+  stop-color: var(--accent);
+  stop-opacity: 0.02;
+}
+
+// The zero line, drawn inside the SVG so it sits exactly under the curve's
+// baseline (which is `PAD_B` above the box floor, not at the box floor).
+// Without it the shape has no floor and the reader cannot tell a small month
+// from a month that simply sits low in the frame.
+.wave__zero {
+  stroke: var(--divider);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.wave__guide {
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.45;
+  vector-effect: non-scaling-stroke;
+}
+
+// ⚠️ Positioned by percentage against `.wave__plot`, which is the same box the
+// SVG stretches to. The negative margins centre it on its own point rather than
+// hanging it down-right of it.
+.wave__dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.28);
+  transition: left 180ms ease-out, top 180ms ease-out;
+  animation: wave-pop 240ms ease-out both;
+}
+
+@keyframes wave-pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ── Month scale ──────────────────────────────────────────────
+//
+// ⚠️ Absolutely positioned, each label centred on its own point by
+// `translateX(-50%)` at `left: i/11`.
+//
+// The obvious layout — twelve equal boxes in a row — does NOT line up. It puts
+// the FIRST label's left edge at 0 rather than its centre, so every label sits
+// half a column to the right of the point it names and the guide line lands
+// between two of them. Positioned, the mapping is exact at any width.
+//
+// ⚠️ Numbers only, no 月. Twelve two-character labels do not fit the narrowest
+// phone; the title above already says the unit.
+.wave__ticks {
+  position: relative;
+  height: 12px;
+  margin-top: t.$space-1;
+
+  @include b.medium-up {
+    margin-top: t.$space-2;
+  }
+}
+
+.wave__tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: t.$weight-medium;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  // ⚠️ `--text-secondary`, not `--text-tertiary`. At 9px on 0.42 alpha this
+  // scale was invisible in the phone screenshot — the chart had no readable
+  // x-axis at all, which is the one thing the labels exist to prevent. The
+  // caption scale downstream of it is a tertiaries-on-a-card system; this
+  // chart sits on a photograph, where the rules are different.
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.wave__read {
+  display: block;
+  margin-top: t.$space-1;
+  font-size: t.$font-caption;
+  // ⚠️ Tabular figures. The readout is rewritten on every pointer move, and
+  // proportional digits make the whole line twitch as the numbers change.
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+// ⚠️ Stated, not hidden. The wave counts only rows that HAVE a watch date, so
+// its total can sit one or two below the record count in the margin — and a
+// chart that quietly disagrees with the number printed next to it reads as a
+// bug in the data rather than a limit of the chart.
+.wave__note {
+  display: block;
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}

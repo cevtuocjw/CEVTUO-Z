@@ -149,6 +149,27 @@ $bp-expanded: 840px; // tablet / desktop H5
   // what an editorial system uses for emphasis.
   --accent: rgba(255, 255, 255, 0.92);
   --accent-soft: rgba(255, 255, 255, 0.08);
+
+  // ── Chart ramp ───────────────────────────────────────────────
+  //
+  // ⚠️ A MONOCHROME ramp, not a palette of hues.
+  //
+  // This system's whole colour argument is that colour arrives from the
+  // wallpaper and the posters (see the note on `--accent` above). A categorical
+  // blue/green/orange chart would be the third colour source on the same
+  // screen and would compete with the covers, which is the one thing the
+  // monochrome rule exists to prevent. Ordinal steps of one neutral keep the
+  // segments separable without introducing a hue — the trick a printed
+  // financial page uses for the same reason.
+  //
+  // Dark theme runs bright → dim; light theme mirrors it (dark → light).
+  --chart-1: rgba(255, 255, 255, 0.94);
+  --chart-2: rgba(255, 255, 255, 0.78);
+  --chart-3: rgba(255, 255, 255, 0.62);
+  --chart-4: rgba(255, 255, 255, 0.48);
+  --chart-5: rgba(255, 255, 255, 0.36);
+  --chart-6: rgba(255, 255, 255, 0.26);
+  --chart-7: rgba(255, 255, 255, 0.18);
   // Status colours stay semantic — an error must not read as emphasis.
   --positive: #4ade80;
   --warning: #fbbf24;
@@ -196,6 +217,15 @@ $bp-expanded: 840px; // tablet / desktop H5
   // Mirror of the dark-theme choice: accent is the loudest neutral, not a hue.
   --accent: rgba(10, 12, 16, 0.90);
   --accent-soft: rgba(10, 12, 16, 0.06);
+
+  // Mirror of the dark ramp — see the note in `theme-dark`.
+  --chart-1: rgba(10, 12, 16, 0.90);
+  --chart-2: rgba(10, 12, 16, 0.72);
+  --chart-3: rgba(10, 12, 16, 0.56);
+  --chart-4: rgba(10, 12, 16, 0.42);
+  --chart-5: rgba(10, 12, 16, 0.30);
+  --chart-6: rgba(10, 12, 16, 0.21);
+  --chart-7: rgba(10, 12, 16, 0.14);
   --positive: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;

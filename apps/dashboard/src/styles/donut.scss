@@ -1,0 +1,423 @@
+// Year breakdown sheet — the two rings behind a tap on a year chip.
+//
+// ⚠️ The rings are CSS `conic-gradient`, not SVG arcs.
+//
+// A donut is the one chart where conic-gradient is not a compromise: the
+// segments are exact by construction (each stop pair is one slice), the hard
+// edge between neighbours comes free, and the hole is a `mask` rather than a
+// second element that has to be kept in register with the arcs. An SVG version
+// would need one `<path>` per slice with hand-computed arc flags, and would put
+// another raw-SVG dependency in a codebase that cannot build SVG for the mini
+// program at all.
+//
+// ⚠️ Segment colours come from the `--chart-N` ramp in tokens.scss — a
+// monochrome ordinal scale, deliberately not a categorical palette. See the
+// note there.
+
+@use 'tokens.scss' as t;
+@use 'breakpoints.scss' as b;
+
+// ── The sheet ────────────────────────────────────────────────
+//
+// ⚠️ Written out rather than pulled from `glass-sheet`. That mixin's
+// `background-color` is the translucent tint (alpha 0.08–0.32), which is
+// correct for a card sitting on the wallpaper and wrong for a sheet covering a
+// poster grid — the posters would read straight through the legends. The
+// blur is kept, the alpha is raised to `--glass-solid-a`.
+.ysheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.46);
+  animation: ys-fade 240ms ease-out both;
+}
+
+@keyframes ys-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ysheet__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  // ⚠️ Capped and centred. Unbounded, a sheet on a 1440px window put each
+  // legend's name at the far left and its count 1200px away at the far right —
+  // one row of a list, read as a table spanning the whole screen. 640px is the
+  // widest a single-column legend reads as a list; past that the two rings go
+  // side by side instead (see `.ysheet__grid`).
+  max-width: 640px;
+  align-self: center;
+  max-height: 88vh;
+  padding: t.$space-5 t.$space-4 calc(#{t.$space-4} + env(safe-area-inset-bottom, 0px));
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.9));
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+  // ⚠️ 0.97, not `var(--glass-solid-a)` (0.88). Measured on the poster grid: at
+  // 0.88 the covers still read through the sheet, and a legend sitting on top of
+  // a photograph is a legend nobody can scan. The blur below supplies the glass;
+  // the alpha has to supply the legibility.
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0.97);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  animation: ys-up 340ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes ys-up {
+  from {
+    transform: translateY(6%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ysheet__head {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding-bottom: t.$space-3;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+}
+
+.ysheet__title {
+  font-family: t.$font-family-display;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+}
+
+.ysheet__sub {
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.ysheet__body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+// ⚠️ A plain flex wrapper INSIDE the ScrollView, not a grid on the ScrollView
+// itself. Taro renders a ScrollView as a custom element that wraps its children
+// in an inner content node, so a `display: grid` on the outer box sees exactly
+// one child and never makes two columns. The wrapper sidesteps that entirely.
+.ysheet__grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+// Wide window: the two rings sit side by side, each a normal-width list again.
+@include b.expanded-up {
+  .ysheet__panel {
+    max-width: 1024px;
+  }
+
+  .ysheet__grid {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: t.$space-7;
+  }
+
+  .ysheet__grid .dnb {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-top: t.$space-2;
+  }
+
+  // The separator follows the layout: it was the rule BETWEEN two stacked
+  // blocks, so side by side it has to become the rule between two columns.
+  .ysheet__grid .dnb + .dnb {
+    border-top-width: 0;
+    padding-left: t.$space-7;
+    border-left-width: 1px;
+    border-left-style: solid;
+    border-left-color: var(--divider);
+  }
+}
+
+.ysheet__state {
+  display: block;
+  padding: t.$space-6 0;
+  text-align: center;
+  font-size: t.$font-body;
+  color: var(--text-secondary);
+}
+
+// ── Jump button ──────────────────────────────────────────────
+//
+// ⚠️ The chips open this sheet instead of switching year outright, so this
+// button is now the ONLY route from the overview to a specific year's list.
+// It is not decoration and must not be styled as if it were.
+.ysheet__go {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: t.$space-2;
+  min-height: 52px;
+  margin-top: t.$space-4;
+  border-radius: var(--radius-tile);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+  transition: transform 140ms ease-out, opacity 140ms ease-out;
+
+  &:active {
+    transform: scale(0.985);
+    opacity: 0.8;
+  }
+}
+
+.ysheet__go-t {
+  font-size: t.$font-heading;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-nav;
+  color: var(--accent);
+}
+
+.ysheet__go-a {
+  font-size: t.$font-heading;
+  color: var(--accent);
+  animation: ys-nudge 1.8s ease-in-out infinite;
+}
+
+// A slow bob on the arrow, so the button reads as "this moves the page" rather
+// than "this closes the sheet".
+@keyframes ys-nudge {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(3px);
+  }
+}
+
+// ── One ring + its legend ────────────────────────────────────
+.dnb {
+  display: flex;
+  flex-direction: column;
+  padding: t.$space-4 0 t.$space-2;
+}
+
+.dnb + .dnb {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--divider);
+}
+
+.dnb__label {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: t.$space-3;
+}
+
+.dnb__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: t.$space-4;
+}
+
+// The tap target. ⚠️ `manipulation` kills the 300ms double-tap delay — the
+// instruction on this chart is "tap repeatedly", which is exactly the gesture a
+// zoom-delay punishes.
+.dnb__tap {
+  position: relative;
+  flex-shrink: 0;
+  width: 124px;
+  height: 124px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+
+  @include b.medium-up {
+    width: 148px;
+    height: 148px;
+  }
+}
+
+.dnb__ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  // ⚠️ `-webkit-` first: Android WebView needs the prefixed property, and an
+  // unprefixed-only declaration would leave the rings as solid pies there.
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 44%, #000 45%);
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 44%, #000 45%);
+  animation: dn-in 720ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+// The ring assembles: a slight counter-rotation plus a scale-up reads as the
+// slices sweeping into place, which a plain fade does not.
+@keyframes dn-in {
+  from {
+    transform: rotate(-115deg) scale(0.72);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+// The selected slice, drawn as a single wedge anchored at 12 o'clock and then
+// ROTATED into position.
+//
+// ⚠️ This is the whole reason segment selection can be animated at all. Swapping
+// one `conic-gradient` string for another cannot be transitioned — custom
+// properties are not interpolated without `@property`, which the Android WebView
+// baseline does not support. Rotating a fixed-shape wedge IS a transform, and
+// transforms transition everywhere.
+.dnb__hl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  transition: transform 420ms cubic-bezier(0.34, 1.08, 0.4, 1);
+}
+
+.dnb__center {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  // The hole is a readout, not a control — the whole ring is the target.
+  pointer-events: none;
+  animation: dn-swap 260ms ease-out both;
+}
+
+@keyframes dn-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dnb__count {
+  font-family: t.$font-family-display;
+  font-size: 30px;
+  font-weight: t.$weight-bold;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.dnb__name {
+  margin-top: 2px;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.dnb__pct {
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dnb__legend {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.dnb__leg {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  gap: t.$space-2;
+  min-height: 24px;
+  padding: 0 t.$space-2;
+  border-radius: var(--radius-tile);
+  transition: background-color 180ms ease-out;
+}
+
+.dnb__leg--on {
+  background-color: var(--accent-soft);
+}
+
+.dnb__swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+}
+
+.dnb__legname {
+  flex: 1;
+  min-width: 0;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dnb__leg--on .dnb__legname {
+  color: var(--text-primary);
+}
+
+.dnb__legcount {
+  font-size: t.$font-caption;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.dnb__leg--on .dnb__legcount {
+  color: var(--accent);
+}
+
+// ⚠️ The instruction line is not optional. Sequential tap-to-advance is a
+// gesture with no visual affordance at all — nothing about a ring says "tap me
+// to step through". Without this line the feature is undiscoverable.
+.dnb__hint {
+  display: block;
+  margin-top: t.$space-2;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}

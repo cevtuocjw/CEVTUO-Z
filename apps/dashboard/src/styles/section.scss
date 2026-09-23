@@ -318,7 +318,13 @@ $gutter: t.$space-3;
 .hero {
   display: flex;
   flex-direction: column;
-  margin-bottom: t.$space-5;
+  // Tighter on a phone — the masthead is a masthead at any margin, and the
+  // overview panel has a chart to fit below it.
+  margin-bottom: t.$space-4;
+
+  @include b.medium-up {
+    margin-bottom: t.$space-5;
+  }
 }
 
 .hero__welcome {
@@ -423,6 +429,95 @@ $gutter: t.$space-3;
   margin-top: t.$space-1;
   font-size: t.$font-caption;
   color: var(--text-secondary);
+}
+
+// ── Numbers beside something else ────────────────────────────
+//
+// ⚠️ Declared AFTER `.stats`, not next to its `--compact` sibling above. Same
+// specificity, so source order decides, and every `margin` / `flex-direction`
+// below would lose to the base block if this came first — a trap this file has
+// already been bitten by (see the `$gutter` note at the top).
+// ⚠️ STACKED on a phone, side by side only from 600px up. Measured on a 390px
+// cover screen: a row left the chart 156px for twelve months — 13px per month,
+// too narrow to read the shape or label the scale, and the readout wrapped onto
+// two lines. Stacked, the chart gets the full 324px and the numbers become a
+// two-up row above it, which is what they were before this section existed.
+.section__split {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  width: 100%;
+  // ⚠️ 12px, not the 24px a fresh block would take. Both viewports measured
+  // within a few pixels of the absolutely-positioned scroll cue, so every
+  // vertical gesture on this panel has to be paid for.
+  margin-top: t.$space-3;
+
+  @include b.medium-up {
+    margin-top: t.$space-4;
+    flex-direction: row;
+    // `stretch`, so the aside sizes itself against the row rather than against
+    // the text it happens to contain.
+    align-items: stretch;
+    gap: t.$space-6;
+  }
+}
+
+.stats--dense {
+  flex-direction: row;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+
+  @include b.medium-up {
+    // One narrow column beside the chart. Side by side at this size, two stat
+    // blocks would claim more width than the chart they introduce.
+    flex-direction: column;
+    width: 116px;
+  }
+}
+
+.stats--dense .stats__item {
+  flex: 1 1 0;
+  width: auto;
+  margin: 0 t.$space-4 0 0;
+  padding-top: t.$space-2;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  @include b.medium-up {
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0 0 t.$space-3 0;
+  }
+}
+
+.stats--dense .stats__value {
+  // ⚠️ Roughly half the page's `compact` size. This is the point of `dense`:
+  // the two numbers identify the panel, they are not the panel's subject — the
+  // chart beside them is. At the `compact` scale they were the loudest thing on
+  // a screen that now has a chart on it.
+  font-size: clamp(26px, 7.5vw, 40px);
+  font-weight: t.$weight-semibold;
+}
+
+.stats--dense .stats__label {
+  margin-top: t.$space-1;
+  font-size: 9px;
+}
+
+.stats--dense .stats__note {
+  margin-top: 1px;
+  font-size: 9px;
+}
+
+// ⚠️ The aside takes every pixel the numbers do not. Without `min-width: 0` a
+// flex item refuses to shrink below its content width, and the chart's own
+// 320-unit viewBox becomes an intrinsic floor that overflows the panel.
+.section__split > .wave {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 // ── Down cue ─────────────────────────────────────────────────

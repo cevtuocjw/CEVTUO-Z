@@ -8,6 +8,9 @@
 // below every `t.$…` here fails the build with "no module with the namespace t".
 
 @use 'tokens.scss' as t;
+// ⚠️ Same rule as above, and it bites the moment a breakpoint is used here: a
+// partial does NOT inherit its importer's namespaces.
+@use 'breakpoints.scss' as b;
 
 // A "recently watched" rail, not a grid.
 //
@@ -57,9 +60,20 @@
 
 .recent__img {
   width: 96px;
-  height: 144px;
+  // ⚠️ Shorter on a phone, full height from 600px up.
+  //
+  // The COOF overview panel is the constraint: hero + lede + numbers + chart +
+  // chips + this strip + the provenance line measures within a few pixels of
+  // the scroll cue at 390×844, and the strip is the only element on the panel
+  // that is decoration rather than information — the same posters are one swipe
+  // below in full. Measured: 144px here put the panel 8px past the cue.
+  height: 126px;
   border-radius: 2px;
   background-color: var(--surface-sunken, rgba(0, 0, 0, 0.08));
+
+  @include b.medium-up {
+    height: 144px;
+  }
 }
 
 .recent__title {

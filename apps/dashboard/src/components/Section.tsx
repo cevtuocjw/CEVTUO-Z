@@ -94,6 +94,24 @@ export interface SectionProps {
    * hero was added to break.
    */
   compact?: boolean;
+  /**
+   * Rendered in the same row as the stat block, to its right.
+   *
+   * ⚠️ A row, not a stack, for the same reason the stat block is shrunk at all:
+   * the COOF overview already carries a hero, a lede, chips, a recent strip and
+   * a cue, and a full-width chart underneath the numbers pushes the panel past
+   * the viewport on a phone — where the cue is absolutely positioned, so the
+   * overflow lands on top of it instead of scrolling.
+   */
+  statsAside?: React.ReactNode;
+  /**
+   * Shrinks the stat block a further step and stacks it in one narrow column.
+   *
+   * ⚠️ Distinct from `compact`. `compact` is "this page has a hero, so the
+   * numbers should not shout"; `dense` is "these numbers share their row with
+   * something else". Only the second one may stack them.
+   */
+  dense?: boolean;
 }
 
 const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
@@ -137,7 +155,22 @@ export function Section({
   updatedAt,
   hero,
   compact = false,
+  statsAside,
+  dense = false,
 }: SectionProps) {
+  const statsClass = `stats${compact ? ' stats--compact' : ''}${dense ? ' stats--dense' : ''}`;
+  const statBlocks = stats?.length ? (
+    <View className={statsClass}>
+      {stats.map((s) => (
+        <View className="stats__item" key={s.label}>
+          <Text className="stats__value">{s.value}</Text>
+          <Text className="stats__label">{s.label}</Text>
+          {s.note ? <Text className="stats__note">{s.note}</Text> : null}
+        </View>
+      ))}
+    </View>
+  ) : null;
+
   return (
     <View className="section">
       {/* ⚠️ Order matters for screen readers and for the visual stack: the
@@ -168,17 +201,18 @@ export function Section({
 
         {lede ? <Text className="section__lede">{lede}</Text> : null}
 
-        {stats?.length ? (
-          <View className={`stats${compact ? ' stats--compact' : ''}`}>
-            {stats.map((s) => (
-              <View className="stats__item" key={s.label}>
-                <Text className="stats__value">{s.value}</Text>
-                <Text className="stats__label">{s.label}</Text>
-                {s.note ? <Text className="stats__note">{s.note}</Text> : null}
-              </View>
-            ))}
+        {/* ⚠️ The wrapper is emitted only when there is something to put beside
+            the numbers. Wrapping unconditionally would put a div into the body
+            of every panel on every page for no reason, and those panels are
+            laid out by `justify-content` on their own flex column. */}
+        {statsAside ? (
+          <View className="section__split">
+            {statBlocks}
+            {statsAside}
           </View>
-        ) : null}
+        ) : (
+          statBlocks
+        )}
 
         {children}
 
@@ -195,10 +229,25 @@ export function Section({
   );
 }
 
+/** Imperative handle on the stack, for controls that live outside it. */
+export interface PageStackApi {
+  /** Scroll panel `i` to the top of the viewport. */
+  scrollTo: (i: number) => void;
+}
+
 export interface PageStackProps {
   /** Number of panels, so the rail can render one mark each. */
   count: number;
   children: React.ReactNode;
+  /**
+   * Filled with the scroll handle on mount.
+   *
+   * ⚠️ Exists because the COOF overview's year sheet has a button that must
+   * land the reader on the poster panel — and the rail was previously the only
+   * thing in the app that could move the stack, from inside. A ref rather than
+   * context or a store: there is exactly one caller and one method.
+   */
+  apiRef?: React.MutableRefObject<PageStackApi | null>;
 }
 
 /**
@@ -209,10 +258,30 @@ export interface PageStackProps {
  * tall, so the arithmetic is exact, and it survives the panel list changing
  * length without re-measuring anything.
  */
-export function PageStack({ count, children }: PageStackProps) {
+export function PageStack({ count, children, apiRef }: PageStackProps) {
   const [active, setActive] = useState(0);
   const containerRef = useRef<HTMLElement | null>(null);
   const height = useRef(1);
+
+  // ⚠️ Smooth, unlike the rail's own jump. The rail is a position indicator you
+  // nudge; this handle is called by a button whose label PROMISES a journey
+  // ("查看 COOF2026"), and teleporting after a promise of movement reads as the
+  // sheet having closed onto nothing.
+  useEffect(() => {
+    if (!apiRef) return undefined;
+    apiRef.current = {
+      scrollTo: (i: number) => {
+        const el = containerRef.current;
+        if (!el) return;
+        const top = i * height.current;
+        if (typeof el.scrollTo === 'function') el.scrollTo({ top, behavior: 'smooth' });
+        else el.scrollTop = top;
+      },
+    };
+    return () => {
+      apiRef.current = null;
+    };
+  }, [apiRef]);
 
   // ⚠️ The rail is a real control, so tapping it must scroll the container.
   // `scrollTo` is called on the DOM node directly because Taro's `pageScrollTo`
