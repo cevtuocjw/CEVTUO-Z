@@ -17,8 +17,8 @@
  * one that says it is showing 210.
  */
 
-import { useMemo } from 'react';
-import { Image, Text, View } from '@tarojs/components';
+import { useMemo, useState } from 'react';
+import { Image, ScrollView, Text, View } from '@tarojs/components';
 
 import { assetUrl, type CoofTitle } from '../../platform/data';
 
@@ -115,6 +115,8 @@ export function TimelineView({ titles, onOpen }: ViewProps) {
 
 export function CalendarView({ titles, onOpen }: ViewProps) {
   const { months, undated } = useMemo(() => bucketByMonth(titles), [titles]);
+  /** The day whose films are open in the sheet, if any. */
+  const [day, setDay] = useState<{ iso: string; films: CoofTitle[] } | null>(null);
 
   return (
     <View className="cal2">
@@ -159,18 +161,32 @@ export function CalendarView({ titles, onOpen }: ViewProps) {
             </View>
 
             <View className="cal2__grid">
-              {cells.map((day, i) => {
-                if (!day) return <View className="cal2__cell cal2__cell--void" key={`v${i}`} />;
-                const iso = `${m.key}-${day}`;
+              {cells.map((d, i) => {
+                if (!d) return <View className="cal2__cell cal2__cell--void" key={`v${i}`} />;
+                const iso = `${m.key}-${d}`;
                 const films = byDay.get(iso);
                 return (
                   <View
                     className={`cal2__cell${films ? ' cal2__cell--on' : ''}`}
                     key={iso}
-                    onClick={() => films && onOpen(films[0] as CoofTitle)}
+                    onClick={() => films && setDay({ iso, films })}
                   >
-                    <Text className="cal2__day">{Number(day)}</Text>
-                    {films ? <View className="cal2__mark" /> : null}
+                    {/* ⚠️ A thumbnail ONLY at wide viewports. A cell is 1/7 of the
+                        panel: ~48px on a phone, where a poster is an unreadable
+                        smudge, and ~180px on a laptop, where it is recognisable.
+                        Same markup, two treatments — see `.cal2__thumb`. */}
+                    {films && (films[0] as CoofTitle).poster ? (
+                      <Image
+                        className="cal2__thumb"
+                        src={assetUrl((films[0] as CoofTitle).poster as string)}
+                        mode="aspectFill"
+                        lazyLoad
+                      />
+                    ) : null}
+                    <Text className="cal2__day">{Number(d)}</Text>
+                    {films && films.length > 1 ? (
+                      <Text className="cal2__multi">{films.length}</Text>
+                    ) : null}
                   </View>
                 );
               })}
@@ -178,6 +194,48 @@ export function CalendarView({ titles, onOpen }: ViewProps) {
           </View>
         );
       })}
+
+      {/* ⚠️ A sheet, not an inline expansion. Expanding inside the month would
+          shift every grid below it, so the thing you tapped moves — and on a
+          phone the day cells are 48px, far too small to grow a list into. */}
+      {day ? (
+        <View className="daysheet" onClick={() => setDay(null)}>
+          <View className="daysheet__panel" onClick={(e) => e.stopPropagation()}>
+            <Text className="daysheet__head">
+              {day.iso} · {day.films.length} 部
+            </Text>
+            <ScrollView className="daysheet__scroll" scrollX showScrollbar={false}>
+              <View className="daysheet__row">
+                {day.films.map((t) => (
+                  <View
+                    className="daysheet__item"
+                    key={t.id}
+                    onClick={() => {
+                      setDay(null);
+                      onOpen(t);
+                    }}
+                  >
+                    {t.poster ? (
+                      <Image
+                        className="daysheet__img"
+                        src={assetUrl(t.poster)}
+                        mode="aspectFill"
+                        lazyLoad
+                      />
+                    ) : (
+                      <View className="daysheet__img daysheet__img--empty" />
+                    )}
+                    <Text className="daysheet__title">{t.title}</Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+            <View className="daysheet__close" onClick={() => setDay(null)}>
+              <Text>关闭</Text>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }

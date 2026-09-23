@@ -41,6 +41,22 @@ import { CalendarView, TimelineView } from './views';
 
 import './index.scss';
 
+/**
+ * The watch month of the tile at `index`, as "2026 年 9 月", or '' if unknown.
+ *
+ * ⚠️ Approximate by construction — the grid is uniform per row, so a scroll
+ * ratio maps to an index well, but a row whose titles wrap to two lines is
+ * taller than one that does not, so the readout can lead or lag by a row. That
+ * is acceptable for a position indicator; it would not be for anything that
+ * changes what is shown.
+ */
+function monthAt(titles: CoofTitle[], index: number): string {
+  const t = titles[Math.min(Math.max(0, index), titles.length - 1)];
+  const d = t?.watchedAt;
+  if (!d) return '';
+  return `${d.slice(0, 4)} 年 ${Number(d.slice(5, 7))} 月`;
+}
+
 export default function Coof() {
   const [collection, setCollection] = useState<string>('');
   const [index, setIndex] = useState<CoofIndex | null>(null);
@@ -57,7 +73,7 @@ export default function Coof() {
   const [view, setView] = useState<'grid' | 'timeline' | 'calendar'>('grid');
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   /** 0..1 down the poster list, plus the thumb's size — drives the scroll bar. */
-  const [scroll, setScroll] = useState({ ratio: 0, thumb: 0 });
+  const [scroll, setScroll] = useState({ ratio: 0, thumb: 0, month: '' });
   const gridRef = useRef<HTMLElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,7 +116,11 @@ export default function Coof() {
     // Measured: the list stayed part-way down with no explanation, which reads
     // as the new year simply starting somewhere in the middle.
     el.scrollTop = 0;
-    setScroll({ ratio: 0, thumb: Math.min(1, el.clientHeight / el.scrollHeight) });
+    setScroll({
+      ratio: 0,
+      thumb: Math.min(1, el.clientHeight / el.scrollHeight),
+      month: monthAt(titles, 0),
+    });
   }, [titles]);
 
   // Provenance line. Independent of the other fetches so a failure here can
@@ -278,7 +298,14 @@ export default function Coof() {
                 // scrollTop and an over-scroll past `max`, which would push the
                 // thumb off both ends of its track.
                 const ratio = Math.min(1, Math.max(0, d.scrollTop / max));
-                setScroll({ ratio, thumb: Math.min(1, view / Math.max(1, d.scrollHeight)) });
+                setScroll({
+                  ratio,
+                  thumb: Math.min(1, view / Math.max(1, d.scrollHeight)),
+                  // ⚠️ Which month you are looking at, not which month you
+                  // started at. Tiles are uniform per row, so the scroll ratio
+                  // maps to a tile index closely enough for a position readout.
+                  month: monthAt(titles, Math.floor(ratio * titles.length)),
+                });
               }}
             >
               {view === 'grid' ? (
@@ -321,6 +348,9 @@ export default function Coof() {
                 <CalendarView titles={titles} onOpen={setDetail} />
               )}
             </ScrollView>
+            {view === 'grid' && scroll.month ? (
+              <Text className="posters__month">{scroll.month}</Text>
+            ) : null}
             <View className="posters__bar">
               <View
                 className="posters__thumb"

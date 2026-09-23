@@ -471,9 +471,31 @@
 // they are a third of the way down or nearly finished. Pinned to the grid's
 // right edge, inside the content band — the far-right margin belongs to the
 // vertical title.
+// ⚠️ Sits ABOVE the bar, which starts lower to make room. The bar says how far
+// down you are; this says down among WHAT — the grid is sorted by sequence
+// number, so the position alone does not tell you which month you are in.
+.posters__month {
+  position: absolute;
+  top: 0;
+  right: t.$space-2;
+  // ⚠️ A solid pill, not bare text with a halo. Measured in a screenshot: the
+  // label sits over the poster grid, and a halo is not enough over a bright
+  // cover — "2025 年 3 月" was legible over the dark tiles and lost over the
+  // light ones. This is the one readout on the panel that has to survive ANY
+  // poster being behind it.
+  padding: 2px t.$space-2;
+  border-radius: 2px;
+  background-color: rgba(0, 0, 0, 0.62);
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  color: #fff;
+  pointer-events: none;
+}
+
 .posters__bar {
   position: absolute;
-  top: t.$space-2;
+  top: 26px;
   right: 0;
   bottom: t.$space-5;
   width: 2px;
@@ -703,4 +725,158 @@
   height: 4px;
   border-radius: 50%;
   background-color: var(--accent);
+}
+
+// ── Day cells with films ──────────────────────────────────────
+//
+// ⚠️ Two treatments, one markup. A cell is 1/7 of the panel: ~48px on a phone
+// and ~180px on a laptop. A poster at 48px is an unreadable smudge, so phones
+// get a chip — the same bordered, tappable shape the calendar switcher uses,
+// which is legible at that size and says "press me". At 180px the poster IS the
+// information, so the wide treatment shows it.
+.cal2__cell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.cal2__cell--on {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--rule-hairline);
+}
+
+.cal2__cell--on .cal2__day {
+  font-weight: t.$weight-semibold;
+}
+
+.cal2__thumb {
+  display: none;
+}
+
+// How many films that day held, when more than one — otherwise the cell looks
+// identical whether you watched one thing or four.
+.cal2__multi {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  font-size: t.$font-micro;
+  color: var(--text-primary);
+  text-shadow: 0 1px 4px var(--text-halo-strong);
+}
+
+@include b.expanded-up {
+  .cal2__cell--on {
+    background-color: transparent;
+    border-width: 0;
+  }
+
+  .cal2__thumb {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  // Over the photo, so it needs the halo and the weight.
+  .cal2__day {
+    position: relative;
+    font-weight: t.$weight-semibold;
+    color: var(--text-primary);
+    text-shadow: 0 1px 6px var(--text-halo-strong);
+  }
+}
+
+// ── Day sheet ─────────────────────────────────────────────────
+.daysheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.42);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.daysheet__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding: t.$space-3 t.$space-4 calc(#{t.$space-4} + env(safe-area-inset-bottom, 0px));
+  background-color: var(--surface-raised);
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+}
+
+.daysheet__head {
+  padding-bottom: t.$space-3;
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.daysheet__scroll {
+  width: 100%;
+}
+
+// ⚠️ Side by side, which is what a day with several films wants — it is a short
+// list by nature, and laying it out horizontally keeps every poster at a size
+// where the film is recognisable.
+.daysheet__row {
+  display: flex;
+  flex-direction: row;
+  gap: t.$space-3;
+}
+
+.daysheet__item {
+  width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.daysheet__img {
+  width: 96px;
+  height: 144px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.daysheet__img--empty {
+  display: block;
+}
+
+.daysheet__title {
+  margin-top: t.$space-2;
+  font-size: t.$font-micro;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.daysheet__close {
+  margin-top: t.$space-4;
+  padding: t.$space-2 0;
+  text-align: center;
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--rule-hairline);
 }
