@@ -129,7 +129,7 @@ export default function Home() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CEVTUO-Z" />
+      <TopBar title="CEVTUO-Z" root />
 
       <PageStack count={PANELS.length}>
         {PANELS.map((p, i) => (

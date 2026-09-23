@@ -25,6 +25,8 @@ export interface TopBarProps {
   title: string;
   /** Right-hand slot for page-specific controls (view switches, filters). */
   children?: React.ReactNode;
+  /** The index itself — there is nowhere above it, so it offers no way back. */
+  root?: boolean;
 }
 
 /**
@@ -34,24 +36,33 @@ export interface TopBarProps {
  * first render in some base libraries, and a throw here would take down the
  * whole page rather than just hiding a button.
  */
-function canGoBack(): boolean {
+function stackDepth(): number {
   try {
-    return (Taro.getCurrentPages()?.length ?? 0) > 1;
+    return Taro.getCurrentPages()?.length ?? 0;
   } catch {
-    return false;
+    return 0;
   }
 }
 
-export function TopBar({ title, children }: TopBarProps) {
+export function TopBar({ title, children, root = false }: TopBarProps) {
   const bp = useBreakpoint();
-  const back = canGoBack();
+  const back = !root;
 
   const onBack = () => {
     try {
-      Taro.navigateBack();
+      // ⚠️ Pop when there is a stack, otherwise go to the index.
+      //
+      // Every page here is deep-linkable — the URLs are shared, and the app was
+      // opened at a sub-page more than once during development. With a pop-only
+      // handler those arrivals showed no back control at all (the wordmark
+      // branch), leaving the browser button as the only way out, which on a
+      // phone is not on screen. Falling back to the index gives the same
+      // destination a pop would have reached anyway.
+      if (stackDepth() > 1) Taro.navigateBack();
+      else Taro.navigateTo({ url: '/pages/home/index' });
     } catch {
-      // No stack to pop. Nothing useful to do, and throwing here would be worse
-      // than a button that quietly does nothing.
+      // Nothing useful to do; throwing here would be worse than a button that
+      // quietly does nothing.
     }
   };
 

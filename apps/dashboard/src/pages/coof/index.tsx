@@ -39,6 +39,16 @@ import {
 
 import { CalendarView, TimelineView } from './views';
 
+// ⚠️ Required, exactly like the other four pages. `.page` (the page padding and
+// the flex column) and `.chip` / `.chips` live in here, NOT in index.scss.
+//
+// This went unnoticed because Taro only bundles a stylesheet that some module
+// imports, and the COOF page was the only one that did not — so anything
+// arriving from the home page already had demo.scss in the bundle and looked
+// correct, while opening a COOF URL directly got no page padding and chips
+// reduced to bare text. Measured on the live site: `border-width: 0px`,
+// `background-color: rgba(0,0,0,0)`, chip height 21px instead of 34px.
+import '../../styles/demo.scss';
 import './index.scss';
 
 /**
