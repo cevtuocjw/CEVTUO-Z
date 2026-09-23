@@ -6,6 +6,11 @@
 
 @use '../../styles/tokens.scss' as t;
 @use '../../styles/breakpoints.scss' as b;
+// ⚠️ Every control on this page is made of the same material as the chips in
+// demo.scss. Two hand-rolled approximations of glass (a different border alpha
+// here, a different tint multiplier there) is how a design system starts
+// looking like several.
+@use '../../styles/glass.scss' as g;
 
 // ── The four modules ─────────────────────────────────────────
 .cn__cols {
@@ -322,15 +327,13 @@
 }
 
 .hm__tab {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: row;
   align-items: center;
   min-height: 24px;
   padding: 0 t.$space-2;
-  border-radius: 2px;
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--divider);
   font-size: t.$font-micro;
   letter-spacing: t.$track-label;
   color: var(--text-tertiary);
@@ -410,6 +413,8 @@
 }
 
 .cnview__tab {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -601,6 +606,8 @@
 }
 
 .cn__full {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -608,10 +615,6 @@
   flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-tile);
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--divider);
   transition: transform 140ms ease-out, opacity 140ms ease-out, border-color 140ms ease-out;
 
   &:active {
@@ -731,6 +734,8 @@
 
 // ── Narrow: the four cards ───────────────────────────────────
 .cn__card {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -740,11 +745,6 @@
   // absolutely positioned — so the overflow lands on top of it rather than
   // scrolling. 8px here and 8px on `.cnview` is what buys it back.
   padding: t.$space-2 t.$space-3;
-  border-radius: var(--radius-card);
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.7));
-  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.6));
   transition: transform 140ms ease-out, opacity 140ms ease-out;
 
   &:active {
@@ -923,6 +923,8 @@
 // ⚠️ 44px. This is the only way out of the sheet on a phone — the backdrop tap
 // works on a desktop but is an unreliable target under a thumb.
 .cnsr-sheet__x {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -931,7 +933,6 @@
   width: 44px;
   height: 44px;
   margin: -#{t.$space-2} -#{t.$space-2} 0 0;
-  border-radius: var(--radius-tile);
 }
 
 .cnsr-sheet__x-t {

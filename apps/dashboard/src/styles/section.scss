@@ -362,6 +362,10 @@ $gutter: t.$space-3;
 }
 
 .section__lede {
+  // ⚠️ `pre-line`, so a `\n` in a lede is a real line break. Only the CNSR
+  // panel uses one today; the rest are single-line and unaffected, because
+  // `pre-line` collapses runs of spaces and only honours newlines.
+  white-space: pre-line;
   font-size: t.$font-body;
   // ⚠️ `--text-primary`, not secondary. This paragraph sits directly on the
   // photo with no glass between them, and at secondary it disappeared into the

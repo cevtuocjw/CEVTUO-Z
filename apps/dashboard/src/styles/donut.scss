@@ -16,6 +16,9 @@
 
 @use 'tokens.scss' as t;
 @use 'breakpoints.scss' as b;
+// ⚠️ Same rule as recent.scss: a partial does NOT inherit its importer's
+// namespaces, so the mixin used below has to be brought in here as well.
+@use 'glass.scss' as g;
 
 // ── The sheet ────────────────────────────────────────────────
 //
@@ -177,6 +180,8 @@
 // button is now the ONLY route from the overview to a specific year's list.
 // It is not decoration and must not be styled as if it were.
 .ysheet__go {
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -185,11 +190,9 @@
   gap: t.$space-2;
   min-height: 52px;
   margin-top: t.$space-4;
-  border-radius: var(--radius-tile);
-  border-width: 1px;
-  border-style: solid;
+  // ⚠️ The glass mixin supplies the fill; the accent border is what marks this
+  // as the sheet's action rather than another surface.
   border-color: var(--accent);
-  background-color: var(--accent-soft);
   transition: transform 140ms ease-out, opacity 140ms ease-out;
 
   &:active {

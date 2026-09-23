@@ -49,6 +49,10 @@ export function TopBar({ title, children, root = false }: TopBarProps) {
   const back = !root;
 
   const onBack = () => {
+    // ⚠️ The route we are leaving, captured before anything moves.
+    const before = typeof window !== 'undefined' ? window.location.hash : '';
+    const HOME = '/pages/home/index';
+
     try {
       // ⚠️ Pop when there is a stack, otherwise go to the index.
       //
@@ -58,12 +62,39 @@ export function TopBar({ title, children, root = false }: TopBarProps) {
       // branch), leaving the browser button as the only way out, which on a
       // phone is not on screen. Falling back to the index gives the same
       // destination a pop would have reached anyway.
-      if (stackDepth() > 1) Taro.navigateBack();
-      else Taro.navigateTo({ url: '/pages/home/index' });
+      if (stackDepth() > 1) Taro.navigateBack({ fail: () => Taro.navigateTo({ url: HOME }) });
+      else Taro.navigateTo({ url: HOME });
     } catch {
-      // Nothing useful to do; throwing here would be worse than a button that
-      // quietly does nothing.
+      try {
+        Taro.navigateTo({ url: HOME });
+      } catch {
+        // Nothing useful to do; throwing here would be worse than a button that
+        // quietly does nothing. The net below still runs.
+      }
     }
+
+    // ⚠️ The safety net, and the reason the user was sometimes tapping twice.
+    //
+    // `navigateBack` reports success even when nothing moves — tapped while the
+    // page is still transitioning in, or against a stack Taro has not finished
+    // building, it simply does nothing and no `fail` fires. The user sees a dead
+    // button and taps again. This watches the route it was trying to leave and,
+    // if we are still on it, goes to the index directly. On the normal path the
+    // hash has already changed and this is a no-op.
+    //
+    // ⚠️ 500ms, not a shorter guess. Too short and a slow-but-working pop would
+    // have the index pushed on top of it, which is a worse bug than the one
+    // being fixed: back would then return to the page you just left.
+    if (typeof window === 'undefined' || !before) return;
+    setTimeout(() => {
+      if (window.location.hash === before) {
+        try {
+          Taro.navigateTo({ url: HOME });
+        } catch {
+          /* the index route is the last resort; there is nothing under it */
+        }
+      }
+    }, 500);
   };
 
   return (

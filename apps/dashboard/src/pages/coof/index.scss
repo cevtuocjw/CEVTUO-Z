@@ -563,6 +563,11 @@
 }
 
 .views__tab {
+  // ⚠️ Same material as the chips and every other control. The tab row used to
+  // be bare text with an underline, which made the page's controls read as two
+  // different systems depending on which row you looked at.
+  @include g.glass-inset;
+
   // 40px, not the text height — a tab is a thumb target.
   min-height: 40px;
   display: flex;
@@ -572,6 +577,7 @@
   font-size: t.$font-caption;
   letter-spacing: t.$track-label;
   color: var(--text-secondary);
+  margin-right: t.$space-1;
 }
 
 .views__tab--on {

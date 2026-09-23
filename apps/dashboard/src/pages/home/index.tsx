@@ -64,7 +64,11 @@ const PANELS: BrandPanel[] = [
     // ⚠️ The wording is the user's, verbatim, including "不完整同步" — the
     // caveat is the point, not padding. And "some of them" replaces "滚动快照",
     // which described the mechanism rather than what the reader gets.
-    lede: "CEVTUO's 最近笔记，摘取最近 5 天内的不完整同步 · some of them",
+    // ⚠️ `\n` with `white-space: pre-line` on `.section__lede` — the trailing
+    // aside goes on its own line. A second element would have been the other
+    // way, but `lede` is typed as a string and widening it for one page's
+    // wording is the tail wagging the dog.
+    lede: "CEVTUO's 最近笔记，摘取最近 5 天内的不完整同步\n· some of them",
     // ⚠️ Deliberately no stats. The invented "1,024 总条目 / 180 字摘要" pair
     // that stood here was never a measurement, and on a panel whose real
     // content is a live feed the numbers were the least informative thing on

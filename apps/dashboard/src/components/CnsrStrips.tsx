@@ -52,8 +52,25 @@ function Strip({ source }: { source: CnsrSource }) {
   const [i, setI] = useState(0);
   const boxRef = useRef<HTMLElement | null>(null);
   const textRef = useRef<HTMLElement | null>(null);
-  const [shift, setShift] = useState(0);
-  const [dur, setDur] = useState(0);
+  /**
+   * The offset for the line currently on screen, tagged with WHICH line it
+   * belongs to.
+   *
+   * ⚠️ The tag is the fix for the strip scrolling backwards.
+   *
+   * `shift` used to be plain state. When the line advanced, React swapped the
+   * text while `shift` still held the PREVIOUS line's offset, so the new line
+   * mounted already pushed left by the old distance and then slid back as the
+   * measurement came in — a visible reverse scroll at the start of every line.
+   * Carrying the line index means the transform is only applied once it has
+   * been measured for THIS line, so every line starts at 0 and travels left
+   * once.
+   */
+  const [anim, setAnim] = useState<{ line: number; shift: number; dur: number }>({
+    line: -1,
+    shift: 0,
+    dur: 0,
+  });
 
   // ⚠️ Measure and schedule in ONE effect, keyed on the line.
   //
@@ -68,8 +85,7 @@ function Strip({ source }: { source: CnsrSource }) {
 
     const overflow = Math.max(0, txt.scrollWidth - box.clientWidth);
     const scrollMs = overflow ? Math.round((overflow / PX_PER_SEC) * 1000) : 0;
-    setShift(overflow);
-    setDur(scrollMs);
+    setAnim({ line: i, shift: overflow, dur: scrollMs });
 
     const id = setTimeout(() => setI((v) => v + 1), Math.max(MIN_DWELL_MS, scrollMs + SETTLE_MS));
     return () => clearTimeout(id);
@@ -106,7 +122,14 @@ function Strip({ source }: { source: CnsrSource }) {
           className="strip__text"
           key={i}
           ref={textRef as never}
-          style={shift ? { transform: `translateX(${-shift}px)`, transitionDuration: `${dur}ms` } : undefined}
+          style={
+            // ⚠️ `anim.line === i` — the offset is applied only once it has been
+            // measured for the line on screen. Anything else and the new line
+            // inherits the old line's offset and slides backwards into place.
+            anim.line === i && anim.shift
+              ? { transform: `translateX(${-anim.shift}px)`, transitionDuration: `${anim.dur}ms` }
+              : undefined
+          }
         >
           {cur!.t}
         </Text>
