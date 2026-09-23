@@ -566,3 +566,49 @@ langchain / ai-sdk / cohere / ollama 等任何 AI SDK。源码里 `OpenAI`/`Clau
 - **宽屏每列加 ⤢ 全屏键** → 1100px 居中弹窗（比 296px 的列宽 3.7 倍），带关闭键。
 
 `scripts/verify-cnsr-ui.mjs` 现有 **110 项断言**，三视口全过。
+
+---
+
+## ⚠️⚠️ 2026-09-23 下 10：链接大量丢失的真因（分支顺序）
+
+**症状**：Shopping 里几乎看不到链接，用户点名 2026-09-05 那天一条都没有。
+
+**根因**：`bookmark` 块的 URL 存在 `bookmark.url`、文字存在 `bookmark.caption`，
+**两者都不在 `rich_text` 里**。实测 Shopping 深度 ≤3 有 **146 个 bookmark，URL 全有、
+caption 全空** ⇒ `textOf()` 返回空串 ⇒ 而 `visit()` 里写的是：
+
+```js
+if (!text || IGNORED.has(b.type)) return;   // ← 空文本在这里就 return 了
+if (LINK_BLOCK.has(b.type)) { ... }          // ← 永远轮不到
+```
+
+**146 个链接只剩 2 个。** 修法：把链接分支提到空文本判断**之前**。
+修完链接 6 → 24（shopping 2→7，TECH-AI 3→13，tech-learn 1→4）。
+
+⚠️ 教训：**「这个块有文字吗」和「这个块有内容吗」不是一回事。** 任何
+`if (!text) return` 之类的早退，都要先问一句：会不会有哪种块，它的内容根本
+不在 text 里？
+
+## ⚠️ 弹窗的「黑板」问题：`.picker__panel` 的背景变量根本不存在
+
+`background-color: var(--surface-raised)` —— **全项目从未定义过 `--surface-raised`**，
+只此一处使用。`var()` 无值又无 fallback 会让**整条声明失效**，于是面板完全没有背景，
+深色主题下就是一块黑。已改用 `glass-sheet` mixin。
+
+同时把 CNSR / COOF 弹层的 alpha 从 **0.97 降到 `calc(--glass-tint-a * 1.7)`（实测 0.4）**
+配更强的 backdrop blur；遮罩从纯黑 0.5 降到 0.3 + 背景模糊。
+
+⭐⭐ **两个验证脚本里都写着「面板 alpha 必须 ≥ 0.94」—— 正是这条断言在逼着弹窗做成黑板。**
+已改成断言 0.2–0.8 的玻璃区间。**断言会反过来塑造实现；写"必须不透明"的测试，
+就会得到不透明的设计。**
+
+## 图片
+
+从全宽 `widthFix` 改成**居中、限宽 200px、`aspectFit`**。全宽时一张图会主导它所在的
+那一天；`widthFix` 只按宽度算高度，竖图直接跑出列外。
+
+## 验证脚本的坑（本轮又踩一个）
+
+控制台 404 的 URL 在 `m.location().url`，**不在 `m.text()` 里** —— text 只有
+"Failed to load resource: the server responded with a status of 404 ()"。
+第一版过滤器拿 text 去匹配域名，既匹配不到也分不清第三方 favicon 和自己的文件。
