@@ -341,6 +341,67 @@ function visit(b, st) {
   st.cur.lines.push({ k: b.type, t: text, links: linksOf(b) });
 }
 
+// ── Link previews ────────────────────────────────────────────
+//
+// ⚠️ A link's NAME is not its content. `nameFromUrl` can only turn
+// `supernote.com/JK` into "JK", which says nothing about what is on the other
+// end — the user's complaint was exactly that the linked page's content was
+// never fetched, so a link row showed a name and no substance.
+//
+// Each distinct target is therefore fetched once and its own <title> and
+// description are stored. Any failure is silent: a link with no preview still
+// renders as a tappable name, which is the hard requirement; the preview is the
+// improvement on top of it.
+const LINK_FETCH_CAP = 12;
+const LINK_TIMEOUT_MS = 9000;
+
+const decodeEntities = (s) =>
+  s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
+    .replace(/\s+/g, ' ')
+    .trim();
+
+async function fetchLinkMeta(url) {
+  try {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(LINK_TIMEOUT_MS),
+      headers: {
+        // ⚠️ A real UA. Several of these hosts answer a bare 403 to an empty
+        // one, and a 403 silently costs the link its title.
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+      },
+    });
+    if (!res.ok) return null;
+    if (!(res.headers.get('content-type') ?? '').includes('html')) return null;
+
+    // ⚠️ Capped read — some of these pages are enormous and only the <head>
+    // matters. Without this one link can pull megabytes into memory.
+    const html = (await res.text()).slice(0, 300_000);
+    const pick = (re) => {
+      const m = re.exec(html);
+      return m?.[1] ? decodeEntities(m[1]) : '';
+    };
+    const title =
+      pick(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i) ||
+      pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    const desc =
+      pick(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["']/i) ||
+      pick(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+    return { title: title.slice(0, 140), desc: desc.slice(0, 200) };
+  } catch {
+    return null;
+  }
+}
+
 // ── Main ─────────────────────────────────────────────────────
 const { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } = await import('node:fs');
 const { join } = await import('node:path');
@@ -436,6 +497,36 @@ for (const src of wanted) {
       const found = images.find((im) => im.blockId === st.pending[ref.i]?.blockId);
       return found ? { src: found.src, caption: found.caption } : null;
     }).filter(Boolean);
+  }
+
+  // ── Attach link previews ───────────────────────────────────
+  const hrefs = [
+    ...new Set(
+      st.segs.flatMap((s) => s.lines.flatMap((l) => (l.links ?? []).map((k) => k.href))),
+    ),
+  ].slice(0, LINK_FETCH_CAP);
+
+  if (hrefs.length) {
+    const metas = await Promise.all(hrefs.map((h) => fetchLinkMeta(h)));
+    const byHref = new Map(hrefs.map((h, i) => [h, metas[i]]));
+    for (const s of st.segs) {
+      for (const l of s.lines) {
+        if (!l.links?.length) continue;
+        l.links = l.links.map((k) => {
+          const m = byHref.get(k.href);
+          if (!m?.title) return k;
+          // ⚠️ The line's visible text must be rewritten whenever the link's
+          // name changes. `LineText` in the app finds each link's text INSIDE
+          // `line.t` and wraps that span — if the name here said "JK" and the
+          // link now renders "JK Rowling — Supernote", nothing matches, the
+          // link silently vanishes and the line shows the old name as plain
+          // text. Rename both, in the same place.
+          if (l.t.includes(k.t)) l.t = l.t.replace(k.t, m.title);
+          return { ...k, t: m.title, title: m.title, desc: m.desc };
+        });
+      }
+    }
+    console.log(`  链接预览：${hrefs.length} 个目标，取到 ${metas.filter(Boolean).length} 个标题`);
   }
 
   console.log(`  最近 5 天：`);

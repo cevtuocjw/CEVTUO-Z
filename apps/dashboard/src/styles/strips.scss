@@ -69,50 +69,24 @@
   width: 100%;
 }
 
-.strip__track {
-  display: flex;
-  flex-direction: row;
-  flex-shrink: 0;
-  // ⚠️ The width is the sum of the two copies, and the animation translates by
-  // exactly -50% of it. That is what makes copy two arrive precisely where copy
-  // one started, with no visible jump.
-  animation: strip-marquee 2000ms linear infinite;
-}
-
-// A line short enough to fit does not need to travel a full width — scrolling
-// it right off the strip would hide the very thing the strip exists to show,
-// and leave two seconds of blank. It drifts instead, which still reads as
-// "alive" without ever losing the words.
-.strip__track--short {
-  animation: strip-drift 3400ms ease-in-out infinite alternate;
-}
-
-@keyframes strip-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes strip-drift {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-14px);
-  }
-}
-
+// ⚠️ The transform and the duration are set inline by the component, because
+// the distance depends on the measured overflow of THIS line and cannot be
+// expressed in CSS. What lives here is only the easing — linear, so a fixed
+// pixels-per-second speed actually reads as uniform rather than easing in and
+// out of every line.
 .strip__text {
+  display: inline-block;
   flex-shrink: 0;
-  padding-right: t.$space-7;
   font-size: t.$font-caption;
   line-height: 1.4;
   white-space: nowrap;
   color: var(--text-primary);
   text-shadow: 0 1px 6px var(--text-halo);
+  transition-property: transform;
+  transition-timing-function: linear;
+  // No duration by default: a line that fits must not animate at all, and a
+  // stray default here would make it drift on mount.
+  transition-duration: 0ms;
 }
 
 // On a phone the strips sit under the masthead with far less width, so a little

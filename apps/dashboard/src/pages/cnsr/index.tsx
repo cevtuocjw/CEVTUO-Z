@@ -188,9 +188,16 @@ function LineText({ line }: { line: CnsrLine }) {
             />
           </View>
         ) : null}
-        <Text className="cn__a cn__a--block" onClick={() => openLink(links[0]!.href)}>
-          {line.t}
-        </Text>
+        <View className="cn__linktext">
+          <Text className="cn__a cn__a--block" onClick={() => openLink(links[0]!.href)}>
+            {line.t}
+          </Text>
+          {/* ⚠️ The target page's own summary. Without it a link row is a name
+              and a domain — which is what the user reported as "the link's
+              content was never fetched". Absent whenever the fetch failed, and
+              the row still works. */}
+          {links[0]!.desc ? <Text className="cn__desc">{links[0]!.desc}</Text> : null}
+        </View>
         <Text className="cn__host">{host}</Text>
       </View>
     );
@@ -283,7 +290,7 @@ function CnsrTree({ source }: { source: CnsrSource }) {
         return (
           <View className="cn__year" key={y.year}>
             <View className="cn__node cn__node--year" onClick={() => toggle(yKey)}>
-              <Text className={`cn__caret${yOpen ? ' cn__caret--on' : ''}`}>▸</Text>
+              <View className={`cn__caret${yOpen ? ' cn__caret--on' : ''}`} />
               <Text className="cn__year-t">{y.year}</Text>
               <Text className="cn__node-n">{y.lines} 行</Text>
             </View>
@@ -295,7 +302,7 @@ function CnsrTree({ source }: { source: CnsrSource }) {
                   return (
                     <View className="cn__month" key={mKey}>
                       <View className="cn__node cn__node--month" onClick={() => toggle(mKey)}>
-                        <Text className={`cn__caret${mOpen ? ' cn__caret--on' : ''}`}>▸</Text>
+                        <View className={`cn__caret${mOpen ? ' cn__caret--on' : ''}`} />
                         <Text className="cn__month-t">{monthLabel(m.month)}</Text>
                         <Text className="cn__node-n">{m.lines} 行</Text>
                       </View>
@@ -313,7 +320,7 @@ function CnsrTree({ source }: { source: CnsrSource }) {
                               // edge is what makes ten days scannable at once.
                               <View className={`cn__day${dOpen ? ' cn__day--on' : ''}`} key={dKey}>
                                 <View className="cn__node cn__node--day" onClick={() => toggle(dKey)}>
-                                  <Text className={`cn__caret${dOpen ? ' cn__caret--on' : ''}`}>▸</Text>
+                                  <View className={`cn__caret${dOpen ? ' cn__caret--on' : ''}`} />
                                   <Text className="cn__day-t">{d.date}</Text>
                                   <Text className="cn__node-n">
                                     {n ? `${n} 行` : '无内容'}
@@ -375,7 +382,7 @@ function CnsrTree({ source }: { source: CnsrSource }) {
 }
 
 /** One source's scrolling column: header, tree, rail, position readout. */
-function CnsrColumn({ source }: { source: CnsrSource | null }) {
+function CnsrColumn({ source, onFull }: { source: CnsrSource | null; onFull: () => void }) {
   const [scroll, setScroll] = useState({ ratio: 0, thumb: 0, date: '' });
   const bodyRef = useRef<HTMLElement | null>(null);
 
@@ -401,7 +408,15 @@ function CnsrColumn({ source }: { source: CnsrSource | null }) {
   return (
     <View className="cn__col">
       <View className="cn__col-head">
-        <Text className="cn__col-t">{source.label}</Text>
+        <View className="cn__col-headline">
+          <Text className="cn__col-t">{source.label}</Text>
+          {/* ⚠️ A 44px target. In a four-up column on a laptop this is a mouse
+              click, but the same layout runs on a tablet, and the icon alone
+              would be a ~16px hit area there. */}
+          <View className="cn__full" onClick={onFull}>
+            <Text className="cn__full-t">⤢</Text>
+          </View>
+        </View>
         <Text className="cn__col-m">
           {source.counts.days} 天 · {source.counts.lines} 行
         </Text>
@@ -517,7 +532,7 @@ function Timeline({ sources }: { sources: CnsrSource[] }) {
                 })
               }
             >
-              <Text className={`cn__caret${isOpen ? ' cn__caret--on' : ''}`}>▸</Text>
+              <View className={`cn__caret${isOpen ? ' cn__caret--on' : ''}`} />
               <Text className="cn__day-t">{d.date}</Text>
               <Text className="cn__node-n">
                 {d.items.length} 个来源 · {n ? `${n} 行` : '无内容'}
@@ -550,6 +565,80 @@ function Timeline({ sources }: { sources: CnsrSource[] }) {
   );
 }
 
+/**
+ * Heatmap — one cell per day, shaded by how much was written.
+ *
+ * ⚠️ Shaded by LINES + LINKS, not by character count. The user's rule, and the
+ * right one: a day holding one 800-character paragraph and a day holding eight
+ * separate notes are not the same amount of noting, and a character total calls
+ * the first one busier. Links count triple because a saved link is a deliberate
+ * act, where a long paste is often just a long paste.
+ *
+ * ⚠️ One row, not a month grid. The reference the user pointed at groups by
+ * month across a year; this window is five days per source, so month grouping
+ * would draw one almost-empty column per month and say nothing. Height is also
+ * a constraint — the columns and the timeline have to fit below it.
+ */
+function Heatmap({ sources }: { sources: CnsrSource[] }) {
+  const [pick, setPick] = useState<string>('all');
+
+  // Union of every date any source holds, newest first.
+  const dates = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of sources) for (const e of s.entries) set.add(e.date);
+    return [...set].sort((a, b) => b.localeCompare(a));
+  }, [sources]);
+
+  const value = useCallback(
+    (date: string) => {
+      let n = 0;
+      for (const s of sources) {
+        if (pick !== 'all' && s.source !== pick) continue;
+        for (const e of s.entries) {
+          if (e.date !== date) continue;
+          n += e.lines.length + e.lines.reduce((k, l) => k + (l.links?.length ?? 0) * 3, 0);
+        }
+      }
+      return n;
+    },
+    [sources, pick],
+  );
+
+  const max = Math.max(1, ...dates.map(value));
+  /** 0–5, so a quiet day still shows a faint cell rather than nothing at all. */
+  const level = (n: number) => (n === 0 ? 0 : Math.min(5, 1 + Math.round((n / max) * 4)));
+
+  if (!dates.length) return null;
+
+  return (
+    <View className="hm">
+      <View className="hm__tabs">
+        {[{ key: 'all', label: '全部' }, ...sources.map((s) => ({ key: s.source, label: s.label }))].map((t) => (
+          <View
+            key={t.key}
+            className={`hm__tab${pick === t.key ? ' hm__tab--on' : ''}`}
+            onClick={() => setPick(t.key)}
+          >
+            <Text>{t.label}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View className="hm__row">
+        {dates.map((d) => {
+          const n = value(d);
+          return (
+            <View className="hm__cellwrap" key={d}>
+              <View className={`hm__cell hm__cell--${level(n)}`} />
+              <Text className="hm__d">{d.slice(5)}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 export default function Cnsr() {
   const [index, setIndex] = useState<CnsrSourcesIndex | null>(null);
   const [loaded, setLoaded] = useState<Record<string, CnsrSource>>({});
@@ -557,6 +646,8 @@ export default function Cnsr() {
   const [loading, setLoading] = useState(true);
   /** Which source's sheet is open. Narrow layout only. */
   const [openKey, setOpenKey] = useState<string | null>(null);
+  /** Which source is open WIDE. The per-column ⤢ key, wide layout only. */
+  const [fullKey, setFullKey] = useState<string | null>(null);
   /**
    * Four columns, or one merged axis.
    *
@@ -594,8 +685,6 @@ export default function Cnsr() {
   // so a page-level total built from it would mix cycles — three of the four
   // entries would be a full stagger behind.
   const live = sources.map((s) => loaded[s.key]).filter(Boolean) as CnsrSource[];
-  const totalLines = live.reduce((n, s) => n + s.counts.lines, 0);
-  const totalDays = live.reduce((n, s) => n + s.counts.days, 0);
   const newestSync = sources
     .map((s) => s.updatedAt)
     .sort()
@@ -603,6 +692,8 @@ export default function Cnsr() {
 
   const openSource = openKey ? loaded[openKey] ?? null : null;
   const openMeta = openKey ? sources.find((s) => s.key === openKey) ?? null : null;
+  const fullSource = fullKey ? loaded[fullKey] ?? null : null;
+  const fullMeta = fullKey ? sources.find((s) => s.key === fullKey) ?? null : null;
 
   return (
     <View className="page">
@@ -613,13 +704,20 @@ export default function Cnsr() {
         <Section
           index={0}
           title="CNSR"
-          hero={<PageHero brand="CNSR" />}
+          // ⚠️ No masthead on a wide screen. The panel has to hold a heatmap,
+          // a switcher, and four scrolling columns, and on a 900px-tall window
+          // the giant CNSR wordmark was spending ~150px of it on a word the tab
+          // already says. Dropping it lifts the tabs and the columns right up
+          // under the title bar, which is the point.
+          hero={wide ? undefined : <PageHero brand="CNSR" />}
           compact
-          lede="笔记与摘录 · 按 @日期 归档，四个来源汇聚到一处"
-          stats={[
-            { value: `${sources.length}`, label: '个来源', note: 'Notion' },
-            { value: `${totalDays}`, label: '个日期', note: `${totalLines} 行` },
-          ]}
+          lede="欢迎阅读 CEVTUO 的一些笔记～"
+          // The two counters are gone, replaced by the heatmap below — they
+          // were a total and a total is not a shape.
+          stats={[]}
+          // ⚠️ There is nothing below this panel (`count={1}`), so a down cue
+          // would promise content that does not exist.
+          showCue={false}
           // ⚠️ The NEWEST of the four, and the label reads 更新于 — this is the
           // page's own freshness, which genuinely is the newest source. Each
           // module carries its own time for the honest per-source answer.
@@ -637,6 +735,8 @@ export default function Cnsr() {
             </View>
           ) : (
             <>
+              <Heatmap sources={live} />
+
               {/* ⚠️ Always rendered, wide or narrow. The timeline is the only
                   view that spans sources, and on a phone the four cards each
                   open their own sheet — without this control the merged axis
@@ -673,7 +773,7 @@ export default function Cnsr() {
                       the tree is deliberately NOT rendered here — see the note
                       on `useWide`. */}
                   {wide ? (
-                    <CnsrColumn source={loaded[s.key] ?? null} />
+                    <CnsrColumn source={loaded[s.key] ?? null} onFull={() => setFullKey(s.key)} />
                   ) : (
                     <View className="cn__card" onClick={() => setOpenKey(s.key)}>
                       <View className="cn__card-line">
@@ -724,6 +824,40 @@ export default function Cnsr() {
               <ScrollView className="cnsr-sheet__body" scrollY>
                 {openSource ? (
                   <CnsrTree source={openSource} />
+                ) : (
+                  <Text className="cn__col-state">载入中…</Text>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
+      {/* The wide-screen fullscreen key's target.
+          ⚠️ A SEPARATE overlay from the narrow one, not the same one reused.
+          They differ in what "full" means: on a phone the sheet is the only way
+          to see any source at all, while here it is an enlargement of a column
+          already on screen — so this one is a centred dialog at a fixed width,
+          and the narrow one is a bottom sheet across the whole viewport. */}
+      {wide && fullKey && fullMeta ? (
+        <View className="cnsr-sheet cnsr-sheet--wide" onClick={() => setFullKey(null)}>
+          <View className="cnsr-sheet__panel" onClick={(e) => e.stopPropagation()}>
+            <View className="cnsr-sheet__head">
+              <View className="cnsr-sheet__titles">
+                <Text className="cnsr-sheet__t">{fullMeta.label}</Text>
+                <Text className="cnsr-sheet__m">
+                  {fullMeta.counts.days} 天 · {fullMeta.counts.lines} 行 · 同步于{' '}
+                  {formatUpdatedAt(fullMeta.updatedAt) ?? '—'}
+                </Text>
+              </View>
+              <View className="cnsr-sheet__x" onClick={() => setFullKey(null)}>
+                <Text className="cnsr-sheet__x-t">✕</Text>
+              </View>
+            </View>
+            <View className="cnsr-sheet__bodywrap">
+              <ScrollView className="cnsr-sheet__body" scrollY>
+                {fullSource ? (
+                  <CnsrTree source={fullSource} />
                 ) : (
                   <Text className="cn__col-state">载入中…</Text>
                 )}

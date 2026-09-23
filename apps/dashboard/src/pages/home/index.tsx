@@ -61,7 +61,10 @@ const PANELS: BrandPanel[] = [
     // sources are read a few days deep, not archived in full — calling it
     // "最近的笔记" without the caveat would promise a completeness the page
     // does not have, and the page itself says so one tap away.
-    lede: "CEVTUO's 最近笔记 · 四个来源各取最近 5 天，按 @日期 归档的滚动快照",
+    // ⚠️ The wording is the user's, verbatim, including "不完整同步" — the
+    // caveat is the point, not padding. And "some of them" replaces "滚动快照",
+    // which described the mechanism rather than what the reader gets.
+    lede: "CEVTUO's 最近笔记，摘取最近 5 天内的不完整同步 · some of them",
     // ⚠️ Deliberately no stats. The invented "1,024 总条目 / 180 字摘要" pair
     // that stood here was never a measurement, and on a panel whose real
     // content is a live feed the numbers were the least informative thing on

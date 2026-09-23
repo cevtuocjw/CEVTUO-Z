@@ -3,7 +3,7 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T16:41+08:00",
+ "updatedAt": "2026-09-23T17:09+08:00",
  "counts": {
   "days": 7,
   "lines": 27,
@@ -137,11 +137,13 @@
     },
     {
      "k": "paragraph",
-     "t": "bob.ibm.com",
+     "t": "IBM Bob",
      "links": [
       {
-       "t": "bob.ibm.com",
-       "href": "https://bob.ibm.com/"
+       "t": "IBM Bob",
+       "href": "https://bob.ibm.com/",
+       "title": "IBM Bob",
+       "desc": "AI SDLC (Software Development Lifecycle) partner."
       }
      ]
     },
@@ -172,11 +174,13 @@
    "lines": [
     {
      "k": "paragraph",
-     "t": "Rogo 是一家专注于金融领域的生成式 AI（Gen AI）初创公司，被称为华尔街的“AI 分析师”或金融机构的“AI 操作系统”。它致力于通过构建理解金融复杂语言与数据的 AI 智能体（Agent），将分散在各大金融数据源与办公软件中的任务串联起来，从而自动化初级分析师的繁琐工作",
+     "t": "Rogo | AI for the most ambitious firms in finance 是一家专注于金融领域的生成式 AI（Gen AI）初创公司，被称为华尔街的“AI 分析师”或金融机构的“AI 操作系统”。它致力于通过构建理解金融复杂语言与数据的 AI 智能体（Agent），将分散在各大金融数据源与办公软件中的任务串联起来，从而自动化初级分析师的繁琐工作",
      "links": [
       {
-       "t": "Rogo",
-       "href": "https://rogo.com/"
+       "t": "Rogo | AI for the most ambitious firms in finance",
+       "href": "https://rogo.com/",
+       "title": "Rogo | AI for the most ambitious firms in finance",
+       "desc": "Rogo is the trusted AI partner to the world’s leading financial institutions. Rogo helps finance teams make better decisions and build smarter teams."
       }
      ]
     },
@@ -187,11 +191,13 @@
     },
     {
      "k": "paragraph",
-     "t": "fable51 worlds",
+     "t": "GitHub - PhiloLabs/fable51-worlds: worlds via code, from fable 5.1",
      "links": [
       {
-       "t": "fable51 worlds",
-       "href": "https://github.com/PhiloLabs/fable51-worlds"
+       "t": "GitHub - PhiloLabs/fable51-worlds: worlds via code, from fable 5.1",
+       "href": "https://github.com/PhiloLabs/fable51-worlds",
+       "title": "GitHub - PhiloLabs/fable51-worlds: worlds via code, from fable 5.1",
+       "desc": "worlds via code, from fable 5.1. Contribute to PhiloLabs/fable51-worlds development by creating an account on GitHub."
       }
      ]
     },

@@ -179,16 +179,36 @@
   user-select: none;
 }
 
+// ⚠️ A CSS chevron, not a glyph.
+//
+// It was `▸` at 10px, which the user reported as too small — and the glyph also
+// renders at a different weight and baseline in every font. Two borders on a
+// rotated box give one shape that is identical on every platform, scales by
+// changing one number, and can be made as heavy as the design wants.
 .cn__caret {
   flex-shrink: 0;
-  width: 12px;
-  font-size: 10px;
-  color: var(--text-tertiary);
-  transition: transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  box-sizing: border-box;
+  // Deliberately larger than the old glyph's optical size, and the stroke is
+  // thicker than a hairline so it survives a busy wallpaper behind it.
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  border-right-width: 2px;
+  border-right-style: solid;
+  border-right-color: var(--text-secondary);
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--text-secondary);
+  // Pointing right when closed…
+  transform: rotate(-45deg);
+  transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1), border-color 180ms ease-out;
 }
 
+// …and down when open.
 .cn__caret--on {
-  transform: rotate(90deg);
+  transform: rotate(45deg);
+  border-right-color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .cn__node-n {
@@ -278,6 +298,98 @@
   display: flex;
   flex-direction: column;
   padding: 0 0 t.$space-3 0;
+}
+
+// ── Heatmap ──────────────────────────────────────────────────
+//
+// ⚠️ Deliberately short. It sits above the columns and the timeline, and on a
+// 900px window every pixel here is taken from those — so it is one row of cells
+// and a switcher, nothing more.
+.hm {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 100%;
+  margin-bottom: t.$space-3;
+}
+
+.hm__tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: t.$space-2;
+  margin-bottom: t.$space-2;
+}
+
+.hm__tab {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 t.$space-2;
+  border-radius: 2px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--divider);
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
+
+.hm__tab--on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.hm__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.hm__cellwrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hm__cell {
+  width: 22px;
+  height: 14px;
+  border-radius: 2px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--divider);
+}
+
+// A monochrome ramp, like every other chart in this system — the colour on this
+// surface belongs to the wallpaper and the posters.
+.hm__cell--0 {
+  background-color: var(--accent-soft);
+}
+.hm__cell--1 {
+  background-color: var(--chart-7);
+}
+.hm__cell--2 {
+  background-color: var(--chart-5);
+}
+.hm__cell--3 {
+  background-color: var(--chart-3);
+}
+.hm__cell--4 {
+  background-color: var(--chart-2);
+}
+.hm__cell--5 {
+  background-color: var(--chart-1);
+}
+
+.hm__d {
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
 }
 
 // ── View switcher ────────────────────────────────────────────
@@ -453,10 +565,66 @@
   font-size: t.$font-caption;
 }
 
+.cn__linktext {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+// The target page's own summary. Two lines at most — this is a preview, and a
+// long meta description must not push a day's other notes off the column.
+.cn__desc {
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .cn__host {
   flex-shrink: 0;
   font-size: t.$font-micro;
   color: var(--text-tertiary);
+}
+
+// ── The column header's fullscreen key ───────────────────────
+.cn__col-headline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-2;
+}
+
+.cn__full {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-tile);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--divider);
+  transition: transform 140ms ease-out, opacity 140ms ease-out, border-color 140ms ease-out;
+
+  &:active {
+    transform: scale(0.94);
+    opacity: 0.7;
+    border-color: var(--accent);
+  }
+}
+
+.cn__full-t {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-secondary);
 }
 
 // ── Images (Shopping only) ───────────────────────────────────
@@ -663,6 +831,39 @@
   }
   to {
     transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// The wide-screen enlargement: a centred dialog, not a bottom sheet. Same
+// overlay, different idea of what "full" means.
+.cnsr-sheet--wide {
+  justify-content: center;
+  align-items: center;
+  padding: t.$space-6;
+}
+
+.cnsr-sheet--wide .cnsr-sheet__panel {
+  width: 100%;
+  // ⚠️ Wider than a column by a long way — a quarter of a 1440px window is
+  // ~330px, and the whole point of the key is to read the same notes at a
+  // comfortable measure.
+  max-width: 1100px;
+  height: 86vh;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.9));
+  border-radius: var(--radius-sheet);
+  animation: cnsr-pop 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes cnsr-pop {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
     opacity: 1;
   }
 }

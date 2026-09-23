@@ -49,10 +49,33 @@ async function run(browser, { scheme, viewport }, tag) {
 
   // ── The page-level summary comes from the loaded payloads ──
   const head = await page.evaluate(() => {
-    const stats = [...document.querySelectorAll('.stats__item')].map((s) => s.innerText.replace(/\s+/g, ' ').trim());
-    return { stats, lede: document.querySelector('.section__lede')?.textContent ?? '' };
+    const cells = [...document.querySelectorAll('.hm__cell')];
+    return {
+      lede: document.querySelector('.section__lede')?.textContent ?? '',
+      stats: document.querySelectorAll('.stats__item').length,
+      cells: cells.length,
+      tabs: [...document.querySelectorAll('.hm__tab')].map((t) => t.textContent.trim()),
+      levels: [...new Set(cells.map((c) => /hm__cell--(\d)/.exec(c.className)?.[1]).filter(Boolean))],
+      cue: document.querySelector('.section__cue') ? 'present' : 'none',
+      heapx: Math.round(document.querySelector('.hm')?.getBoundingClientRect().height ?? 0),
+    };
   });
-  check('页面统计有真实数字', /个来源/.test(head.stats[0] ?? '') && /\d/.test(head.stats[1] ?? ''), head.stats.join(' | '));
+  check('文案改成欢迎语', /欢迎阅读/.test(head.lede), head.lede);
+  check('统计数字已移除', head.stats === 0, `${head.stats} 个统计块`);
+  check('热力图渲染出格子', head.cells > 0, `${head.cells} 格 · 高度 ${head.heapx}px（留高度给来源和时间线）`);
+  check('热力图可切换来源', head.tabs.length === SOURCES.length + 1, head.tabs.join(' / '));
+  check('热力图有明暗层次', head.levels.length >= 2, `等级 ${head.levels.sort().join(',')}`);
+  check('页面没有「下滑」提示', head.cue === 'none', head.cue);
+
+  // Switching the heatmap's source must change the shading, or the control is
+  // decoration.
+  const beforePick = await page.evaluate(() => [...document.querySelectorAll('.hm__cell')].map((c) => c.className).join('|'));
+  await page.locator('.hm__tab').nth(1).click();
+  await page.waitForTimeout(250);
+  const afterPick = await page.evaluate(() => [...document.querySelectorAll('.hm__cell')].map((c) => c.className).join('|'));
+  check('切换来源真的改了热力', beforePick !== afterPick, beforePick === afterPick ? '切换前后完全一致' : '有变化');
+  await page.locator('.hm__tab').first().click();
+  await page.waitForTimeout(200);
 
   // ── Every module carries its OWN sync time ────────────────
   const syncs = await page.evaluate(() => {
@@ -98,6 +121,28 @@ async function run(browser, { scheme, viewport }, tag) {
     const tall = cols.boxes.every((b) => b.h > 200);
     check('每列有自己的固定高度', tall, cols.boxes.map((b) => `h${b.h}`).join(' '));
     check('四列各自标着来源名', cols.labels.every(Boolean), cols.labels.join(' / '));
+
+    // ── The per-column fullscreen key ─────────────────────────
+    check('每列有全屏键', (await page.locator('.cn__full').count()) === SOURCES.length, `${await page.locator('.cn__full').count()} 个`);
+    await page.locator('.cn__full').first().click();
+    await page.waitForSelector('.cnsr-sheet--wide', { timeout: 8000 });
+    await page.waitForTimeout(500);
+    const full = await page.evaluate(() => {
+      const p = document.querySelector('.cnsr-sheet--wide .cnsr-sheet__panel');
+      const col = document.querySelector('.cn__col');
+      return {
+        w: Math.round(p?.getBoundingClientRect().width ?? 0),
+        colW: Math.round(col?.getBoundingClientRect().width ?? 0),
+        title: document.querySelector('.cnsr-sheet--wide .cnsr-sheet__t')?.textContent ?? '',
+        hasX: !!document.querySelector('.cnsr-sheet--wide .cnsr-sheet__x'),
+      };
+    });
+    check('全屏键弹出更宽幅的弹窗', full.w > full.colW * 2, `${full.colW}px 列 → ${full.w}px 弹窗`);
+    check('全屏弹窗有关闭键', full.hasX, full.title);
+    await page.screenshot({ path: `${OUT}/${tag}-fullscreen.png` });
+    await page.locator('.cnsr-sheet--wide .cnsr-sheet__x').click();
+    await page.waitForTimeout(350);
+    check('全屏弹窗能关掉', (await page.locator('.cnsr-sheet--wide').count()) === 0);
 
     // ── Each column scrolls on its own ────────────────────────
     const before = await page.evaluate(() => [...document.querySelectorAll('.cn__col-body')].map((e) => e.scrollTop));

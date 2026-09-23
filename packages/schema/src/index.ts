@@ -321,7 +321,24 @@ export const CnsrLineSchema = z.object({
    * can tap, never as `https://…` — and `t` already holds that name, so the UI
    * only has to find these runs inside it and wrap them.
    */
-  links: z.array(z.object({ t: z.string(), href: z.string() })).optional(),
+  links: z
+    .array(
+      z.object({
+        /** What the reader sees and taps. */
+        t: z.string(),
+        href: z.string(),
+        /**
+         * The target page's own `<title>` and description, fetched at
+         * extraction time.
+         *
+         * ⚠️ Optional, and absent whenever the fetch failed — a link must
+         * render as a tappable name whether or not its preview came back.
+         */
+        title: z.string().optional(),
+        desc: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type CnsrLine = z.infer<typeof CnsrLineSchema>;
 

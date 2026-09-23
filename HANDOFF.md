@@ -519,3 +519,50 @@ ScrollView 在里面对四边绝对定位。** `.cn__col-body` / `.cnsr-sheet__b
 - 切到时间线后**四列会被卸载**，链接检查必须在切换前做
 - 弹层是**全屏遮罩**，没关掉就去点后面的卡片，Playwright 会报「被拦截」——
   看着像布局 bug，其实是对话框开着
+
+---
+
+## ⭐⭐ 项目约束：零 LLM 调用，全部免费（2026-09-23 核实）
+
+用户明确要求：**除了服务器和域名，其余都必须免费、自动**。已全仓核实：
+
+**没有任何 LLM API 调用。** 6 个 `package.json` 里没有 openai / anthropic /
+langchain / ai-sdk / cohere / ollama 等任何 AI SDK。源码里 `OpenAI`/`Claude`/`GPT`
+的命中**全部来自笔记正文**（用户自己记的 AI 笔记）和一条电影名。
+
+**用到的外部服务，全部免费：**
+
+| 服务 | 用途 | 费用 |
+|---|---|---|
+| Notion API | COOF + CNSR 数据源 | 免费 |
+| GitHub Actions | 定时同步（公开仓） | 免费 |
+| GitHub Pages | 站点托管 | 免费 |
+| Google Drive（服务账号） | Chealth 数据 | 免费额度 |
+| Strava API | 骑行数据 | 免费 |
+| 自签 token | sync-trigger 鉴权 | 免费 |
+
+密钥只有 `.env` / GitHub secrets 里那几个（`NOTION_TOKEN`、`GDRIVE_SA_JSON`、
+`STRAVA_*`、`GH_PAT`、`CEVTUO_CLIENT_TOKEN`），**没有一个是付费 AI 服务**。
+
+⚠️ `services/sync-trigger` **不是** Cloudflare Worker —— 项目没有 Cloudflare 账号，
+同一套逻辑跑在 Mac 上（`bun run src/server.ts`，只听 127.0.0.1）。`core.ts` 与宿主无关，
+将来要上 Worker 只是加个 adapter。
+
+**改这个项目时不要引入任何需要 API key 的模型服务。**
+
+## ✅ 2026-09-23 下 9：链接预览 / 滚动速度 / 热力图 / 全屏键
+
+- **链接真的去抓目标页的 `<title>` 与 description**（`fetchLinkMeta`）。6 个链接抓到 5 个；
+  IMDb 挡爬虫、supernote 失败 —— 失败就退化成「名字 + 站点名」，不报错。
+  ⚠️ **改名必须同时改行文本**：`LineText` 靠在 `line.t` 里找链接文字来包一层，
+  只改链接的 `t` 而不改 `line.t`，链接会**静默消失只剩纯文本**。
+- **滚动横条：滚动与换行解耦。** 固定 **45px/秒**、**只滚一遍**、**装得下就不滚**、
+  滚完再等 0.9 秒换行（装得下则固定 2 秒）。旧版把滚动硬塞进 2 秒 ⇒ 行越长越快，不可读。
+- **箭头改成 CSS 画的 V 形**（两条边框旋转），不用 `▸` 字形 —— 各平台一致、可调粗细。
+- **CNSR 页统计数字 → 热力图**：一格一天，按**行数 + 链接数×3** 着色（不是字数），
+  可按来源切换，宽屏 60px / 窄屏 124px 高。**不按月分组**（总共只 5 天）。
+- **CNSR 页删掉「下滑」提示**（`count={1}`，下面什么都没有），**宽屏去掉大标题**
+  让来源/时间线顶到标题栏下。
+- **宽屏每列加 ⤢ 全屏键** → 1100px 居中弹窗（比 296px 的列宽 3.7 倍），带关闭键。
+
+`scripts/verify-cnsr-ui.mjs` 现有 **110 项断言**，三视口全过。
