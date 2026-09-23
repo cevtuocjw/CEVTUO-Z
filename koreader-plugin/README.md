@@ -1,6 +1,6 @@
-# CEVTUO CPAPERR — KOReader 插件
+# CEVTUO CAPPERR — KOReader 插件
 
-把 KOReader 自己的 `statistics.sqlite3` 导出成 JSON，供 CEVTUO-Z 的 CPAPERR 页面使用。
+把 KOReader 自己的 `statistics.sqlite3` 导出成 JSON，供 CEVTUO-Z 的 CAPPERR 页面使用。
 
 ## 为什么是插件，而不是从电脑上 SFTP 拉数据库
 
@@ -17,10 +17,10 @@ KOReader 的插件就是 `koreader/plugins/` 下的一个 `.koplugin` 文件夹�
 **Kindle**（USB 连上电脑后，`koreader` 目录在可见分区根目录）：
 
 ```bash
-cp -R koreader-plugin/cevtuo-paperr.koplugin /Volumes/Kindle/koreader/plugins/
+cp -R koreader-plugin/cevtuo-capperr.koplugin /Volumes/Kindle/koreader/plugins/
 ```
 
-**Kobo / 其他**：把 `cevtuo-paperr.koplugin` 整个文件夹放进设备的 `koreader/plugins/`。
+**Kobo / 其他**：把 `cevtuo-capperr.koplugin` 整个文件夹放进设备的 `koreader/plugins/`。
 
 然后**重启 KOReader**（插件只在启动时扫描）。
 
@@ -34,16 +34,16 @@ cp -R koreader-plugin/cevtuo-paperr.koplugin /Volumes/Kindle/koreader/plugins/
 
 | 设备 | 路径 |
 |---|---|
-| Kindle | `/mnt/onboard/cevtuo-paperr.json` |
-| 部分 Kindle 固件 | `/mnt/us/cevtuo-paperr.json` |
-| Kobo（SD 卡） | `/mnt/sdcard/cevtuo-paperr.json` |
+| Kindle | `/mnt/onboard/cevtuo-capperr.json` |
+| 部分 Kindle 固件 | `/mnt/us/cevtuo-capperr.json` |
+| Kobo（SD 卡） | `/mnt/sdcard/cevtuo-capperr.json` |
 | 都找不到时 | KOReader 设置目录下 |
 
 USB 插上电脑就能直接拿走 —— 这是"备用路径"存在的意义。
 
 ## 直接推送到服务器（可选）
 
-建一个 `cevtuo-paperr.conf.json`，放在 KOReader 的**设置目录**里
+建一个 `cevtuo-capperr.conf.json`，放在 KOReader 的**设置目录**里
 （和 `statistics.sqlite3` 同一个目录）：
 
 ```json

@@ -8,9 +8,9 @@ import { useBreakpoint } from '../../hooks/useBreakpoint';
 import '../../styles/demo.scss';
 
 /**
- * CE-CPAPERR — Kindle reading statistics.
+ * CE-CAPPERR — Kindle reading statistics.
  *
- * ⚠️ Displayed as CPAPERR; the internal key, the route and `data/paperr/` all
+ * ⚠️ Displayed as CAPPERR; the internal key, the route and `data/paperr/` all
  * stay `paperr`. Renaming a route means every shared URL breaks and the data
  * path is pinned by `packages/schema/src/paths.ts` behind a drift guard — a
  * rename that reaches that far is a migration, not a relabel.
@@ -34,13 +34,13 @@ export default function Paperr() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CE-CPAPERR" />
+      <TopBar title="CE-CAPPERR" />
 
       <PageStack count={2}>
         <Section
           index={0}
-          title="CPAPERR"
-          hero={<PageHero brand="CPAPERR" />}
+          title="CAPPERR"
+          hero={<PageHero brand="CAPPERR" />}
           compact
           lede="Kindle 阅读统计 · 只取 KOReader 自己的 statistics.sqlite3，不碰 Reading Insight"
           stats={[

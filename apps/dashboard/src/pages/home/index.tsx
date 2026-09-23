@@ -78,7 +78,7 @@ const PANELS: BrandPanel[] = [
   },
   {
     key: 'paperr',
-    title: 'CPAPERR',
+    title: 'CAPPERR',
     lede: 'Kindle 阅读 · 阅读时长、在读书目与划线，从设备同步',
     stats: [
       { value: '36h', label: '本月', note: '在读 3 本' },

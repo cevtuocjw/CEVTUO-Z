@@ -1,7 +1,7 @@
 --[[
-CEVTUO CPAPERR — export KOReader's own reading statistics.
+CEVTUO CAPPERR — export KOReader's own reading statistics.
 
-    koreader/plugins/cevtuo-paperr.koplugin/
+    koreader/plugins/cevtuo-capperr.koplugin/
 
 ── What it does ────────────────────────────────────────────────
 
@@ -39,8 +39,8 @@ local lfs = require("libs/libkoreader-lfs")
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local CevtuoPaperr = WidgetContainer:extend{
-    name = "cevtuo-paperr",
+local CevtuoCapperr = WidgetContainer:extend{
+    name = "cevtuo-capperr",
     is_doc_only = false,
 }
 
@@ -62,9 +62,9 @@ end
 -- back to the settings directory rather than failing.
 local function outPaths()
     local candidates = {
-        "/mnt/onboard/cevtuo-paperr.json",   -- Kindle
-        "/mnt/us/cevtuo-paperr.json",        -- some Kindle builds
-        "/mnt/sdcard/cevtuo-paperr.json",    -- Kobo SD
+        "/mnt/onboard/cevtuo-capperr.json",   -- Kindle
+        "/mnt/us/cevtuo-capperr.json",        -- some Kindle builds
+        "/mnt/sdcard/cevtuo-capperr.json",    -- Kobo SD
     }
     for _, p in ipairs(candidates) do
         local dir = p:match("^(.*)/[^/]+$")
@@ -72,7 +72,7 @@ local function outPaths()
             return p
         end
     end
-    return settingsDir() .. "/cevtuo-paperr.json"
+    return settingsDir() .. "/cevtuo-capperr.json"
 end
 
 --- Column names that actually exist on a table.
@@ -96,7 +96,7 @@ local function isoNow()
 end
 
 --- Build the payload. Returns `payload, nil` or `nil, err`.
-function CevtuoPaperr:buildPayload()
+function CevtuoCapperr:buildPayload()
     local lsqlite3_ok, lsqlite3 = pcall(require, "ljsqlite3")
     if not lsqlite3_ok then
         return nil, _("这个 KOReader 没有带 ljsqlite3，无法读取统计库。")
@@ -241,7 +241,7 @@ function CevtuoPaperr:buildPayload()
 end
 
 --- Write the file. Returns `path, nil` or `nil, err`.
-function CevtuoPaperr:writePayload(payload)
+function CevtuoCapperr:writePayload(payload)
     local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
     if not rapidjson_ok then
         return nil, _("缺少 rapidjson，无法写 JSON。")
@@ -261,11 +261,11 @@ end
 -- ⚠️ The URL and token live in a settings file rather than in this source: a
 -- plugin is a plain-text Lua file sitting on a mounted USB partition, so
 -- anything hardcoded here is readable by anyone holding the Kindle.
-function CevtuoPaperr:pushPayload(payload)
+function CevtuoCapperr:pushPayload(payload)
     local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
     if not rapidjson_ok then return false, _("缺少 rapidjson") end
 
-    local cfg_path = settingsDir() .. "/cevtuo-paperr.conf.json"
+    local cfg_path = settingsDir() .. "/cevtuo-capperr.conf.json"
     if lfs.attributes(cfg_path, "mode") ~= "file" then
         return false, nil   -- not configured; file-only export is a valid mode
     end
@@ -276,7 +276,7 @@ function CevtuoPaperr:pushPayload(payload)
 
     local ok, cfg = pcall(rapidjson.decode, raw)
     if not ok or type(cfg) ~= "table" or not cfg.url then
-        return false, _("cevtuo-paperr.conf.json 格式不对（需要 {\"url\":..., \"token\":...}）")
+        return false, _("cevtuo-capperr.conf.json 格式不对（需要 {\"url\":..., \"token\":...}）")
     end
 
     local http = require("socket.http")
@@ -301,23 +301,23 @@ function CevtuoPaperr:pushPayload(payload)
 end
 
 --- Export, then optionally push. Every failure surfaces as a message.
-function CevtuoPaperr:run(interactive)
+function CevtuoCapperr:run(interactive)
     local payload, err = self:buildPayload()
     if not payload then
         if interactive then UIManager:show(InfoMessage:new{ text = err, timeout = 6 }) end
-        logger.warn("cevtuo-paperr:", err)
+        logger.warn("cevtuo-capperr:", err)
         return
     end
 
     local path, werr = self:writePayload(payload)
     if not path then
         if interactive then UIManager:show(InfoMessage:new{ text = werr, timeout = 6 }) end
-        logger.warn("cevtuo-paperr:", werr)
+        logger.warn("cevtuo-capperr:", werr)
         return
     end
 
     local n = payload.totals.booksStarted
-    logger.info("cevtuo-paperr: exported", n, "books to", path)
+    logger.info("cevtuo-capperr: exported", n, "books to", path)
 
     -- ⚠️ Network is attempted only when it is already up. Bringing WiFi up
     -- from a menu action would drain the battery on a device whose whole job is
@@ -338,16 +338,16 @@ function CevtuoPaperr:run(interactive)
     end
 end
 
-function CevtuoPaperr:init()
+function CevtuoCapperr:init()
     self.ui.menu:registerToMainMenu(self)
 end
 
-function CevtuoPaperr:addToMainMenu(menu_items)
-    menu_items.cevtuo_paperr = {
+function CevtuoCapperr:addToMainMenu(menu_items)
+    menu_items.cevtuo_capperr = {
         text = _("导出阅读统计（CEVTUO）"),
         sorting_hint = "tools",
         callback = function() self:run(true) end,
     }
 end
 
-return CevtuoPaperr
+return CevtuoCapperr
