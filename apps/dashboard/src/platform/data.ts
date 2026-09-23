@@ -23,6 +23,10 @@ import type {
   CoofIndex,
   CoofLibrary,
   CoofTitle,
+  CnsrEntry,
+  CnsrLine,
+  CnsrSource,
+  CnsrSourcesIndex,
   SyncMeta,
 } from '../../../../packages/schema/src/index';
 
@@ -105,7 +109,17 @@ export const assetUrl = (relPath: string): string =>
  * Deriving them means the app cannot describe a payload differently from the
  * code that produces it. `import type` keeps zod out of the bundle.
  */
-export type { CoofCollection, CoofIndex, CoofLibrary, CoofTitle, SyncMeta };
+export type {
+  CoofCollection,
+  CoofIndex,
+  CoofLibrary,
+  CoofTitle,
+  CnsrEntry,
+  CnsrLine,
+  CnsrSource,
+  CnsrSourcesIndex,
+  SyncMeta,
+};
 
 async function getJson<T>(path: string): Promise<T> {
   const url = assetUrl(path);
@@ -160,6 +174,20 @@ export const fetchCoofIndex = (collection: string): Promise<CoofIndex> =>
 
 export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
   getJson<CoofLibrary>(DATA_PATHS.coofLibrary(collection));
+
+/**
+ * The four CNSR sources' freshness record.
+ *
+ * ⚠️ Small and cheap on purpose — it is fetched first, on its own, because it
+ * is what tells the page WHICH sources exist and WHEN each was last synced.
+ * The per-source payloads behind it are large (Learn alone is ~4900 lines), so
+ * nothing should be fetched until this says there is something to fetch.
+ */
+export const fetchCnsrIndex = (): Promise<CnsrSourcesIndex> =>
+  getJson<CnsrSourcesIndex>(DATA_PATHS.cnsrIndex);
+
+export const fetchCnsrSource = (key: string): Promise<CnsrSource> =>
+  getJson<CnsrSource>(DATA_PATHS.cnsrSource(key));
 
 /** Which calendars exist, newest first — the switcher's options. */
 export function calendarKeys(index: CoofIndex): string[] {

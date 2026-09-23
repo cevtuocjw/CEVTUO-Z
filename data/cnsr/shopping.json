@@ -1,0 +1,175 @@
+{
+ "source": "shopping",
+ "label": "Shopping",
+ "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-09-23T16:40+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 17,
+  "hidden": 0,
+  "links": 2,
+  "images": 3,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "3e109462-a4af-809b-9ba4-f12387f5d7d1",
+   "date": "2026-09-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "CENTRESTAGE ELITES 香港展会",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3dc09462-a4af-80ea-8af3-f18a94b36b9b",
+   "date": "2026-09-18",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "旗舰店里不仅卖产品，还有不同品种的展示、现场烘焙、试吃和冰淇淋制作。品牌试图把开心果从一种商品，变成一种可以被学习、比较和体验的产品。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "不同产区被像葡萄酒、咖啡一样展示和解释。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "伊朗Qazvin、西西里、Anatolia、La Mancha……",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Baussan做的第一件事，却是告诉消费者：开心果也有产地、品种和风味差异。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这个品牌叫 La Maison de la Pistache。2024年前后在法国普罗旺斯正式推出，目前在法国已经有5家门店，",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "不是护肤，也不是香氛，而是开心果。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "L’Occitane欧舒丹创始人Olivier Baussan最近几年又做了一个很有意思的品牌。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3df09462a4af806392b4cda3dc314581.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3dc09462-a4af-8059-8abb-ef5fcaedcaf3",
+   "date": "2026-09-15",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "supernote.com rowling",
+     "links": [
+      {
+       "t": "supernote.com rowling",
+       "href": "https://supernote.com/JK"
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3d409462-a4af-802c-b1b7-f739e24415e1",
+   "date": "2026-09-07",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Bleu de Chauffe生产的Germinal工装夹克，由极其耐磨的有机鼹鼠皮面料制成，100% 法国原产，触感光滑。配色有四种，选择更丰富。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "很少有夹克能像值得信赖的法国蓝色工装夹克“Bleu de travail”那样具有永恒、实用的风格。\n法国复古品牌Fleurs de Bagne。夹克使用的质地偏厚的棉质鼹鼠皮Moleskine",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "关于产品价格在IFA 2026展会上报道，产品提供了199美元的早鸟价，正式发售后的价格则为299美元，差不多人民币2000元左右样子",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "ODYSS N1目前对常规西餐的饮食热量识别准确率已达到90%以上。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "目的就是，作为牵线搭桥的媒人，帮助当地农民将不符合标准的大米，一路送达婚礼。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "于是，2025 年，Wikifarmer 联合 Chalastra 农业合作社，并邀请创意机构 McCann Worldgroup 作为传播策划方，推出了 The Wedding Rice（“婚庆大米”）项目。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "fragment顶灯",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "tt35636239",
+     "links": [
+      {
+       "t": "tt35636239",
+       "href": "https://www.imdb.com/title/tt35636239/"
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3d709462a4af80caa94bc3217d1ab619.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3d709462a4af80a69ae1f1c2070cff99.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3d209462-a4af-80bf-8869-e13de15737de",
+   "date": "2026-09-05",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}

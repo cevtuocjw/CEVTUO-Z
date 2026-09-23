@@ -5,6 +5,7 @@ import Taro from '@tarojs/taro';
 import { PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
+import { CnsrStrips } from '../../components/CnsrStrips';
 import {
   assetUrl,
   fetchCoofIndex,
@@ -56,12 +57,17 @@ const PANELS: BrandPanel[] = [
   {
     key: 'cnsr',
     title: 'CNSR',
-    lede: '笔记与摘录。按 @date 归档，四个来源汇聚到一处。',
-    stats: [
-      { value: '1,024', label: '总条目', note: '条 · 4 个来源' },
-      { value: '180', label: '单条摘要', note: '字 · 上限' },
-    ],
-    route: null,
+    // ⚠️ Says what it IS, including the part that is unflattering. These four
+    // sources are read a few days deep, not archived in full — calling it
+    // "最近的笔记" without the caveat would promise a completeness the page
+    // does not have, and the page itself says so one tap away.
+    lede: "CEVTUO's 最近笔记 · 四个来源各取最近 5 天，按 @日期 归档的滚动快照",
+    // ⚠️ Deliberately no stats. The invented "1,024 总条目 / 180 字摘要" pair
+    // that stood here was never a measurement, and on a panel whose real
+    // content is a live feed the numbers were the least informative thing on
+    // it. The four strips below say more than two counters did.
+    stats: [],
+    route: '/pages/cnsr/index',
   },
   {
     key: 'paperr',
@@ -160,6 +166,10 @@ export default function Home() {
             // The card stays as the visible affordance; it no longer owns the tap.
             onPress={() => open(p.route, p.title)}
           >
+            {/* The live feed for CNSR: four glass strips, one per source,
+                cycling through that source's note lines. */}
+            {p.key === 'cnsr' ? <CnsrStrips onOpen={() => open(p.route, p.title)} /> : null}
+
             {p.key === 'coof' && recent.length ? (
               <ScrollView className="recent__scroll" scrollX showScrollbar={false}>
                 <View className="recent__row">

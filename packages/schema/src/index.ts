@@ -295,6 +295,108 @@ export const CnsrNotesPageSchema = z.object({
 });
 export type CnsrNotesPage = z.infer<typeof CnsrNotesPageSchema>;
 
+// ── Per-source timeline ──────────────────────────────────────
+//
+// ⚠️ A different shape from `CnsrNoteSchema`, deliberately, and not a
+// replacement for it.
+//
+// `CnsrNote` is a one-line SUMMARY per note, built for an index you page
+// through. What the CNSR modules actually render is the opposite: a day's full
+// content, in place, inside a scrolling column. Summarising to 180 characters
+// would throw away the thing being displayed, and the dates here are not
+// per-note — they are SEGMENT MARKS in the source page (see the extractor).
+//
+// One file per source, because the four refresh on a staggered schedule and
+// each carries its own `updatedAt` (see DATA_PATHS.cnsrSource).
+
+export const CnsrLineSchema = z.object({
+  /** Source block type — `paragraph`, `bulleted_list_item`, `heading_2`, … */
+  k: z.string(),
+  t: z.string(),
+  /**
+   * Link runs inside the line.
+   *
+   * ⚠️ Carried SEPARATELY from `t` rather than written into it as markdown or
+   * as a bare URL. The requirement is that a link renders as a NAME the reader
+   * can tap, never as `https://…` — and `t` already holds that name, so the UI
+   * only has to find these runs inside it and wrap them.
+   */
+  links: z.array(z.object({ t: z.string(), href: z.string() })).optional(),
+});
+export type CnsrLine = z.infer<typeof CnsrLineSchema>;
+
+export const CnsrImageSchema = z.object({
+  /**
+   * Repo-relative path, e.g. `data/cnsr/img/<blockid>.jpg`.
+   *
+   * ⚠️ A LOCAL path, never Notion's own URL. Notion-hosted files come from S3
+   * with `X-Amz-Expires=3600`, so a stored URL is a broken image an hour later
+   * — the trap the COOF posters were re-hosted to avoid.
+   */
+  src: z.string(),
+  caption: z.string(),
+});
+export type CnsrImage = z.infer<typeof CnsrImageSchema>;
+
+export const CnsrEntrySchema = z.object({
+  /** Notion block id of the `@date` marker that opens this segment. */
+  id: z.string(),
+  date: DayKeySchema,
+  /** Text alongside the date on the marker itself. Usually empty. */
+  title: z.string(),
+  /** Everything between this marker and the next, in reading order. */
+  lines: z.array(CnsrLineSchema),
+  /**
+   * Rows cut by the per-day cap.
+   *
+   * ⚠️ Reported, not hidden. A day silently showing 10 of 69 lines reads as a
+   * day that had 10 lines; the UI has to be able to say there is more.
+   */
+  more: z.number().int().nonnegative(),
+  /** Shopping only — every other source drops images at extraction time. */
+  images: z.array(CnsrImageSchema),
+  /** How many images the day held before the cap. */
+  imagesSeen: z.number().int().nonnegative(),
+});
+export type CnsrEntry = z.infer<typeof CnsrEntrySchema>;
+
+export const CnsrSourceSchema = z.object({
+  source: z.string(),
+  label: z.string(),
+  notionId: z.string(),
+  /** Human-readable description of the read window, e.g. "最近 10 个日期". */
+  window: z.string(),
+  updatedAt: IsoInstantSchema,
+  counts: z.object({
+    days: z.number().int().nonnegative(),
+    lines: z.number().int().nonnegative(),
+    /** Lines cut by the per-day cap. */
+    hidden: z.number().int().nonnegative(),
+    links: z.number().int().nonnegative(),
+    images: z.number().int().nonnegative(),
+    /** `before`/`old` subtrees skipped without being read. */
+    skippedSubtrees: z.number().int().nonnegative(),
+  }),
+  /** Newest first — the order the source page reads from the bottom up. */
+  entries: z.array(CnsrEntrySchema),
+});
+export type CnsrSource = z.infer<typeof CnsrSourceSchema>;
+
+export const CnsrSourcesIndexSchema = z.object({
+  generatedAt: IsoInstantSchema,
+  sources: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      path: z.string(),
+      window: z.string(),
+      updatedAt: IsoInstantSchema,
+      counts: CnsrSourceSchema.shape.counts,
+    }),
+  ),
+});
+export type CnsrSourcesIndex = z.infer<typeof CnsrSourcesIndexSchema>;
+
 // ─────────────────────────────────────────────────────────────
 // CE-PaperR — KOReader reading statistics
 // ─────────────────────────────────────────────────────────────

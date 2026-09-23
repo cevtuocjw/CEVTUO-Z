@@ -1,0 +1,65 @@
+{
+ "generatedAt": "2026-09-23T16:41+08:00",
+ "sources": [
+  {
+   "key": "shopping",
+   "label": "Shopping",
+   "path": "data/cnsr/shopping.json",
+   "window": "最近 5 个 @日期",
+   "updatedAt": "2026-09-23T16:40+08:00",
+   "counts": {
+    "days": 5,
+    "lines": 17,
+    "hidden": 0,
+    "links": 2,
+    "images": 3,
+    "skippedSubtrees": 0
+   }
+  },
+  {
+   "key": "learn",
+   "label": "Learn",
+   "path": "data/cnsr/learn.json",
+   "window": "最近 5 个 @日期",
+   "updatedAt": "2026-09-23T16:40+08:00",
+   "counts": {
+    "days": 6,
+    "lines": 42,
+    "hidden": 67,
+    "links": 0,
+    "images": 0,
+    "skippedSubtrees": 0
+   }
+  },
+  {
+   "key": "techlearn",
+   "label": "tech-learn",
+   "path": "data/cnsr/techlearn.json",
+   "window": "最近 5 个 @日期",
+   "updatedAt": "2026-09-23T16:40+08:00",
+   "counts": {
+    "days": 6,
+    "lines": 11,
+    "hidden": 0,
+    "links": 1,
+    "images": 0,
+    "skippedSubtrees": 0
+   }
+  },
+  {
+   "key": "techai",
+   "label": "TECH-AI",
+   "path": "data/cnsr/techai.json",
+   "window": "最近 5 个 @日期",
+   "updatedAt": "2026-09-23T16:41+08:00",
+   "counts": {
+    "days": 7,
+    "lines": 27,
+    "hidden": 50,
+    "links": 3,
+    "images": 0,
+    "skippedSubtrees": 0
+   }
+  }
+ ]
+}

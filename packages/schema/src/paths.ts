@@ -31,6 +31,16 @@ export const DATA_PATHS = {
   coofLibrary: (key: string) => `data/coof/${key}/library.json`,
 
   cnsrIndex: 'data/cnsr/index.json',
+  /**
+   * One file per CNSR source (shopping / learn / techlearn / techai).
+   *
+   * ⚠️ Split per source rather than one combined file, because the sources are
+   * refreshed on a STAGGERED schedule — one per run, four runs to a cycle — and
+   * each carries its own `updatedAt`. A single combined file would have to be
+   * rewritten by every run, so its other three quarters would claim a freshness
+   * they do not have.
+   */
+  cnsrSource: (key: string) => `data/cnsr/${key}.json`,
   cnsrHeatmap: 'data/cnsr/heatmap.json',
   /** pageNo is 1-based. */
   cnsrNotesPage: (pageNo: number) => `data/cnsr/notes/page-${pageNo}.json`,

@@ -69,9 +69,35 @@ if (SOURCE !== 'coof') {
   process.exit(1);
 }
 
+/**
+ * Which calendars to read.
+ *
+ * ⚠️ Defaults to THE CURRENT YEAR ONLY, not to all seven.
+ *
+ * The older calendars are finished — the user confirmed they are fixed and will
+ * not be edited again. Re-reading them every run spends the workspace's Notion
+ * request budget (180/minute, ~3/s, on any plan below Business) on data that
+ * cannot have changed: the 5-hourly job was paginating seven databases to find
+ * nothing, which is the single largest avoidable cost in this pipeline.
+ *
+ * `--all` re-reads everything, for the occasional case where an old calendar
+ * really was edited by hand.
+ */
+function defaultTargets() {
+  const thisYear = `COOF${new Date().getFullYear()}`;
+  const exact = CALENDAR_COLLECTIONS.filter((c) => c.key.toUpperCase() === thisYear);
+  // ⚠️ Falls back to the NEWEST calendar, not to an empty list. Before this
+  // year's calendar exists the exact match is empty, and `!targets.length`
+  // below exits with "找不到集合" — which reads as a broken configuration
+  // rather than as "there is no calendar for this year yet".
+  return exact.length ? exact : CALENDAR_COLLECTIONS.slice(0, 1);
+}
+
 const targets = ONLY
   ? CALENDAR_COLLECTIONS.filter((c) => c.key.toUpperCase() === ONLY.toUpperCase())
-  : CALENDAR_COLLECTIONS;
+  : has('all')
+    ? CALENDAR_COLLECTIONS
+    : defaultTargets();
 
 if (!targets.length) {
   console.error(`找不到集合: ${ONLY}`);

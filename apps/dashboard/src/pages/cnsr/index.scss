@@ -1,0 +1,736 @@
+// CNSR page — four note sources as date trees.
+//
+// ⚠️ `display:flex; flex-direction:…` on every container, legacy `rgba(r,g,b,a)`
+// colours, real-px media queries — same three constraints as the COOF sheet.
+// The renderers disagree about defaults, so being explicit is mandatory.
+
+@use '../../styles/tokens.scss' as t;
+@use '../../styles/breakpoints.scss' as b;
+
+// ── The four modules ─────────────────────────────────────────
+.cn__cols {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  // ⚠️ `flex: 1` + `min-height: 0`, so the columns can claim the panel's
+  // leftover height. Without `min-height: 0` a flex child refuses to shrink
+  // below its content, the four columns push the panel past the viewport, and
+  // the inner scrollers never scroll because they are as tall as their content.
+  flex: 1;
+  min-height: 0;
+  gap: t.$space-3;
+}
+
+.cn__colwrap {
+  display: flex;
+  flex-direction: column;
+  // Narrow: a fixed-height card, not a flexible one. Four of them have to fit
+  // on one screen alongside the masthead and the numbers.
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+// ⚠️ Four columns only above 840px. Below that each would be ~90px wide on a
+// phone — narrower than a date string — so the narrow layout opens one source
+// at a time in a sheet instead.
+@include b.expanded-up {
+  .cn__cols {
+    flex-direction: row;
+    gap: t.$space-4;
+  }
+
+  .cn__colwrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+// ── A wide column ────────────────────────────────────────────
+.cn__col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.cn__col-head {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-bottom: t.$space-2;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+}
+
+.cn__col-t {
+  font-family: t.$font-family-display;
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.cn__col-m {
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+}
+
+// The per-module sync time. Its own line, not merged into the counts — the
+// whole reason the sources are staggered is so this stays visible per source.
+.cn__col-sync {
+  margin-top: 1px;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cn__col-state {
+  display: block;
+  padding: t.$space-5 0;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.cn__col-bodywrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  // Room for the rail, which is an overlay.
+  padding-right: 10px;
+}
+
+// ⚠️ Absolutely positioned, not `height: 100%`. Taro renders a ScrollView as
+// `<taro-scroll-view-core>`, which the browser treats as `display: inline` — a
+// percentage height against that resolves to `auto` and the element collapses
+// to its content, so it never scrolls. Anchoring all four edges sidesteps the
+// question of what the parent's height resolves to.
+.cn__col-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+// ── Scroll rail + position readout ───────────────────────────
+//
+// Same device as the COOF poster grid: the rail says how far down you are, the
+// readout above it says down among WHAT.
+.cn__rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background-color: var(--divider);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cn__thumb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 1px;
+  background-color: var(--accent);
+  // A floor, not just a percentage: a source with months of content computes to
+  // a 3–4% thumb, which is invisible and gives no sense of position at all.
+  min-height: 16px;
+  transition: top 90ms linear;
+}
+
+.cn__col-date {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  padding: 1px t.$space-2;
+  border-radius: 2px;
+  // A solid pill, not bare text with a halo — it sits over note text, and a
+  // halo is not enough over a dense paragraph.
+  background-color: rgba(0, 0, 0, 0.66);
+  font-size: t.$font-micro;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  pointer-events: none;
+}
+
+// ── The tree ─────────────────────────────────────────────────
+.cn__tree {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: t.$space-5;
+}
+
+.cn__node {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  // A thumb target even in a desktop column — these are tapped far more often
+  // than they are read.
+  min-height: 30px;
+  gap: t.$space-2;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.cn__caret {
+  flex-shrink: 0;
+  width: 12px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  transition: transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.cn__caret--on {
+  transform: rotate(90deg);
+}
+
+.cn__node-n {
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cn__node--year {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--hairline);
+}
+
+.cn__year-t {
+  font-family: t.$font-family-display;
+  font-size: 18px;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.cn__month {
+  display: flex;
+  flex-direction: column;
+  padding-left: t.$space-4;
+}
+
+.cn__month-t {
+  font-size: t.$font-body;
+  font-weight: t.$weight-medium;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+// ⚠️ One glass panel per DAY. The day is the unit the reader thinks in, and a
+// panel edge is what makes a column of ten days scannable at a glance — bare
+// indented text at this width reads as one continuous run.
+.cn__day {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: t.$space-2 0 t.$space-2 t.$space-3;
+  border-radius: var(--radius-tile);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.5));
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.45));
+  transition: border-color 180ms ease-out, background-color 180ms ease-out;
+}
+
+// Open days sit a step brighter than closed ones, so the current day reads as
+// selected from across the column.
+.cn__day--on {
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.85));
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.8));
+}
+
+.cn__node--day {
+  padding: 0 t.$space-2;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+.cn__day-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 t.$space-2 t.$space-2;
+}
+
+.cn__day-t {
+  flex: 1;
+  min-width: 0;
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.cn__day--on .cn__day-t {
+  color: var(--text-primary);
+}
+
+.cn__entry {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 t.$space-3 0;
+}
+
+// ── View switcher ────────────────────────────────────────────
+//
+// ⚠️ Named `cnview`, not `views`. The COOF page defines `.views` in its own
+// sheet, and this project has already been bitten once by a class name shared
+// across two sheets that both load (the poster grid inherited `block-grid`'s
+// `margin: -16px` and lost its left 8px). A distinct name costs nothing.
+.cnview {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: t.$space-1;
+  margin-bottom: t.$space-2;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+}
+
+.cnview__tab {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  // 40px — a tab is a thumb target.
+  min-height: 40px;
+  padding: 0 t.$space-3;
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+}
+
+.cnview__tab--on {
+  color: var(--text-primary);
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--accent);
+  margin-bottom: -1px;
+}
+
+// ── Timeline ─────────────────────────────────────────────────
+// ⚠️ The wrapper sizes; the scroller is absolutely anchored inside it. A bare
+// `flex: 1` on the ScrollView does nothing — Taro renders it as an inline
+// custom element — so it grows to its content and spills over whatever is
+// below it.
+.cn__tlwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.cn__tlscroll {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.cn__timeline {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: t.$space-5;
+}
+
+.cn__tl-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: t.$space-3;
+}
+
+// The source chip. Without it a merged list is unreadable — a shopping lead and
+// an AI note look identical once the labels are gone.
+.cn__tl-chip {
+  display: flex;
+  flex-direction: row;
+  align-self: flex-start;
+  margin-bottom: t.$space-1;
+  padding: 1px t.$space-2;
+  border-radius: 2px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--divider);
+  background-color: var(--accent-soft);
+}
+
+.cn__tl-chip-t {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+// ── Links ────────────────────────────────────────────────────
+//
+// ⚠️ Underlined, and it has to LOOK tappable without hover — most of this
+// page's life is on a touch screen, where there is no hover state to reveal
+// that a word is a link.
+.cn__a {
+  color: var(--accent);
+  text-decoration: underline;
+  -webkit-text-decoration-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0.5);
+  text-underline-offset: 2px;
+  border-radius: 2px;
+  transition: opacity 120ms ease-out, background-color 120ms ease-out;
+
+  // ⚠️ The press feedback the user asked for. `:active` rather than a state
+  // class: on H5 a tap sets it for the duration of the press, which is exactly
+  // the acknowledgement wanted, and it needs no JS or re-render.
+  &:active {
+    opacity: 0.5;
+    background-color: var(--accent-soft);
+  }
+}
+
+// ── A line that IS a link ────────────────────────────────────
+//
+// ⚠️ Its own row rather than an inline span, because the logo is an <Image> and
+// an <Image> cannot be nested inside a <Text>. See the note in the component.
+.cn__linkrow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: t.$space-2;
+  padding: t.$space-1 0;
+}
+
+.cn__linkrow--bm {
+  // A bookmark is a deliberate save, not an inline reference — it gets a little
+  // more room so it reads as its own item.
+  padding: t.$space-2 0;
+}
+
+// ⚠️ The letter badge sits UNDER the favicon, not beside it. A host with no
+// icon (or one that fails to load) leaves the image transparent, and the badge
+// is what shows through — a fallback that needs no error handling, because
+// nothing has to detect the failure.
+.cn__fav {
+  position: relative;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  overflow: hidden;
+  background-color: var(--accent-soft);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.cn__fav-letter {
+  position: absolute;
+  font-size: 10px;
+  font-weight: t.$weight-semibold;
+  color: var(--text-secondary);
+}
+
+.cn__fav-img {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.cn__a--block {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: t.$font-caption;
+}
+
+.cn__host {
+  flex-shrink: 0;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+// ── Images (Shopping only) ───────────────────────────────────
+.cn__imgs {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  margin-top: t.$space-2;
+}
+
+.cn__img {
+  width: 100%;
+  border-radius: var(--radius-tile);
+  background-color: var(--accent-soft);
+}
+
+.cn__more {
+  display: block;
+  margin-top: t.$space-2;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+.cn__entry-t {
+  margin-bottom: t.$space-1;
+  font-size: t.$font-caption;
+  font-weight: t.$weight-medium;
+  color: var(--text-primary);
+}
+
+// ⚠️ `pre-wrap`, not default. These are pasted notes and scraped paragraphs —
+// many contain newlines and run-on tab-separated fields, and collapsing
+// whitespace glues separate facts into one sentence.
+.cn__line {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: t.$font-caption;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 6px var(--text-halo);
+}
+
+.cn__line--heading_1,
+.cn__line--heading_2,
+.cn__line--heading_3 {
+  color: var(--text-primary);
+  font-weight: t.$weight-medium;
+}
+
+.cn__line--bulleted_list_item {
+  // A hanging indent: the marker occupies the first two characters and wrapped
+  // lines align under the text rather than under the bullet.
+  padding-left: t.$space-3;
+  text-indent: -#{t.$space-3};
+}
+
+.cn__line--quote {
+  padding-left: t.$space-3;
+  border-left-width: 2px;
+  border-left-style: solid;
+  border-left-color: var(--divider);
+  color: var(--text-tertiary);
+}
+
+.cn__line--none,
+.cn__line--undated {
+  color: var(--text-tertiary);
+}
+
+.cn__empty {
+  display: block;
+  padding: t.$space-5 0;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+.cn__undated {
+  display: flex;
+  flex-direction: column;
+  margin-top: t.$space-4;
+  padding-top: t.$space-3;
+  border-top-width: 1px;
+  border-top-style: dashed;
+  border-top-color: var(--divider);
+}
+
+.cn__undated-h {
+  display: block;
+  margin-bottom: t.$space-2;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+// ── Narrow: the four cards ───────────────────────────────────
+.cn__card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  // ⚠️ Tighter than it wants to be. Measured on a 390×844 screen: at 12px the
+  // four cards plus the view switcher ran 34px past the scroll cue, which is
+  // absolutely positioned — so the overflow lands on top of it rather than
+  // scrolling. 8px here and 8px on `.cnview` is what buys it back.
+  padding: t.$space-2 t.$space-3;
+  border-radius: var(--radius-card);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.7));
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.6));
+  transition: transform 140ms ease-out, opacity 140ms ease-out;
+
+  &:active {
+    transform: scale(0.985);
+    opacity: 0.82;
+  }
+}
+
+.cn__card-line {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cn__card-t {
+  font-family: t.$font-family-display;
+  font-size: 20px;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo);
+}
+
+.cn__card-go {
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--accent);
+}
+
+.cn__card-m {
+  margin-top: 2px;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.cn__card-sync {
+  margin-top: 1px;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── The narrow sheet ─────────────────────────────────────────
+//
+// ⚠️ Alpha 0.97 rather than `--glass-solid-a` (0.88). Measured on the COOF
+// sheet: at 0.88 the content behind still reads through, and a tree of notes
+// over a photograph is unreadable. The blur supplies the glass, the alpha has
+// to supply the legibility.
+.cnsr-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: cnsr-fade 220ms ease-out both;
+}
+
+@keyframes cnsr-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cnsr-sheet__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  height: 88vh;
+  padding: t.$space-4 t.$space-4 calc(#{t.$space-4} + env(safe-area-inset-bottom, 0px));
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.9));
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), 0.97);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  animation: cnsr-up 320ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes cnsr-up {
+  from {
+    transform: translateY(5%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cnsr-sheet__head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: t.$space-3;
+  padding-bottom: t.$space-3;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--divider);
+}
+
+.cnsr-sheet__titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cnsr-sheet__t {
+  font-family: t.$font-family-display;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: t.$track-display;
+  color: var(--text-primary);
+}
+
+.cnsr-sheet__m {
+  margin-top: 2px;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+// ⚠️ 44px. This is the only way out of the sheet on a phone — the backdrop tap
+// works on a desktop but is an unreliable target under a thumb.
+.cnsr-sheet__x {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin: -#{t.$space-2} -#{t.$space-2} 0 0;
+  border-radius: var(--radius-tile);
+}
+
+.cnsr-sheet__x-t {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+.cnsr-sheet__bodywrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.cnsr-sheet__body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}

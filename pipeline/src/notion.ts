@@ -10,14 +10,58 @@
  * is world-readable.
  */
 
-import { withRetry } from '@cevtuo/pipeline-core';
+import { sleep, withRetry } from '@cevtuo/pipeline-core';
 
 const API = 'https://api.notion.com/v1';
 
 /** Pinned. Notion changes response shapes between versions. */
 const NOTION_VERSION = '2022-06-28';
 
+/**
+ * Minimum gap between two requests, in milliseconds.
+ *
+ * ⚠️ Measured against Notion's published budget, not guessed.
+ *
+ * Every workspace plan below Business gets **180 requests per 60-second
+ * window** — an average of 3/s — and the budget may be spent in a burst. Bursts
+ * are therefore fine interactively and fatal on a long run: the poster backfill
+ * alone is 1184 uploads, which is ~7 windows' worth of budget if it runs flat
+ * out. A 350ms floor holds a long run at ~2.9/s, just under the line, and costs
+ * a short run almost nothing because each call is network-bound anyway.
+ *
+ * ⚠️ This is a floor on OUR side only. Notion also enforces a per-WORKSPACE
+ * limit shared by every connection, which nothing here can see — that one
+ * surfaces as a 429 and is handled by the `Retry-After` path below.
+ */
+const MIN_GAP_MS = 350;
+
+let tail: Promise<unknown> = Promise.resolve();
+let lastAt = 0;
+
+/** Serialize every request behind the previous one and space them out. */
+function paced<T>(fn: () => Promise<T>): Promise<T> {
+  const run = tail.then(async () => {
+    const wait = MIN_GAP_MS - (Date.now() - lastAt);
+    if (wait > 0) await sleep(wait);
+    lastAt = Date.now();
+    return fn();
+  });
+  // The chain must survive a rejection, or one 404 would poison every later
+  // request in the run by leaving `tail` permanently rejected.
+  tail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 export class NotionError extends Error {
+  /**
+   * Server-supplied wait, when it gave one. Read by `withRetry`, whose own
+   * backoff is far too short to clear a rate-limit window.
+   */
+  retryAfterMs?: number;
+
   constructor(
     readonly status: number,
     readonly code: string,
@@ -41,7 +85,8 @@ function token(): string {
 
 async function request<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
   return withRetry(
-    async () => {
+    () =>
+      paced(async () => {
       const res = await fetch(`${API}${path}`, {
         method: init?.method ?? (init?.body ? 'POST' : 'GET'),
         headers: {
@@ -71,11 +116,42 @@ async function request<T>(path: string, init?: { method?: string; body?: unknown
             ' — this usually means the page/database was not shared with the integration' +
             ' (open it in Notion → "..." → Connections), not that the id is wrong.';
         }
-        throw new NotionError(res.status, code, message);
+        const err = new NotionError(res.status, code, message);
+
+        // ⚠️ 429 and 529 are the only two statuses Notion asks clients to
+        // retry at the transport level. 429 is a rate limit; 529
+        // (`service_overload`) means Notion itself is briefly overloaded and is
+        // handled identically.
+        //
+        // The header is authoritative. Notion documents it as "seconds until
+        // the window resets", so it is at most 60 for the per-connection limit
+        // and can be longer for the workspace-wide one — and it repeats the
+        // value in the body as `additional_data.retry_after` for clients that
+        // cannot read headers.
+        if (res.status === 429 || res.status === 529) {
+          let seconds = Number(res.headers.get('retry-after'));
+          if (!Number.isFinite(seconds) || seconds <= 0) {
+            try {
+              const a = JSON.parse(text) as { additional_data?: { retry_after?: string } };
+              seconds = Number(a.additional_data?.retry_after);
+            } catch {
+              /* body was not JSON — fall back to the backoff below */
+            }
+          }
+          if (Number.isFinite(seconds) && seconds > 0) {
+            // +500ms of slack: waking exactly on the boundary tends to land
+            // inside the same window and earn another 429.
+            err.retryAfterMs = seconds * 1000 + 500;
+          }
+        }
+        throw err;
       }
       return JSON.parse(text) as T;
-    },
-    { label: `notion ${path}`, attempts: 4 },
+      }),
+    // `jitterMs` finally used: the docs ask for exponential backoff WITH jitter,
+    // and without it every retry in a batch wakes on the same millisecond and
+    // re-collides.
+    { label: `notion ${path}`, attempts: 4, jitterMs: 400 },
   );
 }
 

@@ -231,8 +231,17 @@ export async function withRetry<T>(
       // backfill it was hundreds of wasted requests.
       if (error instanceof PermanentError) break;
       if (attempt === attempts) break;
+      // ⚠️ A server-supplied wait beats our own guess, always.
+      //
+      // Notion's `Retry-After` is "seconds until the 60-second rate-limit window
+      // resets" — up to 60. This backoff tops out at `baseDelayMs * 2^(n-1)`,
+      // which for the Notion client is 2 seconds. Without this branch a
+      // rate-limited run spent its entire retry budget inside ~3.5 seconds and
+      // failed while the limit was still in force, which looks exactly like a
+      // broken integration and is nothing of the sort.
+      const hinted = (error as { retryAfterMs?: number })?.retryAfterMs;
       const backoff = baseDelayMs * 2 ** (attempt - 1);
-      const delay = backoff + Math.floor(Math.random() * jitterMs);
+      const delay = Math.max(hinted ?? 0, backoff) + Math.floor(Math.random() * jitterMs);
       console.warn(`  ${label} failed (attempt ${attempt}/${attempts}), retrying in ${delay}ms`);
       await new Promise((r) => setTimeout(r, delay));
     }

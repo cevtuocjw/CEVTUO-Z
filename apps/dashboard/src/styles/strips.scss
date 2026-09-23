@@ -1,0 +1,128 @@
+// CNSR strips — the four sources as glass tickers on the home panel.
+//
+// ⚠️ Same constraints as every other sheet here: `display:flex` written out on
+// every container, legacy `rgba(r,g,b,a)` colours, real-px media queries.
+
+@use 'tokens.scss' as t;
+@use 'breakpoints.scss' as b;
+
+.strips {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  width: 100%;
+  margin-top: t.$space-5;
+  // ⚠️ The strips are the last thing in the panel and must not stretch. Without
+  // this the flex column hands them the leftover height and each strip becomes
+  // a tall empty box.
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding: t.$space-2 t.$space-3;
+  border-radius: var(--radius-card);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.7));
+  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.55));
+  border-radius: var(--radius-tile);
+}
+
+.strip__head {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.strip__k {
+  font-size: t.$font-micro;
+  font-weight: t.$weight-medium;
+  letter-spacing: t.$track-label;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.strip__d {
+  font-size: t.$font-micro;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.strip__empty {
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+// The window clips; the track moves. Both copies of the line live on the track
+// so the loop is seamless — see the note in the component.
+.strip__window {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  width: 100%;
+}
+
+.strip__track {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  // ⚠️ The width is the sum of the two copies, and the animation translates by
+  // exactly -50% of it. That is what makes copy two arrive precisely where copy
+  // one started, with no visible jump.
+  animation: strip-marquee 2000ms linear infinite;
+}
+
+// A line short enough to fit does not need to travel a full width — scrolling
+// it right off the strip would hide the very thing the strip exists to show,
+// and leave two seconds of blank. It drifts instead, which still reads as
+// "alive" without ever losing the words.
+.strip__track--short {
+  animation: strip-drift 3400ms ease-in-out infinite alternate;
+}
+
+@keyframes strip-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes strip-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-14px);
+  }
+}
+
+.strip__text {
+  flex-shrink: 0;
+  padding-right: t.$space-7;
+  font-size: t.$font-caption;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--text-primary);
+  text-shadow: 0 1px 6px var(--text-halo);
+}
+
+// On a phone the strips sit under the masthead with far less width, so a little
+// more room goes to each line rather than to the gap between the copies.
+@include b.medium-up {
+  .strips {
+    gap: t.$space-3;
+  }
+
+  .strip {
+    padding: t.$space-3 t.$space-4;
+  }
+}
