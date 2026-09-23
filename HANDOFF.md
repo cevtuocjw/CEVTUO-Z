@@ -397,10 +397,44 @@ backups/dropped-columns-2026-09-23.json   ← 删旧列前的全量备份，别�
 | `/tmp/pre-verify/COOF*.json` | **迁移前的 library.json**，本轮两次数据恢复都靠它 |
 | `backups/dropped-columns-2026-09-23.json` | 被删掉的旧列全量值（704 行） |
 
-## 新会话怎么开始
+## 🕐 新会话怎么开始（2026-09-23 下午）
 
-> 读 `~/Documents/CEVTUO-Z/HANDOFF.md`。列结构统一、海报入 Notion、站点上线都已完成。
-> 先跑一次 sync 确认幂等，再 `bun scripts/shots.mjs` 看视觉 —— 记住 `bg=` 是假的、要量对元素。
-> 面板填充、整块点击、大屏适配、片单年份切换都已做完并实测。
-> ⚠️ 改完记得 `bash scripts/deploy-pages.sh` —— 否则用户在线上看到的是旧版。
-> 下一步是 CNSR / PAPERR / CHEALTH 的数据源，以及 Notion 式 calendar/timeline 视角切换。
+**交接状态：工作区干净，本地与远端同步（`e70d04c`），站点已部署且线上就是最新版。**
+不需要再做任何恢复动作，直接从下面挑一件事开始。
+
+### 第一句可以这么说
+
+```
+读 ~/Documents/CEVTUO-Z/HANDOFF.md，然后继续。
+优先做 CNSR：我已经把 Learn / Tech-learn / Tech AI / Shopping 四个 Notion 库
+共享给集成了，你按 COOF 那套做同步管线。
+```
+
+### 待办（按价值排）
+
+1. **CNSR（笔记）** —— 页面板式已在，是空壳，占位数字（1,024 / 180）是编的。
+   数据源四个 Notion 库：**Learn / Tech-learn / Tech AI / Shopping**
+   ⚠️ 上一轮实测只有 `Shopping timeline`(`c07be48a…`) 和
+   `notionpagetechlearn`(`af733153…`) 对集成可见，另外两个搜不到 ——
+   **用户需先在 Notion 里把缺的两个 share 给集成**（库右上角 `⋯` → Connections）
+   做法参照 `pipeline/src/sources/coof/`，schema 里 `CnsrNoteSchema` 已经定义好了
+2. **PAPERR（Kindle）** —— 数据源是 KOReader 的 `statistics.sqlite3`，
+   页面文案已写清两条同步路径（插件推送 / 本机拉取），但没有实现
+3. **CHEALTH（健康）** —— 数据源待定，⚠️ **绝不能进公开仓库**
+   （GitHub Pages 即使私有仓库也公网可读），必须走 Worker 鉴权
+4. **Android APK** —— 缺 JDK + Android SDK + gradle
+5. **ICP 备案** —— **必须用户本人**（阿里云扫码 / 实名 / 支付），我代劳不了
+
+### 几条不要再踩的（详见下方各节）
+
+- ⚠️ **改完一定要 `bash scripts/deploy-pages.sh`** —— gh-pages 是手动发布的。
+  这个会话就发生过"改完没部署，用户看不到新功能"
+- ⚠️ **判断线上是否最新，要用浏览器真实加载再查 DOM** ——
+  grep index.html 引用的 chunk 会得到 0 匹配，因为页面 chunk 是按需懒加载的
+- ⚠️ **这个会话同一个错犯了三次：功能写了但没生效**
+  （`Section.onPress` 忘了在首页传、`subtitle` 被 `pointer-events: none` 吞、
+  COOF 页漏 import `demo.scss`）。**交互写完必须用真实点击测**
+- ⚠️ **看图会骗人**：截图里 chips 一直没有边框，我每次都当成设计如此 ——
+  真相是深链接时样式压根没加载。**对比两种进入方式才暴露**
+- ⚠️ **Notion 集成只能看到被显式共享的库**；`POST /v1/search` 带 query 时行为不一致，
+  **存在性判断要用不带 query 的全量分页**
