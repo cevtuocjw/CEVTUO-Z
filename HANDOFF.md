@@ -277,9 +277,46 @@ index.html 只预载 `app.js`，页面 chunk（`542.*`、`679.*`）根本不在�
 
 实测：片单 1 个网格 / 时间线 148 行 / 日历 302 格，零报错。
 
-### P2 — 功能
+### ✅ 视图切换 + 两个深链接 bug（2026-09-23 下 7）
 
-- **Notion 式 calendar/timeline 视角切换** —— 一行没写
+**用户报告：「返回键丢了」「chips 没有玻璃框，只有文字」**
+
+两个 bug 是**同一个根因**：**COOF 是唯一没有 `import '../../styles/demo.scss'` 的页面**
+（另外四个页面都有），而 `.page`（页面内边距 + flex 列）和 `.chip` / `.chips` 都定义在里面。
+Taro 只打包被 import 的样式，所以：
+
+- 从首页点进来 → home 的 chunk 已带该样式 → 看着正常
+- **直接打开 COOF 的 URL → chips 退化成纯文字**（实测 `border-width: 0px`、
+  `background: rgba(0,0,0,0)`、高 21px 而非 34px），页面也没有左右内边距
+
+⚠️ **这个 bug 之所以一直没被抓到，是因为它只在深链接时出现，而所有截图工具都是直接
+打开页面的** —— 截图里 chips 一直没框，只是每次都当成设计如此。**看图和看代码都发现不了，
+只有对比"两种进入方式"才暴露。**
+
+顺带修：**返回键原本只在有 Taro 页面栈时出现**，深链接进来只剩 Z 字标，
+浏览器返回键成了唯一出路（手机上不在屏幕上）。现在无栈时回首页，首页加 `root` 标记。
+
+### 🔴 CNSR 数据源（用户 2026-09-23 提供）
+
+用户说明：CNSR 的笔记在 Notion 的四个库 —— **Learn / Tech-learn / Tech AI / Shopping**。
+
+**实测集成可见性**（`POST /v1/search` 全量分页）：
+
+| 库 | 集成能否看到 |
+|---|---|
+| `Shopping timeline` | ✅ `c07be48a-aca9-4277-bdbf-467b2874816a` |
+| `notionpagetechlearn` | ✅ `af733153-8a6f-4a0f-9446-275abaeef896` |
+| Learn | ❌ 搜不到 |
+| Tech AI | ❌ 搜不到 |
+
+⚠️ **Notion 集成只能看到被显式共享的库**。要接 CNSR，用户需要先把缺失的那两个库
+在 Notion 里 share 给集成（页面右上角 `⋯` → Connections → 选中集成）。
+⚠️ 另外：`POST /v1/search` 带 `query` 时行为不一致 —— 搜「Tech」返回 0，
+但不带 query 的全量列表里明明有 `notionpagetechlearn`。**别用带 query 的搜索做存在性判断，用全量分页。**
+
+### 已完成
+
+- **Notion 式 calendar/timeline 视角切换** ✅（片单 / 时间线 / 日历）
 - CNSR / CE-PaperR / Chealth 仍是空壳（Phase 2/3/4），页面文案准确，只是没数据源
 - Android APK —— 缺 JDK + Android SDK + gradle
 - ICP 备案 —— **阿里云操作必须用户本人**（扫码/实名/支付）
