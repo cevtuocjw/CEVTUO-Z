@@ -54,6 +54,15 @@ function arg(name: string): string | undefined {
 const has = (name: string) => process.argv.includes(`--${name}`);
 
 const SOURCE = arg('source') ?? 'coof';
+/**
+ * Whether this run also advances the CNSR stagger.
+ *
+ * ⚠️ Off only for CNSR itself, which `scripts/cnsr-sync.mjs` drives. Without
+ * this guard, `--source cnsr` would recurse: the CNSR script shells out to the
+ * extractor, and a sync that called the CNSR script while being called BY it
+ * would never terminate.
+ */
+const RUN_CNSR = SOURCE === 'coof';
 const ONLY = arg('collection');
 const DRY_RUN = has('dry-run');
 const DATA_DIR = repoPath('data');
@@ -206,14 +215,50 @@ if (!DRY_RUN) {
   posterMap = new Map(adopted);
 }
 
-// Collection summaries — shared by every index file so the switcher needs no
-// extra request.
-const summaries = loaded.map((l) => ({
-  name: l.key,
-  count: l.titles.length,
-  latestAt: latestOf(l.titles),
-  path: `data/coof/${l.key}/index.json`,
-}));
+// Collection summaries — the CATALOGUE of every calendar, not only the ones
+// this run happened to read.
+//
+// ⚠️⚠️ This must list all seven even though the sync now loads only the current
+// year.
+//
+// Every index file carries this array so the year switcher needs no extra
+// request — that is what the comment here has always said. Building it from
+// `loaded` meant that scoping the READ to COOF2026 silently shrank the
+// CATALOGUE to one entry, and the COOF page offers exactly this array as its
+// set of years: it would have shown a single choice and read as broken.
+// Measured the first time the scoped sync ran: 36 lines vanished from
+// `data/coof/COOF2026/index.json`.
+//
+// Years not read this run carry their summary forward from the index already on
+// disk. They cannot have changed — that is the entire premise of not reading
+// them.
+const loadedByKey = new Map(loaded.map((l) => [l.key, l]));
+const summaries = await Promise.all(
+  CALENDAR_COLLECTIONS.map(async (c) => {
+    const l = loadedByKey.get(c.key);
+    if (l) {
+      return {
+        name: l.key,
+        count: l.titles.length,
+        latestAt: latestOf(l.titles),
+        path: `data/coof/${l.key}/index.json`,
+      };
+    }
+    const prev = (await readJson(join(DATA_DIR, 'coof', c.key, 'index.json'))) as CoofIndex | null;
+    // ⚠️ An unreadable neighbour still gets an entry, with its real name and
+    // path. Dropping it would shrink the switcher silently — the same failure
+    // this block exists to prevent, just triggered by a missing file instead of
+    // by a scoped read.
+    return (
+      prev?.collections?.find((x) => x.name === c.key) ?? {
+        name: c.key,
+        count: 0,
+        latestAt: null,
+        path: `data/coof/${c.key}/index.json`,
+      }
+    );
+  }),
+);
 
 // Pass 3 — write.
 console.log('');
@@ -264,6 +309,35 @@ for (const l of loaded) {
   written += [a, b].filter((x) => x === 'written').length;
   unchanged += [a, b].filter((x) => x === 'unchanged').length;
   console.log(`  ${a === 'written' || b === 'written' ? '✎' : '='} ${l.key}: ${titles.length} 条`);
+}
+
+// ── CNSR — ONE source per run ────────────────────────────────
+//
+// ⚠️ Deliberately not four. Four sources refreshing in one burst is a single
+// spike against a workspace-wide Notion budget, and the spike is what earns a
+// 429; staggered, each run touches one source and each source comes round every
+// two days. See `scripts/cnsr-sync.mjs` for why the slot comes from the clock
+// rather than from "whichever is oldest".
+//
+// ⚠️ Runs BEFORE the sync-meta block on purpose. The workflow commits with
+// `git add -A data/`, so anything written after that point in this process is
+// still committed — but the elapsed-time figure below would be a lie about how
+// long the run took if a two-minute CNSR pass happened after it was printed.
+if (RUN_CNSR && !DRY_RUN) {
+  console.log(`\n═══ CNSR 轮转同步 ═══`);
+  const { spawnSync } = await import('node:child_process');
+  const proc = spawnSync('bun', ['run', join(repoPath(), 'scripts', 'cnsr-sync.mjs')], {
+    stdio: 'inherit',
+    env: process.env,
+  });
+  // ⚠️ A CNSR failure must NOT fail the whole run. COOF's output is already
+  // written and valid; aborting here would throw it away over a source that
+  // will come round again in two days.
+  if (proc.status !== 0) {
+    console.error(`  ✗ CNSR 轮转失败（退出码 ${proc.status}）—— COOF 产物不受影响`);
+  }
+} else if (RUN_CNSR) {
+  console.log(`\n  · dry-run：跳过 CNSR 轮转`);
 }
 
 // ── sync-meta ────────────────────────────────────────────────
