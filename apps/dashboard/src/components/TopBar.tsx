@@ -73,28 +73,46 @@ export function TopBar({ title, children, root = false }: TopBarProps) {
       }
     }
 
-    // ⚠️ The safety net, and the reason the user was sometimes tapping twice.
+    // ⚠️ The safety net, and why it RETRIES THE POP rather than navigating home.
     //
     // `navigateBack` reports success even when nothing moves — tapped while the
     // page is still transitioning in, or against a stack Taro has not finished
-    // building, it simply does nothing and no `fail` fires. The user sees a dead
-    // button and taps again. This watches the route it was trying to leave and,
-    // if we are still on it, goes to the index directly. On the normal path the
-    // hash has already changed and this is a no-op.
+    // building, it does nothing and no `fail` fires. The user sees a dead button
+    // and taps again; that was the original complaint.
     //
-    // ⚠️ 500ms, not a shorter guess. Too short and a slow-but-working pop would
-    // have the index pushed on top of it, which is a worse bug than the one
-    // being fixed: back would then return to the page you just left.
+    // ⚠️⚠️ The first version of this net called `navigateTo(HOME)` after 500ms.
+    // On a LIGHT page the pop finishes well inside 500ms, so it never ran. On
+    // the CNSR page — four nested date trees, a heatmap and a timeline to tear
+    // down — the pop is still in flight at 500ms, the net fired, and home was
+    // PUSHED on top. That is a forward page transition, so the user saw CNSR's
+    // back animate differently from COOF's on a button that had actually
+    // worked. Confirmed by comparing the two pages: same code, different
+    // animation, and the difference tracked page weight exactly.
+    //
+    // So the net re-issues the pop — same direction, same animation — and only
+    // falls back to pushing the index if a second attempt also leaves us here,
+    // which means the stack really is unusable rather than merely slow.
     if (typeof window === 'undefined' || !before) return;
+
+    const stillHere = () => window.location.hash === before;
+
     setTimeout(() => {
-      if (window.location.hash === before) {
+      if (!stillHere()) return;
+      try {
+        if (stackDepth() > 1) Taro.navigateBack({ fail: () => Taro.navigateTo({ url: HOME }) });
+        else Taro.navigateTo({ url: HOME });
+      } catch {
+        /* the fallback below is the last resort */
+      }
+      setTimeout(() => {
+        if (!stillHere()) return;
         try {
           Taro.navigateTo({ url: HOME });
         } catch {
-          /* the index route is the last resort; there is nothing under it */
+          /* nothing under the index; there is nowhere further to go */
         }
-      }
-    }, 500);
+      }, 700);
+    }, 450);
   };
 
   return (

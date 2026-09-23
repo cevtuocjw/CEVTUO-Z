@@ -5,6 +5,9 @@
 
 @use 'tokens.scss' as t;
 @use 'breakpoints.scss' as b;
+// ⚠️ A partial does NOT inherit its importer's namespaces — the same trap
+// recent.scss documents. Without this the mixin below fails the build.
+@use 'glass.scss' as g;
 
 .strips {
   display: flex;
@@ -20,17 +23,16 @@
 }
 
 .strip {
+  // ⚠️ The same mixin as the chips, the tabs and every other control. This had
+  // its own hand-rolled tint multiplier, which is how the strips ended up
+  // looking *nearly* like the rest of the glass instead of the same as it.
+  @include g.glass-inset;
+
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
   padding: t.$space-2 t.$space-3;
-  border-radius: var(--radius-card);
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgba(255, 255, 255, calc(var(--glass-border-a) * 0.7));
-  background-color: rgba(var(--tint-r), var(--tint-g), var(--tint-b), calc(var(--glass-tint-a) * 0.55));
-  border-radius: var(--radius-tile);
 }
 
 .strip__head {

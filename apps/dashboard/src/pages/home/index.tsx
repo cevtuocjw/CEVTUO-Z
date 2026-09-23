@@ -68,7 +68,7 @@ const PANELS: BrandPanel[] = [
     // aside goes on its own line. A second element would have been the other
     // way, but `lede` is typed as a string and widening it for one page's
     // wording is the tail wagging the dog.
-    lede: "CEVTUO's 最近笔记，摘取最近 5 天内的不完整同步\n· some of them",
+    lede: "CEVTUO's 最近笔记，摘取最近 5 天次内的不完整同步\n· SOME OF THEM",
     // ⚠️ Deliberately no stats. The invented "1,024 总条目 / 180 字摘要" pair
     // that stood here was never a measurement, and on a panel whose real
     // content is a live feed the numbers were the least informative thing on
@@ -78,8 +78,8 @@ const PANELS: BrandPanel[] = [
   },
   {
     key: 'paperr',
-    title: 'PAPERR',
-    lede: 'Kindle 阅读。阅读时长、在读书目与划线，从设备同步。',
+    title: 'CPAPERR',
+    lede: 'Kindle 阅读 · 阅读时长、在读书目与划线，从设备同步',
     stats: [
       { value: '36h', label: '本月', note: '在读 3 本' },
       { value: '12', label: '已读完', note: '本 · 本年度' },

@@ -8,12 +8,18 @@ import { useBreakpoint } from '../../hooks/useBreakpoint';
 import '../../styles/demo.scss';
 
 /**
- * CE-PaperR — Kindle reading statistics.
+ * CE-CPAPERR — Kindle reading statistics.
  *
- * Phase 3 fills this in. Data comes from KOReader's own statistics.sqlite3 on the
- * Kindle, reached two ways:
- *   primary  — a KOReader plugin POSTs aggregates when the device joins WiFi
- *   fallback — a macOS LaunchAgent pulls the DB over SFTP on port 2222
+ * ⚠️ Displayed as CPAPERR; the internal key, the route and `data/paperr/` all
+ * stay `paperr`. Renaming a route means every shared URL breaks and the data
+ * path is pinned by `packages/schema/src/paths.ts` behind a drift guard — a
+ * rename that reaches that far is a migration, not a relabel.
+ *
+ * The plugin now exists: `koreader-plugin/cevtuo-paperr.koplugin/` exports
+ * KOReader's own statistics.sqlite3 to a JSON the pipeline consumes. Two paths,
+ * as planned:
+ *   primary  — the plugin POSTs aggregates when the device joins WiFi
+ *   fallback — it also writes a file next to the DB for an SFTP pull
  *
  * ⚠️ Only aggregates cross the wire. The stats DB is WAL-mode, so copying just
  * the main file can read stale data — keeping the DB on the device sidesteps
@@ -28,15 +34,15 @@ export default function Paperr() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CE-PAPERR" />
+      <TopBar title="CE-CPAPERR" />
 
       <PageStack count={2}>
         <Section
           index={0}
-          title="PAPERR"
-          hero={<PageHero brand="PAPERR" />}
+          title="CPAPERR"
+          hero={<PageHero brand="CPAPERR" />}
           compact
-          lede="Kindle 阅读统计。只取 KOReader 自己的统计库，不碰 Reading Insight —— 它怎么更新都不影响。"
+          lede="Kindle 阅读统计 · 只取 KOReader 自己的 statistics.sqlite3，不碰 Reading Insight"
           stats={[
             { value: '36h', label: '本月', note: '在读 3 本' },
             { value: '12', label: '已读完', note: '本 · 本年度' },

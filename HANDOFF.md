@@ -627,3 +627,20 @@ if (LINK_BLOCK.has(b.type)) { ... }          // ← 永远轮不到
   （视图切换、热力图切换、全屏键、关闭键、跳转按钮、卡片、COOF 的视图 tab）。
   两个手搓的玻璃近似值就是设计系统开始分裂的地方。
 - **`\n` 换行**：`.section__lede` 加 `white-space: pre-line`，让 «· some of them» 单独一行。
+
+### 2026-09-23 下 12：返回动画、PAPERR→CPAPERR、KOReader 插件
+
+- **返回动画和 COOF 不一样** —— 是我上一轮加的**安全网自己造成的**。CNSR 页面重
+  （四棵日期树 + 热力图 + 时间线要拆），pop 在 500ms 内没走完，安全网就抢先
+  `navigateTo(首页)` —— **那是前进动画**。改成**重试 pop**（同方向同动画），
+  只有第二次也失败才推首页。实测两页现在都是 15–61ms 离开，同一路径同一动画。
+  ⚠️ 教训：**安全网如果走的是另一条路，它就会在被触发时改变用户看到的动画。**
+- **PAPERR → CPAPERR**：只改**显示名**（TopBar / 页面标题 / 主页面板 / index.config）。
+  内部 key、路由 `pages/paperr/`、`data/paperr/` 都**没动** —— 路由改名会让所有分享出去的
+  链接失效，数据路径被 `paths.ts` 的 drift guard 钉住，那是迁移不是改标签。
+- **KOReader 插件已写好**：`koreader-plugin/cevtuo-paperr.koplugin/`。
+  读 `statistics.sqlite3`，导出 JSON 到设备可见分区，可选 POST。
+  ⚠️ **统计库是 WAL 模式** —— 从电脑上 SFTP 拷主库会读到旧快照，只有在 KOReader
+  进程内读才是当前的，这是插件存在的理由。
+  ⚠️ **未在真机跑过**（手上没 Kindle），所以每一步包 pcall、失败明确弹消息。
+  用 luaparse 验过语法（并做了负向对照确认检查有效）。
