@@ -644,3 +644,86 @@ if (LINK_BLOCK.has(b.type)) { ... }          // ← 永远轮不到
   进程内读才是当前的，这是插件存在的理由。
   ⚠️ **未在真机跑过**（手上没 Kindle），所以每一步包 pcall、失败明确弹消息。
   用 luaparse 验过语法（并做了负向对照确认检查有效）。
+
+---
+
+# 🛑 收尾状态（2026-09-23 晚）
+
+**工作区干净，本地与远端同步，站点已部署。不需要任何恢复动作。**
+
+```
+a369e88 rename: CPAPERR → CAPPERR（含插件标识符）
+41ad60c feat: CAPPERR 改名、返回动画修正、KOReader 插件
+e1e0d1e fix: 返回键偶发需两击、横条倒滚一行、全部按钮统一玻璃材质
+930dd9a fix(cnsr): 链接大量丢失的真因；弹窗改回玻璃；图片居中限宽
+314fe58 docs: HANDOFF 记录链接丢失的分支顺序根因…
+6bf5c61 feat(cnsr): 链接预览、匀速单次滚动横条、来源热力图、宽屏全屏键
+df6aa78 feat(cnsr): 隔 2 天轮转的调度器；修 COOF 年历目录被只读今年误伤
+bcba278 feat(cnsr): 四个 Notion 来源接入，主页滚动横条 + CNSR 页面与时间线
+```
+
+## 今天做完的（四个品牌，两个已上线）
+
+| 品牌 | 状态 |
+|---|---|
+| **COOF** | ✅ 完整，线上 97/97 行为断言通过。只同步今年，3.6 秒完成 |
+| **CNSR** | ✅ 完整，线上 110/110 通过。四个 Notion 来源，隔 2 天轮转 |
+| **CAPPERR** | 🟡 页面是空壳；**KOReader 插件已写好但未在真机跑过** |
+| **CHEALTH** | 🔴 未开始 |
+
+## 验证工具（改任何东西之后都跑）
+
+```bash
+cd ~/Documents/CEVTUO-Z/apps/dashboard && bun run build:h5
+rm -rf /tmp/v/z && mkdir -p /tmp/v/z && cp -R dist/* /tmp/v/z/ && cp -R ../../data /tmp/v/z/data
+(cd /tmp/v && python3 -m http.server 8096 &)          # 已起过就不用再起
+cd ~/Documents/CEVTUO-Z
+bun scripts/verify-cnsr-ui.mjs http://127.0.0.1:8096/z /tmp/cnsr-ui   # 110 项
+bun scripts/verify-coof-ui.mjs http://127.0.0.1:8096/z /tmp/coof-ui   # 97 项
+```
+
+**两个脚本都能直接对着线上 URL 跑**，收尾前值得再跑一次：
+`bun scripts/verify-cnsr-ui.mjs https://cevtuocjw.github.io/CEVTUO-Z`
+
+## 🔴 下一件事，按顺序
+
+1. **CAPPERR 数据接入**：插件导出的是 `{books, daily, totals}`，而
+   `PaperrIndexSchema` 要的是 `{dataVersion, current, books, daily, totals, lastIngestPath}`
+   还要给每本书算 `estFinishedAt`（按最近 14 天速度投影）。
+   ⇒ 需要一个 `pipeline/src/sources/paperr/` 把插件产物转成 index.json。
+   **先让用户在真机上跑一次插件**，拿到真实的 JSON 再写转换 —— 现在写就是猜。
+2. **CHEALTH**：走 Worker 鉴权。⚠️ **绝不能进公开仓库**，Pages 是公网可读的。
+3. **Android APK**：缺 JDK + Android SDK + gradle。
+4. **ICP 备案**：**必须用户本人**（扫码/实名/支付）。小程序没有备案域名跑不起来。
+
+## ⚠️ 今天新增的坑（都已写进上面的正文）
+
+1. **分支顺序会吃掉数据**：`if (!text) return` 写在链接分支之前，
+   146 个 bookmark 全被丢掉（它们的文字在 `caption` 不在 `rich_text`）
+2. **反向读 + toggle 标题即日期 ⇒ 每天内容错位到前一天**：缓冲区必须从第一块就存在
+3. **清理逻辑不能只看本次运行**：`--only learn` 删光了 shopping 的图
+4. **收紧读取范围会误伤「目录」字段**：只读今年让 `collections` 从 7 个缩成 1 个
+5. **断言会反过来塑造实现**：写着「面板 alpha 必须 ≥0.94」的测试，把弹窗逼成了黑板
+6. **安全网走了另一条路，就会改变动画**：返回键的重试必须重试同一个动作
+7. **`ScrollView` 在 Taro 里是 inline 元素**：`flex:1` 无效，必须外层 relative + 内层四边绝对定位
+8. **早退前先问「这个块的内容会不会不在 text 里」**
+
+---
+
+# 📋 下一个窗口发这段
+
+```
+读 ~/Documents/CEVTUO-Z/HANDOFF.md，特别是最末尾的「收尾状态」那一节，然后继续。
+
+今天 COOF 和 CNSR 都已完整上线，验证脚本 COOF 97/97、CNSR 110/110 全过。
+接下来按 HANDOFF 里的顺序做 CAPPERR —— 但先别写转换代码：
+
+1. 先确认 KOReader 插件（koreader-plugin/cevtuo-capperr.koplugin/）在真机上
+   跑一次是什么结果。我还没在设备上试过。
+2. 拿到真实的导出 JSON 之后，再写 pipeline/src/sources/paperr/ 把它转成
+   data/paperr/index.json（要按 PaperrIndexSchema，含 estFinishedAt 投影）。
+
+改完任何东西都要跑验证脚本，并且对着线上 URL 再跑一次。
+⚠️ 这个项目栽过四次「拿指标当真相」、三次「功能写完没接线」——
+写完交互必须用真实点击测，截图必须真的看。
+```
