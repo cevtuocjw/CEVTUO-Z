@@ -1,7 +1,7 @@
 {
   "brands": {
     "coof": {
-      "changedAt": "2026-09-23T11:26+08:00",
+      "changedAt": "2026-09-23T10:44+08:00",
       "dataVersion": "30dca1fb424e",
       "parts": {
         "COOF2020": "cd39dd5dd591",
@@ -15,21 +15,20 @@
     }
   },
   "cadence": "PT5H",
-  "generatedAt": "2026-09-23T11:26+08:00",
+  "generatedAt": "2026-09-23T10:44+08:00",
   "nextScheduledAt": "2026-09-23T13:00+08:00",
-  "runId": "35814306567",
   "schemaVersion": 1,
   "sources": [
     {
       "changed": true,
       "id": "notion-coof",
       "itemsIn": 1209,
-      "lastAttemptAt": "2026-09-23T11:26+08:00",
-      "lastSuccessAt": "2026-09-23T11:26+08:00",
-      "latencyMs": 23561,
+      "lastAttemptAt": "2026-09-23T10:44+08:00",
+      "lastSuccessAt": "2026-09-23T10:44+08:00",
+      "latencyMs": 12363,
       "staleAfterHours": 15,
       "status": "ok"
     }
   ],
-  "trigger": "schedule"
+  "trigger": "local"
 }
