@@ -375,19 +375,23 @@ Taro 只打包被 import 的样式，所以：
 
 ---
 
-## 未提交
+## ✅ 提交状态（2026-09-23 收工）
 
-工作区是脏的，**本轮没有擅自 commit 任何东西**。
-建议分批：**代码一个 commit、数据（海报 + library.json）另一个**。
-⚠️ `dataVersion` 算法本会话改过 ⇒ **所有 `library.json` 的版本号变了一次**，属预期的一次性影响。
+**工作区干净，本地与远端同步，站点已部署。**
 
-新增文件：
 ```
-pipeline/src/cli/{notion-posters,migrate-calendars,split-multi-select,local-posters,relink-posters}.ts
-pipeline/src/sources/coof/version.ts
-scripts/{shots.mjs,coof-schema-audit.ts,deploy-pages.sh}
-backups/dropped-columns-2026-09-23.json   ← 删旧列前的全量备份，别删
+6d69500 docs: HANDOFF 交接说明改为可直接开工的形式
+e70d04c docs: HANDOFF 记录深链接 bug 根因与 CNSR 数据源可见性
+60f927b fix: COOF 页缺 demo.scss + 深链接时没有返回键
+8079aca feat(coof): 滚动位置显示月份 + 日历格子改为可点击
+15a5d28 docs: HANDOFF 同步三视图与提交流程
+bec3cb1 data(coof): 列结构统一后的完整数据 + 1184 张海报
+a11a692 feat: COOF 三视图 + 大屏适配 + 七个年历列结构统一
+37ad6a7 sync: coof data 2026-09-23T03:26Z   ← 定时任务(旧代码)推的
 ```
+
+代码与数据分成两个 commit，日后回滚互不牵连。
+⚠️ `dataVersion` 算法本会话改过 ⇒ 所有 `library.json` 的版本号变了一次，属预期的一次性影响。
 
 ## 数据备份（恢复用）
 
