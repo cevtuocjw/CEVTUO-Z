@@ -418,6 +418,68 @@ export type CnsrSourcesIndex = z.infer<typeof CnsrSourcesIndexSchema>;
 // CE-PaperR — KOReader reading statistics
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * The RAW payload the KOReader plugin writes (`cevtuo-capperr.json`).
+ *
+ * ⚠️ Deliberately a separate schema from `PaperrIndexSchema`, not a looser
+ * version of it. The device must never have to know about `estFinishedAt`,
+ * `dataVersion` or `current` — those are pipeline concerns, and computing them
+ * on a Kindle would mean shipping a projection algorithm to a device whose whole
+ * job is lasting weeks on one charge.
+ *
+ * Verified against a real export (41 books). Three things in it differ from the
+ * published index, and all three are silent if you spread the payload through:
+ *
+ *   · `lastOpen` carries NO UTC offset ("2026-09-24T09:14") — KOReader writes
+ *     local wall-clock time. `IsoInstantSchema` demands an offset, so the
+ *     pipeline attaches the device's.
+ *   · `series` is the literal string "N/A" when there is no series. It is a
+ *     string, so `z.string().nullable()` accepts it and the page renders "N/A".
+ *   · `progressPct` is ABSENT (not null) for a book whose page count KOReader
+ *     never learned.
+ *
+ * Tolerant on the optional fields on purpose: `highlights`, `notes` and
+ * `total_read_pages` are columns later KOReader releases added, so an older
+ * device legitimately omits them, and the plugin already reports zeros for that
+ * case. Strict on structure, because that is what tells a real export apart from
+ * something that happened to POST to the ingest URL.
+ */
+export const PaperrRawBookSchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+  authors: z.string().optional().default(''),
+  series: z.string().nullable().optional(),
+  pages: z.number().int().positive().nullable().optional(),
+  totalReadPages: z.number().int().nonnegative().optional().default(0),
+  totalReadTime: z.number().int().nonnegative().optional().default(0),
+  lastOpen: z.string(),
+  progressPct: z.number().min(0).max(100).nullable().optional(),
+  highlights: z.number().int().nonnegative().optional().default(0),
+  notes: z.number().int().nonnegative().optional().default(0),
+});
+export type PaperrRawBook = z.infer<typeof PaperrRawBookSchema>;
+
+export const PaperrRawSchema = z.object({
+  schemaVersion: z.literal(1),
+  device: z.string(),
+  exportedAt: z.string(),
+  books: z.array(PaperrRawBookSchema),
+  daily: z.array(
+    z.object({
+      d: DayKeySchema,
+      s: z.number().nonnegative(),
+      p: z.number().nonnegative(),
+    }),
+  ),
+  totals: z.object({
+    booksStarted: z.number().int().nonnegative(),
+    booksFinished: z.number().int().nonnegative(),
+    readSeconds: z.number().int().nonnegative(),
+    pagesTurned: z.number().int().nonnegative(),
+  }),
+});
+export type PaperrRaw = z.infer<typeof PaperrRawSchema>;
+
 export const PaperrBookSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -439,6 +501,27 @@ export const PaperrBookSchema = z.object({
   estFinishedAt: DayKeySchema.nullable(),
 });
 export type PaperrBook = z.infer<typeof PaperrBookSchema>;
+
+/**
+ * What the ingest endpoint (`services/ingest`) answers a device with.
+ *
+ * The Kindle only reads the STATUS CODE — it logs nothing and shows nothing for
+ * an automatic push. The body exists for the operator: `curl` the endpoint and
+ * the answer says which of the three things happened without reading server logs.
+ */
+export const IngestResponseSchema = z.object({
+  ok: z.boolean(),
+  /**
+   * `committed`  — new reading data, a commit was made
+   * `unchanged`  — valid, but byte-for-byte the same reading state; NO commit
+   * `rejected`   — bad token, oversized, malformed, or a schema failure
+   */
+  status: z.enum(['committed', 'unchanged', 'rejected']),
+  message: z.string(),
+  books: z.number().int().nonnegative().optional(),
+  commitSha: z.string().optional(),
+});
+export type IngestResponse = z.infer<typeof IngestResponseSchema>;
 
 export const PaperrIndexSchema = z.object({
   schemaVersion: z.literal(1),

@@ -1,0 +1,15 @@
+{
+  "name": "@cevtuo/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Device-facing receiver for KOReader reading statistics. Validates the export, then commits data/paperr/raw-koreader.json — but ONLY when the reading actually changed. Holds the GitHub token so the Kindle never has to.",
+  "scripts": {
+    "start": "bun run src/server.ts",
+    "verify": "bun run verify.ts"
+  },
+  "dependencies": {
+    "@cevtuo/schema": "workspace:*",
+    "@cevtuo/pipeline-core": "workspace:*"
+  }
+}

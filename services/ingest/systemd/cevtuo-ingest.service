@@ -1,0 +1,39 @@
+# CEVTUO CAPPERR ingest — 阿里云轻量服务器
+#
+# 安装:
+#   sudo cp systemd/cevtuo-ingest.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now cevtuo-ingest
+#   journalctl -u cevtuo-ingest -f
+
+[Unit]
+Description=CEVTUO CAPPERR ingest (Kindle 阅读统计接收端)
+Documentation=https://github.com/cevtuocjw/CEVTUO-Z/blob/main/services/ingest/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# ⚠️ 专用非 root 用户。这个进程持有能写仓库的 PAT，
+#    让它以 root 跑没有任何好处，只有更大的爆炸半径。
+User=cevtuo
+Group=cevtuo
+WorkingDirectory=/opt/cevtuo-ingest
+EnvironmentFile=/opt/cevtuo-ingest/.env
+ExecStart=/usr/local/bin/bun run src/server.ts
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# 最小权限。这个服务只需要读自己的代码和写日志。
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+ReadWritePaths=/opt/cevtuo-ingest
+
+[Install]
+WantedBy=multi-user.target

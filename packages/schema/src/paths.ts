@@ -47,6 +47,18 @@ export const DATA_PATHS = {
 
   paperrIndex: 'data/paperr/index.json',
   paperrHeatmap: 'data/paperr/heatmap.json',
+  /**
+   * The device's own export, exactly as the KOReader plugin wrote it.
+   *
+   * Kept verbatim in the repo rather than converted on the ingest server: the
+   * conversion is the pipeline's job, and storing the raw file means a converter
+   * bug is always fixable by re-running the pipeline over data already on disk,
+   * instead of asking the reader to sync again.
+   *
+   * ⚠️ This is the one file in `data/paperr/` written by a machine that is not
+   * this pipeline — see NOTE below on why it is excluded from `dataVersion`.
+   */
+  paperrRaw: 'data/paperr/raw-koreader.json',
 } as const;
 
 /** Authenticated payloads — served by the Worker, never by Pages. */

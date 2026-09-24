@@ -795,3 +795,55 @@ Kobo 的 SD 卡是 `/mnt/sd` 不是 `/mnt/sdcard`。改成用 **`Device.home_dir
 
 **下一步不变**：先在真机跑一次拿到真实 JSON，再写
 `pipeline/src/sources/paperr/`。**现在写转换就是猜。**
+
+---
+
+## 2026-09-24 下：CAPPERR 数据接入 + 阿里云接收端
+
+**决定：放弃「Mac 局域网」方案，改用阿里云轻量服务器**（`120.77.27.128`，cn-shenzhen）。
+局域网那套不只是「电脑得开着」——它**只在那个 WiFi 下有效**，而读书发生在通勤路上。
+
+### 真数据立刻暴露的三件事（合成数据里一个都没有）
+
+| 真数据里是 | schema 要的 | 不处理会怎样 |
+|---|---|---|
+| `lastOpen: "2026-09-24T09:14"` **无时区** | 必须带偏移 | **41 本书全部校验失败** |
+| `series: "N/A"` 字面量 | `string \| null` | 能通过，然后页面显示「丛书: N/A」 |
+| `progressPct` **键不存在** | 可为 null | 分不清「算不出」和「0%」 |
+
+⇒ HANDOFF 之前写「现在写转换就是猜」，这三条确实猜不出来。
+
+### 已完成
+
+- `PaperrRawSchema` / `IngestResponseSchema` / `DATA_PATHS.paperrRaw`
+- `pipeline/src/sources/paperr/normalize.ts` + `pipeline/src/cli/sync-paperr.ts`
+  —— 41 本书 → `data/paperr/index.json`，**第二次跑零改动**
+- ⚠️ `estFinishedAt` 的锚点取**数据里最新的一天**，不是 `new Date()`。用今天做锚点
+  的话，没人读书文件也天天变，每次定时任务都产生一个 commit。
+- ⚠️ `sync-meta.json` 只**合并自己那条**，绝不整文件覆盖 —— `sync.ts` 是
+  `sources: status` 全量替换，照着写会把 `notion-coof` 抹掉（同 `--only learn` 那类）
+- `services/ingest/`（core + server + verify + systemd + README），验证 **39/39**
+- `.github/workflows/paperr.yml`（push 触发 + dispatch），与 sync.yml 共用并发组
+
+### 「不是书」的处理
+
+12 条被标成 `unknownN (原名)`，**按首次打开时间编号**（位置编号会让 unknown2
+每次同步指向不同文档）。**条目一个没删**，只改显示名，原名在括号里，
+原始导出里也还在，误判永远可恢复。
+
+⚠️ 其中 `unknown8–12` 是 5 个 **`eBook`** —— 那些是**真书，只是 KOReader 没读到
+书名**（有一个 2651 秒 = 44 分钟）。和 KOReader 自己的系统文件不是一回事。
+
+### ⚠️ 阿里云在深圳 ⇒ 没有 HTTPS
+
+大陆地域域名绑 80/443 **需要 ICP 备案**（必须用户本人）。所以走**裸 IP + 非标准端口
+8789**，不用域名，不涉及备案，今天就能用。代价：**明文 HTTP，设备 token 可被嗅探**，
+后果上限是别人能塞假数据（拿不到仓库权限）。**这是已知取舍，不是疏忽。**
+
+### ⚠️ 两个没做完的
+
+1. **`.github/workflows/paperr.yml` 推不上去** —— 本机 token 没有 `workflow` scope。
+   需要你在网页上建，或者给 token 加权限。
+2. **CAPPERR 页面还是 70 行空壳** —— 数据有了，页面没接。
+3. 插件还没加「**已在线时关书也推一次**」—— 现在的规则只在 WiFi 连上的瞬间触发，
+   如果连上后连读三小时不断网，这段时间的数据要等下次重连才走。

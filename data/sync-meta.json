@@ -9,8 +9,8 @@
     }
   },
   "cadence": "PT5H",
-  "generatedAt": "2026-09-23T17:18+08:00",
-  "nextScheduledAt": "2026-09-23T18:00+08:00",
+  "generatedAt": "2026-09-24T09:47+08:00",
+  "nextScheduledAt": "2026-09-24T13:00+08:00",
   "schemaVersion": 1,
   "sources": [
     {
@@ -21,6 +21,16 @@
       "lastSuccessAt": "2026-09-23T17:18+08:00",
       "latencyMs": 1916,
       "staleAfterHours": 15,
+      "status": "ok"
+    },
+    {
+      "changed": true,
+      "id": "koreader-push",
+      "itemsIn": 41,
+      "lastAttemptAt": "2026-09-24T09:47+08:00",
+      "lastSuccessAt": "2026-09-24T09:47+08:00",
+      "latencyMs": 8,
+      "staleAfterHours": 168,
       "status": "ok"
     }
   ],

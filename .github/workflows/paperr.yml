@@ -1,0 +1,88 @@
+# CEVTUO-Z — CE-PaperR（Kindle 阅读统计）
+#
+# 触发方式：
+#   · push  改了 data/paperr/raw-koreader.json —— 即阿里云那台服务器提交了设备导出
+#   · workflow_dispatch  管理页上的「重新生成页面」按钮
+#
+# ⚠️ GitHub 有一条容易踩的规则：用**仓库自带的 GITHUB_TOKEN** 推出去的提交
+#    不会再触发工作流（就是防循环的）。这里没问题，因为触发这个工作流的那次提交
+#    是 ingest 服务用 **PAT** 推的 —— PAT 推的会正常触发。
+#
+# ⚠️ 而这个工作流自己提交的是 data/paperr/index.json 和 data/sync-meta.json，
+#    触发路径只有 data/paperr/raw-koreader.json —— 两者不相交，所以不会自激。
+#    改 paths 之前先想清楚这件事。
+#
+# ⚠️ 与 sync.yml 共用同一个并发组：两个工作流都会写 data/，
+#    并发跑会互相覆盖。
+
+name: paperr
+
+on:
+  push:
+    paths:
+      - 'data/paperr/raw-koreader.json'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: ./node_modules/.bin/tsc -b
+
+      # 这一步不做任何网络请求：原始导出已经在仓库里了。
+      # 所以转换器出错时，改完重跑就行，不用再去求设备同步一次。
+      - name: Convert
+        run: bun run pipeline/src/cli/sync-paperr.ts
+
+      # ⚠️ 没有改动就直接退出。没有这条，每次设备同步都会产生一个 commit ——
+      #    这正是 sync.yml 里那三层保证（stableJson 排序、writeIfChanged、
+      #    「数据没变就不写 sync-meta」）存在的原因。
+      - name: Commit if changed
+        id: commit
+        run: |
+          git config user.name  "cevtuo-sync[bot]"
+          git config user.email "cevtuo-sync@users.noreply.github.com"
+
+          git add -A data/
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "无数据变更 —— 不提交（这正是预期行为）"
+            exit 0
+          fi
+
+          SUMMARY=$(git diff --cached --stat | tail -1)
+          git commit -m "sync: paperr data $(date -u +%Y-%m-%dT%H:%MZ)
+
+          $SUMMARY
+
+          Triggered by: ${{ github.event_name }}
+          Run: ${{ github.run_id }}"
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "已提交: $SUMMARY"
+
+      - name: Push
+        if: steps.commit.outputs.changed == 'true'
+        run: git push
