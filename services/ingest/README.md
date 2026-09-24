@@ -113,11 +113,11 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 | 文件 | 谁看得见 | 内容 |
 |---|---|---|
 | `data/paperr/index.json` | **公开**（提交 + Pages） | 历史、图表、书架、总计 |
-| `data/paperr/current.json` | 需要口令 | **只有「正在读的那一本」** |
 | `data/paperr/raw-koreader.json` | 服务器本地 | 设备原样导出 |
 
-⚠️ 「正在读哪本」是唯一不公开的东西，而且它被拆成**单独一个文件** ——
-让这条界限在 `ls` 里看得见，而不是靠某段代码记得去剥掉一个字段。
+⚠️ 这里**曾经**还有一行「需要口令」的 `current.json`（只有正在读的那一本）。
+读者决定整个阅读面板都公开之后，没有任何东西再写它，路由只能永远回 404 ——
+已删除。同一本书在 `index.json` 的 `current` 字段里，公开，页面直接渲染。
 
 `CEVTUO_ADMIN_PASSWORD` **不设就没有管理页**（`/` 和 `/api/status` 一律 401）。
 这是故意的：忘记设变量应该导致「没有页面」，而不是「页面把书房公之于众」。
@@ -146,8 +146,13 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 | GET | `/health` | 无 | 存活探测。不需要凭据，否则监控脚本也得持有一个 |
 | POST | `/api/paperr` | Bearer `CEVTUO_DEVICE_TOKEN` | Kindle 推数据 |
 | GET | `/` | Basic | 管理页 |
-| GET | `/api/status` | Basic | 最后导出时间、书的数量 |
+| GET | `/api/status` | Basic | 最后同步 / 数据变化 / 设备插件版本 / 书的数量 |
+| GET | `/api/paperr/heartbeat.json` | **无** | 页面读的同步心跳。只有时间戳，没有书目 |
 | POST | `/api/rebuild` | Basic | 重新生成 index.json（本机跑转换器）并推送到网站 |
+
+⚠️ 心跳端点是**公开**的，这是故意的：页面用它回答「Kindle 还在同步吗」，
+而把它放到管理口令后面，意味着唯一能看见它的人是那个已经知道怎么查的人。
+它不带书名、不带每本书的数据，只有「最后一次推送是什么时候」。
 
 ### `/api/paperr` 的三种结果
 
@@ -155,6 +160,10 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 |---|---|---|
 | 202 | `committed` | 阅读数据变了，提交了 |
 | 200 | `unchanged` | 数据合法，但和已存的完全一样 —— **不提交** |
+
+⚠️ ⚠️ `unchanged` **也会更新心跳**。它是读者唯一能看见「设备确实来过」的地方：
+不重写原始导出是刻意的（那是不产生空提交的代价），但「设备来了」和「数据变了」
+是两件事，而把它们混为一谈，正是让一次正常同步看起来像坏掉的原因。
 | 400/401/413 | `rejected` | 格式不对 / 凭据不对 / 太大 |
 
 ⚠️ `unchanged` 是**最重要**的一条。插件每次连 WiFi 都推，而设备每次都重新打
@@ -179,14 +188,14 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
   "url": "http://120.77.27.128:8789/api/paperr",
   "token": "和服务器上 CEVTUO_DEVICE_TOKEN 一致",
   "autoOnWifi": true,
-  "minIntervalMinutes": 30
+  "minIntervalMinutes": 15
 }
 ```
 
 ## 验证
 
 ```bash
-bun run services/ingest/verify.ts     # 39 项
+bun run services/ingest/verify.ts     # 63 项
 ```
 
 拿**真实的设备导出**当 fixture，驱动真实的 `handleIngest`，GitHub 那侧是内存里的

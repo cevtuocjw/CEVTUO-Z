@@ -70,26 +70,11 @@ cp -R data "$STAGE"/data
 # does NOTHING here, because this script builds the site from the filesystem, not
 # from the index.
 #
-# The failure this prevents is not hypothetical: `data/paperr/current.json` is
-# which book the reader has open right now, and a Pages site is world-readable
-# regardless of repository visibility. Publishing it would be silent — the site
-# would simply serve it, at a guessable URL, forever.
-#
-# ⚠️ Add to this list in the same commit that gitignores anything new under
-# `data/`. The check below is what makes forgetting loud instead of silent.
-PRIVATE=(
-  # ⚠️ paperr was listed here while its history was private. The reader decided
-  # the whole reading dashboard is public, so it is not any more. chealth still is.
-  "data/chealth"
-)
-for rel in "${PRIVATE[@]}"; do
-  rm -rf "${STAGE:?}/$rel"
-  if [[ -e "$STAGE/$rel" ]]; then
-    echo "✗ 私有文件没删掉：$rel —— 中止发布" >&2
-    exit 1
-  fi
-  echo "  ▸ 已排除私有路径 $rel"
-done
+# The failure this prevents is not hypothetical: `data/chealth/` is health data
+# and the site is world-readable regardless of repository visibility.
+# ⚠️ `data/paperr/` used to be listed here too, while the reading history was
+# private. It is public by the reader's decision now, and the only file in it
+# that must never be published is the device's raw export — handled above.
 
 # ── ⚠️⚠️ `data/paperr/` has TWO writers, and this script is the wrong one ──
 #

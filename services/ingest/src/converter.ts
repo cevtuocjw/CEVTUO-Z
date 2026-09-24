@@ -67,10 +67,9 @@ export function repoConverter(repoRoot: string = defaultRepoRoot()): Converter {
           const last = err.split('\n').filter(Boolean).slice(-2).join(' ');
           return { error: scrubError(new Error(last || `转换器退出码 ${code}`)).message };
         }
-        // ⚠️ Nothing to hand back. The CLI writes BOTH outputs itself — the
-        // public index (committed by the sync job) and the private current file
-        // (read by `handleCurrent`). Returning one of them here would invite a
-        // second writer for a derivation that already has one.
+        // ⚠️ Nothing to hand back. The CLI writes the index itself — and the
+        // server then publishes that file to gh-pages. Returning it here would
+        // invite a second writer for a derivation that already has one.
         return { ok: true };
       } catch (e) {
         return { error: scrubError(e).message };

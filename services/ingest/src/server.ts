@@ -24,7 +24,6 @@ import { defaultRepoRoot, repoConverter } from './converter';
 import {
   envFrom,
   handleAdminStatus,
-  handleCurrent,
   handleIngest,
   handleRebuild,
   isAdminAuthorized,
@@ -197,28 +196,9 @@ const server = Bun.serve({
       }
     }
 
-    // ── The page's private bit (browser, Basic auth, CORS) ─────
-    //
-    // ⚠️ Only the CURRENT book. The history, the charts and the shelf are public
-    // and come from `data/paperr/index.json` on the site — routing them through
-    // here as well would put the reader's whole library behind a password that
-    // nobody asked for, and make the site depend on this server to render at all.
-    // ── Heartbeat (public, no auth) ────────────────────────────
-    //
-    // ⚠️ Public on purpose. The page reads this to answer "is the Kindle still
-    // syncing?", and putting it behind the admin password would mean the only
-    // person who can see it is the one who already knows how to check. It
-    // carries no titles and no per-book data — only when a push last arrived.
-    if (url.pathname === '/api/paperr/heartbeat.json') {
-      const r = await handleAdminStatus(env, store);
-      const b = r.body as { lastPushAt?: string | null; lastChangeAt?: string | null; pluginVersion?: string | null; books?: number };
-      return json({ lastPushAt: b.lastPushAt ?? null, lastChangeAt: b.lastChangeAt ?? null, pluginVersion: b.pluginVersion ?? null, books: b.books ?? 0 }, 200);
-    }
-
-    if (url.pathname === '/api/paperr/current.json') {
-      const r = await handleCurrent(env, store, req.headers.get('authorization'));
-      return json(r.body, r.status);
-    }
+    // ⚠️ `/api/paperr/current.json` was here — the password-gated "what am I
+    // reading" endpoint. Nothing ever wrote its file, so it could only 404. See
+    // the note in `core.ts`.
 
     // ── Admin surface (browser, Basic auth) ────────────────────
     if (url.pathname === '/' || url.pathname === '/api/status' || url.pathname === '/api/rebuild') {

@@ -45,13 +45,11 @@ export const DEFAULT_MAX_BYTES = 1024 * 1024;
 /**
  * ⚠️ Both are LOCAL paths — neither is a published payload.
  *
- * `raw-koreader.json` is the device's verbatim export, and `current.json` holds
- * the one book being read right now. Everything else the page shows comes from
- * `data/paperr/index.json`, which IS public and is fetched straight from the
- * site. See `packages/schema/src/paths.ts`.
+ * `raw-koreader.json` is the device's verbatim export. Everything else the page
+ * shows comes from `data/paperr/index.json`, which IS public and is fetched
+ * straight from the site. See `packages/schema/src/paths.ts`.
  */
 export const RAW_PATH = LOCAL_PATHS.paperrRaw;
-export const CURRENT_PATH = LOCAL_PATHS.paperrCurrent;
 /**
  * When the device last REACHED us — server-local, never published.
  *
@@ -137,14 +135,6 @@ export interface Store {
    */
   readHeartbeat(): Promise<string | null>;
   writeHeartbeat(text: string): Promise<void>;
-  /**
-   * The private current-book file.
-   *
-   * ⚠️ Read-only from here. The converter writes it, in the same run that
-   * writes the public index — both are derived from the same export, and having
-   * two writers for one derivation is how they end up disagreeing.
-   */
-  readCurrent(): Promise<string | null>;
 }
 
 /**
@@ -362,26 +352,19 @@ export async function handleIngest(
 // The page's data endpoint
 // ─────────────────────────────────────────────────────────────
 
-/**
- * The one book being read right now, for the page.
- *
- * ⚠️ This is the ONLY part of this brand behind a password. The history, the
- * charts and the shelf are public and come from `data/paperr/index.json` on the
- * site; what the reader has open this minute is the part nobody else needs.
- *
- * ⚠️ Returning 404 (rather than an empty object) when nothing has synced yet
- * lets the page tell "locked" apart from "no data" — they need different words.
- */
-export async function handleCurrent(
-  env: Env,
-  store: Store,
-  authHeader: string | null,
-): Promise<{ status: number; body: unknown }> {
-  if (!isAdminAuthorized(env, authHeader)) return { status: 401, body: { error: '需要口令' } };
-  const text = await store.readCurrent();
-  if (!text) return { status: 404, body: { error: '还没有数据，先让设备同步一次' } };
-  return { status: 200, body: safeJsonParse(text) };
-}
+// ─────────────────────────────────────────────────────────────
+// ⚠️ `handleCurrent` used to live here — a password-gated endpoint returning
+// the one book being read right now.
+//
+// ⚠️ Nothing ever wrote its file. The pipeline stopped producing
+// `current.json` when the reader decided the whole reading dashboard is
+// public, so the route could only ever answer 404 — while carrying five
+// passing assertions that drove it with a hand-built store. **Tests that
+// exercise dead code are worse than no tests: they make a route look alive.**
+//
+// `index.current` carries the same book, publicly, and the page renders it.
+// ─────────────────────────────────────────────────────────────
+
 
 // ─────────────────────────────────────────────────────────────
 // Admin

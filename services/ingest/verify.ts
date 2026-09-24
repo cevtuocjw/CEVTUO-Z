@@ -23,7 +23,6 @@ import { repoConverter } from './src/converter';
 import {
   envFrom,
   handleAdminStatus,
-  handleCurrent,
   handleIngest,
   isAdminAuthorized,
   isAuthorized,
@@ -58,9 +57,8 @@ const AUTH = `Bearer ${ENV.deviceToken}`;
 const BASIC = `Basic ${Buffer.from('x:pw-for-tests').toString('base64')}`;
 
 /** In-memory Store, counting writes so "did anything change?" is answerable. */
-function memStore(initial: { raw?: string; current?: string; heartbeat?: string } = {}) {
+function memStore(initial: { raw?: string; heartbeat?: string } = {}) {
   let raw = initial.raw ?? null;
-  let current = initial.current ?? null;
   let heartbeat: string | null = initial.heartbeat ?? null;
   const writes: string[] = [];
   const store: Store = {
@@ -70,9 +68,6 @@ function memStore(initial: { raw?: string; current?: string; heartbeat?: string 
     async writeRaw(t) {
       writes.push('raw');
       raw = t;
-    },
-    async readCurrent() {
-      return current;
     },
     async readHeartbeat() {
       return heartbeat;
@@ -86,7 +81,6 @@ function memStore(initial: { raw?: string; current?: string; heartbeat?: string 
     store,
     writes: () => writes,
     raw: () => raw,
-    current: () => current,
     heartbeat: () => heartbeat,
   };
 }
@@ -259,25 +253,12 @@ async function main(): Promise<void> {
     check(r.body.message.includes('重新生成失败'), 'converter failure: the message says so', r.body.message);
   }
 
-  // ── The page's private bit ─────────────────────────────────
+  // ⚠️ The `/api/paperr/current.json` block was here: five assertions driving a
+  // password-gated endpoint whose file nothing ever wrote. They passed because
+  // the store was hand-built for them. **A test that exercises dead code is
+  // worse than no test** — it makes a route look alive.
   //
-  // ⚠️ ONLY the current book. Everything else the page shows is public and comes
-  // straight from the site — so these assertions are also the check that this
-  // endpoint did not quietly become a second way to read the whole library.
-  {
-    const { store } = memStore({ raw: RAW_TEXT, current: '{"current":{"id":"41"}}' });
-    eq((await handleCurrent(ENV, store, null)).status, 401, 'current endpoint: 401 with no credentials');
-    eq((await handleCurrent(ENV, store, 'Bearer ' + ENV.deviceToken)).status, 401,
-       'current endpoint: the DEVICE token cannot read it back');
-    const ok = await handleCurrent(ENV, store, BASIC);
-    eq(ok.status, 200, 'current endpoint: 200 with the password');
-    eq((ok.body as { current: { id: string } }).current.id, '41', 'current endpoint: returns the current book only');
-    check(!JSON.stringify(ok.body).includes('books'), 'current endpoint: does NOT carry the shelf');
-  }
-  {
-    const { store } = memStore();
-    eq((await handleCurrent(ENV, store, BASIC)).status, 404, 'current endpoint: 404 before any sync');
-  }
+  // The same book is in `index.current`, publicly, and the page renders it.
 
   // ── Admin status ───────────────────────────────────────────
   {

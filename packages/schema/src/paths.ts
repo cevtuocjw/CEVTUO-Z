@@ -68,17 +68,10 @@ export const LOCAL_PATHS = {
    * already on disk, instead of asking the reader to go find WiFi again.
    */
   paperrRaw: 'data/paperr/raw-koreader.json',
-  /**
-   * The one book being read right now — the ONLY part of this brand that is not
-   * public.
-   *
-   * ⚠️ Split into its own file rather than a flag inside `index.json`, because
-   * the split is a PUBLISHING boundary: `index.json` is committed and served by
-   * Pages, this file never leaves the server. Two files make that boundary
-   * something you can see in `ls`, not something enforced by a code path
-   * remembering to strip a field.
-   */
-  paperrCurrent: 'data/paperr/current.json',
+  // ⚠️ `paperrCurrent` was here: "the only part of this brand that is not
+  // public". The reader decided the whole dashboard is publishable, so nothing
+  // ever wrote it. It is gone rather than left as a comment describing a
+  // boundary that no longer exists — see the note in `services/ingest/src/core.ts`.
 } as const;
 
 /** Authenticated payloads — served by the Worker, never by Pages. */

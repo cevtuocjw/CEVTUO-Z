@@ -1018,7 +1018,7 @@ Lua 的 local 只在其声明之后存在 ⇒ 那里解析成了 nil 全局 ⇒
 | 文件 | 可见性 | 内容 |
 |---|---|---|
 | `data/paperr/index.json` | **公开**，提交 + 发布 | 历史、图表、书架、总计 |
-| `data/paperr/current.json` | 需要口令 | **只有正在读的那一本** |
+| ~~`data/paperr/current.json`~~ | —— | ⚠️ **已删除**（读者决定阅读面板全公开，没有任何东西再写它） |
 | `data/paperr/raw-koreader.json` | 服务器本地 | 设备原样导出 |
 
 ⚠️ 拆成**三个文件**而不是 `index.json` 里的一个字段 —— 让这条发布边界在 `ls` 里
