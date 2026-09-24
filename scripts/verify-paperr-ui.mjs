@@ -126,6 +126,21 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   // replaced: "which weekday do I read most" barely moves, so it stops being
   // worth a slot on the page.
   check('this week bars rendered', (await page.locator('.pc-bars__col').count()) === 7);
+
+  // ⚠️ The default readout ("最集中在周三") is gone, so the ONLY way to read a
+  // bar's value now is to tap it. If the tap readout does not work, removing the
+  // summary did not simplify the chart — it deleted the numbers.
+  {
+    const readout = page.locator('.pc-bars').locator('.pc-readout').first();
+    const before = (await readout.innerText()).trim();
+    check('week bars carry no summary before a tap', before === '', `"${before}"`);
+    await page.locator('.pc-bars__col').nth(2).click();
+    await page.waitForTimeout(250);
+    const after = (await readout.innerText()).trim();
+    check('tapping a week bar reads out its value', /·/.test(after), `"${after}"`);
+    await page.locator('.pc-bars__col').nth(2).click();
+    await page.waitForTimeout(200);
+  }
   check('today is marked in the week bars',
         (await page.locator('.pc-bars__col--now').count()) === 1,
         `marked=${await page.locator('.pc-bars__col--now').count()}`);
@@ -152,6 +167,19 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   // ⚠️ The hour grid has an honest empty state: the export on disk predates the
   // plugin change that added `hourly`, so all 24 hours are zero and the chart
   // says so rather than drawing 24 flat bars that read as "never read".
+  // ⚠️ Same for the hour grid: no summary, so the tap is the readout.
+  //
+  // ⚠️ But "empty" is only right when there IS data to draw. With an old
+  // plugin's export every hour is zero and the chart says so in this same line,
+  // because a blank chart with no explanation is worse than a headline. So the
+  // assertion is "no 最常在 summary", not "empty".
+  {
+    const ro = page.locator('.pc-hours').locator('.pc-readout').first();
+    const before = (await ro.innerText().catch(() => '')).trim();
+    check('hour grid has no 最常在 summary',
+          !before.includes('最常'), `"${before}"`);
+  }
+
   const hourBars = await page.locator('.pc-hours__bar').count();
   const hourEmpty = (await page.locator('.pc-hours').innerText()).includes('时段数据还没有');
   check('hour grid is either drawn or honestly empty', hourBars === 24 || hourEmpty,

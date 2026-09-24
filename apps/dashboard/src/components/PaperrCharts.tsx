@@ -304,11 +304,14 @@ export function WeekdayBars({
 
   return (
     <View className="pc-bars">
-      <Text className="pc-readout">
-        {active
-          ? `${active.label} · ${mins(active.value)}`
-          : `最集中在周${bars.reduce((a, b) => (b.value > a.value ? b : a), bars[0]!).label}`}
-      </Text>
+      {/* ⚠️ Always rendered, empty when nothing is picked.
+          The reader asked for the "最集中在周三" summary to go, and it should —
+          but the ELEMENT has to stay. Two reasons, and the second is not
+          obvious: every cell is [title][subtitle][chart], so a chart that drops
+          its first line starts higher than the chart beside it and the row of
+          baselines comes apart again. And tapping a bar still needs somewhere
+          to write the value. `.pc-readout` reserves the line in CSS. */}
+      <Text className="pc-readout">{active ? `${active.label} · ${mins(active.value)}` : ''}</Text>
       <View className="pc-bars__row">
         {bars.map((b) => (
           <View
@@ -474,7 +477,6 @@ export function HourGrid({ hours }: { hours: HourBucket[] }) {
   const [picked, setPicked] = useState<number | null>(null);
   const peak = Math.max(0, ...hours.map((x) => x.s));
   const active = picked !== null ? hours[picked] : undefined;
-  const busiest = hours.reduce((a, b) => (b.s > a.s ? b : a), hours[0]!);
 
   if (peak === 0) {
     return (
@@ -489,10 +491,11 @@ export function HourGrid({ hours }: { hours: HourBucket[] }) {
 
   return (
     <View className="pc-hours">
+      {/* ⚠️ Same as WeekdayBars: the "最常在 18 点读" summary is gone at the
+          reader's request, the element stays for alignment and for the tap
+          readout. */}
       <Text className="pc-readout">
-        {active
-          ? `${active.h} 点 – ${active.h + 1} 点 · ${mins(active.s)}`
-          : `最常在 ${busiest.h} 点读 · ${mins(busiest.s)}`}
+        {active ? `${active.h} 点 – ${active.h + 1} 点 · ${mins(active.s)}` : ''}
       </Text>
       <View className="pc-hours__row">
         {hours.map((x, i) => (
