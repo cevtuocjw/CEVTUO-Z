@@ -65,6 +65,32 @@ trap 'rm -rf "$STAGE"' EXIT
 cp -R "$DIST"/. "$STAGE"/
 cp -R data "$STAGE"/data
 
+# ⚠️⚠️ `cp -R data` copies EVERYTHING, including the files that are gitignored
+# precisely because they must not be published. .gitignore protects `main`; it
+# does NOTHING here, because this script builds the site from the filesystem, not
+# from the index.
+#
+# The failure this prevents is not hypothetical: `data/paperr/current.json` is
+# which book the reader has open right now, and a Pages site is world-readable
+# regardless of repository visibility. Publishing it would be silent — the site
+# would simply serve it, at a guessable URL, forever.
+#
+# ⚠️ Add to this list in the same commit that gitignores anything new under
+# `data/`. The check below is what makes forgetting loud instead of silent.
+PRIVATE=(
+  "data/paperr/raw-koreader.json"
+  "data/paperr/current.json"
+  "data/chealth"
+)
+for rel in "${PRIVATE[@]}"; do
+  rm -rf "${STAGE:?}/$rel"
+  if [[ -e "$STAGE/$rel" ]]; then
+    echo "✗ 私有文件没删掉：$rel —— 中止发布" >&2
+    exit 1
+  fi
+  echo "  ▸ 已排除私有路径 $rel"
+done
+
 # GitHub Pages runs Jekyll unless told not to, and Jekyll silently drops paths
 # beginning with `_` — which would take build assets with it.
 touch "$STAGE"/.nojekyll
