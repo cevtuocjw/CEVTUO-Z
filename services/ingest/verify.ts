@@ -266,22 +266,21 @@ async function main(): Promise<void> {
       if (parsed.success) {
         const d = parsed.data;
         eq(d.books.length, 36, 'real converter: 36 visible rows');
-        eq(d.current, null, 'real converter: the PUBLIC index carries no current book');
-        const cur = JSON.parse(readFileSync(repoPath('data/paperr/current.json'), 'utf8')) as {
-          current: { id: string; title: string; estFinishedAt: string | null } | null;
-        };
-        check(cur.current !== null, 'real converter: the PRIVATE file carries the current book');
-        check(cur.current?.estFinishedAt != null, 'real converter: with a finish projection',
-              cur.current?.estFinishedAt);
-        // The private book is a slice of the public shelf, not a separate one —
-        // if it ever stops appearing there, the split has gone wrong.
-        check(d.books.some((b) => b.id === cur.current?.id),
-              'real converter: the current book also appears in the public shelf', cur.current?.id);
+        // ⚠️ `current` is IN the public index. It was briefly pulled out into a
+        // separate private file; the reader decided the whole dashboard is
+        // publishable, so the split went away and these assertions went stale.
+        check(d.current !== null, 'real converter: the index carries the current book');
+        check(d.current?.estFinishedAt != null, 'real converter: with a finish projection',
+              d.current?.estFinishedAt);
+        check(d.books.some((b) => b.id === d.current?.id),
+              'real converter: the current book is also in the shelf', d.current?.id);
+        // ⚠️ 24 slots even though the export on disk predates the plugin change
+        // that produces real ones — the chart depends on the gaps being there.
+        eq(d.hourly.length, 24, 'real converter: hourly is filled to 24 slots');
         eq(d.totals.booksStarted, d.books.length, 'real converter: totals agree with the rows shown');
         check(d.books.every((b) => !/koreader/i.test(b.title)), 'real converter: no KOReader documents survive');
         const labelled = d.books.filter((b) => /^(news|unknown)\d+ \(.+\)$/.test(b.title));
         eq(labelled.length, d.books.length - 1, 'real converter: every relabelled row carries its original');
-        check(d.current === null, 'real converter: the public index carries NO current book');
       }
     } catch (e) {
       check(false, 'real converter: could not run', String(e).slice(0, 120));
