@@ -60,9 +60,18 @@ export function useBreakpoint(): BreakpointInfo {
   const [size, setSize] = useState(readWindow);
 
   useEffect(() => {
-    const onChange = (res: { size?: { windowWidth: number; windowHeight: number } }) => {
-      if (!res?.size) return;
-      setSize({ width: res.size.windowWidth, height: res.size.windowHeight });
+    // ⚠️ `unknown` at the boundary, narrowed here — not a shaped parameter.
+    //
+    // Taro's `onWindowResize` declares its argument as `CallbackResult`, and in
+    // this version that type has NO `size` property at all. So every shape we
+    // could write for it is structurally incompatible and the call stops
+    // type-checking — while at runtime `size` is exactly what arrives. Declaring
+    // it `unknown` and narrowing is the honest version of that: we do not know
+    // what the type says, and we handle what actually comes.
+    const onChange = (res: unknown) => {
+      const size = (res as { size?: { windowWidth: number; windowHeight: number } } | undefined)?.size;
+      if (!size) return;
+      setSize({ width: size.windowWidth, height: size.windowHeight });
     };
 
     try {

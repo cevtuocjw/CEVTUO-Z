@@ -734,7 +734,7 @@ export default function Cnsr() {
           // ⚠️ The NEWEST of the four, and the label reads 更新于 — this is the
           // page's own freshness, which genuinely is the newest source. Each
           // module carries its own time for the honest per-source answer.
-          updatedAt={newestSync ? formatUpdatedAt(newestSync) : null}
+          footnote={newestSync ? `更新于 ${formatUpdatedAt(newestSync)}` : null}
           wide
         >
           {error ? (

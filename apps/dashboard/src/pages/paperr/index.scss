@@ -1218,18 +1218,21 @@ $chart-h: 108px;
   animation: pc-grow 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
-// ⚠️ `pathLength="1"` on the element normalises the geometry, so the dash
-// animation is exact at any data size. Guessing a dasharray in user units makes
-// the draw finish in the first tenth of the timeline for a short path and never
-// finish for a long one.
-@keyframes pc-draw {
-  from { stroke-dashoffset: 1; }
-  to   { stroke-dashoffset: 0; }
-}
-.pc-reveal--in .pc-curve__line {
-  stroke-dasharray: 1;
-  animation: pc-draw 1.1s ease-out both;
-}
+// ⚠️⚠️ The stroke-draw animation was REMOVED, and the reason is worth keeping.
+//
+// It relied on `pathLength="1"` normalising the geometry so that
+// `stroke-dasharray: 1` meant "one whole path". It does not: the browser
+// resolves that declaration to **`1px`** — an absolute unit that `pathLength`
+// does not scale — so the dash pattern was 1 user unit on, 1 off, against a
+// path 472 units long. The result was a curve that stopped about 55% of the way
+// across while its own filled area carried on to the edge.
+//
+// ⚠️ Every assertion passed while it looked like that. 120 behavioural checks
+// across three viewports, and not one of them can see a stroke that is shorter
+// than the shape it belongs to. Found by looking at a screenshot.
+//
+// The cell already fades and rises as a whole, so the curve still animates in;
+// what it lost is a flourish that was drawing the wrong thing.
 @keyframes pc-fade {
   from { opacity: 0; }
   to   { opacity: 1; }

@@ -58,9 +58,10 @@ const AUTH = `Bearer ${ENV.deviceToken}`;
 const BASIC = `Basic ${Buffer.from('x:pw-for-tests').toString('base64')}`;
 
 /** In-memory Store, counting writes so "did anything change?" is answerable. */
-function memStore(initial: { raw?: string; current?: string } = {}) {
+function memStore(initial: { raw?: string; current?: string; heartbeat?: string } = {}) {
   let raw = initial.raw ?? null;
   let current = initial.current ?? null;
+  let heartbeat: string | null = initial.heartbeat ?? null;
   const writes: string[] = [];
   const store: Store = {
     async readRaw() {
@@ -73,8 +74,21 @@ function memStore(initial: { raw?: string; current?: string } = {}) {
     async readCurrent() {
       return current;
     },
+    async readHeartbeat() {
+      return heartbeat;
+    },
+    async writeHeartbeat(t) {
+      writes.push('heartbeat');
+      heartbeat = t;
+    },
   };
-  return { store, writes: () => writes, raw: () => raw, current: () => current };
+  return {
+    store,
+    writes: () => writes,
+    raw: () => raw,
+    current: () => current,
+    heartbeat: () => heartbeat,
+  };
 }
 
 /**
@@ -160,7 +174,7 @@ async function main(): Promise<void> {
     const r = await handleIngest(ENV, store, CONV, AUTH, RAW_TEXT);
     eq(r.status, 202, 'first push: 202');
     eq(r.body.books, 41, 'first push: reports 41 books');
-    eq(writes(), ['raw'], 'first push: exactly the raw export is written');
+    eq(writes(), ['raw', 'heartbeat'], 'first push: the export and the heartbeat are written');
     eq(JSON.parse(raw() ?? 'null')?.books?.length, 41, 'first push: the raw export is stored verbatim');
     eq(JSON.parse(raw() ?? 'null')?.exportedAt, RAW.exportedAt, 'first push: including its exportedAt');
     // ⚠️ VERBATIM, and this assertion has to compare the TEXT — the previous
@@ -183,11 +197,28 @@ async function main(): Promise<void> {
   {
     // ⚠️ THE case. Same reading, later export — what the device sends on every
     // single WiFi connect.
-    const { store, writes } = memStore({ raw: RAW_TEXT });
+    const { store, writes, heartbeat } = memStore({ raw: RAW_TEXT });
     const r = await handleIngest(ENV, store, CONV, AUTH, JSON.stringify(reExportedAt('2026-09-24T18:00')));
     eq(r.status, 200, 'same reading, later export: 200');
     eq(r.body.status, 'unchanged', 'same reading, later export: unchanged');
-    eq(writes(), [], 'same reading, later export: NOTHING written');
+    // ⚠️ The EXPORT is not rewritten — that is what stops an empty commit every
+    // 30 minutes — but the heartbeat is. This is the assertion that would have
+    // saved the reader a round of "同步没有生效" on 2026-09-24: two pushes
+    // arrived, were correctly compared, and left no trace they could see.
+    eq(writes(), ['heartbeat'], 'same reading, later export: only the heartbeat is stamped');
+    check((heartbeat() ?? '').includes('lastPushAt'), 'same reading: the heartbeat records the push', heartbeat());
+    check(!(heartbeat() ?? '').includes('lastChangeAt'), 'same reading: and does NOT claim the data changed', heartbeat());
+    // ⚠️ The stamp must carry the SERVER's offset, not `Z`.
+    //
+    // The page formats these by slicing characters 0–16 rather than parsing —
+    // parsing would re-read the instant in the VIEWER's timezone and shift the
+    // time for anyone reading from abroad. So a UTC stamp renders eight hours
+    // early here: a 13:27 push displays as "05:27", a wrong answer that looks
+    // like a plausible one. `toISOString()` is the obvious way to write this and
+    // it is the wrong one.
+    const stamp = (JSON.parse(heartbeat() ?? '{}') as { lastPushAt?: string }).lastPushAt ?? '';
+    check(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}[+-]\d{2}:\d{2}$/.test(stamp),
+          'heartbeat: stamped with a local offset, not a bare Z', stamp);
   }
 
   {
@@ -196,7 +227,7 @@ async function main(): Promise<void> {
     const shuffled = JSON.stringify(Object.fromEntries(Object.entries(reExportedAt('2026-09-24T19:00')).reverse()));
     const r = await handleIngest(ENV, store, CONV, AUTH, shuffled);
     eq(r.body.status, 'unchanged', 'key order shuffled: still unchanged');
-    eq(writes(), [], 'key order shuffled: nothing written');
+    eq(writes(), ['heartbeat'], 'key order shuffled: only the heartbeat is stamped');
   }
 
   {
@@ -204,7 +235,7 @@ async function main(): Promise<void> {
     const read = { ...reExportedAt('2026-09-24T20:00'), totals: { booksStarted: 41, booksFinished: 4, readSeconds: 56600, pagesTurned: 2490 } };
     const r = await handleIngest(ENV, store, CONV, AUTH, JSON.stringify(read));
     eq(r.status, 202, 'reading advanced: 202');
-    eq(writes(), ['raw'], 'reading advanced: the export is rewritten');
+    eq(writes(), ['raw', 'heartbeat'], 'reading advanced: the export is rewritten');
   }
 
   {
@@ -212,7 +243,7 @@ async function main(): Promise<void> {
     const { store, writes } = memStore({ raw: '{ this is not json' });
     const r = await handleIngest(ENV, store, CONV, AUTH, RAW_TEXT);
     eq(r.status, 202, 'corrupt stored export: 202, overwritten');
-    eq(writes(), ['raw'], 'corrupt stored export: rewritten');
+    eq(writes(), ['raw', 'heartbeat'], 'corrupt stored export: rewritten');
   }
 
   // ── A broken converter must not cost the reader their data ─
@@ -224,7 +255,7 @@ async function main(): Promise<void> {
     const { store, writes } = memStore();
     const r = await handleIngest(ENV, store, fakeConverter('fail'), AUTH, RAW_TEXT);
     eq(r.status, 202, 'converter failure: still 202, not an error');
-    eq(writes(), ['raw'], 'converter failure: the export is still saved');
+    eq(writes(), ['raw', 'heartbeat'], 'converter failure: the export is still saved');
     check(r.body.message.includes('重新生成失败'), 'converter failure: the message says so', r.body.message);
   }
 
@@ -255,6 +286,11 @@ async function main(): Promise<void> {
     eq(r.body.books, 41, 'admin status: book count');
     eq(r.body.lastExportAt, RAW.exportedAt, 'admin status: last export time');
     eq(r.body.canRebuild, true, 'admin status: rebuild is available');
+    // ⚠️ Provenance matters more here than anywhere else on the page: the
+    // reader must be able to tell "the device talked to us" from "the numbers
+    // moved".
+    eq(r.body.lastChangeAt, null, 'admin status: no heartbeat yet reads as null, not as an error');
+    eq(r.body.lastPushAt, null, 'admin status: both heartbeat fields default to null');
   }
 
   // ── The real converter, end to end ─────────────────────────

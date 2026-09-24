@@ -52,6 +52,37 @@ export const DEFAULT_MAX_BYTES = 1024 * 1024;
  */
 export const RAW_PATH = LOCAL_PATHS.paperrRaw;
 export const CURRENT_PATH = LOCAL_PATHS.paperrCurrent;
+/**
+ * When the device last REACHED us — server-local, never published.
+ *
+ * ⚠️ Not in `LOCAL_PATHS` with the other two: this file is not data the
+ * pipeline or the page has any use for, it exists purely so the operator can
+ * ask "is the Kindle still talking to us?" without reading the journal.
+ */
+export const HEARTBEAT_PATH = 'data/paperr/heartbeat.json';
+
+/**
+ * `YYYY-MM-DDTHH:mm+08:00` in the SERVER's own timezone.
+ *
+ * ⚠️ NOT `toISOString()`, which is UTC. The page formats these by SLICING
+ * characters 0–16 — `formatUpdatedAt` never parses them, because parsing would
+ * re-interpret the instant in the VIEWER's timezone and shift the time for
+ * anyone reading from abroad. So a UTC stamp renders eight hours early here:
+ * a 13:27 push showed as "05:27", which is a wrong answer that looks like a
+ * plausible one.
+ *
+ * Same shape `normalizeInstant` produces on the pipeline side.
+ */
+function localStamp(d: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const off = -d.getTimezoneOffset();
+  const abs = Math.abs(off);
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}` +
+    `${off >= 0 ? '+' : '-'}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
+  );
+}
 
 export interface Env {
   /** Bearer the Kindle presents. Grants exactly one thing: POSTing an export. */
@@ -91,6 +122,21 @@ export function envFrom(source: Record<string, string | undefined>): Env {
 export interface Store {
   readRaw(): Promise<string | null>;
   writeRaw(text: string): Promise<void>;
+  /**
+   * When the device last REACHED us — which is not when the data last changed.
+   *
+   * ⚠️⚠️ This is the whole point of the file. `readRaw`/`writeRaw` only move on
+   * a real change, because an `unchanged` push deliberately does not rewrite the
+   * export (that is what stops an empty commit every 30 minutes). So the raw
+   * file's mtime answers "when did the numbers last move", and the reader who
+   * tapped 导出 and saw nothing happen had no way to ask the other question:
+   * "did my tap arrive at all?".
+   *
+   * On 2026-09-24 that cost a round of "同步没有生效" for two pushes that had in
+   * fact both arrived and been correctly compared.
+   */
+  readHeartbeat(): Promise<string | null>;
+  writeHeartbeat(text: string): Promise<void>;
   /**
    * The private current-book file.
    *
@@ -228,11 +274,31 @@ export async function handleIngest(
   // must not be allowed to overwrite a good one with nothing.
   if (payload.books.length === 0) return reject('导出里一本书都没有，拒绝覆盖已有数据');
 
+  // ⚠️ Recorded BEFORE the comparison, so an `unchanged` push leaves a trace.
+  // That is the entire point: it is the case the reader cannot otherwise see.
+  const notePush = async (changed: boolean): Promise<void> => {
+    try {
+      const now = localStamp();
+      await store.writeHeartbeat(
+        `${JSON.stringify(
+          { lastPushAt: now, lastChangeAt: changed ? now : undefined, pluginVersion: payload.pluginVersion ?? null, books: payload.books.length },
+          null,
+          2,
+        )}\n`,
+      );
+    } catch {
+      // A heartbeat that cannot be written must never cost the reader their
+      // export. It is diagnostics, not data.
+    }
+  };
+
   const existing = await store.readRaw();
   if (existing) {
     const stored = PaperrRawSchema.safeParse(safeJsonParse(existing));
     if (stored.success && signatureOf(stored.data) === signatureOf(payload)) {
-      // The reading has not moved. Deliberately no write, no conversion.
+      // The reading has not moved. Deliberately no write, no conversion —
+      // but the heartbeat is still stamped, because the device DID reach us.
+      await notePush(false);
       return {
         status: 200,
         body: IngestResponseSchema.parse({
@@ -263,6 +329,7 @@ export async function handleIngest(
   // The raw export is the only copy of what the device knows, and it is the
   // thing every future diagnosis reads. Store it as it arrived.
   await store.writeRaw(rawBody.endsWith('\n') ? rawBody : `${rawBody}\n`);
+  await notePush(true);
 
   // ⚠️ Conversion runs AFTER the raw write and its failure is never fatal. The
   // raw export is the half that cannot be reconstructed; the index is derivable
@@ -338,6 +405,18 @@ export interface AdminStatus {
    * defaults — and that cost a wrong conclusion once already.
    */
   pluginVersion: string | null;
+  /**
+   * When the device last reached us — ANY successful push, changed or not.
+   *
+   * ⚠️ Deliberately separate from `lastExportAt`, which is what the DEVICE says
+   * its export time was and only moves when the numbers move. The reader tapped
+   * 导出, saw `lastExportAt` stay at 13:05, and concluded the sync was broken.
+   * It was not: both pushes had arrived and been compared. `lastPushAt` is the
+   * question they were actually asking.
+   */
+  lastPushAt: string | null;
+  /** Same file, but when the reading last actually changed. */
+  lastChangeAt: string | null;
 }
 
 export async function handleAdminStatus(
@@ -352,6 +431,8 @@ export async function handleAdminStatus(
     rawBytes: 0,
     canRebuild: true,
     pluginVersion: null,
+    lastPushAt: null,
+    lastChangeAt: null,
   };
   let raw: string | null;
   try {
@@ -365,6 +446,16 @@ export async function handleAdminStatus(
   if (!parsed.success) {
     return { status: 200, body: { ...base, ok: false, message: '已存的原始导出不符合 schema', pluginVersion: null } };
   }
+  // ⚠️ Read separately and tolerantly: an older deployment, or a first run
+  // before any push has happened, has no heartbeat file. That is "unknown", not
+  // an error, and it must not take down the whole status response.
+  let hb: { lastPushAt?: string; lastChangeAt?: string } = {};
+  try {
+    hb = JSON.parse((await store.readHeartbeat()) ?? '{}') as typeof hb;
+  } catch {
+    hb = {};
+  }
+
   return {
     status: 200,
     body: {
@@ -377,6 +468,8 @@ export async function handleAdminStatus(
       // was stored — which is why `handleIngest` now keeps the device's bytes
       // instead of a re-serialisation of them.
       pluginVersion: parsed.data.pluginVersion ?? null,
+      lastPushAt: hb.lastPushAt ?? null,
+      lastChangeAt: hb.lastChangeAt ?? null,
     },
   };
 }
@@ -431,7 +524,15 @@ export function renderAdminPage(): string {
 <script>
 const $ = (s) => document.querySelector(s);
 const rows = [
-  ['设备最后导出', (d) => d.lastExportAt || '—'],
+  // ⚠️ The ORDER is the point. The reader's question is "is it still syncing",
+  // and the answer is lastPushAt. lastExportAt is what the DEVICE says its
+  // numbers are from — it sits still for days when nobody reads, and reading it
+  // as "last sync" is what made a perfectly working sync look broken.
+  // ⚠️ No backticks anywhere in this block: the whole admin page is one template
+  // literal, and a backtick in a comment ends the string.
+  ['最后同步（收到设备）', (d) => d.lastPushAt || '— 还没有收到过推送'],
+  ['数据最后变化', (d) => d.lastChangeAt || '—'],
+  ['设备导出的时间戳', (d) => d.lastExportAt || '—'],
   // ⚠️ "—" is a real answer here, not a gap. Every plugin before 1.1.0 omits
   // the field, so a dash means "this device cannot produce hourly data yet" —
   // which is exactly the question someone asking why 时段 is empty has.

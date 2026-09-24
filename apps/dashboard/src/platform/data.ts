@@ -27,6 +27,7 @@ import type {
   CnsrLine,
   CnsrSource,
   CnsrSourcesIndex,
+  PaperrBook,
   PaperrIndex,
   SyncMeta,
 } from '../../../../packages/schema/src/index';
@@ -132,6 +133,7 @@ export type {
   CnsrLine,
   CnsrSource,
   CnsrSourcesIndex,
+  PaperrBook,
   PaperrIndex,
   SyncMeta,
 };
@@ -208,6 +210,37 @@ export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
  */
 export const fetchPaperrIndex = (): Promise<PaperrIndex> =>
   getJson<PaperrIndex>(DATA_PATHS.paperrIndex);
+
+/**
+ * When the Kindle last reached the ingest server.
+ *
+ * ⚠️ This is the ONLY thing on the page that comes from the Aliyun box rather
+ * than from the CDN, and it has to: "the device talked to us" is a fact only the
+ * machine that received the push knows. The published index cannot carry it —
+ * it changes on every push, which is a commit every 30 minutes.
+ *
+ * ⚠️ Failure is expected and must stay silent. The server being down is a real
+ * possibility, and a page that breaks because a diagnostic is unavailable is
+ * worse than one that shows a dash.
+ */
+export interface PaperrHeartbeat {
+  lastPushAt: string | null;
+  lastChangeAt: string | null;
+  pluginVersion: string | null;
+  books: number;
+}
+
+export const PARRER_HEARTBEAT_URL = 'http://120.77.27.128:8789/api/paperr/heartbeat.json';
+
+export async function fetchPaperrHeartbeat(): Promise<PaperrHeartbeat | null> {
+  try {
+    const res = await fetch(PARRER_HEARTBEAT_URL);
+    if (!res.ok) return null;
+    return (await res.json()) as PaperrHeartbeat;
+  } catch {
+    return null;
+  }
+}
 
 /** Reading time, at the precision a dashboard actually needs. */
 export function formatReadingTime(seconds: number): string {

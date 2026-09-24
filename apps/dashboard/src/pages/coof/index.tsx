@@ -276,7 +276,7 @@ export default function Coof() {
             <MonthlyWave titles={titles} year={collection.replace(/^COOF/, '')} />
           }
           cueText="下滑到下一页查看具体观影记录"
-          updatedAt={updatedAt}
+          footnote={updatedAt ? `更新于 ${updatedAt}` : null}
         >
           {/* Calendar switcher.
               ⚠️ Kept ALONGSIDE the margin picker on the poster panel rather than

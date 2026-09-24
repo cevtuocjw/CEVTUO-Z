@@ -97,6 +97,26 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   await page.locator('.pc-legend__row').first().click();
   await page.waitForTimeout(150);
 
+  // ⚠️ The line must be SOLID, and must span the same width as the area it
+  // fills. It shipped once with a stroke-dash animation whose units did not
+  // match the path length: the curve stopped ~55% of the way across while its
+  // own shaded area carried on to the edge, and all 120 assertions passed.
+  const curveGeom = await page.evaluate(() => {
+    const line = document.querySelector('.pc-curve__line');
+    const area = document.querySelector('.pc-curve__area');
+    const cs = getComputedStyle(line);
+    return {
+      dash: cs.strokeDasharray,
+      lineW: Math.round(line.getBBox().width),
+      areaW: Math.round(area.getBBox().width),
+    };
+  });
+  check('curve line is solid, not dashed',
+        curveGeom.dash === 'none' || curveGeom.dash === '', `dash="${curveGeom.dash}"`);
+  check('curve line spans the same width as its fill',
+        Math.abs(curveGeom.lineW - curveGeom.areaW) <= 1,
+        `line=${curveGeom.lineW} area=${curveGeom.areaW}`);
+
   const curveD = await page.locator('.pc-curve__line').getAttribute('d');
   check('curve drew a smoothed path', !!curveD && curveD.includes(' C '), `${curveD?.slice(0, 20)}…`);
   // ⚠️ This month as a calendar, which replaced the rolling 12-week heatmap.

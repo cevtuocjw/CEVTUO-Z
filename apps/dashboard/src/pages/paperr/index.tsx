@@ -17,13 +17,15 @@ import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { homePanelUrl } from '../../platform/panels';
 import { Wallpaper } from '../../components/Wallpaper';
-import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
+  fetchPaperrHeartbeat,
   fetchPaperrIndex,
   formatAgo,
   formatDayMonth,
   formatReadingTime,
+  formatUpdatedAt,
   type PaperrBook,
+  type PaperrHeartbeat,
   type PaperrIndex,
 } from '../../platform/data';
 
@@ -163,13 +165,22 @@ function bestStreak(days: { d: string; s: number }[]): number {
 }
 
 export default function Paperr() {
-  const bp = useBreakpoint();
   const [index, setIndex] = useState<PaperrIndex | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
+  const [heartbeat, setHeartbeat] = useState<PaperrHeartbeat | null>(null);
 
   useEffect(() => {
     let alive = true;
+    // ⚠️ The only thing on this page that comes from Aliyun rather than the CDN.
+    // It cannot ride along in the published index: a timestamp that moves on
+    // every push would mean a commit every 30 minutes, which is exactly what the
+    // `unchanged` rule exists to prevent. Failure is silent — a page that breaks
+    // because a diagnostic is unavailable is worse than one showing a dash.
+    fetchPaperrHeartbeat().then((h) => {
+      if (alive) setHeartbeat(h);
+    });
+
     fetchPaperrIndex()
       .then((d) => {
         if (alive) {
@@ -473,6 +484,24 @@ export default function Paperr() {
     );
   }
 
+  /**
+   * The freshness line: two times, in the order that answers the real question.
+   *
+   * ⚠️ 设备同步 first. That is "is the Kindle still talking to us", which is
+   * what someone opening this page is checking. 数据更新 only moves when they
+   * actually read, so on a quiet week it sits still for days while the sync is
+   * perfectly alive — showing only that number is what made a working sync look
+   * broken on 2026-09-24.
+   */
+  const freshness = (() => {
+    const push = formatUpdatedAt(heartbeat?.lastPushAt);
+    const change = formatUpdatedAt(heartbeat?.lastChangeAt);
+    if (!push && !change) return null;
+    return [push ? `设备同步 ${push}` : null, change ? `数据更新 ${change}` : null]
+      .filter(Boolean)
+      .join(' · ');
+  })();
+
   const current = index.current;
   const finishNote = current?.estFinishedAt
     ? `预计 ${formatDayMonth(current.estFinishedAt)} 读完`
@@ -489,6 +518,7 @@ export default function Paperr() {
           title="概览"
           hero={<PageHero brand="CAPPERR" />}
           compact
+          footnote={freshness}
           // ⚠️ NO all-time stat block. It said "15.7h 累计阅读 / 29 读完" — two
           // figures that only ever go up, sitting directly above a block that
           // already reports today, this week and this month. The reader asked
@@ -595,7 +625,7 @@ export default function Paperr() {
               </View>
 
               <Text className="pr-foot">
-                数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局
+                数据源 CEVTUO's KOReader statistics sqlite3
               </Text>
             </ScrollView>
           </View>
@@ -604,6 +634,7 @@ export default function Paperr() {
         <Section
           index={1}
           title="书架"
+          footnote={freshness}
           lede={`${shown.length} / ${books.length} 条 · 待看排在最后`}
           stats={[
             { value: `${counts.reading}`, label: '在读' },
@@ -662,7 +693,7 @@ export default function Paperr() {
               })}
 
               <Text className="pr-foot">
-                {counts.reading} 在读 · {counts.done} 读完 · {counts.todo} 待看 · {bp.columns} 列布局
+                {counts.reading} 在读 · {counts.done} 读完 · {counts.todo} 待看
               </Text>
             </ScrollView>
           </View>

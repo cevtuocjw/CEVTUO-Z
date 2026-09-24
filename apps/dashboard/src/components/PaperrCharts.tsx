@@ -254,13 +254,11 @@ export function ReadingCurve({ days }: { days: CurvePoint[] }) {
 
       <View className="pc-curve__hit" ref={boxRef as never}>
         <svg className="pc-curve__svg" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none" aria-hidden="true">
-          {/* ⚠️ `pathLength={1}` normalises the geometry so the entrance
-              animation's dash offset is exact regardless of how long the path
-              is. Guessing a dasharray in user units makes a short path finish
-              its draw in the first tenth of the timeline and a long one never
-              finish it. */}
           <path className="pc-curve__area" d={area} />
-          <path className="pc-curve__line" d={line} pathLength={1} />
+          {/* ⚠️ No `pathLength`, and no stroke-dash animation. See the note in
+              index.scss: the dash units did not mean what the animation assumed,
+              and the line rendered ~55% of its own length. */}
+          <path className="pc-curve__line" d={line} />
           {idx !== null && points[idx] ? (
             <>
               <line className="pc-curve__guide" x1={points[idx]!.x} y1={PAD_T - 8} x2={points[idx]!.x} y2={VB_H} />

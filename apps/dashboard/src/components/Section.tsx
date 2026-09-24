@@ -75,7 +75,17 @@ export interface SectionProps {
    */
   cueText?: string;
   /** Bottom-of-panel provenance line, e.g. "更新于 2026-09-23 10:44". */
-  updatedAt?: string | null;
+  /**
+   * The freshness line under the body, as a whole sentence.
+   *
+   * ⚠️ Was `updatedAt`, a bare timestamp the component prefixed with 更新于.
+   * That framing is wrong for CAPPERR, where there are TWO times and the
+   * difference between them is the entire point: when the device last reached
+   * us, and when the numbers last actually moved. The reader spent a round
+   * believing a working sync was broken precisely because the only visible line
+   * was the second one.
+   */
+  footnote?: string | null;
   /**
    * Masthead, rendered above everything else in the body.
    *
@@ -152,7 +162,7 @@ export function Section({
   onPress,
   wide = false,
   cueText = '下滑',
-  updatedAt,
+  footnote,
   hero,
   compact = false,
   statsAside,
@@ -216,7 +226,7 @@ export function Section({
 
         {children}
 
-        {updatedAt ? <Text className="section__updated">更新于 {updatedAt}</Text> : null}
+        {footnote ? <Text className="section__updated">{footnote}</Text> : null}
       </View>
 
       {showCue ? (

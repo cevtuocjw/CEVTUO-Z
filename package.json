@@ -15,7 +15,7 @@
     "app:build:h5": "bun run --cwd apps/dashboard build:h5",
     "app:build:weapp": "bun run --cwd apps/dashboard build:weapp",
     "pipeline": "bun run pipeline/src/cli/sync.ts",
-    "typecheck": "tsc -b --pretty",
+    "typecheck": "tsc -b && tsc --noEmit -p apps/dashboard/tsconfig.json",
     "clean": "find . -name node_modules -type d -prune -exec rm -rf {} + 2>/dev/null; find . -name dist -type d -prune -exec rm -rf {} + 2>/dev/null; echo done",
     "verify": "bun run scripts/verify-core.ts && bun run scripts/verify-sync-trigger.ts && bun run services/ingest/verify.ts",
     "trigger": "bun run services/sync-trigger/src/server.ts",

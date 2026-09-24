@@ -21,11 +21,14 @@ import {
   assetUrl,
   fetchCoofIndex,
   fetchPaperrIndex,
+  fetchPaperrHeartbeat,
   fetchSyncMeta,
   formatDayMonth,
   formatReadingTime,
   formatUpdatedAt,
   type CoofTitle,
+  type PaperrHeartbeat,
+  type PaperrIndex,
   type SyncMeta,
 } from '../../platform/data';
 
@@ -156,6 +159,7 @@ export default function Home() {
   const [totals, setTotals] = useState<{ years: number; items: number } | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [syncMeta, setSyncMeta] = useState<SyncMeta | null>(null);
+  const [heartbeat, setHeartbeat] = useState<PaperrHeartbeat | null>(null);
   useEffect(() => {
     let alive = true;
     fetchCoofIndex('COOF2026')
@@ -174,6 +178,12 @@ export default function Home() {
     fetchPaperrIndex()
       .then((d) => alive && setPaperr(d))
       .catch(() => {});
+    // ⚠️ Fire-and-forget: the heartbeat is diagnostics, and a page that waits
+    // on it — or breaks without it — is worse than one that shows nothing.
+    fetchPaperrHeartbeat().then((h) => {
+      if (alive) setHeartbeat(h);
+    });
+
     fetchSyncMeta()
       .then((m) => {
         if (alive) setSyncMeta(m);
@@ -227,11 +237,23 @@ export default function Home() {
     };
   }, [paperr]);
 
-  /** When the reading data last actually moved, from the sync log. */
-  const paperrUpdatedAt = useMemo(
-    () => syncMeta?.sources?.find((x) => x.id === 'koreader-push')?.lastSuccessAt ?? null,
-    [syncMeta],
-  );
+  /**
+   * Two times, and the difference between them is the point.
+   *
+   * ⚠️ `lastPushAt` is when the Kindle last reached the server — which is what
+   * "is it still syncing" means. `lastChangeAt` only moves when the reader
+   * actually reads something, so on a quiet week it sits still for days while
+   * the sync is perfectly alive. Showing only the second one is what made a
+   * working sync look broken.
+   */
+  const paperrSync = useMemo(() => {
+    const push = formatUpdatedAt(heartbeat?.lastPushAt);
+    const change = formatUpdatedAt(heartbeat?.lastChangeAt);
+    if (!push && !change) return null;
+    return [push ? `设备同步 ${push}` : null, change ? `数据更新 ${change}` : null]
+      .filter(Boolean)
+      .join(' · ');
+  }, [heartbeat]);
 
   const open = (route: string | null, title: string) => {
     // ⚠️ The other three brands have no page content yet. Rather than navigate
@@ -282,7 +304,13 @@ export default function Home() {
             // ⚠️ Both brands carry a freshness line now. A panel with live
             // numbers and no timestamp cannot be told from one whose sync died
             // a week ago.
-            updatedAt={p.key === 'coof' ? updatedAt : p.key === 'paperr' ? paperrUpdatedAt : null}
+            footnote={
+              p.key === 'coof' && updatedAt
+                ? `更新于 ${updatedAt}`
+                : p.key === 'paperr' && paperrSync
+                  ? paperrSync
+                  : null
+            }
             // The last panel gets no chevron: there is nothing below it, and a
             // cue there promises content that does not exist.
             showCue={i < PANELS.length - 1}

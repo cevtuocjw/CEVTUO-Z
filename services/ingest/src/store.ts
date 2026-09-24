@@ -16,11 +16,15 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { CURRENT_PATH, RAW_PATH, type Store } from './core';
+import { CURRENT_PATH, HEARTBEAT_PATH, RAW_PATH, type Store } from './core';
 import { defaultRepoRoot } from './converter';
 
 export function fsStore(repoRoot: string = defaultRepoRoot()): Store {
-  const paths = { raw: join(repoRoot, RAW_PATH), current: join(repoRoot, CURRENT_PATH) };
+  const paths = {
+    raw: join(repoRoot, RAW_PATH),
+    current: join(repoRoot, CURRENT_PATH),
+    heartbeat: join(repoRoot, HEARTBEAT_PATH),
+  };
 
   const read = async (p: string): Promise<string | null> => {
     try {
@@ -42,5 +46,7 @@ export function fsStore(repoRoot: string = defaultRepoRoot()): Store {
     readRaw: () => read(paths.raw),
     writeRaw: (t) => write(paths.raw, t),
     readCurrent: () => read(paths.current),
+    readHeartbeat: () => read(paths.heartbeat),
+    writeHeartbeat: (t) => write(paths.heartbeat, t),
   };
 }
