@@ -101,6 +101,14 @@ local MIN_INTERVAL_DEFAULT = 30      -- minutes between automatic pushes
 -- enough not to be felt.
 local SUSPEND_TIMEOUT = 8
 
+--- Seconds after KOReader starts before the catch-up check runs.
+--
+-- Long enough for the file manager to finish building and for a network that is
+-- still coming up to report itself, short enough that the reader has not done
+-- anything yet. The request itself blocks, so this must not fire while the
+-- first screen is still being drawn.
+local STARTUP_SYNC_DELAY = 12
+
 local CevtuoCapperr = WidgetContainer:extend{
     name = "cevtuo-capperr",
     is_doc_only = false,
@@ -742,6 +750,51 @@ end
 function CevtuoCapperr:init()
     self.ui.menu:registerToMainMenu(self)
     self:registerEvents()
+    self:scheduleStartupSync()
+end
+
+--- Catch the case the three events cannot see: started while already online.
+--
+-- ⚠️⚠️ This is not a hypothetical hole — it happened, on 2026-09-24.
+--
+-- The reader installed a new plugin, restarted KOReader, left WiFi on, and
+-- nothing was ever pushed. The three hooks all missed it:
+--   · `onNetworkConnected` fires when the radio comes UP. It never went down,
+--     so it never fired.
+--   · `onCloseDocument` had not happened — no book had been closed yet.
+--   · `onSuspend` had not happened — the device was awake and in use.
+--
+-- So the Kindle sat there, online, holding newer data than the server had, and
+-- doing nothing about it. From the outside that is indistinguishable from a
+-- broken plugin — which is exactly what it was mistaken for.
+--
+-- ⚠️ What makes this safe is the interval, not the trigger. `autoSync` refuses
+-- when the last SUCCESS is inside `minIntervalMinutes`, and on a Kindle every
+-- document close can be a fresh KOReader process — so `init` is not a rare
+-- event and this would otherwise be a push per book. `pushIfOnline` supplies
+-- the connectivity check; `autoSync` itself does not do one.
+function CevtuoCapperr:scheduleStartupSync()
+    -- ⚠️ Config first, like `_onNetworkConnected` does — an unconfigured device
+    -- must not leave a timer sitting in the scheduler. Guarding only inside the
+    -- callback works at runtime and is wrong at the level a caller can see:
+    -- "did this device schedule a sync?" stops being answerable from outside.
+    local cfg = self:readConfig()
+    if not cfg then return end
+    if cfg.autoOnWifi == false then return end
+
+    UIManager:scheduleIn(STARTUP_SYNC_DELAY, function()
+        -- ⚠️ Re-read, and check connectivity HERE rather than at init time.
+        -- Twelve seconds is long enough for a network that was down when
+        -- KOReader started to come up — and for one that was up to go away.
+        -- Deciding either at init would be deciding on stale information.
+        local now = self:readConfig()
+        if not now or now.autoOnWifi == false then return end
+        -- ⚠️ Before anything expensive. `autoSync` builds the whole payload (a
+        -- SQL pass over page_stat_data) and then blocks on a synchronous POST;
+        -- offline that is the full HTTP timeout of frozen screen.
+        if not NetworkMgr:isConnected() then return end
+        self:autoSync()
+    end)
 end
 
 function CevtuoCapperr:addToMainMenu(menu_items)

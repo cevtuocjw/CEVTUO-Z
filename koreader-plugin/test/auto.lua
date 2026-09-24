@@ -159,6 +159,56 @@ http._reset()
 inst:_onCloseDocument(); inst:_onSuspend()
 check(fired() == 0 and #http._calls() == 0, "autoOnWifi=false silences close and suspend")
 
+-- ── Startup catch-up ────────────────────────────────────────
+--
+-- ⚠️ The hole the three events cannot see: KOReader STARTED while already
+-- online. NetworkConnected never fires because the radio never went down,
+-- CloseDocument and Suspend have not happened yet. That is exactly what
+-- happened on 2026-09-24 — the reader installed a plugin, restarted, and
+-- nothing was pushed for seventeen minutes.
+
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+NetworkMgr:_set(true); http._reset(); http._setResponse(1, 200)
+inst:scheduleStartupSync()
+check(fired() == 1, "startup -> exactly one scheduled task")
+check(#http._calls() == 1, "startup online -> one HTTP push", #http._calls())
+
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t", autoOnWifi = false })
+NetworkMgr:_set(true)
+inst:scheduleStartupSync()
+check(fired() == 0, "startup respects autoOnWifi=false")
+
+reset()
+inst:scheduleStartupSync()
+check(fired() == 0, "startup with no config -> nothing scheduled")
+
+-- ⚠️ Offline is checked BEFORE the payload is built, not after. Building it is
+-- a SQL pass over page_stat_data and the POST that follows blocks the UI
+-- thread; offline that is the full HTTP timeout of frozen screen.
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+NetworkMgr:_set(false); http._reset()
+inst:scheduleStartupSync()
+check(fired() == 1, "startup offline -> the task is still scheduled")
+check(#http._calls() == 0, "startup offline -> but no HTTP happened", #http._calls())
+
+-- ⚠️ Config is read BEFORE scheduling, so an unconfigured device leaves nothing
+-- in the scheduler. Deferring only the connectivity check is the point: that is
+-- the one fact init cannot know.
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t", autoOnWifi = false })
+NetworkMgr:_set(true)
+inst:scheduleStartupSync()
+check(fired() == 0, "autoOnWifi=false -> nothing SCHEDULED, not merely a no-op")
+
+-- ⚠️ THE safety property. On a Kindle every document close can be a fresh
+-- KOReader process, so `init` is not a rare event. Without the interval guard
+-- this would be a push per book, on a device whose whole job is lasting weeks.
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+NetworkMgr:_set(true); http._reset(); http._setResponse(1, 200)
+ageState(60)   -- one minute ago, inside the 30-minute default
+inst:scheduleStartupSync()
+check(fired() == 1, "startup with a recent push -> task still scheduled")
+check(#http._calls() == 0, "startup within the interval -> NOTHING pushed", #http._calls())
+
 print(string.format("PASS %d, FAIL %d", passes, #fails))
 for _, x in ipairs(fails) do print("  FAIL: " .. x) end
 os.exit(#fails == 0 and 0 or 1)
