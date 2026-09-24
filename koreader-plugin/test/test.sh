@@ -17,8 +17,10 @@ command -v sqlite3 >/dev/null 2>&1 || { echo "需要 sqlite3" >&2; exit 2; }
 
 WORK="$(mktemp -d)"
 export CAPPERR_SHIM="$HERE/shim"
-export CAPPERR_INTERVAL=15
 export CAPPERR_PLUGIN="$PLUGIN"
+# ⚠️ Read out of the plugin, NOT written here. A value hardcoded in the test is
+# an assertion that can never fail — it checks the test against itself.
+export CAPPERR_INTERVAL="$(grep -oE '^local MIN_INTERVAL_DEFAULT = [0-9]+' "$PLUGIN" | grep -oE '[0-9]+$' || echo 0)"
 export CAPPERR_WORK="$WORK"
 export CAPPERR_HOME="$WORK/visible"
 mkdir -p "$CAPPERR_HOME"
