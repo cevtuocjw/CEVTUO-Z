@@ -51,7 +51,25 @@ const BIND = process.env.CEVTUO_BIND ?? '0.0.0.0';
 const ALLOWED_ORIGINS = new Set(
   (
     process.env.CEVTUO_ALLOWED_ORIGINS ??
-    'https://cevtuocjw.github.io,https://z.cevtuogrnd.com,https://apps.cevtuogrnd.com,http://127.0.0.1:8096,http://localhost:10086'
+    [
+      // ⚠️ `http://`, not `https://`.
+      //
+      // The site is served over plain HTTP: `apps.cevtuogrnd.com` is a GitHub
+      // Pages custom domain whose certificate could not be issued (the Pages
+      // settings say "Enforce HTTPS — Unavailable for your site because your
+      // domain is not properly configured"). A browser at that site sends
+      // `Origin: http://apps.cevtuogrnd.com`, and an https entry here matches
+      // NOTHING — the fetch is refused by CORS and the 在读 panel silently shows
+      // its lock, on a deployment that is working perfectly.
+      //
+      // ⚠️ `z.cevtuogrnd.com` used to be listed here. It has no DNS record at
+      // all, so it could never have matched anything.
+      'http://apps.cevtuogrnd.com',
+      'https://cevtuocjw.github.io',
+      'http://cevtuocjw.github.io',
+      'http://127.0.0.1:8096',
+      'http://localhost:10086',
+    ].join(',')
   )
     .split(',')
     .map((s) => s.trim())

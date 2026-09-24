@@ -24,7 +24,12 @@ const BIND = process.env.CEVTUO_BIND ?? '127.0.0.1';
  * because this endpoint spends real Actions minutes.
  */
 const ALLOWED_ORIGINS = new Set(
-  (process.env.CEVTUO_ALLOWED_ORIGINS ?? 'https://z.cevtuogrnd.com,https://apps.cevtuogrnd.com,http://localhost:10086')
+  // ⚠️ `http://apps.cevtuogrnd.com` — see the long note in
+  // services/ingest/src/server.ts. The site is served over plain HTTP because no
+  // certificate could be issued for the custom domain, and `z.cevtuogrnd.com`
+  // has no DNS record at all.
+  (process.env.CEVTUO_ALLOWED_ORIGINS ??
+    'http://apps.cevtuogrnd.com,https://cevtuocjw.github.io,http://cevtuocjw.github.io,http://localhost:10086')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),

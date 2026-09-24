@@ -31,8 +31,21 @@ import type {
   SyncMeta,
 } from '../../../../packages/schema/src/index';
 
-/** Deployed origin, used by the mini-program and as the last-resort fallback. */
-const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
+/**
+ * Deployed origin — the mini-program's request base and the last-resort fallback.
+ *
+ * ⚠️ `http://`, not `https://`, and that is not an oversight. `apps.cevtuogrnd.com`
+ * is a GitHub Pages custom domain for which no certificate could be issued: the
+ * Pages settings read "Enforce HTTPS — Unavailable for your site because your
+ * domain is not properly configured". The HTTPS URL does not serve this site at
+ * all, so a fallback pointing at it fails for every caller that reaches it.
+ *
+ * ⚠️ `z.cevtuogrnd.com` was the name in the project docs. It has no DNS record.
+ *
+ * ⚠️ WeChat requires HTTPS request domains, so the mini-program still has no
+ * valid origin — but pointing the fallback at a URL that 404s helped nobody.
+ */
+const PROD_ORIGIN = 'http://apps.cevtuogrnd.com';
 
 /**
  * Data origin.

@@ -1,5 +1,31 @@
 # CAPPERR 上线清单
 
+## 站点地址（先看这个）
+
+**https://cevtuocjw.github.io/CEVTUO-Z/ 会 301 到 http://apps.cevtuogrnd.com/CEVTUO-Z/**
+
+```
+http://apps.cevtuogrnd.com/CEVTUO-Z/          ← 首页
+http://apps.cevtuogrnd.com/CEVTUO-Z/#/pages/paperr/index    ← CAPPERR
+```
+
+⚠️ **是 `http://`，不是 `https://`。** `apps.cevtuogrnd.com` 是 GitHub Pages 的
+自定义域名，但证书一直没签发成功 —— Pages 设置里写着
+「Enforce HTTPS — Unavailable for your site because your domain is not properly
+configured」。所以只有一个纯 HTTP 的地址。
+
+⚠️ **`z.cevtuogrnd.com` 打不开，因为这个域名根本没有 DNS 记录。**
+项目文档（HANDOFF / docs/HOSTING.md）里一直写它，那是**计划**，不是现状。
+
+⚠️ **这也是为什么「在读」必须走 HTTP。** 页面在 http 上，接口也在
+`http://120.77.27.128:8789` 上 —— 两边都是 http，请求能发出去。
+**一旦站点上了 HTTPS，这个请求会被浏览器当作混合内容直接拦掉**，
+除非接口也上 HTTPS（而那需要备案或海外机器）。改之前先想清楚这件事。
+
+---
+
+## 剩下的步骤
+
 代码这一侧**已经全部完成**。剩下的每一步都需要只有你才有的东西
 （GitHub 凭据、阿里云控制台），所以列在这里。
 
@@ -103,5 +129,5 @@ Kindle 连上 WiFi，等几秒。然后：
 
 ## 之后
 
-页面地址不变：`https://cevtuo.cjw.github.io/...` → 301 到 `z.cevtuogrnd.com`。
-CAPPERR 页面在 `/pages/paperr/index`。
+页面地址见文件开头 —— 是 `http://apps.cevtuogrnd.com/CEVTUO-Z/`，
+CAPPERR 在 `/pages/paperr/index`。

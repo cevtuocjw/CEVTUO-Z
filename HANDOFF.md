@@ -8,7 +8,9 @@
 ## 一句话
 
 个人数据仪表盘。四个品牌页：**COOF**（电影）/ **CNSR**（笔记）/ **CE-PaperR**（Kindle）/ **Chealth**（健康）。
-目标形态：**微信小程序 + Android**，一套 Taro 代码。仓库根目录自包含。项目域名 `z.cevtuogrnd.com`。
+目标形态：**微信小程序 + Android**，一套 Taro 代码。仓库根目录自包含。
+⚠️ 计划域名是 `z.cevtuogrnd.com`，**但它至今没有 DNS 记录** —— 现在能打开的
+只有 `http://apps.cevtuogrnd.com/CEVTUO-Z/`（纯 HTTP，证书签不下来）。
 
 ---
 
