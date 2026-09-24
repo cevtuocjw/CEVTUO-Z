@@ -4,13 +4,14 @@
  *
  *   bun run services/ingest/verify.ts
  *
- * Drives the REAL `handleIngest` against an in-memory fake of the GitHub
- * Contents API, using a REAL export off the Kindle as the fixture.
+ * Drives the REAL `handleIngest` against an in-memory Store, using a REAL export
+ * off the Kindle as the fixture, and — in the last block — the REAL converter.
  *
- * The case that matters most is #8: the plugin pushes on every WiFi connect and
- * re-stamps `exportedAt` each time, so "same reading, later export" is the
- * NORMAL case — and it must not produce a commit. Get that wrong and the
- * repository gains forty-eight commits a day that say nothing.
+ * The two cases that matter most:
+ *   · #6, "same reading, later export" — the plugin pushes on every WiFi
+ *     connect and re-stamps `exportedAt` each time, so this is the NORMAL case
+ *     and it must change nothing.
+ *   · #8, a broken converter must not cost the reader their data.
  */
 
 import { readFileSync } from 'node:fs';
@@ -21,33 +22,16 @@ import { repoPath } from '@cevtuo/pipeline-core';
 import { repoConverter } from './src/converter';
 import {
   envFrom,
+  handleAdminStatus,
+  handleCurrent,
   handleIngest,
+  isAdminAuthorized,
   isAuthorized,
   signatureOf,
   type Converter,
   type Env,
-  type GithubFileApi,
+  type Store,
 } from './src/core';
-
-/**
- * A stand-in for the real pipeline converter.
- *
- * ⚠️ It returns a body the test can recognise, NOT a real index. What is under
- * test here is the ingest's decision-making — when to commit, when to stay
- * quiet, what to do when the converter fails — and none of that depends on the
- * shape of the index. The converter's own correctness is covered by the page
- * verification, which reads the real `data/paperr/index.json` off a real
- * device export.
- */
-function fakeConverter(behaviour: 'ok' | 'fail' = 'ok'): Converter {
-  return {
-    async run() {
-      if (behaviour === 'fail') return { error: '转换器炸了' };
-      return { indexText: `${JSON.stringify({ schemaVersion: 1, converted: true }, null, 2)}\n` };
-    },
-  };
-}
-const CONV = fakeConverter();
 
 const passes: string[] = [];
 const failures: string[] = [];
@@ -58,70 +42,64 @@ function check(cond: boolean, label: string, extra?: unknown): void {
 }
 
 function eq<T>(actual: T, expected: T, label: string): void {
-  check(
-    JSON.stringify(actual) === JSON.stringify(expected),
-    label,
-    actual === expected ? undefined : actual,
-  );
+  check(JSON.stringify(actual) === JSON.stringify(expected), label, actual === expected ? undefined : actual);
 }
 
 // ── Fixture: a real device export ────────────────────────────
-const RAW_PATH = repoPath('data/paperr/raw-koreader.json');
-const RAW_TEXT = readFileSync(RAW_PATH, 'utf8');
+const RAW_TEXT = readFileSync(repoPath('data/paperr/raw-koreader.json'), 'utf8');
 const RAW = JSON.parse(RAW_TEXT) as Record<string, unknown>;
 
 const ENV: Env = envFrom({
   CEVTUO_DEVICE_TOKEN: 'device-token-aaaaaaaaaaaaaaaa',
-  CEVTUO_GITHUB_TOKEN: 'ghp_not_a_real_token',
+  CEVTUO_ADMIN_PASSWORD: 'pw-for-tests',
   CEVTUO_MAX_BYTES: '1048576',
 });
-
 const AUTH = `Bearer ${ENV.deviceToken}`;
+const BASIC = `Basic ${Buffer.from('x:pw-for-tests').toString('base64')}`;
 
-/** A PAT-shaped string: `ghp_` + 36 alphanumerics, as a real one is. */
-const FAKE_GH = `ghp_${'abcdefghijklmnopqrstuvwxyz0123456789'}`;
-
-/** In-memory stand-in for the Contents API, counting writes. */
-function fakeApi(initial: string | null = null) {
-  let file: { sha: string; text: string } | null = initial == null ? null : { sha: 'sha-1', text: initial };
-  let puts = 0;
-  let rev = 1;
-  // ⚠️ Which files were written, not just how many. "Exactly one write" stopped
-  // being the right question the moment the ingest began committing the index
-  // as well as the raw export — the interesting assertion is now the ORDER and
-  // the NAMES, because a converter failure must leave raw committed and index
-  // untouched.
-  const written: string[] = [];
-  // ⚠️ Keyed by path, not "the last thing written". The ingest writes TWO files
-  // now, so a single `stored()` returns whichever landed last — an assertion
-  // written against it silently starts checking the index instead of the raw
-  // export the moment the order changes.
-  const store = new Map<string, string>();
-  const api: GithubFileApi = {
-    async getFile() {
-      return file;
+/** In-memory Store, counting writes so "did anything change?" is answerable. */
+function memStore(initial: { raw?: string; current?: string } = {}) {
+  let raw = initial.raw ?? null;
+  let current = initial.current ?? null;
+  const writes: string[] = [];
+  const store: Store = {
+    async readRaw() {
+      return raw;
     },
-    async putFile(path, text) {
-      puts += 1;
-      rev += 1;
-      written.push(path);
-      store.set(path, text);
-      file = { sha: `sha-${rev}`, text };
-      return { commitSha: `commit-${rev}` };
+    async writeRaw(t) {
+      writes.push('raw');
+      raw = t;
+    },
+    async readCurrent() {
+      return current;
     },
   };
+  return { store, writes: () => writes, raw: () => raw, current: () => current };
+}
+
+/**
+ * A stand-in for the real pipeline converter.
+ *
+ * ⚠️ What is under test in most of this file is the ingest's DECISION-MAKING —
+ * when to write, when to stay quiet, what to do when conversion fails — and none
+ * of that depends on the shape of the index. The converter's own correctness is
+ * covered by the last block, which runs the real one.
+ */
+function fakeConverter(behaviour: 'ok' | 'fail' = 'ok'): Converter {
   return {
-    api,
-    puts: () => puts,
-    written: () => written,
-    storedOf: (path: string) => store.get(path) ?? null,
+    async convert() {
+      if (behaviour === 'fail') return { error: '转换器炸了' };
+      // ⚠️ Nothing to return: the CLI writes both output files itself. What is
+      // under test here is the ingest's DECISION-MAKING — when to write, when to
+      // stay quiet, what to do when conversion fails.
+      return { ok: true };
+    },
   };
 }
+const CONV = fakeConverter();
 
 /** A copy of the export with `exportedAt` moved forward and nothing else. */
-function reExportedAt(stamp: string): Record<string, unknown> {
-  return { ...RAW, exportedAt: stamp };
-}
+const reExportedAt = (stamp: string) => ({ ...RAW, exportedAt: stamp });
 
 async function main(): Promise<void> {
   console.log('\n═══ services/ingest 验证 ═══\n');
@@ -130,216 +108,183 @@ async function main(): Promise<void> {
   check(isAuthorized(ENV, AUTH), 'auth: correct bearer accepted');
   check(!isAuthorized(ENV, null), 'auth: missing header rejected');
   check(!isAuthorized(ENV, 'device-token-aaaaaaaaaaaaaaaa'), 'auth: header without "Bearer " rejected');
-  check(!isAuthorized(ENV, 'Bearer wrong'), 'auth: wrong token rejected');
-  check(
-    !isAuthorized(ENV, `Bearer ${ENV.deviceToken}x`),
-    'auth: correct-prefix-plus-more rejected (length guard)',
-  );
+  check(!isAuthorized(ENV, `Bearer ${ENV.deviceToken}x`), 'auth: length guard rejects a longer token');
+  check(isAdminAuthorized(ENV, BASIC), 'auth: correct Basic password accepted');
+  check(!isAdminAuthorized(ENV, 'Basic ' + Buffer.from('x:wrong').toString('base64')), 'auth: wrong password rejected');
+  check(!isAdminAuthorized({ ...ENV, adminPassword: null }, BASIC), 'auth: unset password disables the surface');
 
   {
-    const { api } = fakeApi();
-    const r = await handleIngest(ENV, api, CONV, 'Bearer nope', RAW_TEXT);
-    eq(r.status, 401, 'auth: 401 on bad token');
+    const { store } = memStore();
+    const r = await handleIngest(ENV, store, CONV, 'Bearer nope', RAW_TEXT);
+    eq(r.status, 401, 'auth: 401 on bad device token');
     eq(r.body.status, 'rejected', 'auth: body says rejected');
   }
 
   // ── Size ───────────────────────────────────────────────────
   {
-    const { api } = fakeApi();
-    // Measured in BYTES. A CJK character is 3 bytes in UTF-8 but 1 in UTF-16 —
+    const { store } = memStore();
+    const top: Env = { ...ENV, maxBytes: 1000 };
+    // Measured in BYTES. A CJK character is 3 bytes in UTF-8 and 1 in UTF-16 —
     // a character-counting cap would let this through at 3× the limit.
-    const big = '中'.repeat(400);
-    const tight: Env = { ...ENV, maxBytes: 1000 };
-    const r = await handleIngest(tight, api, CONV, AUTH, big);
+    const r = await handleIngest(top, store, CONV, AUTH, '中'.repeat(400));
     eq(r.status, 413, 'size: CJK body measured in bytes, 413 over the cap');
   }
 
   // ── Malformed input ────────────────────────────────────────
   for (const [label, body] of [
     ['not JSON', 'not json at all'],
-    ['JSON but not the right shape', JSON.stringify({ hello: 'world' })],
+    ['JSON but the wrong shape', JSON.stringify({ hello: 'world' })],
     ['books missing', JSON.stringify({ ...RAW, books: undefined })],
     ['books empty', JSON.stringify({ ...RAW, books: [] })],
-    ['daily entry with a bad day key', JSON.stringify({ ...RAW, daily: [{ d: '2026/09/24', s: 1, p: 1 }] })],
+    ['a bad day key', JSON.stringify({ ...RAW, daily: [{ d: '2026/09/24', s: 1, p: 1 }] })],
   ] as const) {
-    const { api, puts } = fakeApi();
-    const r = await handleIngest(ENV, api, CONV, AUTH, body);
+    const { store, writes } = memStore();
+    const r = await handleIngest(ENV, store, CONV, AUTH, body);
     eq(r.status, 400, `input: 400 for ${label}`);
-    eq(puts(), 0, `input: no commit for ${label}`);
+    eq(writes(), [], `input: nothing written for ${label}`);
   }
 
   // ── The signature rule ─────────────────────────────────────
   check(
-    signatureOf(reExportedAt('2099-01-01T00:00') as never) ===
-      signatureOf(reExportedAt('2020-01-01T00:00') as never),
+    signatureOf(reExportedAt('2099-01-01T00:00') as never) === signatureOf(reExportedAt('2020-01-01T00:00') as never),
     'signature: ignores exportedAt',
   );
   check(
-    signatureOf({ ...RAW, totals: { ...(RAW.totals as object), readSeconds: 1 } } as never) !==
-      signatureOf(RAW as never),
+    signatureOf({ ...RAW, totals: { ...(RAW.totals as object), readSeconds: 1 } } as never) !== signatureOf(RAW as never),
     'signature: sensitive to actual reading changes',
   );
 
-  // ── The three outcomes that matter ─────────────────────────
+  // ── The outcomes that matter ───────────────────────────────
   {
-    const { api, puts, written, storedOf } = fakeApi();
-    const r = await handleIngest(ENV, api, CONV, AUTH, RAW_TEXT);
-    eq(r.status, 202, 'first push: 202 committed');
-    eq(r.body.status, 'committed', 'first push: body says committed');
+    const { store, writes, raw } = memStore();
+    const r = await handleIngest(ENV, store, CONV, AUTH, RAW_TEXT);
+    eq(r.status, 202, 'first push: 202');
     eq(r.body.books, 41, 'first push: reports 41 books');
-    eq(puts(), 2, 'first push: commits the raw export AND the index');
-    eq(written(), ['data/paperr/raw-koreader.json', 'data/paperr/index.json'],
-       'first push: raw is committed BEFORE the index');
-    // The RAW file must be the device's export verbatim — that is the whole
-    // point of storing it rather than only the converted result.
-    const rawStored = JSON.parse(storedOf('data/paperr/raw-koreader.json') ?? 'null');
-    eq(rawStored?.books?.length, 41, 'first push: the raw export is stored verbatim');
-    eq(rawStored?.exportedAt, RAW.exportedAt, 'first push: including its exportedAt');
-    const idxStored = JSON.parse(storedOf('data/paperr/index.json') ?? 'null');
-    eq(idxStored?.converted, true, 'first push: the index came from the converter');
+    eq(writes(), ['raw'], 'first push: exactly the raw export is written');
+    eq(JSON.parse(raw() ?? 'null')?.books?.length, 41, 'first push: the raw export is stored verbatim');
+    eq(JSON.parse(raw() ?? 'null')?.exportedAt, RAW.exportedAt, 'first push: including its exportedAt');
     IngestResponseSchema.parse(r.body);
   }
 
   {
-    const { api, puts } = fakeApi(RAW_TEXT);
-    // ⚠️ THE case. Same reading, later export — the device does this on every
+    // ⚠️ THE case. Same reading, later export — what the device sends on every
     // single WiFi connect.
-    const r = await handleIngest(ENV, api, CONV, AUTH, JSON.stringify(reExportedAt('2026-09-24T18:00')));
-    eq(r.status, 200, 'same reading later export: 200');
-    eq(r.body.status, 'unchanged', 'same reading later export: unchanged');
-    eq(puts(), 0, 'same reading later export: ZERO commits');
+    const { store, writes } = memStore({ raw: RAW_TEXT });
+    const r = await handleIngest(ENV, store, CONV, AUTH, JSON.stringify(reExportedAt('2026-09-24T18:00')));
+    eq(r.status, 200, 'same reading, later export: 200');
+    eq(r.body.status, 'unchanged', 'same reading, later export: unchanged');
+    eq(writes(), [], 'same reading, later export: NOTHING written');
   }
 
   {
     // Key order shuffled — a different board, or a JSON library that sorts keys.
-    const { api, puts } = fakeApi(RAW_TEXT);
-    const shuffled = JSON.stringify(
-      Object.fromEntries(Object.entries(reExportedAt('2026-09-24T19:00')).reverse()),
-    );
-    const r = await handleIngest(ENV, api, CONV, AUTH, shuffled);
+    const { store, writes } = memStore({ raw: RAW_TEXT });
+    const shuffled = JSON.stringify(Object.fromEntries(Object.entries(reExportedAt('2026-09-24T19:00')).reverse()));
+    const r = await handleIngest(ENV, store, CONV, AUTH, shuffled);
     eq(r.body.status, 'unchanged', 'key order shuffled: still unchanged');
-    eq(puts(), 0, 'key order shuffled: no commit');
+    eq(writes(), [], 'key order shuffled: nothing written');
   }
 
   {
-    const { api, puts } = fakeApi(RAW_TEXT);
-    const read = {
-      ...reExportedAt('2026-09-24T20:00'),
-      totals: { booksStarted: 41, booksFinished: 4, readSeconds: 56600, pagesTurned: 2490 },
-    };
-    const r = await handleIngest(ENV, api, CONV, AUTH, JSON.stringify(read));
-    eq(r.status, 202, 'reading advanced: 202 committed');
-    eq(puts(), 2, 'reading advanced: raw + index');
+    const { store, writes } = memStore({ raw: RAW_TEXT });
+    const read = { ...reExportedAt('2026-09-24T20:00'), totals: { booksStarted: 41, booksFinished: 4, readSeconds: 56600, pagesTurned: 2490 } };
+    const r = await handleIngest(ENV, store, CONV, AUTH, JSON.stringify(read));
+    eq(r.status, 202, 'reading advanced: 202');
+    eq(writes(), ['raw'], 'reading advanced: the export is rewritten');
   }
 
   {
-    // A stale/corrupt file on the branch must be overwritten, not compared against.
-    const { api, puts } = fakeApi('{ this is not json');
-    const r = await handleIngest(ENV, api, CONV, AUTH, RAW_TEXT);
-    eq(r.status, 202, 'corrupt stored file: 202, overwritten');
-    eq(puts(), 2, 'corrupt stored file: raw + index');
-  }
-
-  {
-    // A perfectly good export that happens to be a strict subset still wins if
-    // the stored file is a DIFFERENT valid export — guarded here so the earlier
-    // "unchanged" wins are not an artefact of never reaching putFile.
-    const other = JSON.stringify({ ...reExportedAt('2026-09-01T00:00'), books: [] });
-    const { api, puts } = fakeApi(other);
-    const r = await handleIngest(ENV, api, CONV, AUTH, RAW_TEXT);
-    eq(r.status, 202, 'different valid stored export: 202');
-    eq(puts(), 2, 'different valid stored export: raw + index');
+    // A corrupt stored file must be overwritten, not compared against.
+    const { store, writes } = memStore({ raw: '{ this is not json' });
+    const r = await handleIngest(ENV, store, CONV, AUTH, RAW_TEXT);
+    eq(r.status, 202, 'corrupt stored export: 202, overwritten');
+    eq(writes(), ['raw'], 'corrupt stored export: rewritten');
   }
 
   // ── A broken converter must not cost the reader their data ─
   //
-  // ⚠️ The raw export is the irreplaceable half: it is the only copy of what the
-  // device knows, and the device may not sync again for days. The index is
-  // derivable from it at any time. So conversion failure must (a) still commit
-  // raw, (b) not commit a half-written index, and (c) SAY so.
+  // ⚠️ The raw export is the half that cannot be reconstructed from anything
+  // else on this machine. A converter failure must (a) still save it, (b) not
+  // leave a half-written index, and (c) SAY so where the operator will see it.
   {
-    const { api, written } = fakeApi();
-    const r = await handleIngest(ENV, api, fakeConverter('fail'), AUTH, RAW_TEXT);
+    const { store, writes } = memStore();
+    const r = await handleIngest(ENV, store, fakeConverter('fail'), AUTH, RAW_TEXT);
     eq(r.status, 202, 'converter failure: still 202, not an error');
-    eq(written(), ['data/paperr/raw-koreader.json'], 'converter failure: raw committed, index NOT');
+    eq(writes(), ['raw'], 'converter failure: the export is still saved');
     check(r.body.message.includes('重新生成失败'), 'converter failure: the message says so', r.body.message);
   }
 
-  // ── GitHub failures must not look like success ─────────────
+  // ── The page's private bit ─────────────────────────────────
+  //
+  // ⚠️ ONLY the current book. Everything else the page shows is public and comes
+  // straight from the site — so these assertions are also the check that this
+  // endpoint did not quietly become a second way to read the whole library.
   {
-    const api: GithubFileApi = {
-      async getFile() {
-        // ⚠️ Must be a REALISTIC length. pipeline-core matches
-        // /\bgh[pousr]_[A-Za-z0-9]{16,}/ — a short fake like "ghp_secret"
-        // sails straight through the scrubber and makes this assertion fail for
-        // the wrong reason. (It did.)
-        throw new Error(`GitHub 401: bad credentials ${FAKE_GH}`);
-      },
-      async putFile() {
-        throw new Error('unreachable');
-      },
-    };
-    const r = await handleIngest(ENV, api, CONV, AUTH, RAW_TEXT);
-    eq(r.status, 502, 'github read failure: 502');
-    check(!r.body.message.includes(FAKE_GH), 'github read failure: token scrubbed from message', r.body.message);
+    const { store } = memStore({ raw: RAW_TEXT, current: '{"current":{"id":"41"}}' });
+    eq((await handleCurrent(ENV, store, null)).status, 401, 'current endpoint: 401 with no credentials');
+    eq((await handleCurrent(ENV, store, 'Bearer ' + ENV.deviceToken)).status, 401,
+       'current endpoint: the DEVICE token cannot read it back');
+    const ok = await handleCurrent(ENV, store, BASIC);
+    eq(ok.status, 200, 'current endpoint: 200 with the password');
+    eq((ok.body as { current: { id: string } }).current.id, '41', 'current endpoint: returns the current book only');
+    check(!JSON.stringify(ok.body).includes('books'), 'current endpoint: does NOT carry the shelf');
+  }
+  {
+    const { store } = memStore();
+    eq((await handleCurrent(ENV, store, BASIC)).status, 404, 'current endpoint: 404 before any sync');
   }
 
+  // ── Admin status ───────────────────────────────────────────
   {
-    const api: GithubFileApi = {
-      async getFile() {
-        return null;
-      },
-      async putFile() {
-        throw new Error('GitHub 422: sha mismatch');
-      },
-    };
-    const r = await handleIngest(ENV, api, CONV, AUTH, RAW_TEXT);
-    eq(r.status, 502, 'github write failure: 502');
+    const { store } = memStore({ raw: RAW_TEXT });
+    const r = await handleAdminStatus(ENV, store);
+    eq(r.body.books, 41, 'admin status: book count');
+    eq(r.body.lastExportAt, RAW.exportedAt, 'admin status: last export time');
+    eq(r.body.canRebuild, true, 'admin status: rebuild is available');
   }
 
-  // ── Report ─────────────────────────────────────────────────
   // ── The real converter, end to end ─────────────────────────
   //
   // ⚠️ Everything above runs against a FAKE converter. This block runs the
   // actual pipeline binary over the actual device export and validates what
-  // comes back against the schema the page consumes.
-  //
-  // It matters because the whole reason the ingest converts locally — rather
-  // than committing and letting a workflow do it — is that this call has to
-  // work. A fake cannot tell us whether it does.
+  // comes back against the schema the page consumes. It matters because the
+  // whole reason the ingest converts locally is that this call has to work.
   {
-    const { api, written, storedOf } = fakeApi();
-    const r = await handleIngest(ENV, api, repoConverter(), AUTH, RAW_TEXT);
-    eq(r.status, 202, 'real converter: 202');
-    check(!r.body.message.includes('重新生成失败'), 'real converter: conversion succeeded', r.body.message);
-    eq(written(), ['data/paperr/raw-koreader.json', 'data/paperr/index.json'],
-       'real converter: both files committed');
-
-    const idxText = storedOf('data/paperr/index.json');
-    let idx: unknown = null;
+    const { store } = memStore();
+    let real: Converter;
     try {
-      idx = JSON.parse(idxText ?? 'null');
-    } catch {
-      idx = null;
-    }
-    const parsed = PaperrIndexSchema.safeParse(idx);
-    check(parsed.success, 'real converter: output satisfies PaperrIndexSchema',
-          parsed.success ? '' : String(parsed.error.issues[0]?.message));
+      real = repoConverter();
+      const r = await handleIngest(ENV, store, real, AUTH, RAW_TEXT);
+      eq(r.status, 202, 'real converter: 202');
+      check(!r.body.message.includes('重新生成失败'), 'real converter: conversion succeeded', r.body.message);
 
-    if (parsed.success) {
-      const d = parsed.data;
-      check(d.books.length === 36, 'real converter: 36 visible rows', d.books.length);
-      check(d.totals.booksStarted === d.books.length,
-            'real converter: totals agree with the rows shown',
-            `${d.totals.booksStarted} vs ${d.books.length}`);
-      check(d.books.every((b) => !/koreader/i.test(b.title)),
-            'real converter: no KOReader documents survive');
-      const labelled = d.books.filter((b) => /^(news|unknown)\d+ \(.+\)$/.test(b.title));
-      check(labelled.length === d.books.length - 1,
-            'real converter: every relabelled row carries its original',
-            `${labelled.length} of ${d.books.length}`);
-      check(d.current !== null && d.current.estFinishedAt !== null,
-            'real converter: a current book with a finish projection');
+      // ⚠️ Read from DISK, not from anything the ingest handed back — the whole
+      // point of the current design is that the CLI owns both output files.
+      const parsed = PaperrIndexSchema.safeParse(JSON.parse(readFileSync(repoPath('data/paperr/index.json'), 'utf8')));
+      check(parsed.success, 'real converter: output satisfies PaperrIndexSchema',
+            parsed.success ? '' : String(parsed.error.issues[0]?.message));
+      if (parsed.success) {
+        const d = parsed.data;
+        eq(d.books.length, 36, 'real converter: 36 visible rows');
+        eq(d.current, null, 'real converter: the PUBLIC index carries no current book');
+        const cur = JSON.parse(readFileSync(repoPath('data/paperr/current.json'), 'utf8')) as {
+          current: { id: string; title: string; estFinishedAt: string | null } | null;
+        };
+        check(cur.current !== null, 'real converter: the PRIVATE file carries the current book');
+        check(cur.current?.estFinishedAt != null, 'real converter: with a finish projection',
+              cur.current?.estFinishedAt);
+        // The private book is a slice of the public shelf, not a separate one —
+        // if it ever stops appearing there, the split has gone wrong.
+        check(d.books.some((b) => b.id === cur.current?.id),
+              'real converter: the current book also appears in the public shelf', cur.current?.id);
+        eq(d.totals.booksStarted, d.books.length, 'real converter: totals agree with the rows shown');
+        check(d.books.every((b) => !/koreader/i.test(b.title)), 'real converter: no KOReader documents survive');
+        const labelled = d.books.filter((b) => /^(news|unknown)\d+ \(.+\)$/.test(b.title));
+        eq(labelled.length, d.books.length - 1, 'real converter: every relabelled row carries its original');
+        check(d.current === null, 'real converter: the public index carries NO current book');
+      }
+    } catch (e) {
+      check(false, 'real converter: could not run', String(e).slice(0, 120));
     }
   }
 

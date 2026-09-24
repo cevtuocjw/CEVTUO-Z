@@ -1,31 +1,29 @@
 /**
  * Ingest — the device-facing receiver for KOReader reading statistics.
  *
- * ── Why this exists instead of "push to the Mac" ───────────────
- * The first design had the Kindle POST to a Bun server on the Mac, over the LAN.
- * It worked, and it was the wrong shape: it only functioned while the Mac was
- * awake and while the Kindle was on the same WiFi. Reading happens on trains.
- * This service runs on a VPS with a public address, so the device needs nothing
- * but an internet connection.
+ * ── Why a server sits in the middle at all ─────────────────────
  *
- * ── Why the device never holds a useful credential ─────────────
- * Whatever the Kindle carries is readable: the plugin is plain-text Lua sitting
- * on a mounted USB partition. So the device holds `CEVTUO_DEVICE_TOKEN`, whose
- * entire authority is "may POST a reading-stats document". The GitHub token —
- * the one that can write to the repository — never leaves this process. That
- * asymmetry is the whole reason a server exists in the middle.
+ * Two reasons, and the second one arrived later.
  *
- * ── Why it commits the RAW payload and converts nothing ────────
- * The conversion belongs to the pipeline. Storing the raw file means a converter
- * bug is fixed by re-running the pipeline over data already on disk, rather than
- * by asking someone to go find WiFi and sync again.
+ * 1. **The device must not hold a real credential.** Whatever the Kindle
+ *    carries is readable — the plugin is plain-text Lua on a mounted USB
+ *    partition. So it carries `CEVTUO_DEVICE_TOKEN`, whose entire authority is
+ *    "may POST a reading-stats document".
  *
- * ⚠️ And the one thing that is easy to get wrong: a commit must happen ONLY when
- * the reading actually changed. The plugin pushes on every WiFi connect, and the
- * device stamps `exportedAt` with the current local time — so the bytes differ on
- * every single push even when nobody has read a page. Comparing raw bytes would
- * produce a commit every 30 minutes forever, drowning real changes and burning
- * GitHub Pages' build budget. The comparison therefore ignores `exportedAt`.
+ * 2. ⚠️ **A reading history cannot live in the repository.** `cevtuocjw/CEVTUO-Z`
+ *    is public, `data/` is committed to `main`, and the Pages site is
+ *    world-readable. The first design committed the export there and it was
+ *    public within the hour. It now lives HERE, on the server, and reaches the
+ *    page through an authenticated `GET /api/paperr/index.json`.
+ *
+ * ⚠️ This also removes the GitHub token entirely. Nothing is committed any more,
+ * so there is no PAT to create, scope, rotate or leak — and the repository needs
+ * no workflow file either.
+ *
+ * ⚠️ The device is the backup. KOReader keeps the full history in
+ * `statistics.sqlite3` and the plugin exports all of it every time, so a lost
+ * server is restored by the next sync. That is why holding the only copy here is
+ * acceptable rather than reckless.
  */
 
 import {
@@ -34,6 +32,7 @@ import {
   type IngestResponse,
   type PaperrRaw,
 } from '@cevtuo/schema';
+import { LOCAL_PATHS } from '@cevtuo/schema/paths';
 import { contentHash, scrubError } from '@cevtuo/pipeline-core';
 
 /**
@@ -43,30 +42,30 @@ import { contentHash, scrubError } from '@cevtuo/pipeline-core';
  */
 export const DEFAULT_MAX_BYTES = 1024 * 1024;
 
-/** Where the raw export is kept. Must match `DATA_PATHS.paperrRaw`. */
-export const RAW_PATH = 'data/paperr/raw-koreader.json';
-
-/** The published index. Must match `DATA_PATHS.paperrIndex`. */
-export const INDEX_PATH = 'data/paperr/index.json';
+/**
+ * ⚠️ Both are LOCAL paths — neither is a published payload.
+ *
+ * `raw-koreader.json` is the device's verbatim export, and `current.json` holds
+ * the one book being read right now. Everything else the page shows comes from
+ * `data/paperr/index.json`, which IS public and is fetched straight from the
+ * site. See `packages/schema/src/paths.ts`.
+ */
+export const RAW_PATH = LOCAL_PATHS.paperrRaw;
+export const CURRENT_PATH = LOCAL_PATHS.paperrCurrent;
 
 export interface Env {
   /** Bearer the Kindle presents. Grants exactly one thing: POSTing an export. */
   deviceToken: string;
-  /** Fine-grained PAT, **Contents: read and write**, scoped to this one repo. */
-  githubToken: string;
-  owner: string;
-  repo: string;
-  branch: string;
-  path: string;
-  maxBytes: number;
   /**
-   * Password for the human-facing page, or null when the admin surface is off.
+   * Password for the human-facing surface — the admin page, and the data the
+   * page reads. Null disables both.
    *
-   * ⚠️ Optional, and null by DEFAULT — an unset password disables `/` and
-   * `/api/status` entirely. A deployment that forgets to set it ends up with no
-   * admin page, rather than with a page publishing the reader's library.
+   * ⚠️ Null by DEFAULT. A deployment that forgets to set it ends up with no
+   * admin page and no readable data, rather than with a page publishing the
+   * reader's library.
    */
   adminPassword: string | null;
+  maxBytes: number;
 }
 
 export function envFrom(source: Record<string, string | undefined>): Env {
@@ -76,184 +75,140 @@ export function envFrom(source: Record<string, string | undefined>): Env {
     return v;
   };
   return {
-    // Two DIFFERENT secrets on purpose. Reusing one would mean the token on the
-    // Kindle is also the token that can write to the repository.
     deviceToken: need('CEVTUO_DEVICE_TOKEN'),
-    githubToken: need('CEVTUO_GITHUB_TOKEN'),
-    owner: source.CEVTUO_REPO_OWNER ?? 'cevtuocjw',
-    repo: source.CEVTUO_REPO_NAME ?? 'CEVTUO-Z',
-    branch: source.CEVTUO_BRANCH ?? 'main',
-    path: source.CEVTUO_RAW_PATH ?? RAW_PATH,
-    maxBytes: Number(source.CEVTUO_MAX_BYTES ?? DEFAULT_MAX_BYTES),
     adminPassword: source.CEVTUO_ADMIN_PASSWORD ?? null,
+    maxBytes: Number(source.CEVTUO_MAX_BYTES ?? DEFAULT_MAX_BYTES),
   };
 }
 
 /**
- * The slice of the GitHub Contents API this service depends on.
+ * Where the two files live.
  *
- * Typed as an interface, not called directly, so `verify.ts` can drive the whole
- * handler against an in-memory fake — including the "second identical push
- * produces no commit" case, which is the one that decides whether this service
- * floods the repository.
+ * An interface rather than direct `fs` calls so `verify.ts` can drive the whole
+ * handler against an in-memory store — including the case that decides whether
+ * this service is worth having: a second identical push must change nothing.
  */
+export interface Store {
+  readRaw(): Promise<string | null>;
+  writeRaw(text: string): Promise<void>;
+  /**
+   * The private current-book file.
+   *
+   * ⚠️ Read-only from here. The converter writes it, in the same run that
+   * writes the public index — both are derived from the same export, and having
+   * two writers for one derivation is how they end up disagreeing.
+   */
+  readCurrent(): Promise<string | null>;
+}
+
 /**
- * Turns the device's raw export into the published index.
+ * Turns the raw export into the index the page reads.
  *
- * ⚠️ Run HERE, on the receiving server, rather than in a GitHub Action.
+ * ⚠️ Runs HERE, not in GitHub Actions. The first design committed the raw file
+ * and let a workflow convert it, which required a `workflow`-scoped token to
+ * push and an `Actions`-scoped token on this server. Running the pipeline
+ * locally needs neither.
  *
- * The first design committed the raw file and let a workflow convert it. That
- * needed TWO things this deployment does not have to need:
- *   · a `workflow` scope on the token that pushes the file, and
- *   · an `Actions: write` permission on the server's PAT.
- * Running the converter locally drops both. The PAT needs exactly one
- * permission — Contents — and the repository needs no workflow file at all.
- *
- * ⚠️ It does NOT make the raw file redundant. The raw export is still committed
- * first and kept verbatim, so a converter bug is still fixed by re-running this
- * over data already on disk, with the Kindle nowhere in sight.
+ * ⚠️ `convert()` takes no argument: the caller has already written the raw
+ * export through the Store, and the converter reads it from the same working
+ * directory. The ordering is the contract.
  */
 export interface Converter {
-  /** Returns the index bytes, or an error string. Never throws. */
-  run(rawText: string): Promise<{ indexText: string } | { error: string }>;
+  /**
+   * Runs the pipeline. Returns `{ ok: true }` or an error string; never throws.
+   *
+   * ⚠️ It hands nothing back on purpose. The CLI reads the raw export and writes
+   * BOTH outputs itself — the public index and the private current file. Two
+   * writers for one derivation is how they end up disagreeing.
+   */
+  convert(): Promise<{ ok: true } | { error: string }>;
 }
 
-export interface GithubFileApi {
-  /** Returns the file's blob sha and decoded text, or null when absent. */
-  getFile(path: string): Promise<{ sha: string; text: string } | null>;
-  putFile(
-    path: string,
-    text: string,
-    sha: string | null,
-    message: string,
-  ): Promise<{ commitSha: string }>;
-}
+// ─────────────────────────────────────────────────────────────
+// Auth
+// ─────────────────────────────────────────────────────────────
 
-const GH = 'https://api.github.com';
-
-export function githubApi(env: Env, doFetch: typeof fetch = fetch): GithubFileApi {
-  const headers = {
-    Authorization: `Bearer ${env.githubToken}`,
-    Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'cevtuo-ingest',
-  };
-  const url = (path: string) =>
-    `${GH}/repos/${env.owner}/${env.repo}/contents/${path}`;
-
-  return {
-    async getFile(path) {
-      const res = await doFetch(`${url(path)}?ref=${encodeURIComponent(env.branch)}`, { headers });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`GitHub ${res.status}: ${await safeText(res)}`);
-      const body = (await res.json()) as { sha?: string; content?: string; encoding?: string };
-      if (!body.sha) return null;
-      // ⚠️ GitHub wraps base64 at 60 chars, so the payload arrives with newlines
-      // embedded. Decoding it without stripping them yields a corrupt string
-      // that compares unequal to everything — i.e. a commit on every push,
-      // which is the exact failure this whole comparison exists to prevent.
-      const text =
-        body.encoding === 'base64' && body.content
-          ? fromBase64(body.content.replace(/\n/g, ''))
-          : '';
-      return { sha: body.sha, text };
-    },
-
-    async putFile(path, text, sha, message) {
-      const res = await doFetch(url(path), {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          content: toBase64(text),
-          branch: env.branch,
-          ...(sha ? { sha } : {}),
-        }),
-      });
-      if (!res.ok) throw new Error(`GitHub ${res.status}: ${await safeText(res)}`);
-      const body = (await res.json()) as { commit?: { sha?: string } };
-      return { commitSha: body.commit?.sha ?? '' };
-    },
-  };
-}
-
-function toBase64(text: string): string {
-  return typeof Buffer !== 'undefined'
-    ? Buffer.from(text, 'utf8').toString('base64')
-    : btoa(unescape(encodeURIComponent(text)));
-}
-
-function fromBase64(b64: string): string {
-  return typeof Buffer !== 'undefined'
-    ? Buffer.from(b64, 'base64').toString('utf8')
-    : decodeURIComponent(escape(atob(b64)));
-}
-
-async function safeText(res: Response): Promise<string> {
-  try {
-    // scrubError, not a local regex — GitHub echoes the Authorization header
-    // back on some 401s, and pipeline-core's pattern list is the audited one.
-    return scrubError(new Error((await res.text()).slice(0, 200))).message;
-  } catch {
-    return '<unreadable>';
-  }
+function constantTimeEqual(a: string, b: string): boolean {
+  // Length check first so the XOR loop never runs against a different length.
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
 }
 
 export function isAuthorized(env: Env, authHeader: string | null): boolean {
   if (!authHeader?.startsWith('Bearer ')) return false;
-  const presented = authHeader.slice(7);
-  // Length check first so the XOR loop never runs against a different length.
-  if (presented.length !== env.deviceToken.length) return false;
-  let diff = 0;
-  for (let i = 0; i < presented.length; i++) {
-    diff |= presented.charCodeAt(i) ^ env.deviceToken.charCodeAt(i);
-  }
-  return diff === 0;
+  return constantTimeEqual(authHeader.slice(7), env.deviceToken);
 }
+
+/**
+ * Browser auth for the page and the admin surface.
+ *
+ * ⚠️ Basic, not Bearer. A page load cannot set an Authorization header, so a
+ * bearer-only design would need the token in a query string — which lands in
+ * browser history, in this server's logs, and in any proxy in between.
+ *
+ * ⚠️ Plain HTTP means this password crosses the network in the clear. Accepted
+ * here because the alternative is worse: the data was PUBLIC before this.
+ */
+export function isAdminAuthorized(env: Env, authHeader: string | null): boolean {
+  if (!env.adminPassword) return false; // unset ⇒ the whole surface is off
+  if (!authHeader?.startsWith('Basic ')) return false;
+  try {
+    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString('utf8');
+    return constantTimeEqual(decoded.slice(decoded.indexOf(':') + 1), env.adminPassword);
+  } catch {
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Ingest
+// ─────────────────────────────────────────────────────────────
 
 /**
  * A content signature that IGNORES `exportedAt`.
  *
- * This single line is what keeps "sync on every WiFi connect" from becoming
- * "commit on every WiFi connect". The device stamps `exportedAt` with the time
- * of the export, so two pushes describing the same reading session differ in
- * exactly that field — and in nothing else.
+ * ⚠️ This single line is what keeps "sync on every WiFi connect" from becoming
+ * "write on every WiFi connect". The device stamps `exportedAt` with the time of
+ * the export, so two pushes describing the same reading session differ in that
+ * one field and nothing else.
  */
 export function signatureOf(payload: PaperrRaw): string {
   return contentHash({ ...payload, exportedAt: null });
 }
 
 function reject(message: string, status = 400): { status: number; body: IngestResponse } {
-  return {
-    status,
-    body: IngestResponseSchema.parse({ ok: false, status: 'rejected', message }),
-  };
+  return { status, body: IngestResponseSchema.parse({ ok: false, status: 'rejected', message }) };
+}
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Validate, then commit only if the reading state actually moved.
+ * Validate, then write only if the reading state actually moved.
  *
  * Never throws: every failure path returns a status the device can ignore and
  * the operator can read.
  */
 export async function handleIngest(
   env: Env,
-  api: GithubFileApi,
+  store: Store,
   converter: Converter,
   authHeader: string | null,
   rawBody: string,
-  now = new Date(),
 ): Promise<{ status: number; body: IngestResponse }> {
-  if (!isAuthorized(env, authHeader)) {
-    return reject('凭据不对', 401);
-  }
+  if (!isAuthorized(env, authHeader)) return reject('凭据不对', 401);
 
-  // Measured in BYTES, not characters. A 1 MB cap that counts UTF-16 code units
+  // Measured in BYTES, not characters. A cap that counts UTF-16 code units
   // lets a CJK payload through at up to 3× the intended size.
   const bytes = new TextEncoder().encode(rawBody).length;
-  if (bytes > env.maxBytes) {
-    return reject(`导出过大: ${bytes} > ${env.maxBytes} 字节`, 413);
-  }
+  if (bytes > env.maxBytes) return reject(`导出过大: ${bytes} > ${env.maxBytes} 字节`, 413);
 
   let json: unknown;
   try {
@@ -269,138 +224,100 @@ export async function handleIngest(
   }
   const payload = parsed.data;
 
-  // Book count is a cheap sanity signal. A valid-looking empty export is the
-  // shape a half-broken plugin produces, and it must not reach the repository
-  // and blank the page.
-  if (payload.books.length === 0) {
-    return reject('导出里一本书都没有，拒绝覆盖已有数据');
-  }
+  // ⚠️ An export with no books is the shape a half-broken plugin produces. It
+  // must not be allowed to overwrite a good one with nothing.
+  if (payload.books.length === 0) return reject('导出里一本书都没有，拒绝覆盖已有数据');
 
-  let current: Awaited<ReturnType<GithubFileApi['getFile']>>;
-  try {
-    current = await api.getFile(env.path);
-  } catch (e) {
-    return { status: 502, body: IngestResponseSchema.parse({
-      ok: false, status: 'rejected', message: `读取仓库失败: ${scrubError(e).message}`,
-    }) };
-  }
-
-  if (current) {
-    const stored = PaperrRawSchema.safeParse(safeJsonParse(current.text));
+  const existing = await store.readRaw();
+  if (existing) {
+    const stored = PaperrRawSchema.safeParse(safeJsonParse(existing));
     if (stored.success && signatureOf(stored.data) === signatureOf(payload)) {
-      // The reading has not moved. Deliberately no commit — see the file header.
+      // The reading has not moved. Deliberately no write, no conversion.
       return {
         status: 200,
         body: IngestResponseSchema.parse({
           ok: true,
           status: 'unchanged',
-          message: '阅读数据没有变化，未提交',
+          message: '阅读数据没有变化',
           books: payload.books.length,
         }),
       };
     }
   }
 
-  // ⚠️ `exportedAt` is kept in the committed file (it is genuinely useful when
-  // diagnosing a device), even though it is excluded from the comparison above.
-  const text = `${JSON.stringify(payload, null, 2)}\n`;
-  let commitSha: string;
-  try {
-    ({ commitSha } = await api.putFile(
-      env.path,
-      text,
-      current?.sha ?? null,
-      `data(paperr): KOReader 导出 ${payload.exportedAt}（${payload.books.length} 本）`,
-    ));
-  } catch (e) {
-    return { status: 502, body: IngestResponseSchema.parse({
-      ok: false, status: 'rejected', message: `写入仓库失败: ${scrubError(e).message}`,
-    }) };
-  }
+  // ⚠️ `exportedAt` is kept in the stored file (genuinely useful when diagnosing
+  // a device) even though it is excluded from the comparison above.
+  await store.writeRaw(`${JSON.stringify(payload, null, 2)}\n`);
 
-  const published = await publishIndex(env, api, converter, text);
+  // ⚠️ Conversion runs AFTER the raw write and its failure is never fatal. The
+  // raw export is the half that cannot be reconstructed; the index is derivable
+  // from it at any time, by this function or by hand from the admin page.
+  const conv = await converter.convert();
+  if ('error' in conv) {
+    return {
+      status: 202,
+      body: IngestResponseSchema.parse({
+        ok: true,
+        status: 'committed',
+        message: `已保存原始导出；重新生成失败：${conv.error}`,
+        books: payload.books.length,
+      }),
+    };
+  }
 
   return {
     status: 202,
     body: IngestResponseSchema.parse({
       ok: true,
       status: 'committed',
-      // A converter failure is reported, not hidden — but the raw export is
-      // already safe, so this is a 202 with a caveat rather than a failure.
-      message: published.ok ? '已提交并重新生成' : `已提交原始导出；重新生成失败：${published.error}`,
+      message: '已保存并重新生成',
       books: payload.books.length,
-      commitSha: published.ok ? published.commitSha : commitSha,
     }),
   };
 }
 
+// ─────────────────────────────────────────────────────────────
+// The page's data endpoint
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Convert a raw export and commit the result.
+ * The one book being read right now, for the page.
  *
- * ⚠️ Called AFTER the raw export is committed, and its failure is never fatal.
- * The raw file is the irreplaceable half — it is the only copy of what the
- * device knows, and the device may not sync again for days. The index is
- * derivable from it at any time, by this function or by hand.
+ * ⚠️ This is the ONLY part of this brand behind a password. The history, the
+ * charts and the shelf are public and come from `data/paperr/index.json` on the
+ * site; what the reader has open this minute is the part nobody else needs.
+ *
+ * ⚠️ Returning 404 (rather than an empty object) when nothing has synced yet
+ * lets the page tell "locked" apart from "no data" — they need different words.
  */
-async function publishIndex(
+export async function handleCurrent(
   env: Env,
-  api: GithubFileApi,
-  converter: Converter,
-  rawText: string,
-): Promise<{ ok: true; commitSha: string } | { ok: false; error: string }> {
-  const conv = await converter.run(rawText);
-  if ('error' in conv) return { ok: false, error: conv.error };
-
-  try {
-    const existing = await api.getFile(INDEX_PATH);
-    const { commitSha } = await api.putFile(
-      INDEX_PATH,
-      conv.indexText,
-      existing?.sha ?? null,
-      'data(paperr): 重新生成 index.json',
-    );
-    return { ok: true, commitSha };
-  } catch (e) {
-    return { ok: false, error: scrubError(e).message };
-  }
-}
-
-function safeJsonParse(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
+  store: Store,
+  authHeader: string | null,
+): Promise<{ status: number; body: unknown }> {
+  if (!isAdminAuthorized(env, authHeader)) return { status: 401, body: { error: '需要口令' } };
+  const text = await store.readCurrent();
+  if (!text) return { status: 404, body: { error: '还没有数据，先让设备同步一次' } };
+  return { status: 200, body: safeJsonParse(text) };
 }
 
 // ─────────────────────────────────────────────────────────────
-// Admin — the human-facing side
+// Admin
 // ─────────────────────────────────────────────────────────────
 
-/**
- * ⚠️ "Sync" from this side CANNOT mean "fetch from the Kindle".
- *
- * The device has no inbound address, sleeps most of the day, and sits behind
- * whatever NAT it happens to be on. There is no pull. What this button can
- * honestly do is re-run the CONVERSION over the raw export already committed —
- * which is exactly what you want after fixing a converter bug, and needs nothing
- * from the device.
- */
 export interface AdminStatus {
   ok: boolean;
-  /** `exportedAt` from the stored raw export — when the device last produced it. */
   lastExportAt: string | null;
   books: number;
   readingDays: number;
   rawBytes: number;
-  rawPath: string;
   canRebuild: boolean;
   message?: string;
 }
 
 export async function handleAdminStatus(
   env: Env,
-  api: GithubFileApi,
+  store: Store,
 ): Promise<{ status: number; body: AdminStatus }> {
   const base: AdminStatus = {
     ok: true,
@@ -408,22 +325,17 @@ export async function handleAdminStatus(
     books: 0,
     readingDays: 0,
     rawBytes: 0,
-    rawPath: env.path,
-    // ⚠️ Always true now. Rebuilding used to mean dispatching a GitHub Action,
-    // which required an Actions-scoped token; it now runs the converter here,
-    // so the only permission this server holds is Contents.
     canRebuild: true,
   };
-  let current: Awaited<ReturnType<GithubFileApi['getFile']>>;
+  let raw: string | null;
   try {
-    current = await api.getFile(env.path);
+    raw = await store.readRaw();
   } catch (e) {
-    return { status: 502, body: { ...base, ok: false, message: scrubError(e).message } };
+    return { status: 500, body: { ...base, ok: false, message: scrubError(e).message } };
   }
-  if (!current) {
-    return { status: 200, body: { ...base, message: '仓库里还没有原始导出' } };
-  }
-  const parsed = PaperrRawSchema.safeParse(safeJsonParse(current.text));
+  if (!raw) return { status: 200, body: { ...base, message: '还没有数据，先让设备同步一次' } };
+
+  const parsed = PaperrRawSchema.safeParse(safeJsonParse(raw));
   if (!parsed.success) {
     return { status: 200, body: { ...base, ok: false, message: '已存的原始导出不符合 schema' } };
   }
@@ -434,61 +346,32 @@ export async function handleAdminStatus(
       lastExportAt: parsed.data.exportedAt,
       books: parsed.data.books.length,
       readingDays: parsed.data.daily.length,
-      rawBytes: current.text.length,
+      rawBytes: raw.length,
     },
   };
 }
 
+/**
+ * Re-run the conversion over the export already on disk.
+ *
+ * ⚠️ "Sync" from this side CANNOT mean "fetch from the Kindle". The device has
+ * no inbound address, sleeps most of the day, and sits behind whatever NAT it
+ * happens to be on. There is no pull. What this can honestly do is re-run the
+ * converter — which is exactly right after fixing a converter bug, and needs
+ * nothing from the device.
+ */
 export async function handleRebuild(
   env: Env,
-  api: GithubFileApi,
+  store: Store,
   converter: Converter,
-): Promise<{ status: number; body: { ok: boolean; message: string; commitSha?: string } }> {
-  let current: Awaited<ReturnType<GithubFileApi['getFile']>>;
-  try {
-    current = await api.getFile(env.path);
-  } catch (e) {
-    return { status: 502, body: { ok: false, message: scrubError(e).message } };
-  }
-  if (!current) {
-    return { status: 404, body: { ok: false, message: '仓库里还没有原始导出，先让设备同步一次' } };
-  }
+): Promise<{ status: number; body: { ok: boolean; message: string } }> {
+  const raw = await store.readRaw();
+  if (!raw) return { status: 404, body: { ok: false, message: '还没有数据，先让设备同步一次' } };
 
-  const published = await publishIndex(env, api, converter, current.text);
-  if (!published.ok) {
-    return { status: 502, body: { ok: false, message: `重新生成失败：${published.error}` } };
-  }
-  return { status: 202, body: { ok: true, message: '已重新生成', commitSha: published.commitSha } };
-}
+  const conv = await converter.convert();
+  if ('error' in conv) return { status: 500, body: { ok: false, message: `重新生成失败：${conv.error}` } };
 
-/**
- * Browser auth for the admin surface.
- *
- * ⚠️ Basic, not Bearer. A page load cannot set an Authorization header, so a
- * bearer-only design would need the token in a query string — which lands in
- * browser history, in the server's own logs, and in any proxy in between.
- *
- * ⚠️ Plain HTTP means this password crosses the network in the clear, same as
- * the device token. It is accepted here because the worst outcome is somebody
- * reading your book list — it grants no repository access and no ability to
- * change anything but the rebuild trigger.
- */
-export function isAdminAuthorized(env: Env, authHeader: string | null): boolean {
-  if (!env.adminPassword) return false; // unset ⇒ admin surface disabled
-  if (!authHeader?.startsWith('Basic ')) return false;
-  let decoded: string;
-  try {
-    decoded = fromBase64(authHeader.slice(6));
-  } catch {
-    return false;
-  }
-  const presented = decoded.slice(decoded.indexOf(':') + 1);
-  if (presented.length !== env.adminPassword.length) return false;
-  let diff = 0;
-  for (let i = 0; i < presented.length; i++) {
-    diff |= presented.charCodeAt(i) ^ env.adminPassword.charCodeAt(i);
-  }
-  return diff === 0;
+  return { status: 202, body: { ok: true, message: '已重新生成' } };
 }
 
 /** The whole admin page. Inline — no build step, no dependency, one file to read. */
@@ -511,9 +394,9 @@ export function renderAdminPage(): string {
  #msg{margin-top:1.2em;color:var(--mut);min-height:1.6em}
 </style>
 <h1>CE-PAPERR 同步</h1>
-<p class="sub">Kindle 的数据存在仓库里。这里只做两件事：看它有多新，以及重新生成一次页面。</p>
+<p class="sub">Kindle 的阅读数据存在这台服务器上。这里只做两件事：看它有多新，以及重新生成一次。</p>
 <table id="t"><tr><td>读取中…</td><td></td></tr></table>
-<button id="b" disabled>重新生成页面</button>
+<button id="b" disabled>重新生成</button>
 <div id="msg"></div>
 <script>
 const $ = (s) => document.querySelector(s);
@@ -532,11 +415,11 @@ async function load() {
   $('#b').disabled = !d.canRebuild;
 }
 $('#b').onclick = async () => {
-  $('#b').disabled = true; $('#msg').textContent = '触发中…';
+  $('#b').disabled = true; $('#msg').textContent = '生成中…';
   const r = await fetch('/api/rebuild', { method: 'POST' });
   const d = await r.json();
-  $('#msg').textContent = d.message + (r.ok ? '（已提交，站点稍后刷新）' : '');
-  setTimeout(() => { $('#b').disabled = false; load(); }, 4000);
+  $('#msg').textContent = d.message;
+  setTimeout(() => { $('#b').disabled = false; load(); }, 2000);
 };
 load().catch(() => { $('#msg').textContent = '读取失败'; });
 </script>

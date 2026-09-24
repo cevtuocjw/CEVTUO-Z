@@ -29,7 +29,7 @@ import type { PaperrBook, PaperrIndex, PaperrRaw, PaperrRawBook } from '@cevtuo/
 // package root — importing them from '@cevtuo/schema' fails at runtime with
 // "Export named 'DATA_PATHS' not found", not at typecheck time, because the root
 // export is a `export * from './index'` barrel that never re-exported paths.
-import { DATA_PATHS, SERIES_DAYS } from '@cevtuo/schema/paths';
+import { LOCAL_PATHS, SERIES_DAYS } from '@cevtuo/schema/paths';
 import { contentHash } from '@cevtuo/pipeline-core';
 
 /**
@@ -333,5 +333,10 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
   return { ...body, dataVersion: contentHash(body) };
 }
 
-/** Where the raw payload is read from. Re-exported so the CLI and tests agree. */
-export const RAW_PATH = DATA_PATHS.paperrRaw;
+/**
+ * Where the raw payload is read from. Re-exported so the CLI and the tests agree.
+ *
+ * ⚠️ `LOCAL_PATHS`, not `DATA_PATHS`: this file is not a published payload, it
+ * is the server's working copy of the device's export.
+ */
+export const RAW_PATH = LOCAL_PATHS.paperrRaw;

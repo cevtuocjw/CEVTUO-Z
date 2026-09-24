@@ -25,36 +25,23 @@ cd ~/Documents/CEVTUO-Z && git push
 
 ---
 
-## ② 建一个 GitHub PAT（接收端用来提交数据）
-
-GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate new：
-
-| 项 | 值 |
-|---|---|
-| Repository access | Only select repositories → **CEVTUO-Z** |
-| Permissions → Contents | **Read and write** |
-| Permissions → Actions | **不需要**（转换跑在服务器上，不走 Actions） |
-| Expiration | 你自己定 |
-
-⚠️ **只给这一个仓库、只给这一个权限。** 这个 token 会放在阿里云那台服务器上，
-一旦泄露，破坏范围就是这一个仓库。
-
----
-
-## ③ 部署到阿里云（一条命令）
+## ② 部署到阿里云（一条命令）
 
 阿里云控制台 → 那台 `CEVTUO431` → **远程连接 → Workbench 一键连接 → 立即登录**
 （不用密码，走控制台会话）。然后：
 
 ```bash
 sudo bash -c 'CEVTUO_DEVICE_TOKEN='"$(openssl rand -hex 24)"' \
-  CEVTUO_GITHUB_TOKEN=<第②步的 PAT> \
   CEVTUO_ADMIN_PASSWORD=<自己起一个密码> \
   bash <(curl -fsSL https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/main/services/ingest/deploy.sh)'
 ```
 
+⚠️ **没有 GitHub token 这一步了。** 数据不再提交到仓库 —— 服务器自己存、
+自己跑转换器。所以不需要 PAT，仓库里也不需要 workflow 文件。
+
 ⚠️ **把命令跑完后打印出来的那个 `CEVTUO_DEVICE_TOKEN` 抄下来** ——
 Kindle 的配置文件要用它。脚本也会在最后再打印一次。
+`CEVTUO_ADMIN_PASSWORD` 也记住：网页上解锁「在读」要用。
 
 脚本做的事：装 Bun → 克隆仓库 → 建专用非 root 用户 → 写 `.env`(600) →
 装 systemd 单元 → 启动 → 自检 `/health`。**可以重复跑**，会更新代码并重启。
@@ -63,7 +50,7 @@ Kindle 的配置文件要用它。脚本也会在最后再打印一次。
 
 ---
 
-## ④ 防火墙放行 8789
+## ③ 防火墙放行 8789
 
 控制台 → 服务器 → **防火墙** → 添加规则：
 
@@ -80,7 +67,7 @@ Kindle 的配置文件要用它。脚本也会在最后再打印一次。
 
 ---
 
-## ⑤ Kindle 上放配置文件
+## ④ Kindle 上放配置文件
 
 在 KOReader 设置目录里建 `cevtuo-capperr.conf.json`
 （和 `statistics.sqlite3` 同一个目录，即 `/mnt/us/koreader/settings/`）：
@@ -98,7 +85,7 @@ Kindle 的配置文件要用它。脚本也会在最后再打印一次。
 
 ---
 
-## ⑥ 验证
+## ⑤ 验证
 
 Kindle 连上 WiFi，等几秒。然后：
 

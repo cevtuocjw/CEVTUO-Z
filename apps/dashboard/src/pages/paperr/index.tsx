@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, Text, View } from '@tarojs/components';
+import { Input, ScrollView, Text, View } from '@tarojs/components';
 
 import { CompositionDonut, ReadingCurve, ReadingHeat, WeekdayBars } from '../../components/PaperrCharts';
 import { PageHero, PageStack, Section } from '../../components/Section';
@@ -7,10 +7,14 @@ import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
+  NEED_PASSWORD,
+  clearPaperrPassword,
+  fetchPaperrCurrent,
   fetchPaperrIndex,
   formatAgo,
   formatDayMonth,
   formatReadingTime,
+  setPaperrPassword,
   type PaperrBook,
   type PaperrIndex,
 } from '../../platform/data';
@@ -43,6 +47,12 @@ import './index.scss';
  * per-hour and no per-book-per-day data in the payload, so "reading by time of
  * day" is a chart this data CANNOT support. The four charts below are the ones
  * the daily series genuinely answers.
+ *
+ * ⚠️ The history, the charts and the shelf are PUBLIC — they come from
+ * `data/paperr/index.json` like every other brand. The ONE thing behind a
+ * password is the 在读 panel: which book is open right now. It is written to its
+ * own file by the pipeline, never committed, and fetched from the sync server.
+ * See `fetchPaperrCurrent` in platform/data.ts.
  *
  * ── What the titles mean ───────────────────────────────────────
  * Most rows are not books. The pipeline relabels machine-generated news digests
@@ -87,12 +97,23 @@ export default function Paperr() {
   const [index, setIndex] = useState<PaperrIndex | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
+  // ⚠️ The public payload and the private one load INDEPENDENTLY. The shelf must
+  // render whether or not the reader has entered a password — gating the whole
+  // page on a secret that only protects one panel would make a working
+  // deployment look broken to anyone who has not been given the password.
+  const [current, setCurrent] = useState<PaperrBook | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [pwDraft, setPwDraft] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let alive = true;
     fetchPaperrIndex()
       .then((d) => {
-        if (alive) setIndex(d);
+        if (alive) {
+          setIndex(d);
+          setError(null);
+        }
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -101,6 +122,27 @@ export default function Paperr() {
       alive = false;
     };
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    fetchPaperrCurrent()
+      .then((d) => {
+        if (!alive) return;
+        setCurrent(d.current);
+        setLocked(false);
+      })
+      .catch((e: unknown) => {
+        if (!alive) return;
+        const msg = e instanceof Error ? e.message : String(e);
+        // ⚠️ "No password" is not an error — it is the normal state on a new
+        // device, and it only affects one panel.
+        if (msg === NEED_PASSWORD) setLocked(true);
+        else setCurrent(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [reloadKey]);
 
   const books = index?.books ?? [];
 
@@ -165,7 +207,6 @@ export default function Paperr() {
     );
   }
 
-  const current = index.current;
   const finishNote = current?.estFinishedAt
     ? `预计 ${formatDayMonth(current.estFinishedAt)} 读完`
     : '还看不出读完时间';
@@ -189,8 +230,43 @@ export default function Paperr() {
           ]}
         />
 
-        <Section index={1} title="在读" lede={current ? undefined : '最近没有正在读的东西。'}>
-          {current && (
+        <Section
+          index={1}
+          title="在读"
+          lede={locked ? undefined : current ? undefined : '最近没有正在读的东西。'}
+        >
+          {locked ? (
+            // ⚠️ A small gate inside the panel, not a full-page one. The rest of
+            // the dashboard is public and has already rendered behind it.
+            <View className="pr-gate">
+              <Text className="pr-gate__why">「在读」不公开，需要口令才能看。</Text>
+              <Input
+                className="pr-gate__input"
+                password
+                value={pwDraft}
+                placeholder="同步口令"
+                onInput={(e) => setPwDraft(String((e.detail as { value?: string })?.value ?? ''))}
+                onConfirm={() => {
+                  if (!pwDraft) return;
+                  setPaperrPassword(pwDraft);
+                  setPwDraft('');
+                  setReloadKey((k) => k + 1);
+                }}
+              />
+              <View
+                className="pr-gate__btn"
+                onClick={() => {
+                  if (!pwDraft) return;
+                  setPaperrPassword(pwDraft);
+                  setPwDraft('');
+                  setReloadKey((k) => k + 1);
+                }}
+              >
+                <Text className="pr-gate__btn-t">解锁</Text>
+              </View>
+              <Text className="pr-gate__hint">只记在这台设备的浏览器里，不上传。</Text>
+            </View>
+          ) : current ? (
             <View className="pr-current">
               <Text className="pr-current__title">{current.title}</Text>
 
@@ -212,8 +288,12 @@ export default function Paperr() {
                 已读 {formatReadingTime(current.totalReadTime)} · {current.totalReadPages} 页 ·{' '}
                 {formatAgo(current.lastOpen)}
               </Text>
+
+              <View className="pr-gate__btn" onClick={() => { clearPaperrPassword(); setLocked(true); setCurrent(null); }}>
+                <Text className="pr-gate__btn-t">锁定</Text>
+              </View>
             </View>
-          )}
+          ) : null}
         </Section>
 
         <Section

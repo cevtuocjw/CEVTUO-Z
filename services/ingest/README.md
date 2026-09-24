@@ -50,14 +50,29 @@ sudo systemctl daemon-reload && sudo systemctl enable --now cevtuo-ingest
 curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 ```
 
-### PAT 只需要一个权限
+### ⚠️ 不需要任何 GitHub 凭据
 
-- **Contents: Read and write** —— 提交原始导出和生成的 index
+数据**不再提交到仓库**。原因：仓库是公开的，`data/` 会被提交到 main 并发布到
+Pages，两者都是人人可读 —— 所以阅读数据不能放那儿。
 
-⚠️ **不需要 Actions 权限，也不需要仓库里有 workflow 文件。**
-转换器跑在**这台服务器上**（`src/converter.ts` 调用 `pipeline/src/cli/sync-paperr.ts`），
-不是跑在 GitHub Actions 里。最初的设计是提交原始文件然后由工作流转换，那要求
-推送用的 token 有 `workflow` scope、服务器的 PAT 有 `Actions: write` —— 两个都不必要。
+现在这份数据存在**这台服务器上**，转换器也在这台机器上跑
+（`src/converter.ts` 调用 `pipeline/src/cli/sync-paperr.ts`）。
+
+⇒ 没有 PAT 要建、要授权、要轮换、要担心泄露，仓库里也不需要 workflow 文件。
+
+⚠️ **备份靠设备**：KOReader 在 `statistics.sqlite3` 里留着完整历史，插件每次都全量
+导出，所以服务器丢了，下次同步就恢复了。这是「唯一一份放在这儿」可以接受的原因。
+
+### 公开 / 私有的分界
+
+| 文件 | 谁看得见 | 内容 |
+|---|---|---|
+| `data/paperr/index.json` | **公开**（提交 + Pages） | 历史、图表、书架、总计 |
+| `data/paperr/current.json` | 需要口令 | **只有「正在读的那一本」** |
+| `data/paperr/raw-koreader.json` | 服务器本地 | 设备原样导出 |
+
+⚠️ 「正在读哪本」是唯一不公开的东西，而且它被拆成**单独一个文件** ——
+让这条界限在 `ls` 里看得见，而不是靠某段代码记得去剥掉一个字段。
 
 `CEVTUO_ADMIN_PASSWORD` **不设就没有管理页**（`/` 和 `/api/status` 一律 401）。
 这是故意的：忘记设变量应该导致「没有页面」，而不是「页面把书房公之于众」。

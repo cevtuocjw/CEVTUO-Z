@@ -621,3 +621,89 @@
   height: 10px;
   border-radius: 1.5px;
 }
+
+// ── Password gate ────────────────────────────────────────────
+//
+// Shown once per device, before anything else. Sized like a form, not like an
+// error card — the deployment is fine, the browser just has not been told the
+// password yet.
+.pr-gate {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 360px;
+}
+
+// ⚠️ `glass-sheet`, not `glass-inset`. The first version used the inset treatment
+// the chips use, and on this page's wallpaper the field did not read as a FIELD
+// at all — the placeholder sat directly on the photo, and in dark mode it was
+// dim grey on a pale patch of image. A form control has to look like something
+// you can type into before anything else about it matters.
+.pr-gate__input {
+  @include g.glass-sheet;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  padding: 0 t.$space-3;
+  border-radius: var(--radius-chip);
+  font-family: t.$font-family-sans;
+  font-size: t.$font-body;
+  color: var(--text-primary);
+}
+
+// ⚠️ H5 only — Taro renders a real `<input>` inside `<taro-input-core>`, and the
+// colour has to be set on THAT element. Without this the value typed in
+// inherits the browser default, which is black, on a dark field. The mini-program
+// build ignores the rule rather than choking on it.
+.pr-gate__input input {
+  width: 100%;
+  color: var(--text-primary);
+  font-family: t.$font-family-sans;
+  background-color: transparent;
+}
+
+.pr-gate__input input::placeholder {
+  color: var(--text-secondary);
+}
+
+.pr-gate__btn {
+  @include g.glass-sheet;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: t.$space-3;
+  height: 44px;
+  border-radius: var(--radius-chip);
+}
+
+.pr-gate__btn-t {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-body;
+  color: var(--text-primary);
+}
+
+// ⚠️ The halo. This text sits DIRECTLY on the wallpaper, like the section
+// headings do (see section.scss) — and `--text-tertiary` in dark mode is a dim
+// white that disappears over a pale patch of photo.
+.pr-gate__hint {
+  display: block;
+  margin-top: t.$space-3;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+// ⚠️ The line that explains why ONE panel is locked. Without it the gate looks
+// like the whole dashboard is gated and something went wrong above it.
+.pr-gate__why {
+  display: block;
+  margin-bottom: t.$space-3;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}

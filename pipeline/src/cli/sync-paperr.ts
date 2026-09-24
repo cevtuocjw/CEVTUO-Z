@@ -20,8 +20,9 @@
 import { join } from 'node:path';
 
 import { PaperrRawSchema, SyncMetaSchema, type PerSourceStatus } from '@cevtuo/schema';
-import { DATA_PATHS } from '@cevtuo/schema/paths';
+import { DATA_PATHS, LOCAL_PATHS } from '@cevtuo/schema/paths';
 import {
+  contentHash,
   isoInstant,
   nextScheduledAt,
   readJson,
@@ -35,8 +36,9 @@ import { buildPaperrIndex } from '../sources/paperr/normalize';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const DATA_DIR = repoPath('data');
-const RAW_PATH = repoPath(DATA_PATHS.paperrRaw);
+const RAW_PATH = repoPath(LOCAL_PATHS.paperrRaw);
 const INDEX_PATH = repoPath(DATA_PATHS.paperrIndex);
+const CURRENT_PATH = repoPath(LOCAL_PATHS.paperrCurrent);
 const META_PATH = join(DATA_DIR, 'sync-meta.json');
 
 /** Mirrors the coof cadence so `nextScheduledAt` means the same thing app-wide. */
@@ -59,12 +61,12 @@ const started = Date.now();
 const now = new Date();
 
 console.log(`\n═══ CE-PAPERR 同步 ═══`);
-console.log(`  来源: ${DATA_PATHS.paperrRaw}`);
+console.log(`  来源: ${LOCAL_PATHS.paperrRaw}`);
 console.log(`  模式: ${DRY_RUN ? 'DRY RUN (不写文件)' : '写入'}\n`);
 
 const raw = await readJson(RAW_PATH);
 if (raw == null) {
-  console.error(`✗ 找不到原始导出: ${DATA_PATHS.paperrRaw}`);
+  console.error(`✗ 找不到原始导出: ${LOCAL_PATHS.paperrRaw}`);
   console.error('  插件把文件写在 Kindle 的 /mnt/us/cevtuo-capperr.json，');
   console.error('  自动同步由 services/ingest 提交，手动路径是复制进仓库。');
   process.exit(1);
@@ -86,21 +88,49 @@ console.log(`  ▸ 进度可算 ${index.books.filter((b) => b.progressPct != nul
 console.log(`  ▸ 可预测读完时间 ${won} 本`);
 console.log(`  ▸ 当前在读: ${index.current ? index.current.title : '(无)'}`);
 
-// ── Write the index ──────────────────────────────────────────
+// ── Write: one public file, one private ──────────────────────
+//
+// ⚠️ The split is a PUBLISHING boundary, not a convenience. `index.json` is
+// committed to a public repository and served by a world-readable Pages site;
+// `current.json` never leaves the server. Which book the reader has open at this
+// moment is the one fact in this brand that is nobody else's business, and it is
+// kept in a separate FILE so the boundary is visible in `ls` — rather than being
+// a field some code path has to remember to strip.
+//
+// ⚠️ `dataVersion` is recomputed over the PUBLIC body. Reusing the one
+// `buildPaperrIndex` produced would hash a `current` that the published file
+// does not contain, so the same published bytes could carry two different
+// versions depending on what the reader happened to have open.
+const publicBody = {
+  schemaVersion: 1 as const,
+  current: null,
+  books: index.books,
+  totals: index.totals,
+  daily: index.daily,
+  lastIngestPath: index.lastIngestPath,
+};
+const publicIndex = { ...publicBody, dataVersion: contentHash(publicBody) };
+
 let written = 0;
 let unchanged = 0;
 
 if (DRY_RUN) {
   console.log('\n  · dry-run：不写文件');
 } else {
-  const outcome = await writeIfChanged(INDEX_PATH, stableJson(index));
+  const outcome = await writeIfChanged(INDEX_PATH, stableJson(publicIndex));
   if (outcome === 'written') {
     written++;
-    console.log(`\n  ✓ 写入 ${DATA_PATHS.paperrIndex} (dataVersion ${index.dataVersion})`);
+    console.log(`\n  ✓ 写入 ${DATA_PATHS.paperrIndex} (dataVersion ${publicIndex.dataVersion})`);
   } else {
     unchanged++;
     console.log(`\n  · ${DATA_PATHS.paperrIndex} 无变化，跳过`);
   }
+
+  // ⚠️ Written even when the public file did not change — the reader may have
+  // switched books without reading a page, and `current` is the whole point of
+  // this file. It is not committed, so it costs nothing to rewrite.
+  const cur = await writeIfChanged(CURRENT_PATH, stableJson({ current: index.current }));
+  if (cur === 'written') written++;
 }
 
 // ── sync-meta ────────────────────────────────────────────────

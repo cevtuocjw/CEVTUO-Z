@@ -188,16 +188,93 @@ export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
 /**
  * CE-CAPPERR — the Kindle's reading statistics.
  *
- * One file, and a small one (~40 KB for 36 books plus 90 days), because the
- * device already did the aggregation: the plugin runs the `GROUP BY` inside
- * SQLite and ships totals, not raw page events. Nothing to page here.
+ * ⚠️ Almost all of it is PUBLIC and comes from `data/paperr/index.json` like
+ * every other brand. The history, the charts and the shelf are things this
+ * dashboard exists to show.
  *
- * ⚠️ `data/paperr/raw-koreader.json` is deliberately NOT fetched. It is the
- * device's verbatim export, kept in the repository so a converter change can be
- * re-run without touching the Kindle — not something the page ever renders.
+ * ⚠️ The ONE exception is which book is open right now, and it is a separate
+ * fetch on purpose. The pipeline writes it to its own file which is never
+ * committed, and the page reads it from the sync server with a password. See
+ * `fetchPaperrCurrent`.
  */
 export const fetchPaperrIndex = (): Promise<PaperrIndex> =>
   getJson<PaperrIndex>(DATA_PATHS.paperrIndex);
+
+/** The slice of the index that is not public. */
+export interface PaperrCurrent {
+  current: PaperrBook | null;
+}
+
+/**
+ * The book being read right now.
+ *
+ * ⚠️ Overridable via `window.__CEVTUO_PAPERR_API__`, and that hook is not a
+ * convenience — it is the only way `scripts/verify-paperr-ui.mjs` can drive this
+ * against a local server. Without it the verification would have to talk to the
+ * real host, which means depending on a deployment that may not exist yet.
+ */
+function paperrApi(): string {
+  const override = (globalThis as { __CEVTUO_PAPERR_API__?: string }).__CEVTUO_PAPERR_API__;
+  return override || 'http://120.77.27.128:8789';
+}
+
+const PAPERR_PW_KEY = 'cevtuo.paperr.pw';
+
+/** Thrown when there is no password yet, or the one stored is wrong. */
+export const NEED_PASSWORD = 'NEED_PASSWORD';
+
+/** ⚠️ Guarded: the mini-program has no `localStorage`, and an exception here
+ *  would take the whole page down rather than just losing the convenience. */
+export function paperrPassword(): string | null {
+  try {
+    return window.localStorage.getItem(PAPERR_PW_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setPaperrPassword(pw: string): void {
+  try {
+    window.localStorage.setItem(PAPERR_PW_KEY, pw);
+  } catch {
+    // Not fatal — the page will simply ask again next time.
+  }
+}
+
+export function clearPaperrPassword(): void {
+  try {
+    window.localStorage.removeItem(PAPERR_PW_KEY);
+  } catch {
+    // ditto
+  }
+}
+
+/**
+ * ⚠️ `btoa` is latin1-only and throws on any code point above 0xFF. The
+ * username is a fixed ASCII placeholder, but the PASSWORD is whatever the reader
+ * typed — a Chinese or emoji password would throw here rather than fail an auth
+ * check, which reads as a broken page instead of a wrong password.
+ */
+function b64(s: string): string {
+  const bytes = new TextEncoder().encode(s);
+  let latin = '';
+  for (const b of bytes) latin += String.fromCharCode(b);
+  return window.btoa(latin);
+}
+
+export async function fetchPaperrCurrent(): Promise<PaperrCurrent> {
+  const pw = paperrPassword();
+  if (!pw) throw new Error(NEED_PASSWORD);
+
+  const res = await fetch(`${paperrApi()}/api/paperr/current.json`, {
+    headers: { Authorization: `Basic ${b64(`x:${pw}`)}` },
+  });
+  // A wrong password and no password are the same thing to the reader: ask again.
+  if (res.status === 401) throw new Error(NEED_PASSWORD);
+  if (res.status === 404) return { current: null };
+  if (!res.ok) throw new Error(`同步服务器返回 HTTP ${res.status}`);
+  return (await res.json()) as PaperrCurrent;
+}
 
 /** Reading time, at the precision a dashboard actually needs. */
 export function formatReadingTime(seconds: number): string {

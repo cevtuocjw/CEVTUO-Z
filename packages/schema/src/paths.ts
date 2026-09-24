@@ -47,18 +47,38 @@ export const DATA_PATHS = {
 
   paperrIndex: 'data/paperr/index.json',
   paperrHeatmap: 'data/paperr/heatmap.json',
+} as const;
+
+/**
+ * Files that live beside `data/` but are NOT payloads: never fetched over HTTP,
+ * and never served by Pages.
+ *
+ * ⚠️ They are not in `DATA_PATHS` on purpose. `DATA_PATHS` is the contract
+ * between the pipeline and the app — every entry is something the app fetches.
+ * Putting a local scratch file there would promise it to the app.
+ *
+ * ⚠️ And they are gitignored. The repository is public, so anything committed is
+ * published.
+ */
+export const LOCAL_PATHS = {
   /**
-   * The device's own export, exactly as the KOReader plugin wrote it.
+   * The device's own export, verbatim.
    *
-   * Kept verbatim in the repo rather than converted on the ingest server: the
-   * conversion is the pipeline's job, and storing the raw file means a converter
-   * bug is always fixable by re-running the pipeline over data already on disk,
-   * instead of asking the reader to sync again.
-   *
-   * ⚠️ This is the one file in `data/paperr/` written by a machine that is not
-   * this pipeline — see NOTE below on why it is excluded from `dataVersion`.
+   * Kept so a converter bug is fixed by re-running the pipeline over data
+   * already on disk, instead of asking the reader to go find WiFi again.
    */
   paperrRaw: 'data/paperr/raw-koreader.json',
+  /**
+   * The one book being read right now — the ONLY part of this brand that is not
+   * public.
+   *
+   * ⚠️ Split into its own file rather than a flag inside `index.json`, because
+   * the split is a PUBLISHING boundary: `index.json` is committed and served by
+   * Pages, this file never leaves the server. Two files make that boundary
+   * something you can see in `ls`, not something enforced by a code path
+   * remembering to strip a field.
+   */
+  paperrCurrent: 'data/paperr/current.json',
 } as const;
 
 /** Authenticated payloads — served by the Worker, never by Pages. */

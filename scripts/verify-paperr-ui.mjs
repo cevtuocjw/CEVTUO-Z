@@ -22,10 +22,69 @@
  */
 
 import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:8096/z';
 const OUT = process.argv[3] ?? '/tmp/paperr-ui';
+
+/**
+ * ⚠️ Two sources, and the split is the point.
+ *
+ *   · The history, charts and shelf are PUBLIC — they come from
+ *     `data/paperr/index.json` on the static server, like every other brand.
+ *   · The 在读 panel is private — it comes from a REAL ingest server, booted
+ *     here, seeded through the REAL device endpoint.
+ *
+ * So this is an end-to-end test of the whole stack (browser → CORS → Basic auth
+ * → the server's store → the converter's output) AND of the boundary between the
+ * two halves. The assertion that matters most is that the shelf renders while
+ * the panel is locked.
+ */
+const API_PORT = 8791;
+const API = `http://127.0.0.1:${API_PORT}`;
+const PW = 'verify-pw';
+const DEVICE_TOKEN = 'verify-device-token-0123456789';
+
+async function bootServer() {
+  const repo = new URL('..', import.meta.url).pathname;
+  const proc = Bun.spawn(['bun', 'run', 'services/ingest/src/server.ts'], {
+    cwd: repo,
+    env: {
+      ...process.env,
+      CEVTUO_DEVICE_TOKEN: DEVICE_TOKEN,
+      CEVTUO_ADMIN_PASSWORD: PW,
+      CEVTUO_PORT: String(API_PORT),
+      CEVTUO_BIND: '127.0.0.1',
+      CEVTUO_ALLOWED_ORIGINS: 'http://127.0.0.1:8096',
+    },
+    stdout: 'ignore',
+    stderr: 'pipe',
+  });
+
+  for (let i = 0; i < 40; i += 1) {
+    try {
+      const r = await fetch(`${API}/health`);
+      if (r.ok) break;
+    } catch {
+      /* not up yet */
+    }
+    await Bun.sleep(250);
+  }
+
+  // ⚠️ Seeded through the REAL device endpoint, not by writing files. If the
+  // endpoint is broken the page verification fails, which is the correct
+  // coupling — the page is useless without it.
+  const raw = await readFile(`${repo}/data/paperr/raw-koreader.json`, 'utf8');
+  const res = await fetch(`${API}/api/paperr`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${DEVICE_TOKEN}`, 'Content-Type': 'application/json' },
+    body: raw,
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(`seeding failed: ${res.status} ${JSON.stringify(body)}`);
+  console.log(`  (server seeded: ${body.status} ${body.message})`);
+  return proc;
+}
 
 const results = [];
 const check = (name, ok, detail = '') => {
@@ -43,6 +102,19 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
     isMobile: mobile,
     deviceScaleFactor: 1,
   });
+  // Point the page at the local server, and hand it the password the way a
+  // reader who had already entered it once would have it.
+  await ctx.addInitScript(
+    ([api, pw]) => {
+      window.__CEVTUO_PAPERR_API__ = api;
+      try {
+        window.localStorage.setItem('cevtuo.paperr.pw', pw);
+      } catch {
+        /* ignore */
+      }
+    },
+    [API, PW],
+  );
   const page = await ctx.newPage();
 
   const errors = [];
@@ -210,12 +282,79 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
 }
 
 await mkdir(OUT, { recursive: true });
+const server = await bootServer();
 const browser = await chromium.launch();
 try {
   await run(browser, { scheme: 'dark', viewport: { width: 390, height: 844 }, mobile: true }, 'phone');
   await run(browser, { scheme: 'light', viewport: { width: 900, height: 1000 }, mobile: false }, 'wide');
+
+  // ── The password gate ──────────────────────────────────────
+  //
+  // ⚠️ Worth its own pass. This is the first thing a reader sees on a new
+  // device, and the failure mode is nasty: if the gate never appears, the page
+  // looks like a broken deployment rather than one that needs a password.
+  {
+    console.log('\n── the password gate (fresh device) ──');
+    const ctx = await browser.newContext({
+      colorScheme: 'dark',
+      viewport: { width: 390, height: 844 },
+      hasTouch: true,
+      isMobile: true,
+    });
+    await ctx.addInitScript((api) => {
+      window.__CEVTUO_PAPERR_API__ = api;
+      try {
+        window.localStorage.removeItem('cevtuo.paperr.pw');
+      } catch {
+        /* ignore */
+      }
+    }, API);
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.pr-gate', { timeout: 20000 });
+
+    check('locked: the gate appears in the 在读 panel', await page.locator('.pr-gate').isVisible());
+    check('locked: the gate says WHY', (await page.locator('.pr-gate__why').innerText()).includes('不公开'));
+
+    // ⚠️⚠️ THE assertion. Locking one panel must not lock the dashboard. If the
+    // shelf ever stops rendering without a password, a working deployment looks
+    // broken to anyone who has not been handed the password.
+    const shelfWhileLocked = await page.locator('.pr-row').count();
+    check('locked: the public shelf STILL renders', shelfWhileLocked === 36, `rows=${shelfWhileLocked}`);
+    check('locked: the charts still render', (await page.locator('.pc-heat__cell').count()) === 84);
+    check('locked: no current book is shown', (await page.locator('.pr-current').count()) === 0);
+
+    // ⚠️ The REAL inner `<input>`. Taro renders `<Input>` as a
+    // `<taro-input-core>` custom element around it, and `.pr-gate__input` is the
+    // OUTER one — Playwright refuses to `fill` it, because it is not an input.
+    await page.locator('.pr-gate input').first().fill(PW);
+    await page.locator('.pr-gate__btn').first().click();
+    await page.waitForSelector('.pr-current', { timeout: 20000 });
+    check('unlocked: the current book appears', (await page.locator('.pr-current').count()) === 1);
+    check('unlocked: the gate is gone', (await page.locator('.pr-gate').count()) === 0);
+    check('unlocked: the public shelf is unaffected', (await page.locator('.pr-row').count()) === 36);
+
+    // A wrong password must come back to the gate, not silently show stale data.
+    const ctx2 = await browser.newContext({ colorScheme: 'dark', viewport: { width: 390, height: 844 } });
+    await ctx2.addInitScript((api) => {
+      window.__CEVTUO_PAPERR_API__ = api;
+      try {
+        window.localStorage.setItem('cevtuo.paperr.pw', 'definitely-wrong');
+      } catch {
+        /* ignore */
+      }
+    }, API);
+    const page2 = await ctx2.newPage();
+    await page2.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
+    await page2.waitForSelector('.pr-gate', { timeout: 20000 });
+    check('a wrong password falls back to the gate', true);
+    check('a wrong password still leaves the shelf readable', (await page2.locator('.pr-row').count()) === 36);
+    await ctx.close();
+    await ctx2.close();
+  }
 } finally {
   await browser.close();
+  server.kill();
 }
 
 const failed = results.filter((r) => !r.ok);

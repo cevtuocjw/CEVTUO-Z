@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # CEVTUO CAPPERR ingest — one-shot deploy for the Aliyun lightweight server.
 #
-#   CEVTUO_DEVICE_TOKEN=... CEVTUO_GITHUB_TOKEN=... CEVTUO_ADMIN_PASSWORD=... \
-#     bash deploy.sh
+#   CEVTUO_DEVICE_TOKEN=... CEVTUO_ADMIN_PASSWORD=... bash deploy.sh
 #
 # Idempotent: re-running it updates the code and restarts the service. Secrets
 # are read from the environment, never from argv — argv shows up in `ps` and in
@@ -23,7 +22,6 @@ say() { echo "▸ $*"; }
 [ "$(id -u)" = "0" ] || die "需要 root：sudo bash deploy.sh"
 
 : "${CEVTUO_DEVICE_TOKEN:?请设置 CEVTUO_DEVICE_TOKEN（Kindle 上要抄这个）}"
-: "${CEVTUO_GITHUB_TOKEN:?请设置 CEVTUO_GITHUB_TOKEN（fine-grained PAT，只要 Contents: Read and write）}"
 : "${CEVTUO_ADMIN_PASSWORD:?请设置 CEVTUO_ADMIN_PASSWORD（管理页密码）}"
 
 # ── 1. Bun ──────────────────────────────────────────────────
@@ -61,7 +59,6 @@ say "写入 $APP_DIR/.env"
 umask 077
 cat > "$APP_DIR/.env" <<ENV
 CEVTUO_DEVICE_TOKEN=$CEVTUO_DEVICE_TOKEN
-CEVTUO_GITHUB_TOKEN=$CEVTUO_GITHUB_TOKEN
 CEVTUO_ADMIN_PASSWORD=$CEVTUO_ADMIN_PASSWORD
 CEVTUO_PORT=$PORT
 ENV

@@ -541,21 +541,7 @@
       "totalReadTime": 160
     }
   ],
-  "current": {
-    "authors": "EpubPressX",
-    "estFinishedAt": "2026-09-27",
-    "highlights": 0,
-    "id": "41",
-    "lastOpen": "2026-09-24T09:14+08:00",
-    "notes": 0,
-    "originalTitle": "EpubPressX 2026-9-15",
-    "pages": 188,
-    "progressPct": 53.72340425531915,
-    "series": null,
-    "title": "news28 (EpubPressX 2026-9-15)",
-    "totalReadPages": 60,
-    "totalReadTime": 2081
-  },
+  "current": null,
   "daily": [
     {
       "d": "2026-09-03",
@@ -628,7 +614,7 @@
       "s": 120
     }
   ],
-  "dataVersion": "8fc5b092f803",
+  "dataVersion": "1f4097dda403",
   "lastIngestPath": "koreader-push",
   "schemaVersion": 1,
   "totals": {

@@ -26,6 +26,18 @@ service-account*.json
 # GitHub Pages is world-readable even when this repo is private.
 # Chealth data lives in Cloudflare KV behind a bearer token instead.
 data/chealth/
+
+# ── reading data is PRIVATE — same rule as chealth above ──────
+# The repo is public. `data/` is committed to `main` by `sync.yml` and published
+# to the Pages site, both of which are world-readable — so a reading history
+# cannot live there. It is held by the ingest server and fetched with a bearer
+# token from /api/paperr/index.json instead.
+#
+# ⚠️ Gitignored, NOT deleted: the server's checkout is its working area, and
+# `git reset --hard` (run on every deploy) leaves untracked files alone. That is
+# what makes the data survive a redeploy.
+data/paperr/raw-koreader.json
+data/paperr/current.json
 services/sync-trigger/.cache/
 
 # ── kindle artefacts ──────────────────────────────────────────
