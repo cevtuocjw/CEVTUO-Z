@@ -285,3 +285,339 @@
   letter-spacing: t.$track-label;
   color: var(--text-tertiary);
 }
+
+// ── Shared chart furniture ───────────────────────────────────
+.pc-gap {
+  display: block;
+  height: t.$space-6;
+  width: 100%;
+}
+
+// ⚠️ Reserved height, not `min-height`. These readouts swap between one and
+// three lines of text as you scrub, and without a fixed box the whole panel
+// below them jumps on every touch — which reads as the chart itself moving.
+.pc-readout {
+  display: block;
+  height: 20px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-primary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pc-note {
+  display: block;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
+
+.pr-current__foot {
+  display: block;
+  margin-top: t.$space-4;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+// ── Donut ────────────────────────────────────────────────────
+.pc-donut {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  gap: t.$space-4;
+}
+
+.pc-donut__plot {
+  position: relative;
+  // ⚠️ 116px, down from 140. At 140 the legend beside it had ~55px for a
+  // category name and rendered "新闻摘…" — the label is the only part of the
+  // legend that carries meaning, so the ring yields the space.
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
+}
+
+.pc-donut__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  // ⚠️ Rotated so the first segment starts at 12 o'clock. The dash technique
+  // begins at 3 o'clock, and a donut whose first slice starts at the side
+  // reads as a chart that failed to line up.
+  transform: rotate(-90deg);
+}
+
+.pc-donut__ring {
+  fill: none;
+  stroke: var(--divider);
+  stroke-width: 12;
+}
+
+.pc-donut__seg {
+  fill: none;
+  stroke-width: 12;
+  cursor: pointer;
+  transition: stroke-width 0.18s ease, opacity 0.18s ease;
+}
+
+.pc-donut__seg--on {
+  stroke-width: 18;
+}
+
+.pc-donut__center {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  // ⚠️ The centre must not eat the segments' clicks — it sits on top of them.
+  pointer-events: none;
+}
+
+.pc-donut__value {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-heading;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+}
+
+.pc-donut__unit {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
+
+// ── Legend ───────────────────────────────────────────────────
+.pc-legend {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: t.$space-2;
+}
+
+.pc-legend__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  padding: t.$space-1 t.$space-2;
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+}
+
+.pc-legend__row--on {
+  background-color: var(--accent-soft);
+}
+
+.pc-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: t.$radius-pill;
+  flex-shrink: 0;
+}
+
+.pc-legend__label {
+  flex: 1;
+  // Four CJK glyphs at caption size — the longest category name is 4 characters.
+  min-width: 52px;
+  margin-left: t.$space-2;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pc-legend__value {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-primary);
+  // ⚠️ `flex-shrink: 0` + a floor on the label's width. Without them a long
+  // value ("44559 分钟") claimed the row and the CATEGORY NAME was squeezed to
+  // zero width — the legend showed three dots and three numbers and no way to
+  // tell which was which.
+  flex-shrink: 0;
+  margin-left: t.$space-2;
+}
+
+// ── Smooth curve ─────────────────────────────────────────────
+.pc-curve {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-curve__hit {
+  position: relative;
+  width: 100%;
+  height: 96px;
+  // ⚠️ `touch-action: none` — without it the browser claims a horizontal drag
+  // as a page-scroll gesture and the scrub dies after the first few pixels.
+  touch-action: none;
+}
+
+.pc-curve__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pc-curve__area {
+  fill: var(--accent-soft);
+  stroke: none;
+}
+
+.pc-curve__line {
+  fill: none;
+  stroke: var(--chart-1);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  // ⚠️ `vector-effect` keeps the line 1.6px after the viewBox is stretched
+  // non-uniformly. Without it `preserveAspectRatio="none"` scales the stroke
+  // with the box and a wide screen gets a visibly thicker curve than a phone.
+  vector-effect: non-scaling-stroke;
+}
+
+.pc-curve__guide {
+  stroke: var(--text-tertiary);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.pc-curve__dot {
+  fill: var(--chart-1);
+  stroke: none;
+}
+
+// ── Bars ─────────────────────────────────────────────────────
+.pc-bars {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-bars__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+  height: 88px;
+  gap: t.$space-1;
+}
+
+.pc-bars__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  // ⚠️ `min-width: 0`, or the flex children refuse to shrink below their
+  // content and seven columns overflow the panel.
+  min-width: 0;
+  height: 100%;
+  cursor: pointer;
+}
+
+.pc-bars__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.pc-bars__bar {
+  width: 100%;
+  background-color: var(--chart-4);
+  border-radius: t.$radius-tile;
+  transition: background-color 0.18s ease;
+}
+
+.pc-bars__col--on .pc-bars__bar {
+  background-color: var(--chart-1);
+}
+
+.pc-bars__label {
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-secondary);
+}
+
+.pc-bars__value {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+.pc-bars__col--on .pc-bars__value {
+  color: var(--text-primary);
+}
+
+// ── Heatmap ──────────────────────────────────────────────────
+.pc-heat {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-heat__scroll {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-heat__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+// Five levels on the monochrome ink scale. Colour is the wallpaper's job; a
+// categorical green→red ramp would be the third colour source on one screen.
+.pc-heat__cell {
+  cursor: pointer;
+}
+
+.pc-heat__cell--l0 { fill: var(--divider); }
+.pc-heat__cell--l1 { fill: var(--chart-7); }
+.pc-heat__cell--l2 { fill: var(--chart-5); }
+.pc-heat__cell--l3 { fill: var(--chart-3); }
+.pc-heat__cell--l4 { fill: var(--chart-1); }
+
+.pc-heat__cell--on {
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.pc-heat__scale {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: t.$space-2;
+  gap: t.$space-1;
+}
+
+.pc-heat__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 1.5px;
+}

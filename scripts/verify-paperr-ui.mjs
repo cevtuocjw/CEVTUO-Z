@@ -66,7 +66,7 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   // a placeholder that merely looks like a duration still fails.
   check('overview shows the computed reading total', heroText.includes('15.7h'), heroText.replace(/\n/g, ' ').slice(0, 90));
   check('overview is not the old placeholder', !heroText.includes('36h'), 'placeholder leaked');
-  check('overview counts 36 books', heroText.includes('共 36 本'), heroText.replace(/\n/g, ' ').slice(0, 90));
+  check('overview counts 36 rows', heroText.includes('共 36 条'), heroText.replace(/\n/g, ' ').slice(0, 90));
   check('overview shows the page total', heroText.includes('2471 页'), heroText.replace(/\n/g, ' ').slice(0, 90));
 
   // ── Currently-reading panel ───────────────────────────────
@@ -95,33 +95,84 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
         titles.every((t) => !/^(EpubPressX|.* · \d{4}-\d{2}-\d{2})$/.test(t.trim())),
         titles.find((t) => /^EpubPressX/.test(t)) ?? '');
 
-  // ── Daily strip ───────────────────────────────────────────
-  const bars = await page.locator('.pr-days__bar').count();
-  check('daily strip rendered', bars === 14, `bars=${bars}`);
-
-  const heights = await page.locator('.pr-days__bar').evaluateAll((els) =>
-    els.map((e) => e.style.height),
-  );
-  const nums = heights.map((h) => parseFloat(h)).filter((n) => Number.isFinite(n));
-  check('every bar has a height', nums.length === bars, `${nums.length}/${bars}`);
-  check('tallest bar is 100% (scaled to its own window)', Math.max(...nums) === 100, `max=${Math.max(...nums)}`);
-  check('no bar is zero-height', Math.min(...nums) > 0, `min=${Math.min(...nums)}`);
-
   // ── Relabelling is visible, and the original survives ─────
-  const newsRow = page.locator('.pr-row', { has: page.locator('.pr-row__title', { hasText: /^news\d+$/ }) }).first();
-  check('news rows exist', (await newsRow.count()) === 1);
+  //
+  // ⚠️ Every relabelled row must carry its original IN THE TITLE — `newsN (原名)`
+  // and `unknownN (原名)`. Checking the format rather than a sample is the point:
+  // three dozen rows all reading `news7` would be an unreadable list, and a
+  // spot-check of one row would not notice.
+  const relabelled = titles.filter((t) => /^(news|unknown)\d+/.test(t));
+  check('relabelled rows exist', relabelled.length > 0, `${relabelled.length}`);
+  const malformed = relabelled.filter((t) => !/^(news|unknown)\d+ \(.+\)$/.test(t));
+  check('every relabelled row carries its original in parentheses', malformed.length === 0, malformed.slice(0, 2).join(' | '));
+  check('headline articles were relabelled too',
+        titles.some((t) => /^news\d+ \(Samsung brings/.test(t)),
+        titles.find((t) => /Samsung/.test(t)) ?? 'not found');
+  check('the dictionary kept its own title',
+        titles.some((t) => /现代汉英词典/.test(t)), 'dictionary was relabelled');
 
-  const newsText = await newsRow.innerText();
-  check('news row shows the device title underneath', /EpubPressX|·/.test(newsText), newsText.replace(/\n/g, ' ').slice(0, 90));
+  // ── The four charts rendered ──────────────────────────────
+  check('donut has one segment per category',
+        (await page.locator('.pc-donut__seg').count()) === 3,
+        `segments=${await page.locator('.pc-donut__seg').count()}`);
 
-  const unknownRow = page.locator('.pr-row', { has: page.locator('.pr-row__title', { hasText: /^unknown\d+ \(/ }) }).first();
-  check('unknown rows exist', (await unknownRow.count()) === 1);
-  const unknownBlock = await unknownRow.innerText();
-  const unknownTitle = await unknownRow.locator('.pr-row__title').innerText();
-  // ⚠️ The original is already inside the parentheses — a subtitle here would
-  // print the same string twice.
-  const unkLines = unknownBlock.split('\n').filter(Boolean);
-  check('unknown row does NOT duplicate the original title', unkLines.length < 3 || unkLines[1] !== unknownTitle, unkLines.slice(0, 3).join(' / '));
+  const donutCenterBefore = await page.locator('.pc-donut__value').innerText();
+  await page.locator('.pc-legend__row').first().click();
+  await page.waitForTimeout(150);
+  const donutCenterAfter = await page.locator('.pc-donut__value').innerText();
+  const donutUnitAfter = await page.locator('.pc-donut__unit').innerText();
+  // ⚠️ Real feedback, not just a hover style: the centre must switch from the
+  // grand total to the picked slice's share.
+  check('tapping a donut legend changes the centre readout',
+        donutCenterAfter !== donutCenterBefore && /%$/.test(donutCenterAfter),
+        `${donutCenterBefore} → ${donutCenterAfter} (${donutUnitAfter})`);
+  check('tapping it again clears the selection',
+        await (async () => {
+          await page.locator('.pc-legend__row').first().click();
+          await page.waitForTimeout(150);
+          return (await page.locator('.pc-donut__value').innerText()) === donutCenterBefore;
+        })());
+
+  const curveD = await page.locator('.pc-curve__line').getAttribute('d');
+  check('curve drew a path', !!curveD && curveD.startsWith('M ') && curveD.includes('C '), `${curveD?.slice(0, 24)}…`);
+  // ⚠️ Whatever the device exported — 14 days on today's export, 30 once there
+  // is enough history. Asserting a fixed 30 would fail every run until then and
+  // teach everyone to ignore this script.
+  const expectedPts = await page.evaluate(() => document.querySelectorAll('.pc-heat__cell').length > 0
+    ? Number(document.querySelector('.pc-curve .pc-readout')?.textContent?.match(/^(\d+) 天/)?.[1] ?? 0)
+    : 0);
+  check('curve has one segment per day of data',
+        (curveD?.split(' C ').length ?? 0) === expectedPts && expectedPts > 1,
+        `${curveD?.split(' C ').length} segments vs ${expectedPts} days`);
+
+  check('weekday bars rendered', (await page.locator('.pc-bars__col').count()) === 7);
+  const barHeights = await page.locator('.pc-bars__bar').evaluateAll((els) => els.map((e) => e.style.height));
+  check('every weekday bar has a height', barHeights.every((h) => parseFloat(h) >= 2), barHeights.join(','));
+  check('tallest weekday bar is 100%', barHeights.some((h) => parseFloat(h) === 100), barHeights.join(','));
+
+  const barsReadoutBefore = await page.locator('.pc-bars .pc-readout').innerText();
+  await page.locator('.pc-bars__col').nth(2).click();
+  await page.waitForTimeout(150);
+  const barsReadoutAfter = await page.locator('.pc-bars .pc-readout').innerText();
+  check('tapping a weekday bar changes the readout', barsReadoutAfter !== barsReadoutBefore,
+        `${barsReadoutBefore} → ${barsReadoutAfter}`);
+
+  check('heatmap rendered 12 weeks', (await page.locator('.pc-heat__cell').count()) === 84,
+        `cells=${await page.locator('.pc-heat__cell').count()}`);
+  const heatReadoutBefore = await page.locator('.pc-heat .pc-readout').innerText();
+  await page.locator('.pc-heat__cell').nth(83).click();
+  await page.waitForTimeout(150);
+  const heatReadoutAfter = await page.locator('.pc-heat .pc-readout').innerText();
+  check('tapping a heatmap cell changes the readout', heatReadoutAfter !== heatReadoutBefore,
+        `${heatReadoutBefore} → ${heatReadoutAfter}`);
+
+  // ⚠️ Sections are 100vh panels in a scroll container. A chart that overflows
+  // its panel cannot be scrolled to — this is the bug that shipped past 54
+  // passing assertions once already.
+  const overflow = await page.evaluate(() => [...document.querySelectorAll('.section')]
+    .map((s) => ({ h: Math.round(s.getBoundingClientRect().height), sh: s.scrollHeight }))
+    .filter((s) => s.sh > s.h + 2));
+  check('no section overflows its panel', overflow.length === 0, JSON.stringify(overflow));
 
   // ── Filters actually filter (real clicks) ─────────────────
   const chip = (label) => page.locator('.pr-chip', { hasText: label });
@@ -130,7 +181,7 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   await page.waitForTimeout(150);
   const booksOnly = await page.locator('.pr-row').count();
   check('「只看书」narrows the list', booksOnly > 0 && booksOnly < rowCount, `${rowCount} → ${booksOnly}`);
-  check('「只看书」hides every relabelled row', booksOnly === 5, `books=${booksOnly}`);
+  check('「只看书」hides every relabelled row', booksOnly === 1, `books=${booksOnly}`);
 
   await chip('读完').click();
   await page.waitForTimeout(150);

@@ -93,6 +93,34 @@ const NEWS_RULES: ReadonlyArray<{ id: string; re: RegExp }> = [
 ];
 
 /**
+ * Authors that are not authors.
+ *
+ * ⚠️ This set is what separates a FEED from a BOOK, and it is more reliable than
+ * the title: the four bare headlines in the real export ("Samsung brings
+ * seamless updates…", "Beef production in Brazil…") carry the same `N/A` or
+ * `EpubPressX` author as the digests they were opened from.
+ */
+const NOT_AN_AUTHOR = new Set([
+  '', 'n/a', 'na', 'none', 'unknown', 'epubpressx', 'rss daily digest',
+]);
+
+export function hasRealAuthor(authors: string | undefined): boolean {
+  return !NOT_AN_AUTHOR.has((authors ?? '').trim().toLowerCase());
+}
+
+/**
+ * A headline rather than a title.
+ *
+ * ⚠️ A length test, which is a heuristic and is treated as one: 40 characters
+ * is comfortably above every real title in the export (the longest is the
+ * 17-character dictionary) and comfortably below every headline (51–115). The
+ * author check rides along so that a genuine book with a long title and a real
+ * author is NOT swept up — and if one ever is, the original stays in the
+ * parentheses and the raw export is untouched, so it is a one-line fix.
+ */
+const HEADLINE_MIN_LENGTH = 40;
+
+/**
  * Entries with no usable title. Renamed to `unknownN (原名)`.
  *
  * ⚠️ `eBook` lands here and it is NOT the same species as the hidden ones: those
@@ -112,10 +140,15 @@ function matchRule(rules: ReadonlyArray<{ id: string; re: RegExp }>, title: stri
 }
 
 export const hiddenRule = (title: string): string | null => matchRule(HIDDEN_RULES, title);
-export const newsRule = (title: string): string | null => matchRule(NEWS_RULES, title);
+export const newsRule = (b: { title: string; authors?: string }): string | null => {
+  const byTitle = matchRule(NEWS_RULES, b.title);
+  if (byTitle) return byTitle;
+  if (b.title.trim().length >= HEADLINE_MIN_LENGTH && !hasRealAuthor(b.authors)) return 'headline';
+  return null;
+};
 export const unknownRule = (title: string): string | null => matchRule(UNKNOWN_RULES, title);
 
-export const newsLabel = (n: number): string => `news${n}`;
+export const newsLabel = (n: number, original: string): string => `news${n} (${original})`;
 /** How an untitled entry is displayed. The original is kept inside the parens. */
 export const unknownLabel = (n: number, original: string): string => `unknown${n} (${original})`;
 
@@ -244,18 +277,18 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
 
   const renamed = new Map<string, string>();
   const rename = (
-    rule: (t: string) => string | null,
+    rule: (b: PaperrBook) => string | null,
     label: (n: number, b: PaperrBook) => string,
   ): void => {
     visible
-      .filter((b) => rule(b.title) != null)
+      .filter((b) => rule(b) != null)
       .sort((a, b) => a.lastOpen.localeCompare(b.lastOpen) || a.title.localeCompare(b.title))
       .forEach((b, i) => renamed.set(b.id, label(i + 1, b)));
   };
   // Disjoint rule sets, so the order between these two does not matter — only
   // the order relative to HIDDEN above does.
-  rename(newsRule, (n) => newsLabel(n));
-  rename(unknownRule, (n, b) => unknownLabel(n, b.title));
+  rename((b) => newsRule(b), (n, b) => newsLabel(n, b.title));
+  rename((b) => unknownRule(b.title), (n, b) => unknownLabel(n, b.title));
 
   const labelled: PaperrBook[] = visible.map((b) => {
     const next = renamed.get(b.id);

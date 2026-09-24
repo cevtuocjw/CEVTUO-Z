@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
 
+import { CompositionDonut, ReadingCurve, ReadingHeat, WeekdayBars } from '../../components/PaperrCharts';
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
@@ -36,14 +37,18 @@ import './index.scss';
  * ⚠️ The aggregation happens ON THE DEVICE, in SQL. A heavy reader's
  * `page_stat_data` runs to hundreds of thousands of rows, and building that in
  * Lua is how a plugin gets a Kindle killed for OOM. So this page receives
- * totals, never raw page events.
+ * totals and a daily series — never raw page events.
+ *
+ * ⚠️ And that is also the ceiling on what can be charted here. There is no
+ * per-hour and no per-book-per-day data in the payload, so "reading by time of
+ * day" is a chart this data CANNOT support. The four charts below are the ones
+ * the daily series genuinely answers.
  *
  * ── What the titles mean ───────────────────────────────────────
- * Many rows are not books. The pipeline relabels machine-generated news digests
- * to `news1…N` so real books stand out, and untitled entries to
+ * Most rows are not books. The pipeline relabels machine-generated news digests
+ * and bare article headlines to `newsN (原名)`, and untitled entries to
  * `unknownN (原名)`. KOReader's own documents are dropped before they get here.
- * `originalTitle` carries the device's name for anything relabelled, and is
- * shown underneath whenever the display title alone would say nothing.
+ * Only rows it could not classify keep their original title.
  */
 
 type Filter = 'all' | 'reading' | 'done' | 'books';
@@ -52,10 +57,12 @@ const FILTERS: ReadonlyArray<{ key: Filter; label: string }> = [
   { key: 'all', label: '全部' },
   { key: 'reading', label: '在读' },
   { key: 'done', label: '读完' },
-  // ⚠️ Not "hide news" but "only books": with two dozen digests the default
-  // list is mostly `newsN`, so the useful view is the one without them.
+  // ⚠️ Not "hide news" but "only books". With almost every row relabelled, the
+  // useful view is the one with the generated labels taken out.
   { key: 'books', label: '只看书' },
 ];
+
+const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
 /**
  * KOReader's own rule, mirrored from the pipeline — finished at 99%+, and any
@@ -69,15 +76,10 @@ function isFinished(b: PaperrBook): boolean {
 /** A generated label rather than a name. */
 const isRelabelled = (b: PaperrBook): boolean => b.originalTitle != null;
 
-/**
- * The device's own title, when the display title does not already contain it.
- *
- * ⚠️ Skipped for `unknownN (原名)` — the original is already right there in the
- * parentheses, and repeating it would print the same string twice.
- */
-function subtitleOf(b: PaperrBook): string | null {
-  if (!b.originalTitle) return null;
-  return b.title.includes(b.originalTitle) ? null : b.originalTitle;
+/** Which bucket a row falls in, for the donut. */
+function categoryOf(b: PaperrBook): string {
+  if (!b.originalTitle) return '原样保留';
+  return b.title.startsWith('news') ? '新闻摘要' : '无标题';
 }
 
 export default function Paperr() {
@@ -104,8 +106,8 @@ export default function Paperr() {
 
   const stats = useMemo(() => {
     const done = books.filter(isFinished).length;
-    return { done, reading: books.length - done, days: index?.daily.length ?? 0 };
-  }, [books, index]);
+    return { done, reading: books.length - done };
+  }, [books]);
 
   const shown = useMemo(() => {
     if (filter === 'reading') return books.filter((b) => !isFinished(b));
@@ -114,18 +116,37 @@ export default function Paperr() {
     return books;
   }, [books, filter]);
 
-  /**
-   * The daily strip.
-   *
-   * ⚠️ Scaled to the window's own maximum, not to a fixed ceiling. Reading
-   * volume varies by an order of magnitude between a commute week and a holiday,
-   * and a fixed scale would render one of those two as a flat line.
-   */
-  const daily = useMemo(() => {
-    const window = (index?.daily ?? []).slice(-30);
-    const peak = window.reduce((n, d) => Math.max(n, d.s), 0);
-    return window.map((d) => ({ ...d, pct: peak > 0 ? Math.max(2, (d.s / peak) * 100) : 2 }));
+  /** Composition, by reading TIME — counting rows would let 24 short digests
+   *  outweigh the handful of things actually read at length. */
+  const slices = useMemo(() => {
+    const byCat = new Map<string, number>();
+    for (const b of books) {
+      const k = categoryOf(b);
+      byCat.set(k, (byCat.get(k) ?? 0) + b.totalReadTime);
+    }
+    return [...byCat.entries()]
+      .filter(([, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, value]) => ({ key: label, label, value }));
+  }, [books]);
+
+  const daily = useMemo(() => (index?.daily ?? []).slice(-30), [index]);
+
+  /** Which weekday the reading lands on. */
+  const bars = useMemo(() => {
+    const totals = new Array<number>(7).fill(0);
+    for (const d of index?.daily ?? []) {
+      const [y, m, dd] = d.d.split('-').map(Number) as [number, number, number];
+      // ⚠️ UTC throughout. `new Date('2026-09-24')` parses as UTC midnight and
+      // then `getDay()` reads it back in the VIEWER's timezone — a reader three
+      // hours behind would see every Sunday filed under Saturday.
+      const dow = (new Date(Date.UTC(y, m - 1, dd)).getUTCDay() + 6) % 7;
+      totals[dow] = (totals[dow] ?? 0) + d.s;
+    }
+    return WEEKDAYS.map((label, i) => ({ key: label, label, value: totals[i] ?? 0 }));
   }, [index]);
+
+  const totalSec = index?.totals.readSeconds ?? 0;
 
   if (error || !index) {
     return (
@@ -148,14 +169,14 @@ export default function Paperr() {
   const finishNote = current?.estFinishedAt
     ? `预计 ${formatDayMonth(current.estFinishedAt)} 读完`
     : '还看不出读完时间';
-  const peak = daily.reduce((n, d) => Math.max(n, d.s), 0);
+  const busyDay = bars.reduce((a, b) => (b.value > a.value ? b : a), bars[0]!);
 
   return (
     <View className="page">
       <Wallpaper />
       <TopBar title="CE-CAPPERR" />
 
-      <PageStack count={4}>
+      <PageStack count={5}>
         <Section
           index={0}
           title="CAPPERR"
@@ -163,22 +184,15 @@ export default function Paperr() {
           compact
           lede="Kindle 阅读统计 · 只取 KOReader 自己的 statistics.sqlite3，不碰 Reading Insight"
           stats={[
-            {
-              value: formatReadingTime(index.totals.readSeconds),
-              label: '累计阅读',
-              note: `${index.totals.pagesTurned} 页`,
-            },
-            { value: `${stats.done}`, label: '已读完', note: `共 ${books.length} 本` },
+            { value: formatReadingTime(totalSec), label: '累计阅读', note: `${index.totals.pagesTurned} 页` },
+            { value: `${stats.done}`, label: '已读完', note: `共 ${books.length} 条` },
           ]}
         />
 
-        <Section index={1} title="在读" lede={current ? undefined : '最近没有正在读的书。'}>
+        <Section index={1} title="在读" lede={current ? undefined : '最近没有正在读的东西。'}>
           {current && (
             <View className="pr-current">
               <Text className="pr-current__title">{current.title}</Text>
-              {subtitleOf(current) && (
-                <Text className="pr-current__orig">{subtitleOf(current)}</Text>
-              )}
 
               <View className="pr-bar">
                 <View
@@ -193,33 +207,52 @@ export default function Paperr() {
                 </Text>
                 <Text className="pr-current__note">{finishNote}</Text>
               </View>
+
+              <Text className="pr-current__foot">
+                已读 {formatReadingTime(current.totalReadTime)} · {current.totalReadPages} 页 ·{' '}
+                {formatAgo(current.lastOpen)}
+              </Text>
             </View>
           )}
         </Section>
 
         <Section
           index={2}
-          title="每日"
-          lede={`最近 ${daily.length} 天的阅读时长 · 峰值 ${formatReadingTime(peak)}`}
+          title="构成"
+          lede="按阅读时长切分。点图例可以选中，再点一次取消。"
           stats={[
-            { value: `${stats.days}`, label: '有记录的天数' },
-            { value: formatReadingTime(index.totals.readSeconds), label: '合计' },
+            { value: `${slices.length}`, label: '类别' },
+            { value: formatReadingTime(totalSec), label: '合计' },
           ]}
         >
-          <View className="pr-days">
-            {daily.map((d) => (
-              <View key={d.d} className="pr-days__col">
-                <View className="pr-days__track">
-                  <View className="pr-days__bar" style={`height:${d.pct}%`} />
-                </View>
-                <Text className="pr-days__label">{formatDayMonth(d.d)}</Text>
-              </View>
-            ))}
-          </View>
+          <CompositionDonut slices={slices} format={formatReadingTime} />
+          <View className="pc-gap" />
+          <WeekdayBars bars={bars} unit="每个星期几的累计时长" />
         </Section>
 
         <Section
           index={3}
+          title="趋势"
+          lede="曲线是每天的时长，日历是同一份数据另一种看法。"
+          stats={[
+            { value: `${index.daily.length}`, label: '有记录的天数' },
+            // ⚠️ NOT `周一` as the value. Stat values render at 40px, and two
+            // CJK glyphs there wrap inside the column — measured, it rendered as
+            // a bare "周" with the "一" clipped underneath. The weekday belongs
+            // in the label, where the type is 10px.
+            {
+              value: busyDay.value > 0 ? formatReadingTime(busyDay.value) : '—',
+              label: `最忙的周${busyDay.label}`,
+            },
+          ]}
+        >
+          <ReadingCurve days={daily} />
+          <View className="pc-gap" />
+          <ReadingHeat days={index.daily} weeks={12} />
+        </Section>
+
+        <Section
+          index={4}
           title="书架"
           lede={`${shown.length} / ${books.length} 条`}
           stats={[
@@ -253,42 +286,42 @@ export default function Paperr() {
               screenshot. */}
           <View className="pr-listwrap">
             <ScrollView className="pr-list" scrollY>
-            {shown.map((b) => {
-              const sub = subtitleOf(b);
-              const done = isFinished(b);
-              const meta = [
-                b.authors && b.authors !== 'N/A' ? b.authors : null,
-                b.series,
-                b.pages ? `${b.pages} 页` : null,
-                formatReadingTime(b.totalReadTime),
-                formatAgo(b.lastOpen),
-              ]
-                .filter(Boolean)
-                .join(' · ');
+              {shown.map((b) => {
+                const done = isFinished(b);
+                const meta = [
+                  b.authors && b.authors !== 'N/A' && !b.authors.includes('\n')
+                    ? b.authors.slice(0, 24)
+                    : null,
+                  b.series,
+                  b.pages ? `${b.pages} 页` : null,
+                  formatReadingTime(b.totalReadTime),
+                  formatAgo(b.lastOpen),
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
 
-              return (
-                <View key={b.id} className="pr-row">
-                  <View className="pr-row__main">
-                    <Text className="pr-row__title">{b.title}</Text>
-                    {sub && <Text className="pr-row__orig">{sub}</Text>}
-                    <Text className="pr-row__meta">{meta}</Text>
+                return (
+                  <View key={b.id} className="pr-row">
+                    <View className="pr-row__main">
+                      <Text className="pr-row__title">{b.title}</Text>
+                      <Text className="pr-row__meta">{meta}</Text>
+                    </View>
+
+                    <View className="pr-row__side">
+                      <Text className={done ? 'pr-row__pct pr-row__pct--done' : 'pr-row__pct'}>
+                        {done ? '读完' : b.progressPct == null ? '—' : `${Math.round(b.progressPct)}%`}
+                      </Text>
+                      {b.estFinishedAt && !done && (
+                        <Text className="pr-row__eta">{formatDayMonth(b.estFinishedAt)}</Text>
+                      )}
+                    </View>
                   </View>
+                );
+              })}
 
-                  <View className="pr-row__side">
-                    <Text className={done ? 'pr-row__pct pr-row__pct--done' : 'pr-row__pct'}>
-                      {done ? '读完' : b.progressPct == null ? '—' : `${Math.round(b.progressPct)}%`}
-                    </Text>
-                    {b.estFinishedAt && !done && (
-                      <Text className="pr-row__eta">{formatDayMonth(b.estFinishedAt)}</Text>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-
-            <Text className="pr-foot">
-              数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局
-            </Text>
+              <Text className="pr-foot">
+                数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局
+              </Text>
             </ScrollView>
           </View>
         </Section>
