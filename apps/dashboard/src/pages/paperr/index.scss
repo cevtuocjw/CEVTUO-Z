@@ -1062,7 +1062,17 @@ $chart-h: 108px;
 // the hour grid it took 343px of a 700px row and left the legend spread across
 // the slack, so the two charts beside it were squeezed to 153px each.
 .pr-grid__cell--ring {
-  flex: 1 1 250px;
+  // ⚠️ 300px, and the number is a WRAP threshold, not a size.
+  //
+  // `flex-shrink` is 1 on these cells, so a basis that leaves room lets one more
+  // chart squeeze into the row — and everything shrinks to make it fit. At
+  // 250px a four-up row fitted on a desktop panel: the donut came out ~240px,
+  // its legend lost the last glyphs ("Unn…"), and three charts that wanted
+  // 320px each were compressed beside it.
+  //
+  // 300 + 104 + 104 + 16×2 = 540 fits a 790px grid; adding the 趋势 cell's 320
+  // does not, so the row stays three-up and the donut gets ~460px of the slack.
+  flex: 1 1 300px;
 }
 
 // ⚠️ The first heading in a cell has no top margin to contribute — the grid gap
