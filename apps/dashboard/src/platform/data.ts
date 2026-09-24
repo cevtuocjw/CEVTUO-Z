@@ -138,7 +138,7 @@ export type {
   SyncMeta,
 };
 
-async function getJson<T>(path: string): Promise<T> {
+async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
   const url = assetUrl(path);
 
   // ⚠️ `Taro.request` is deliberately NOT used here.
@@ -152,7 +152,7 @@ async function getJson<T>(path: string): Promise<T> {
   // base library ≥2.18 and every WebView we support), so it is the smaller
   // surface. If a target ever lacks it, add the adapter there rather than
   // reintroducing the global dependency here.
-  const res = await fetch(url);
+  const res = await fetch(url, init);
   if (!res.ok) {
     throw new Error(`加载失败 HTTP ${res.status}：${path}`);
   }
@@ -208,8 +208,33 @@ export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
  * the whole reading dashboard is fine to publish, so the split — and the
  * authenticated second fetch that went with it — is gone.
  */
+/**
+ * ⚠️⚠️ Fetched with `cache: 'no-store'`, and the first attempt at this was wrong.
+ *
+ * GitHub Pages serves `data/paperr/index.json` with `Cache-Control: max-age=600`
+ * — measured, not assumed. The ingest publishes to that file the moment the
+ * Kindle syncs, so a browser that loaded the page recently can sit TEN MINUTES
+ * behind a push whose timestamp it is already displaying.
+ *
+ * ⚠️ And that combination is worse than plain staleness: the freshness line
+ * ("设备同步 13:35") comes from the ingest over a connection with no cache
+ * headers at all. It updates instantly while the numbers beside it do not. The
+ * reader sees "it synced" and "nothing changed" in the same glance, which reads
+ * exactly like a broken sync — the thing this whole week has been about.
+ *
+ * ⚠️ I first added a `?v=<minute>` cache-buster. **GitHub Pages' CDN ignores the
+ * query string**: three requests with three different random params all came
+ * back `X-Cache: HIT` with the same `Age`. A 404 on a made-up path came back
+ * `MISS`, so the headers were real. The param only changed the BROWSER's cache
+ * key — which `no-store` does directly, and does not depend on how any CDN
+ * happens to be configured.
+ *
+ * ⚠️ The CDN layer itself is fine: a commit to `gh-pages` — which is exactly
+ * what the ingest makes — triggers a build and purges it. Measured at ~45s from
+ * publish to a fresh edge copy. The browser was the stale layer.
+ */
 export const fetchPaperrIndex = (): Promise<PaperrIndex> =>
-  getJson<PaperrIndex>(DATA_PATHS.paperrIndex);
+  getJson<PaperrIndex>(DATA_PATHS.paperrIndex, { cache: 'no-store' });
 
 /**
  * When the Kindle last reached the ingest server.

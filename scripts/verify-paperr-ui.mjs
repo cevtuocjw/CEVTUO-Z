@@ -50,6 +50,30 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
 
   check('no console/page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
 
+  // ⚠️ The index must NOT come from the browser's cache.
+  //
+  // GitHub Pages serves it with `Cache-Control: max-age=600`, so a reader who
+  // loaded the page recently and reloads after a sync can sit ten minutes
+  // behind — while the freshness line beside it (fetched from the ingest, no
+  // cache headers) updates instantly. "It synced" and "nothing changed" in one
+  // glance reads exactly like a broken sync.
+  //
+  // ⚠️ Counted across a RELOAD, because that is the case that matters and the
+  // only one a single load can distinguish. A `?v=` cache-buster was tried
+  // first and does not work: GitHub Pages' CDN ignores the query string
+  // (three different random params all returned `X-Cache: HIT`).
+  {
+    let indexFetches = 0;
+    const count = (r) => { if (r.url().includes('paperr/index.json')) indexFetches += 1; };
+    page.on('request', count);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.pr-row', { timeout: 20000 });
+    await page.waitForTimeout(600);
+    page.off('request', count);
+    check('the index is re-fetched on reload, not served from cache',
+          indexFetches >= 1, `fetches after reload=${indexFetches}`);
+  }
+
   // ── Two panels, as asked ──────────────────────────────────
   const sections = await page.locator('.section').count();
   check('exactly two panels', sections === 2, `sections=${sections}`);
