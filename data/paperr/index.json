@@ -1,0 +1,760 @@
+{
+  "books": [
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-27",
+      "highlights": 0,
+      "id": "41",
+      "lastOpen": "2026-09-24T14:35+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-15",
+      "pages": 188,
+      "progressPct": 60.1063829787234,
+      "series": null,
+      "title": "news26 (EpubPressX 2026-9-15)",
+      "totalReadPages": 69,
+      "totalReadTime": 2621
+    },
+    {
+      "authors": "Cow",
+      "estFinishedAt": "2026-09-29",
+      "highlights": 0,
+      "id": "42",
+      "lastOpen": "2026-09-24T14:02+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 335,
+      "progressPct": 59.40298507462687,
+      "series": null,
+      "title": "news1-092426",
+      "totalReadPages": 76,
+      "totalReadTime": 2861
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "40",
+      "lastOpen": "2026-09-22T10:43+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-14",
+      "pages": 90,
+      "progressPct": 84.44444444444444,
+      "series": null,
+      "title": "news25 (EpubPressX 2026-9-14)",
+      "totalReadPages": 52,
+      "totalReadTime": 2272
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-27",
+      "highlights": 0,
+      "id": "36",
+      "lastOpen": "2026-09-14T18:37+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-9",
+      "pages": 192,
+      "progressPct": 100,
+      "series": null,
+      "title": "news24 (EpubPressX 2026-9-9)",
+      "totalReadPages": 75,
+      "totalReadTime": 1380
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-26",
+      "highlights": 0,
+      "id": "37",
+      "lastOpen": "2026-09-14T18:04+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-10",
+      "pages": 78,
+      "progressPct": 64.1025641025641,
+      "series": null,
+      "title": "news23 (EpubPressX 2026-9-10)",
+      "totalReadPages": 3,
+      "totalReadTime": 200
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "39",
+      "lastOpen": "2026-09-14T17:43+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-14",
+      "pages": 123,
+      "progressPct": 99.1869918699187,
+      "series": null,
+      "title": "news22 (EpubPressX 2026-9-14)",
+      "totalReadPages": 86,
+      "totalReadTime": 1849
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-27",
+      "highlights": 0,
+      "id": "38",
+      "lastOpen": "2026-09-14T11:50+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-10",
+      "pages": 125,
+      "progressPct": 2.4,
+      "series": null,
+      "title": "news21 (EpubPressX 2026-9-10)",
+      "totalReadPages": 2,
+      "totalReadTime": 136
+    },
+    {
+      "authors": "Philippa Roxby\nChloe Hayward\nElla Whelan\nRory Poulter\nDan Ayers\nElizabeta Ranxburgaj\nCharlotte Smith\nAlastair Fee\nDawn Limbu\nGruber, Andreas J.\nOlsen, André V.\nHernando, Barbara",
+      "estFinishedAt": "2026-09-26",
+      "highlights": 0,
+      "id": "35",
+      "lastOpen": "2026-09-14T11:00+08:00",
+      "notes": 0,
+      "originalTitle": "eBook",
+      "pages": 182,
+      "progressPct": 97.25274725274726,
+      "series": null,
+      "title": "unknown7 (eBook)",
+      "totalReadPages": 78,
+      "totalReadTime": 1539
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "34",
+      "lastOpen": "2026-09-14T09:29+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-11",
+      "pages": 125,
+      "progressPct": 97.6,
+      "series": null,
+      "title": "news20 (EpubPressX 2026-9-11)",
+      "totalReadPages": 93,
+      "totalReadTime": 2288
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-27",
+      "highlights": 0,
+      "id": "33",
+      "lastOpen": "2026-09-11T11:59+08:00",
+      "notes": 0,
+      "originalTitle": "COUNTRY · 2026-09-08",
+      "pages": 192,
+      "progressPct": 100,
+      "series": null,
+      "title": "news19 (COUNTRY · 2026-09-08)",
+      "totalReadPages": 76,
+      "totalReadTime": 1353
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-02",
+      "highlights": 0,
+      "id": "32",
+      "lastOpen": "2026-09-11T09:59+08:00",
+      "notes": 0,
+      "originalTitle": "未分类 · 2026-09-07",
+      "pages": 574,
+      "progressPct": 99.12891986062718,
+      "series": null,
+      "title": "news18 (未分类 · 2026-09-07)",
+      "totalReadPages": 177,
+      "totalReadTime": 2478
+    },
+    {
+      "authors": "Tom Robbins\nIan Smith\nDavid Keohane\nLeo Lewis\nRamsay Hodgson\nCalum Kapoor\nCarola Long\nRobert Shrimsley\nDaniel Tudor\nNic Fildes\nJoe Leahy\nKana Inagaki",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "31",
+      "lastOpen": "2026-09-10T18:08+08:00",
+      "notes": 0,
+      "originalTitle": "eBook",
+      "pages": 130,
+      "progressPct": 94.61538461538461,
+      "series": null,
+      "title": "unknown6 (eBook)",
+      "totalReadPages": 88,
+      "totalReadTime": 2651
+    },
+    {
+      "authors": "Steven Morris\nHannah Banks-Walker\nKristen Talman\nJames Landale\nBBC News\nDaniel Windham\nHeather Carrick\nAlaina Demopoulos\nGiles Richards\nDavid Blair\nAdrienne Klasa\nHans van Leeuwen",
+      "estFinishedAt": "2026-09-26",
+      "highlights": 0,
+      "id": "24",
+      "lastOpen": "2026-09-10T12:17+08:00",
+      "notes": 0,
+      "originalTitle": "eBook",
+      "pages": 153,
+      "progressPct": 100,
+      "series": null,
+      "title": "unknown5 (eBook)",
+      "totalReadPages": 99,
+      "totalReadTime": 2288
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-26",
+      "highlights": 0,
+      "id": "30",
+      "lastOpen": "2026-09-10T08:45+08:00",
+      "notes": 0,
+      "originalTitle": "COUNTRY · 2026-09-09",
+      "pages": 250,
+      "progressPct": 100,
+      "series": null,
+      "title": "news17 (COUNTRY · 2026-09-09)",
+      "totalReadPages": 169,
+      "totalReadTime": 3769
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-08",
+      "highlights": 0,
+      "id": "29",
+      "lastOpen": "2026-09-09T18:08+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-09-09",
+      "pages": 708,
+      "progressPct": 0.423728813559322,
+      "series": null,
+      "title": "news16 (ART＆FASHION · 2026-09-09)",
+      "totalReadPages": 2,
+      "totalReadTime": 118
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-28",
+      "highlights": 0,
+      "id": "28",
+      "lastOpen": "2026-09-09T16:15+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-9",
+      "pages": 220,
+      "progressPct": 4.090909090909091,
+      "series": null,
+      "title": "news15 (EpubPressX 2026-9-9)",
+      "totalReadPages": 7,
+      "totalReadTime": 360
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-03",
+      "highlights": 0,
+      "id": "27",
+      "lastOpen": "2026-09-09T12:15+08:00",
+      "notes": 0,
+      "originalTitle": "未分类 · 2026-09-08",
+      "pages": 605,
+      "progressPct": 92.06611570247934,
+      "series": null,
+      "title": "news14 (未分类 · 2026-09-08)",
+      "totalReadPages": 136,
+      "totalReadTime": 2289
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "26",
+      "lastOpen": "2026-09-09T08:28+08:00",
+      "notes": 0,
+      "originalTitle": "FINANCE · 2026-09-07",
+      "pages": 167,
+      "progressPct": 100,
+      "series": null,
+      "title": "news13 (FINANCE · 2026-09-07)",
+      "totalReadPages": 131,
+      "totalReadTime": 2778
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-27",
+      "highlights": 0,
+      "id": "25",
+      "lastOpen": "2026-09-08T18:25+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-09-07",
+      "pages": 196,
+      "progressPct": 100,
+      "series": null,
+      "title": "news12 (ART＆FASHION · 2026-09-07)",
+      "totalReadPages": 89,
+      "totalReadTime": 1722
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-28",
+      "highlights": 0,
+      "id": "22",
+      "lastOpen": "2026-09-08T17:48+08:00",
+      "notes": 0,
+      "originalTitle": "HACKER NEWSROOM · 2026-09-05",
+      "pages": 169,
+      "progressPct": 94.67455621301775,
+      "series": null,
+      "title": "news11 (HACKER NEWSROOM · 2026-09-05)",
+      "totalReadPages": 5,
+      "totalReadTime": 320
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "23",
+      "lastOpen": "2026-09-08T13:59+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 87,
+      "progressPct": 97.70114942528735,
+      "series": null,
+      "title": "Amanda Wakeley_ ‘Princess Diana wore one of my suits – it changed my business overnight’",
+      "totalReadPages": 64,
+      "totalReadTime": 1605
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "21",
+      "lastOpen": "2026-09-07T14:00+08:00",
+      "notes": 0,
+      "originalTitle": "hack · 2026-09-05",
+      "pages": 76,
+      "progressPct": 100,
+      "series": null,
+      "title": "news10 (hack · 2026-09-05)",
+      "totalReadPages": 28,
+      "totalReadTime": 275
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-28",
+      "highlights": 0,
+      "id": "16",
+      "lastOpen": "2026-09-07T13:54+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-09-05",
+      "pages": 329,
+      "progressPct": 99.69604863221885,
+      "series": null,
+      "title": "news9 (ART＆FASHION · 2026-09-05)",
+      "totalReadPages": 127,
+      "totalReadTime": 2861
+    },
+    {
+      "authors": "Benjamin Mueller\nGlenn Thrush\nJonathan Swan\nAdam Entous\nMaggie Haberman\nEric Schmitt\nIvan Nechepurenko\nFrancisco Rodríguez\nJim Tankersley\nTatiana Firsova\nChristopher F. Schuetze\nStephen Castle",
+      "estFinishedAt": "2026-09-26",
+      "highlights": 0,
+      "id": "20",
+      "lastOpen": "2026-09-07T13:45+08:00",
+      "notes": 0,
+      "originalTitle": "eBook",
+      "pages": 180,
+      "progressPct": 100,
+      "series": null,
+      "title": "unknown4 (eBook)",
+      "totalReadPages": 112,
+      "totalReadTime": 2635
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "19",
+      "lastOpen": "2026-09-07T10:21+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-5",
+      "pages": 159,
+      "progressPct": 100,
+      "series": null,
+      "title": "news8 (EpubPressX 2026-9-5)",
+      "totalReadPages": 126,
+      "totalReadTime": 3551
+    },
+    {
+      "authors": "Kim Bunermann\nLouise Parry\nKatie Martin\nRobert Booth\nElla Risbridger\nChris Taylor\nHeather Carrick\nJohn McLellan\nJames C. Reynolds\nElaine Blackburne\nLaura Zilincanova\nBenedict Smith",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "18",
+      "lastOpen": "2026-09-06T12:25+08:00",
+      "notes": 0,
+      "originalTitle": "eBook",
+      "pages": 121,
+      "progressPct": 100,
+      "series": null,
+      "title": "unknown3 (eBook)",
+      "totalReadPages": 90,
+      "totalReadTime": 2515
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "17",
+      "lastOpen": "2026-09-06T11:23+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 58,
+      "progressPct": 96.55172413793103,
+      "series": null,
+      "title": "Samsung brings seamless updates to Galaxy Watch 9 and Watch Ultra 2 - SamMobile",
+      "totalReadPages": 43,
+      "totalReadTime": 999
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "15",
+      "lastOpen": "2026-09-05T23:51+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-4",
+      "pages": 111,
+      "progressPct": 94.5945945945946,
+      "series": null,
+      "title": "news7 (EpubPressX 2026-9-4)",
+      "totalReadPages": 78,
+      "totalReadTime": 1345
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "13",
+      "lastOpen": "2026-09-05T21:17+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-4",
+      "pages": 125,
+      "progressPct": 100,
+      "series": null,
+      "title": "news6 (EpubPressX 2026-9-4)",
+      "totalReadPages": 95,
+      "totalReadTime": 2055
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "14",
+      "lastOpen": "2026-09-05T20:36+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-09-05",
+      "pages": 7,
+      "progressPct": 28.57142857142857,
+      "series": null,
+      "title": "news5 (ART＆FASHION · 2026-09-05)",
+      "totalReadPages": 1,
+      "totalReadTime": 25
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "12",
+      "lastOpen": "2026-09-04T22:20+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-4",
+      "pages": 203,
+      "progressPct": 100,
+      "series": null,
+      "title": "news4 (EpubPressX 2026-9-4)",
+      "totalReadPages": 152,
+      "totalReadTime": 3252
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "11",
+      "lastOpen": "2026-09-04T19:11+08:00",
+      "notes": 0,
+      "originalTitle": "EpubPressX 2026-9-4",
+      "pages": 143,
+      "progressPct": 100,
+      "series": null,
+      "title": "news3 (EpubPressX 2026-9-4)",
+      "totalReadPages": 120,
+      "totalReadTime": 3173
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "8",
+      "lastOpen": "2026-09-04T16:48+08:00",
+      "notes": 0,
+      "originalTitle": "The rise of electoral democracy | Our World in Data",
+      "pages": 38,
+      "progressPct": 100,
+      "series": null,
+      "title": "news2 (The rise of electoral democracy | Our World in Data)",
+      "totalReadPages": 1,
+      "totalReadTime": 9
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": null,
+      "highlights": 0,
+      "id": "10",
+      "lastOpen": "2026-09-04T16:27+08:00",
+      "notes": 0,
+      "originalTitle": "652975ee-6795-4bf2-a00f-0e14c69cb515",
+      "pages": 1,
+      "progressPct": 100,
+      "series": null,
+      "title": "unknown2 (652975ee-6795-4bf2-a00f-0e14c69cb515)",
+      "totalReadPages": 1,
+      "totalReadTime": 8
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": null,
+      "highlights": 0,
+      "id": "9",
+      "lastOpen": "2026-09-04T16:24+08:00",
+      "notes": 0,
+      "originalTitle": "bdb180e1-b4ed-45ac-ae4d-8687fc5cdb03",
+      "pages": 1,
+      "progressPct": 100,
+      "series": null,
+      "title": "unknown1 (bdb180e1-b4ed-45ac-ae4d-8687fc5cdb03)",
+      "totalReadPages": 1,
+      "totalReadTime": 8
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": "2026-09-25",
+      "highlights": 0,
+      "id": "7",
+      "lastOpen": "2026-09-04T16:11+08:00",
+      "notes": 0,
+      "originalTitle": "Beef production in Brazil has been the largest driver of global deforestation in recent decades | Our World in Data",
+      "pages": 22,
+      "progressPct": 100,
+      "series": null,
+      "title": "news1 (Beef production in Brazil has been the largest driver of global deforestation in recent decades | Our World in Data)",
+      "totalReadPages": 2,
+      "totalReadTime": 16
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": "2027-01-10",
+      "highlights": 0,
+      "id": "2",
+      "lastOpen": "2026-09-04T13:49+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 5736,
+      "progressPct": 0.10460251046025104,
+      "series": null,
+      "title": "现代汉英词典_B00771V9HS",
+      "totalReadPages": 2,
+      "totalReadTime": 160
+    }
+  ],
+  "current": {
+    "authors": "cjw",
+    "estFinishedAt": "2026-09-27",
+    "highlights": 0,
+    "id": "41",
+    "lastOpen": "2026-09-24T14:35+08:00",
+    "notes": 0,
+    "originalTitle": "EpubPressX 2026-9-15",
+    "pages": 188,
+    "progressPct": 60.1063829787234,
+    "series": null,
+    "title": "news26 (EpubPressX 2026-9-15)",
+    "totalReadPages": 69,
+    "totalReadTime": 2621
+  },
+  "daily": [
+    {
+      "d": "2026-09-03",
+      "p": 4,
+      "s": 68
+    },
+    {
+      "d": "2026-09-04",
+      "p": 418,
+      "s": 8391
+    },
+    {
+      "d": "2026-09-05",
+      "p": 199,
+      "s": 4525
+    },
+    {
+      "d": "2026-09-06",
+      "p": 171,
+      "s": 3937
+    },
+    {
+      "d": "2026-09-07",
+      "p": 284,
+      "s": 6627
+    },
+    {
+      "d": "2026-09-08",
+      "p": 283,
+      "s": 5807
+    },
+    {
+      "d": "2026-09-09",
+      "p": 303,
+      "s": 6328
+    },
+    {
+      "d": "2026-09-10",
+      "p": 323,
+      "s": 6498
+    },
+    {
+      "d": "2026-09-11",
+      "p": 192,
+      "s": 3823
+    },
+    {
+      "d": "2026-09-14",
+      "p": 338,
+      "s": 6749
+    },
+    {
+      "d": "2026-09-15",
+      "p": 46,
+      "s": 1593
+    },
+    {
+      "d": "2026-09-22",
+      "p": 1,
+      "s": 120
+    },
+    {
+      "d": "2026-09-23",
+      "p": 64,
+      "s": 1961
+    },
+    {
+      "d": "2026-09-24",
+      "p": 105,
+      "s": 3521
+    }
+  ],
+  "dataVersion": "b446008fbc40",
+  "hourly": [
+    {
+      "h": 0,
+      "s": 0
+    },
+    {
+      "h": 1,
+      "s": 0
+    },
+    {
+      "h": 2,
+      "s": 0
+    },
+    {
+      "h": 3,
+      "s": 0
+    },
+    {
+      "h": 4,
+      "s": 0
+    },
+    {
+      "h": 5,
+      "s": 0
+    },
+    {
+      "h": 6,
+      "s": 0
+    },
+    {
+      "h": 7,
+      "s": 0
+    },
+    {
+      "h": 8,
+      "s": 3890
+    },
+    {
+      "h": 9,
+      "s": 7195
+    },
+    {
+      "h": 10,
+      "s": 4119
+    },
+    {
+      "h": 11,
+      "s": 6321
+    },
+    {
+      "h": 12,
+      "s": 8047
+    },
+    {
+      "h": 13,
+      "s": 3810
+    },
+    {
+      "h": 14,
+      "s": 1254
+    },
+    {
+      "h": 15,
+      "s": 298
+    },
+    {
+      "h": 16,
+      "s": 3220
+    },
+    {
+      "h": 17,
+      "s": 2553
+    },
+    {
+      "h": 18,
+      "s": 8907
+    },
+    {
+      "h": 19,
+      "s": 1587
+    },
+    {
+      "h": 20,
+      "s": 1135
+    },
+    {
+      "h": 21,
+      "s": 1641
+    },
+    {
+      "h": 22,
+      "s": 4134
+    },
+    {
+      "h": 23,
+      "s": 1837
+    }
+  ],
+  "lastIngestPath": "koreader-push",
+  "monthly": [
+    {
+      "m": "2026-09",
+      "p": 2731,
+      "s": 59948
+    }
+  ],
+  "schemaVersion": 1,
+  "totals": {
+    "booksFinished": 2,
+    "booksStarted": 37,
+    "pagesTurned": 2556,
+    "readSeconds": 59764
+  }
+}

@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="format-detection" content="telephone=no,address=no"/><meta name="theme-color" content="#0a0b0f"/><title>CEVTUO-Z</title><style>/*
+        One background image per page, published as a custom property.
+
+        ⚠️ The image is NOT applied to `body` any more. `html` and `body` both
+        carry `overflow: hidden` (the scroll lives in `.stack`), and Chrome
+        refuses to paint a `background-attachment: fixed` background on a box
+        with clipped overflow — the images silently vanished. Publishing the URL
+        as a variable lets a `position: fixed` layer paint it instead, which is
+        immune to that rule and costs nothing extra.
+
+        ⚠️ Declared here rather than in a stylesheet because this document is the
+        site root, so `static/...` resolves correctly at any mount depth. The
+        same URL written in CSS resolves against the STYLESHEET's directory and
+        404s — that bug has already cost two rounds.
+      */
+      html {
+        --page-bg: url('static/home.jpg');
+        background-color: #2b2830;
+      }
+      html[data-page='coof'] {
+        --page-bg: url('static/coof.jpg');
+      }
+      html[data-page='cnsr'] {
+        --page-bg: url('static/cnsr.jpg');
+      }
+      html[data-page='paperr'] {
+        --page-bg: url('static/paperr.jpg');
+      }
+      html[data-page='chealth'] {
+        --page-bg: url('static/chealth.jpg');
+      }
+
+      /* ⚠️ There is deliberately no `html.theme-light body` rule. Light mode is
+         handled by the scrim in styles/wallpaper.scss. A body-level overlap
+         would win or lose against the per-page rules above purely by source
+         order (equal specificity), which is not a stable way to decide a theme. */</style><script>// Runs before first paint so the wallpaper/theme is correct immediately.
+      // The authoritative tier detection re-runs in app.tsx via Taro APIs; this
+      // only prevents a flash of the wrong theme.
+      (function () {
+        try {
+          var mql = window.matchMedia('(prefers-color-scheme: light)');
+          var apply = function () {
+            document.documentElement.classList.toggle('theme-light', mql.matches);
+            document.documentElement.classList.toggle('theme-dark', !mql.matches);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', mql.matches ? '#eef0f5' : '#0a0b0f');
+          };
+          apply();
+          mql.addEventListener
+            ? mql.addEventListener('change', apply)
+            : mql.addListener && mql.addListener(apply);
+        } catch (e) {}
+      })();
+
+      /*
+        Page identity, so the stylesheet above can pick the background image.
+
+        ⚠️ Derived from the hash rather than set by the page component. Setting
+        it from React would mean the background only appears after hydration —
+        the first panel of every navigation would paint the PREVIOUS page's
+        image and then swap. Reading the hash here means the right image is
+        requested as the document parses.
+
+        ⚠️ `hashchange` is required, not optional. Taro's H5 router is
+        hash-based and does not reload the document between pages, so without
+        this listener the background would freeze on whichever page was loaded
+        first.
+
+        ⚠️ The route is `#/pages/<name>/index`. Anything that does not match
+        (an empty hash on first load, a stray anchor) leaves `data-page` unset,
+        and the default image on `body` applies.
+      */
+      (function () {
+        try {
+          var apply = function () {
+            var m = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
+            if (m) document.documentElement.setAttribute('data-page', m[1]);
+            else document.documentElement.removeAttribute('data-page');
+          };
+          apply();
+          window.addEventListener('hashchange', apply);
+        } catch (e) {}
+      })();</script><script defer="defer" src="./js/457.c955fd28.js"></script><script defer="defer" src="./js/app.c955fd28.js"></script><link href="./css/app.c955fd2800d50138b86f.css" rel="stylesheet"></head><body><div id="app"></div></body></html>

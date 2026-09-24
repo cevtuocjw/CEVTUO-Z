@@ -1,0 +1,649 @@
+{
+  "collection": "COOF2020",
+  "collections": [
+    {
+      "count": 149,
+      "latestAt": "2026-09-19",
+      "name": "COOF2026",
+      "path": "data/coof/COOF2026/index.json"
+    },
+    {
+      "count": 204,
+      "latestAt": "2025-12-29",
+      "name": "COOF2025",
+      "path": "data/coof/COOF2025/index.json"
+    },
+    {
+      "count": 152,
+      "latestAt": "2024-12-31",
+      "name": "COOF2024",
+      "path": "data/coof/COOF2024/index.json"
+    },
+    {
+      "count": 145,
+      "latestAt": "2023-12-24",
+      "name": "COOF2023",
+      "path": "data/coof/COOF2023/index.json"
+    },
+    {
+      "count": 236,
+      "latestAt": "2022-12-26",
+      "name": "COOF2022",
+      "path": "data/coof/COOF2022/index.json"
+    },
+    {
+      "count": 107,
+      "latestAt": "2021-12-01",
+      "name": "COOF2021",
+      "path": "data/coof/COOF2021/index.json"
+    },
+    {
+      "count": 216,
+      "latestAt": "2020-12-30",
+      "name": "COOF2020",
+      "path": "data/coof/COOF2020/index.json"
+    }
+  ],
+  "counts": {
+    "rated": 0,
+    "total": 216
+  },
+  "dataVersion": "cd39dd5dd591",
+  "genres": [
+    {
+      "count": 103,
+      "name": "剧情"
+    },
+    {
+      "count": 61,
+      "name": "喜剧"
+    },
+    {
+      "count": 47,
+      "name": "犯罪"
+    },
+    {
+      "count": 46,
+      "name": "动作"
+    },
+    {
+      "count": 34,
+      "name": "惊悚"
+    },
+    {
+      "count": 20,
+      "name": "冒险"
+    },
+    {
+      "count": 19,
+      "name": "纪录片"
+    },
+    {
+      "count": 17,
+      "name": "传记"
+    },
+    {
+      "count": 15,
+      "name": "历史"
+    },
+    {
+      "count": 15,
+      "name": "悬疑"
+    },
+    {
+      "count": 14,
+      "name": "科幻"
+    },
+    {
+      "count": 11,
+      "name": "战争"
+    },
+    {
+      "count": 11,
+      "name": "运动"
+    },
+    {
+      "count": 6,
+      "name": "动画"
+    },
+    {
+      "count": 6,
+      "name": "奇幻"
+    },
+    {
+      "count": 4,
+      "name": "爱情"
+    },
+    {
+      "count": 2,
+      "name": "古装"
+    },
+    {
+      "count": 2,
+      "name": "家庭"
+    },
+    {
+      "count": 2,
+      "name": "演讲"
+    },
+    {
+      "count": 2,
+      "name": "灾难"
+    },
+    {
+      "count": 2,
+      "name": "短片"
+    },
+    {
+      "count": 2,
+      "name": "音乐"
+    },
+    {
+      "count": 1,
+      "name": "一代"
+    },
+    {
+      "count": 1,
+      "name": "武侠"
+    },
+    {
+      "count": 1,
+      "name": "真人秀"
+    },
+    {
+      "count": 1,
+      "name": "西部"
+    }
+  ],
+  "hero": {
+    "cast": [],
+    "collection": "COOF2020",
+    "country": [
+      "美国"
+    ],
+    "director": [],
+    "genres": [
+      "动作",
+      "科幻"
+    ],
+    "id": "26df21b4-7ada-4f1b-bee0-ebe4af8f6fca",
+    "mediaType": null,
+    "note": "Douban",
+    "order": 216,
+    "poster": "data/coof/posters/26df21b4-7ada-4f1b-bee0-ebe4af8f6fca.jpg",
+    "rating": null,
+    "runtimeMin": 151,
+    "status": "watched",
+    "title": "神奇女侠1984",
+    "watchedAt": "2020-12-30",
+    "year": 2020
+  },
+  "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "科幻"
+      ],
+      "id": "26df21b4-7ada-4f1b-bee0-ebe4af8f6fca",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 216,
+      "poster": "data/coof/posters/26df21b4-7ada-4f1b-bee0-ebe4af8f6fca.jpg",
+      "rating": null,
+      "runtimeMin": 151,
+      "status": "watched",
+      "title": "神奇女侠1984",
+      "watchedAt": "2020-12-30",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "悬疑",
+        "犯罪"
+      ],
+      "id": "9906d67f-c126-407d-930d-6b9bf5055277",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 215,
+      "poster": "data/coof/posters/9906d67f-c126-407d-930d-6b9bf5055277.jpg",
+      "rating": null,
+      "runtimeMin": 4,
+      "status": "watched",
+      "title": "纸钞屋 第一~四季",
+      "watchedAt": "2020-12-25",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "家庭"
+      ],
+      "id": "899175f0-e6fe-415e-861e-0f46eee48524",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 214,
+      "poster": "data/coof/posters/899175f0-e6fe-415e-861e-0f46eee48524.jpg",
+      "rating": null,
+      "runtimeMin": 5,
+      "status": "watched",
+      "title": "初来乍到 第一-五季",
+      "watchedAt": "2020-12-18",
+      "year": 2015
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "犯罪"
+      ],
+      "id": "79fe7696-b026-49c5-8767-db30c6a124ff",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 213,
+      "poster": "data/coof/posters/79fe7696-b026-49c5-8767-db30c6a124ff.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "舞女大盗",
+      "watchedAt": "2020-12-16",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "西班牙",
+        "阿根廷"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "冒险"
+      ],
+      "id": "3bb34bbd-917d-4997-ba90-d12b8ce613dd",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 212,
+      "poster": "data/coof/posters/3bb34bbd-917d-4997-ba90-d12b8ce613dd.jpg",
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "英勇废柴",
+      "watchedAt": null,
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "科幻"
+      ],
+      "id": "211cf7e8-7185-4a92-ad5c-1c862c4e1a09",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 211,
+      "poster": "data/coof/posters/211cf7e8-7185-4a92-ad5c-1c862c4e1a09.jpg",
+      "rating": null,
+      "runtimeMin": 150,
+      "status": "watched",
+      "title": "信条 tenet",
+      "watchedAt": "2020-12-05",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "战争"
+      ],
+      "id": "36e88deb-bd22-4ded-9b11-517752229f7b",
+      "mediaType": null,
+      "note": "douban bilibili",
+      "order": 210,
+      "poster": "data/coof/posters/36e88deb-bd22-4ded-9b11-517752229f7b.jpg",
+      "rating": null,
+      "runtimeMin": 169,
+      "status": "watched",
+      "title": "拯救大兵瑞恩",
+      "watchedAt": "2020-12-05",
+      "year": 1998
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "d5401a47-4616-408b-8b2f-c5470e8a4cde",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 209,
+      "poster": "data/coof/posters/d5401a47-4616-408b-8b2f-c5470e8a4cde.jpg",
+      "rating": null,
+      "runtimeMin": 7,
+      "status": "watched",
+      "title": "是，大臣 第一季",
+      "watchedAt": "2020-12-05",
+      "year": 1980
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "战争"
+      ],
+      "id": "ffac3b7d-b5ce-4263-ac62-670396ca1891",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 208,
+      "poster": "data/coof/posters/ffac3b7d-b5ce-4263-ac62-670396ca1891.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "血战摩苏尔",
+      "watchedAt": "2020-12-05",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "剧情",
+        "犯罪"
+      ],
+      "id": "93e256e1-a0ba-4b2b-9e42-5218e134fb46",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 207,
+      "poster": "data/coof/posters/93e256e1-a0ba-4b2b-9e42-5218e134fb46.jpg",
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "白头神探 第一-三部",
+      "watchedAt": "2020-12-03",
+      "year": 1988
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "96974694-96fe-459f-aea7-7fad8c39f9c0",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 206,
+      "poster": "data/coof/posters/96974694-96fe-459f-aea7-7fad8c39f9c0.jpg",
+      "rating": null,
+      "runtimeMin": 113,
+      "status": "watched",
+      "title": "超脑48H",
+      "watchedAt": "2020-12-03",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "c1fd6051-ac4c-42ac-bbd6-0f8de5272026",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 205,
+      "poster": "data/coof/posters/c1fd6051-ac4c-42ac-bbd6-0f8de5272026.jpg",
+      "rating": null,
+      "runtimeMin": 87,
+      "status": "watched",
+      "title": "捕蝇纸",
+      "watchedAt": "2020-12-03",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "7da58d85-f966-451b-aa4a-757b263f0015",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 204,
+      "poster": "data/coof/posters/7da58d85-f966-451b-aa4a-757b263f0015.jpg",
+      "rating": null,
+      "runtimeMin": 116,
+      "status": "watched",
+      "title": "火柴人",
+      "watchedAt": "2020-12-02",
+      "year": 2003
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "6329c1e2-9427-4c31-8b5f-03b8e41d8fc4",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 203,
+      "poster": "data/coof/posters/6329c1e2-9427-4c31-8b5f-03b8e41d8fc4.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "弥达斯的仆从",
+      "watchedAt": "2020-11-30",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "中国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "运动"
+      ],
+      "id": "671784f1-40c8-4267-9c94-f662178dffc4",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 202,
+      "poster": "data/coof/posters/671784f1-40c8-4267-9c94-f662178dffc4.jpg",
+      "rating": null,
+      "runtimeMin": 135,
+      "status": "watched",
+      "title": "夺冠",
+      "watchedAt": "2020-11-30",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "奇幻"
+      ],
+      "id": "4b4481f6-3dcd-4eff-8f76-8219a8c2814d",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 201,
+      "poster": "data/coof/posters/4b4481f6-3dcd-4eff-8f76-8219a8c2814d.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "剪刀手爱德华",
+      "watchedAt": "2020-11-25",
+      "year": 1990
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "俄罗斯"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "ad9c93c3-1778-4382-8636-b88145c6b873",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 200,
+      "poster": "data/coof/posters/ad9c93c3-1778-4382-8636-b88145c6b873.jpg",
+      "rating": null,
+      "runtimeMin": 7,
+      "status": "watched",
+      "title": "美谍入俄记",
+      "watchedAt": "2020-11-24",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "俄罗斯"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "b9a5e61d-9d6f-4ee1-8de8-d6077833cbfa",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 199,
+      "poster": "data/coof/posters/b9a5e61d-9d6f-4ee1-8de8-d6077833cbfa.jpg",
+      "rating": null,
+      "runtimeMin": 2,
+      "status": "watched",
+      "title": "体育老师 第一季 第二季",
+      "watchedAt": "2020-11-20",
+      "year": 2014
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "29a6087e-12e7-485a-8e47-1c200a3dc51b",
+      "mediaType": null,
+      "note": "bilibili",
+      "order": 198,
+      "poster": "data/coof/posters/29a6087e-12e7-485a-8e47-1c200a3dc51b.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "少年特工亚历克斯",
+      "watchedAt": "2020-11-19",
+      "year": 2020
+    },
+    {
+      "cast": [],
+      "collection": "COOF2020",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "奇幻"
+      ],
+      "id": "8c1f47ce-0e9e-4030-a7a4-bb67fb4e5629",
+      "mediaType": null,
+      "note": "Douban",
+      "order": 197,
+      "poster": "data/coof/posters/8c1f47ce-0e9e-4030-a7a4-bb67fb4e5629.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "古宅老友记 第一季",
+      "watchedAt": "2020-11-19",
+      "year": 2019
+    }
+  ],
+  "schemaVersion": 1
+}
