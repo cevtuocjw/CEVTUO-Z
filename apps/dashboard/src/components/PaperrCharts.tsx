@@ -24,6 +24,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
+// ⚠️ The charts bring their own styles. See the header of that file: this used
+// to live in a page, and every other page rendering these charts got unstyled
+// markup with no error to explain it.
+import './PaperrCharts.scss';
+
 // ── Shared ───────────────────────────────────────────────────
 
 /** `--chart-N`, the monochrome scale. Colour belongs to the wallpaper. */

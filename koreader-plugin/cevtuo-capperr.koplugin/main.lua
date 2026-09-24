@@ -535,7 +535,20 @@ function CevtuoCapperr:pushPayload(payload, cfg, timeout)
     -- ⚠️ On a connection failure luasocket returns nil + an error string, so
     -- `code` is not always a number. Report both rather than "HTTP nil".
     if sent and num(code) and num(code) >= 200 and num(code) < 300 then
-        return true
+        -- ⚠️⚠️ The server's ANSWER, not just its status code.
+        --
+        -- The ingest answers 200 with `status: "unchanged"` when the export
+        -- matches what it already has — which is the normal result of tapping
+        -- 导出 twice, or of closing a book without reading anything. Discarding
+        -- the body meant the popup said "已推送到服务器" in that case too, so a
+        -- working sync and a no-op looked identical. The reader tapped, saw the
+        -- same success message, opened the site, saw nothing move, and reported
+        -- the sync as broken. It had not been.
+        --
+        -- ⚠️ A body that will not parse is not a failure — the push succeeded,
+        -- we just cannot say more about it.
+        local okBody, parsed = pcall(rapidjson.decode, table.concat(resp))
+        return true, nil, (okBody and type(parsed) == "table") and parsed or nil
     end
     return false, T(_("推送失败：%1"), tostring(code or "无响应"))
 end
@@ -576,15 +589,27 @@ function CevtuoCapperr:run(interactive)
     -- ⚠️ Network is attempted only when it is already up. Bringing WiFi up
     -- from a menu action would drain the battery on a device whose whole job is
     -- lasting weeks, and the file has already been written either way.
-    local pushed, perr = false, nil
+    local pushed, perr, srv = false, nil, nil
     if NetworkMgr:isConnected() then
-        pushed, perr = self:pushPayload(payload)
+        pushed, perr, srv = self:pushPayload(payload)
     end
 
     if interactive then
         local msg = T(_("已导出 %1 本书的阅读统计\n%2"), n, path)
         if pushed then
             msg = msg .. "\n" .. _("并已推送到服务器。")
+            -- ⚠️ And WHAT the server did with it. "unchanged" is the single most
+            -- confusing outcome to receive silently: the site does not move, so
+            -- everything looks broken, when in fact the sync worked perfectly
+            -- and there was simply nothing new to say.
+            local st = srv and srv.status
+            if st == "unchanged" then
+                msg = msg .. "\n" .. _("阅读数据没有变化，网站不会更新（这是正常的）")
+            elseif st == "committed" then
+                msg = msg .. "\n" .. _("阅读数据有变化，网站已更新")
+            elseif srv and srv.message then
+                msg = msg .. "\n" .. tostring(srv.message)
+            end
         elseif perr then
             msg = msg .. "\n" .. perr
         end

@@ -19,6 +19,7 @@
   width: 100%;
 }
 
+
 .pr-current__title {
   display: block;
   font-family: t.$font-family-sans;
@@ -35,6 +36,7 @@
   -webkit-box-orient: vertical;
 }
 
+
 .pr-current__orig {
   display: block;
   margin-top: t.$space-1;
@@ -42,6 +44,7 @@
   font-size: t.$font-caption;
   color: var(--text-tertiary);
 }
+
 
 .pr-bar {
   display: flex;
@@ -54,11 +57,13 @@
   overflow: hidden;
 }
 
+
 .pr-bar__fill {
   height: 100%;
   background-color: var(--chart-1);
   border-radius: t.$radius-pill;
 }
+
 
 .pr-current__meta {
   display: flex;
@@ -69,6 +74,7 @@
   margin-top: t.$space-2;
 }
 
+
 .pr-current__pct {
   font-family: t.$font-family-sans;
   font-size: t.$font-caption;
@@ -76,11 +82,13 @@
   color: var(--text-primary);
 }
 
+
 .pr-current__note {
   font-family: t.$font-family-sans;
   font-size: t.$font-caption;
   color: var(--text-tertiary);
 }
+
 
 // ── Daily strip ──────────────────────────────────────────────
 .pr-days {
@@ -94,6 +102,7 @@
   gap: 3px;
 }
 
+
 .pr-days__col {
   display: flex;
   flex-direction: column;
@@ -106,6 +115,7 @@
   height: 100%;
 }
 
+
 .pr-days__track {
   display: flex;
   flex-direction: column;
@@ -115,11 +125,13 @@
   min-height: 0;
 }
 
+
 .pr-days__bar {
   width: 100%;
   background-color: var(--chart-3);
   border-radius: t.$radius-tile;
 }
+
 
 .pr-days__label {
   margin-top: t.$space-1;
@@ -132,6 +144,7 @@
   white-space: nowrap;
 }
 
+
 // ── Filters ──────────────────────────────────────────────────
 .pr-filters {
   display: flex;
@@ -141,6 +154,7 @@
   width: 100%;
   margin-bottom: t.$space-4;
 }
+
 
 .pr-chip {
   @include g.glass-inset;
@@ -152,9 +166,11 @@
   border-radius: var(--radius-chip);
 }
 
+
 .pr-chip--on {
   background-color: var(--accent-soft);
 }
+
 
 .pr-chip__text {
   font-family: t.$font-family-sans;
@@ -163,9 +179,11 @@
   color: var(--text-secondary);
 }
 
+
 .pr-chip--on .pr-chip__text {
   color: var(--text-primary);
 }
+
 
 // ── Book rows ────────────────────────────────────────────────
 //
@@ -181,6 +199,7 @@
   width: 100%;
 }
 
+
 .pr-list {
   position: absolute;
   left: 0;
@@ -191,6 +210,7 @@
   flex-direction: column;
   width: 100%;
 }
+
 
 .pr-row {
   display: flex;
@@ -204,6 +224,7 @@
   border-bottom: 1px solid var(--hairline);
 }
 
+
 .pr-row__main {
   display: flex;
   flex-direction: column;
@@ -211,6 +232,7 @@
   min-width: 0;
   padding-right: t.$space-3;
 }
+
 
 .pr-row__title {
   display: block;
@@ -225,6 +247,7 @@
   -webkit-box-orient: vertical;
 }
 
+
 .pr-row__orig {
   display: block;
   margin-top: 2px;
@@ -238,6 +261,7 @@
   -webkit-box-orient: vertical;
 }
 
+
 .pr-row__meta {
   display: block;
   margin-top: t.$space-1;
@@ -249,6 +273,7 @@
   text-overflow: ellipsis;
 }
 
+
 .pr-row__side {
   display: flex;
   flex-direction: column;
@@ -259,16 +284,19 @@
   flex-shrink: 0;
 }
 
+
 .pr-row__pct {
   font-family: t.$font-family-sans;
   font-size: t.$font-caption;
   color: var(--text-secondary);
 }
 
+
 .pr-row__pct--done {
   color: var(--text-tertiary);
   letter-spacing: t.$track-label;
 }
+
 
 .pr-row__eta {
   margin-top: 2px;
@@ -276,6 +304,7 @@
   font-size: t.$font-micro;
   color: var(--text-tertiary);
 }
+
 
 .pr-foot {
   display: block;
@@ -286,34 +315,6 @@
   color: var(--text-tertiary);
 }
 
-// ── Shared chart furniture ───────────────────────────────────
-.pc-gap {
-  display: block;
-  height: t.$space-6;
-  width: 100%;
-}
-
-// ⚠️ Reserved height, not `min-height`. These readouts swap between one and
-// three lines of text as you scrub, and without a fixed box the whole panel
-// below them jumps on every touch — which reads as the chart itself moving.
-.pc-readout {
-  display: block;
-  height: 20px;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-caption;
-  color: var(--text-primary);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.pc-note {
-  display: block;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  letter-spacing: t.$track-label;
-  color: var(--text-tertiary);
-}
 
 .pr-current__foot {
   display: block;
@@ -323,365 +324,6 @@
   color: var(--text-tertiary);
 }
 
-// ── Donut ────────────────────────────────────────────────────
-.pc-donut {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-  gap: t.$space-4;
-}
-
-.pc-donut__plot {
-  position: relative;
-  // ⚠️ 132px, up from 116 — the reader asked for the charts to be larger and
-  // the cell is now sized to what the chart needs rather than to a grid column.
-  //
-  // ⚠️ Except on a phone, where 132 + the legend's own minimum exceeds the
-  // 260px the grid gets, and the cell overflows into its neighbour. 120px there,
-  // which still clears the 116 it was.
-  width: 120px;
-  height: 120px;
-  flex-shrink: 0;
-}
-
-.pc-donut__svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  // ⚠️ Rotated so the first segment starts at 12 o'clock. The dash technique
-  // begins at 3 o'clock, and a donut whose first slice starts at the side
-  // reads as a chart that failed to line up.
-  transform: rotate(-90deg);
-}
-
-.pc-donut__ring {
-  fill: none;
-  stroke: var(--divider);
-  stroke-width: 12;
-}
-
-.pc-donut__seg {
-  fill: none;
-  stroke-width: 12;
-  cursor: pointer;
-  transition: stroke-width 0.18s ease, opacity 0.18s ease;
-}
-
-.pc-donut__seg--on {
-  stroke-width: 18;
-}
-
-.pc-donut__center {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  // ⚠️ The centre must not eat the segments' clicks — it sits on top of them.
-  pointer-events: none;
-}
-
-.pc-donut__value {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-heading;
-  font-weight: t.$weight-semibold;
-  color: var(--text-primary);
-}
-
-.pc-donut__unit {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  letter-spacing: t.$track-label;
-  color: var(--text-tertiary);
-}
-
-// ── Legend ───────────────────────────────────────────────────
-.pc-legend {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  gap: t.$space-2;
-}
-
-.pc-legend__row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-  padding: t.$space-1 t.$space-2;
-  border-radius: var(--radius-chip);
-  cursor: pointer;
-}
-
-.pc-legend__row--on {
-  background-color: var(--accent-soft);
-}
-
-.pc-legend__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: t.$radius-pill;
-  flex-shrink: 0;
-}
-
-.pc-legend__label {
-  flex: 1;
-  // ⚠️⚠️ `min-width: 0`, NOT 52px.
-  //
-  // The floor was there because the CATEGORY NAME was being squeezed to nothing
-  // by a long value ("44559 分钟"). That is handled where it belongs now — the
-  // value carries `flex-shrink: 0` and the formatter emits compact times ("46m",
-  // "11.7h") — so the floor is redundant, and it was costing real layout.
-  //
-  // With 52px the donut cell's irreducible width was
-  //     132 (plot) + 16 (gap) + 16 (row padding) + 8 (dot) + 8 + 52 + 8 + 26
-  //   = 266px
-  // against the 260px a 390px phone gives the grid. The cell overflowed by 5px,
-  // which put the legend's text on top of the neighbouring card. At 360px it
-  // would have been 28px. `text-overflow: ellipsis` is the graceful answer when
-  // there genuinely is not room; a hard floor is not.
-  min-width: 0;
-  margin-left: t.$space-2;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-caption;
-  color: var(--text-secondary);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.pc-legend__value {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-caption;
-  color: var(--text-primary);
-  // ⚠️ `flex-shrink: 0` + a floor on the label's width. Without them a long
-  // value ("44559 分钟") claimed the row and the CATEGORY NAME was squeezed to
-  // zero width — the legend showed three dots and three numbers and no way to
-  // tell which was which.
-  flex-shrink: 0;
-  margin-left: t.$space-2;
-}
-
-// ── Smooth curve ─────────────────────────────────────────────
-.pc-curve {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.pc-curve__hit {
-  position: relative;
-  width: 100%;
-  height: 96px;
-  // ⚠️ `touch-action: none` — without it the browser claims a horizontal drag
-  // as a page-scroll gesture and the scrub dies after the first few pixels.
-  touch-action: none;
-  // ⚠️⚠️ THE LINK THAT WAS MISSING. `.pc-curve` is 170px, but its child here
-  // had no `flex`, so it stayed content-height — and the SVG inside it is
-  // `height: 100%` of an auto-height parent, which resolves to nothing and
-  // falls back to the viewBox ratio. The container's height never reached the
-  // chart, and the setting looked applied in devtools because it was.
-  //
-  // Same shape as the ScrollView in this project that needed a
-  // `position/relative + flex: 1` wrapper: a `height: 100%` descendant under an
-  // auto-height parent is not a layout, it is a coincidence.
-  flex: 1;
-  min-height: 0;
-}
-
-.pc-curve__svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-// ⚠️ An explicit height, because the SVG is `height: 100%` of an auto-height
-// parent — which resolves to the content height and left the curve as a thin
-// ribbon at the top of a cell whose neighbour (the month calendar) was four
-// times taller. The reader's complaint was "大屏上不注重图标展示"; a chart that
-// occupies a fifth of its column is exactly that.
-//
-// `preserveAspectRatio="none"` on the element means this stretches the drawing
-// vertically rather than letterboxing it, which is what a sparkline wants.
-.pc-curve {
-  height: 170px;
-}
-
-@include b.medium-up {
-  .pc-curve {
-    height: 230px;
-  }
-}
-
-.pc-curve__area {
-  fill: var(--accent-soft);
-  stroke: none;
-}
-
-.pc-curve__line {
-  fill: none;
-  stroke: var(--chart-1);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  // ⚠️ `vector-effect` keeps the line 1.6px after the viewBox is stretched
-  // non-uniformly. Without it `preserveAspectRatio="none"` scales the stroke
-  // with the box and a wide screen gets a visibly thicker curve than a phone.
-  vector-effect: non-scaling-stroke;
-}
-
-.pc-curve__guide {
-  stroke: var(--text-tertiary);
-  stroke-width: 1;
-  stroke-dasharray: 2 3;
-  vector-effect: non-scaling-stroke;
-}
-
-.pc-curve__dot {
-  fill: var(--chart-1);
-  stroke: none;
-}
-
-// ── Bars ─────────────────────────────────────────────────────
-.pc-bars {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-// ⚠️⚠️ ONE height for every bar chart, defined once.
-//
-// These were 88px, 84px, 76px and 72px — four charts, four numbers, chosen one
-// at a time. Nothing was wrong with any of them individually and the set looked
-// like four different people had drawn it: the baselines did not line up when
-// two charts shared a row, and the eye read the height difference as a
-// difference in the data. The reader's words were "尽量对齐，UI 风格要统一".
-//
-// 108px, up from the largest of them: these are the page's main content and
-// they were sized like footnotes.
-$chart-h: 108px;
-
-.pc-bars__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  width: 100%;
-  height: $chart-h;
-  gap: t.$space-1;
-}
-
-.pc-bars__col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  // ⚠️ `min-width: 0`, or the flex children refuse to shrink below their
-  // content and seven columns overflow the panel.
-  min-width: 0;
-  height: 100%;
-  cursor: pointer;
-}
-
-.pc-bars__track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-}
-
-.pc-bars__bar {
-  width: 100%;
-  background-color: var(--chart-4);
-  border-radius: t.$radius-tile;
-  transition: background-color 0.18s ease;
-}
-
-.pc-bars__col--on .pc-bars__bar {
-  background-color: var(--chart-1);
-}
-
-.pc-bars__label {
-  margin-top: t.$space-1;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-secondary);
-}
-
-.pc-bars__value {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-
-.pc-bars__col--on .pc-bars__value {
-  color: var(--text-primary);
-}
-
-// ── Heatmap ──────────────────────────────────────────────────
-.pc-heat {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.pc-heat__scroll {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.pc-heat__svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-// Five levels on the monochrome ink scale. Colour is the wallpaper's job; a
-// categorical green→red ramp would be the third colour source on one screen.
-.pc-heat__cell {
-  cursor: pointer;
-}
-
-.pc-heat__cell--l0 { fill: var(--divider); }
-.pc-heat__cell--l1 { fill: var(--chart-7); }
-.pc-heat__cell--l2 { fill: var(--chart-5); }
-.pc-heat__cell--l3 { fill: var(--chart-3); }
-.pc-heat__cell--l4 { fill: var(--chart-1); }
-
-.pc-heat__cell--on {
-  stroke: var(--text-primary);
-  stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
-}
-
-/* ⚠️ Left-aligned, under the grid — NOT `flex-end`.
-   The chart is capped at its natural width (177px) while the cell it sits in is
-   as wide as the column, so a right-aligned scale ends up floating in the empty
-   space beside the chart with nothing to connect it to. */
-.pc-heat__scale {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  margin-top: t.$space-2;
-  gap: t.$space-1;
-}
-
-.pc-heat__swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 1.5px;
-}
 
 // ── Password gate ────────────────────────────────────────────
 //
@@ -694,6 +336,7 @@ $chart-h: 108px;
   width: 100%;
   max-width: 360px;
 }
+
 
 // ⚠️ `glass-sheet`, not `glass-inset`. The first version used the inset treatment
 // the chips use, and on this page's wallpaper the field did not read as a FIELD
@@ -714,6 +357,7 @@ $chart-h: 108px;
   color: var(--text-primary);
 }
 
+
 // ⚠️ H5 only — Taro renders a real `<input>` inside `<taro-input-core>`, and the
 // colour has to be set on THAT element. Without this the value typed in
 // inherits the browser default, which is black, on a dark field. The mini-program
@@ -725,9 +369,11 @@ $chart-h: 108px;
   background-color: transparent;
 }
 
+
 .pr-gate__input input::placeholder {
   color: var(--text-secondary);
 }
+
 
 .pr-gate__btn {
   @include g.glass-sheet;
@@ -740,11 +386,13 @@ $chart-h: 108px;
   border-radius: var(--radius-chip);
 }
 
+
 .pr-gate__btn-t {
   font-family: t.$font-family-sans;
   font-size: t.$font-body;
   color: var(--text-primary);
 }
+
 
 // ⚠️ The halo. This text sits DIRECTLY on the wallpaper, like the section
 // headings do (see section.scss) — and `--text-tertiary` in dark mode is a dim
@@ -758,6 +406,7 @@ $chart-h: 108px;
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
 
+
 // ⚠️ The line that explains why ONE panel is locked. Without it the gate looks
 // like the whole dashboard is gated and something went wrong above it.
 .pr-gate__why {
@@ -768,6 +417,7 @@ $chart-h: 108px;
   color: var(--text-secondary);
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
+
 
 // ── The overview panel scrolls WITHIN itself ─────────────────
 //
@@ -786,6 +436,7 @@ $chart-h: 108px;
   width: 100%;
 }
 
+
 .pr-scroll {
   position: absolute;
   left: 0;
@@ -796,6 +447,7 @@ $chart-h: 108px;
   flex-direction: column;
   width: 100%;
 }
+
 
 // Section headings inside the scrolling column. The panel's own title lives in
 // the margin; these separate the charts from each other.
@@ -808,6 +460,7 @@ $chart-h: 108px;
   color: var(--text-primary);
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
+
 
 /* ⚠️⚠️ TWO LINES RESERVED, always.
    Every cell is [title][subtitle][chart]. The subtitles run one or two lines
@@ -825,6 +478,7 @@ $chart-h: 108px;
   min-height: 2.9em;
 }
 
+
 .pr-current__kicker {
   display: block;
   margin-bottom: t.$space-1;
@@ -835,162 +489,13 @@ $chart-h: 108px;
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
 
+
 // 待看 is a different thing from 在读 — dimmed, not highlighted.
 .pr-row__pct--todo {
   color: var(--text-tertiary);
   letter-spacing: t.$track-label;
 }
 
-// ── Hour grid ────────────────────────────────────────────────
-.pc-hours {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.pc-hours__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  width: 100%;
-  height: $chart-h;
-  gap: 1px;
-}
-
-.pc-hours__col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  // ⚠️ 24 columns in ~350px is ~14px each. Without `min-width: 0` a flex child
-  // refuses to shrink below its content and the row overflows the panel.
-  min-width: 0;
-  height: 100%;
-  cursor: pointer;
-}
-
-.pc-hours__track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-}
-
-.pc-hours__bar {
-  width: 100%;
-  background-color: var(--chart-4);
-  border-radius: t.$radius-tile;
-  transition: background-color 0.18s ease;
-}
-
-.pc-hours__col--on .pc-hours__bar {
-  background-color: var(--chart-1);
-}
-
-.pc-hours__label {
-  margin-top: t.$space-1;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-
-// ── Records ──────────────────────────────────────────────────
-.pc-records {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  width: 100%;
-  gap: t.$space-4;
-}
-
-.pc-records__cell {
-  display: flex;
-  flex-direction: column;
-  // Two per row on a phone; `flex-basis` with a min keeps them from collapsing
-  // to their content and stacking unevenly.
-  flex: 1 1 40%;
-  min-width: 0;
-}
-
-.pc-records__value {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-title;
-  font-weight: t.$weight-semibold;
-  color: var(--text-primary);
-  text-shadow: 0 1px 8px var(--text-halo-strong);
-}
-
-.pc-records__label {
-  margin-top: 2px;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-caption;
-  color: var(--text-secondary);
-  text-shadow: 0 1px 8px var(--text-halo-strong);
-}
-
-.pc-records__note {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-  text-shadow: 0 1px 8px var(--text-halo-strong);
-}
-
-// ── Month bars ───────────────────────────────────────────────
-.pc-months {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.pc-months__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  width: 100%;
-  height: $chart-h;
-  gap: t.$space-2;
-}
-
-.pc-months__col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  cursor: pointer;
-}
-
-.pc-months__track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-}
-
-.pc-months__bar {
-  width: 100%;
-  background-color: var(--chart-5);
-  border-radius: t.$radius-tile;
-  transition: background-color 0.18s ease;
-}
-
-.pc-months__col--on .pc-months__bar {
-  background-color: var(--chart-1);
-}
-
-.pc-months__label {
-  margin-top: t.$space-1;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
 
 // ── The overview grid ────────────────────────────────────────
 //
@@ -1022,6 +527,7 @@ $chart-h: 108px;
   gap: t.$space-5 t.$space-4;
 }
 
+
 .pr-grid__cell {
   display: flex;
   flex-direction: column;
@@ -1036,6 +542,7 @@ $chart-h: 108px;
   // wide chart forces the whole row past the panel edge.
   min-width: 0;
 }
+
 
 // Genuinely compact blocks — a 2×2 of short values, seven thin bars.
 //
@@ -1057,6 +564,7 @@ $chart-h: 108px;
   flex: 1 1 104px;
 }
 
+
 // ⚠️ The donut needs ~240px (a fixed 116px plot beside a legend with a 52px
 // floor) and nothing like the 320px a full cell gets. Given the same basis as
 // the hour grid it took 343px of a 700px row and left the legend spread across
@@ -1075,11 +583,13 @@ $chart-h: 108px;
   flex: 1 1 300px;
 }
 
+
 // ⚠️ The first heading in a cell has no top margin to contribute — the grid gap
 // already separates the cells, and the margin double-spaced the first row.
 .pr-grid__cell > .pr-h:first-child {
   margin-top: 0;
 }
+
 
 // ── Making the compact charts survive a 120px cell ───────────
 //
@@ -1106,258 +616,13 @@ $chart-h: 108px;
   display: none;
 }
 
+
 // ⚠️ Same reasoning for the unit caption — it was wrapping onto two lines and
 // repeating what the cell's own title and subtitle already say.
 .pr-grid__cell--half .pc-note {
   display: none;
 }
 
-// ── Progress bands ───────────────────────────────────────────
-//
-// Ten columns of a count. The numbers are small (0–41), so the count is written
-// above each bar rather than relying on the height — at these magnitudes two
-// bars differing by one book are visually identical.
-.pc-bands {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-.pc-bands__row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  width: 100%;
-  gap: 4px;
-  height: $chart-h;
-}
-.pc-bands__col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-}
-.pc-bands__count {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-  // ⚠️ Reserved even when empty. An empty band renders no text, and without a
-  // fixed line the tracks in that column shift up and its baseline no longer
-  // matches its neighbours'.
-  height: 13px;
-  line-height: 13px;
-}
-.pc-bands__track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 100%;
-  // ⚠️ `flex: 1`, like every other bar chart in this file — the fixed 56px was
-  // the reason this chart's bars were shorter than 时段's inside the same
-  // nominal row height. The count label above is absolutely reserved instead,
-  // so an empty band still occupies its line and the tracks stay equal.
-  flex: 1;
-  min-height: 0;
-}
-.pc-bands__bar {
-  width: 100%;
-  border-radius: 2px 2px 0 0;
-  background-color: var(--chart-4);
-  transition: background-color 0.18s ease;
-}
-// The bands at or past the 70% finish line. Same accent the donut and the
-// "读完" filter use, so one colour means one thing across the page.
-.pc-bands__bar--done {
-  background-color: var(--accent);
-}
-.pc-bands__label {
-  margin-top: 3px;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-
-// ── Entrance animation ───────────────────────────────────────
-//
-// ⚠️ Every chart animates, and each one starts when IT becomes visible — not
-// when the page loads. The overview is one long scroll inside a panel; a
-// cascade fired at mount would be over before the reader reached the third
-// chart, and the charts below the fold would have silently finished.
-//
-// The class is applied from the DOM (see the page's useEffect) for the same
-// reason the curve binds its own listeners: Taro drops some of what React would
-// forward, and a ref on a <View> is not something this codebase can rely on.
-@keyframes pc-rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
-}
-
-.pc-reveal {
-  opacity: 0;
-}
-
-.pc-reveal--in {
-  animation: pc-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-
-// Bars grow from the baseline rather than appearing at full height. Without
-// this the reveal is a fade of something already drawn, which reads as a
-// screenshot loading rather than a chart being drawn.
-@keyframes pc-grow {
-  from { transform: scaleY(0); }
-  to   { transform: scaleY(1); }
-}
-.pc-reveal--in .pc-bars__bar,
-.pc-reveal--in .pc-bands__bar,
-.pc-reveal--in .pc-months__bar,
-.pc-reveal--in .pc-hours__bar {
-  transform-origin: bottom;
-  animation: pc-grow 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-
-// ⚠️⚠️ The stroke-draw animation was REMOVED, and the reason is worth keeping.
-//
-// It relied on `pathLength="1"` normalising the geometry so that
-// `stroke-dasharray: 1` meant "one whole path". It does not: the browser
-// resolves that declaration to **`1px`** — an absolute unit that `pathLength`
-// does not scale — so the dash pattern was 1 user unit on, 1 off, against a
-// path 472 units long. The result was a curve that stopped about 55% of the way
-// across while its own filled area carried on to the edge.
-//
-// ⚠️ Every assertion passed while it looked like that. 120 behavioural checks
-// across three viewports, and not one of them can see a stroke that is shorter
-// than the shape it belongs to. Found by looking at a screenshot.
-//
-// The cell already fades and rises as a whole, so the curve still animates in;
-// what it lost is a flourish that was drawing the wrong thing.
-@keyframes pc-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.pc-reveal--in .pc-curve__area,
-.pc-reveal--in .pc-donut__seg,
-.pc-reveal--in .pc-donut__ring,
-.pc-reveal--in .pc-cal__cell,
-.pc-reveal--in .pc-heat__cell {
-  animation: pc-fade 0.6s ease-out both;
-}
-
-// ── Period stats: today / this week / this month ─────────────
-.pc-periods {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  gap: t.$space-3;
-  margin-bottom: t.$space-4;
-}
-.pc-periods__col {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  // ⚠️ A rule down the left edge, not a border. A border between three columns
-  // draws two lines and leaves the outer edges open, so the group reads as
-  // three loose numbers rather than one block of three.
-  border-left: 2px solid var(--divider);
-  padding-left: t.$space-3;
-}
-.pc-periods__label {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-caption;
-  color: var(--text-secondary);
-}
-.pc-periods__value {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-title;
-  font-weight: t.$weight-semibold;
-  color: var(--text-primary);
-  text-shadow: 0 1px 8px var(--text-halo-strong);
-}
-.pc-periods__note {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-.pc-periods__delta {
-  margin-top: 2px;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-// ⚠️ Two colours, and they mean direction, not good/bad. Reading less this week
-// is not a failure, and a red number would say it was.
-.pc-periods__delta--up { color: var(--accent); }
-.pc-periods__delta--down { color: var(--text-secondary); }
-
-// ── This month, as a calendar ────────────────────────────────
-.pc-cal {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 3px;
-}
-.pc-cal__head,
-.pc-cal__row {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  gap: 3px;
-}
-.pc-cal__wd {
-  flex: 1;
-  text-align: center;
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  color: var(--text-tertiary);
-}
-.pc-cal__cellwrap {
-  flex: 1;
-  min-width: 0;
-}
-.pc-cal__cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  // ⚠️ `aspect-ratio` is not available in Skyline, so the height is a fixed
-  // value chosen to match the cell width at the narrowest column the grid
-  // produces. A square that is one pixel off is indistinguishable; one that
-  // collapses to zero is a broken chart.
-  height: 30px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-// The same five-step ink scale the heatmap used. Colour is the wallpaper's job.
-.pc-cal__cell--l0 { background-color: var(--divider); }
-.pc-cal__cell--l1 { background-color: var(--chart-7); }
-.pc-cal__cell--l2 { background-color: var(--chart-5); }
-.pc-cal__cell--l3 { background-color: var(--chart-3); }
-.pc-cal__cell--l4 { background-color: var(--chart-1); }
-.pc-cal__cell--blank { background-color: transparent; cursor: default; }
-.pc-cal__cell--on { outline: 1.5px solid var(--text-primary); outline-offset: -1.5px; }
-.pc-cal__day {
-  font-family: t.$font-family-sans;
-  font-size: t.$font-micro;
-  // ⚠️ Haloed, because it sits on five different fills from near-white to
-  // near-black. A single ink colour is unreadable on one end of that ramp.
-  color: var(--text-primary);
-  text-shadow: var(--text-halo);
-}
-
-// ⚠️ Today's column in the week bars. A filled dot rather than a colour change:
-// every bar's fill already encodes a value, and recolouring one would make it
-// look like a different series.
-.pc-bars__col--now .pc-bars__label {
-  font-weight: t.$weight-semibold;
-  color: var(--text-primary);
-}
-.pc-bars__col--now .pc-bars__track {
-  outline: 1px dashed var(--text-tertiary);
-  outline-offset: 2px;
-  border-radius: 3px;
-}
 
 
 // ⚠️ Half a half. `记录` shares a row with `本周` on a desktop panel, so each
@@ -1371,16 +636,7 @@ $chart-h: 108px;
 .pr-grid__cell--half .pc-records__value {
   font-size: t.$font-body;
 }
+
 .pr-grid__cell--half .pc-records__label {
   font-size: t.$font-micro;
-}
-
-
-// ⚠️ The desktop panel gives the grid 700px, where the ring can be larger
-// without the legend paying for it.
-@include b.medium-up {
-  .pc-donut__plot {
-    width: 132px;
-    height: 132px;
-  }
 }

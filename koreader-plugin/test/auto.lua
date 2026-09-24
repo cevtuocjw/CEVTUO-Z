@@ -10,6 +10,11 @@ local SETTINGS = assert(os.getenv("CAPPERR_SETTINGS"), "CAPPERR_SETTINGS not set
 package.path = SHIM .. "/?.lua;" .. SHIM .. "/?/init.lua;" .. package.path
 
 local UIManager = require("ui/uimanager")
+
+-- ⚠️ A GLOBAL, because that is how the plugin uses it — KOReader installs
+-- `InfoMessage` into `_G`. Without this stub the manual export throws on its
+-- first line and the one control the reader actually presses stays untested.
+_G.InfoMessage = { new = function(_, o) return o end }
 local NetworkMgr = require("ui/network/manager")
 local http = require("socket.http")
 local rj = require("rapidjson")
@@ -208,6 +213,45 @@ ageState(60)   -- one minute ago, inside the 30-minute default
 inst:scheduleStartupSync()
 check(fired() == 1, "startup with a recent push -> task still scheduled")
 check(#http._calls() == 0, "startup within the interval -> NOTHING pushed", #http._calls())
+
+-- ── The manual export's popup ───────────────────────────────
+--
+-- ⚠️ This popup is the ONLY feedback the reader gets from a manual push, and
+-- the thing it must say is what the SERVER did — not merely that the request
+-- succeeded. "阅读数据没有变化" is the outcome that otherwise looks identical to
+-- a broken sync: they tap 导出, the popup says 已推送, the site does not move,
+-- and there is nothing anywhere saying that was the correct result.
+
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+NetworkMgr:_set(true)
+
+UIManager:_resetShown(); http._reset()
+http._setResponse(1, 200, nil, rj.encode({ ok = true, status = 'unchanged', message = '阅读数据没有变化', books = 5 }))
+inst:run(true)
+local t1 = UIManager:_lastText() or ''
+check(t1:find('没有变化') ~= nil, 'popup says the reading did not change', t1)
+check(t1:find('网站不会更新') ~= nil, 'popup explains the site will not move', t1)
+
+UIManager:_resetShown(); http._reset()
+http._setResponse(1, 200, nil, rj.encode({ ok = true, status = 'committed', message = '已保存并重新生成', books = 5 }))
+inst:run(true)
+local t2 = UIManager:_lastText() or ''
+check(t2:find('网站已更新') ~= nil, 'popup says the site WAS updated', t2)
+
+-- ⚠️ A body that will not parse must not turn a successful push into a failure.
+UIManager:_resetShown(); http._reset()
+http._setResponse(1, 200, nil, 'not json at all')
+inst:run(true)
+local t3 = UIManager:_lastText() or ''
+check(t3:find('已推送到服务器') ~= nil, 'an unparseable body still reads as a successful push', t3)
+
+-- And the shim's body plumbing is itself worth a negative control.
+UIManager:_resetShown(); http._reset()
+http._setResponse(nil, nil, 'connection refused')
+inst:run(true)
+local t4 = UIManager:_lastText() or ''
+check(t4:find('connection refused') ~= nil or t4:find('失败') ~= nil,
+      'a connection failure still surfaces in the popup', t4)
 
 print(string.format("PASS %d, FAIL %d", passes, #fails))
 for _, x in ipairs(fails) do print("  FAIL: " .. x) end
