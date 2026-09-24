@@ -7,7 +7,7 @@
 ⚠️ **统计库是 WAL 模式。** 只把 `statistics.sqlite3` 拷出来，很可能读到**旧快照** ——
 最近的阅读还在 `-wal` 文件里，要等一次 checkpoint 才会合并进主库。
 
-在 KOReader **进程内部**用 sqlite3 读，是唯一能保证数字是当前的办法。
+在 KOReader **进程内部**用 ljsqlite3 读，是唯一能保证数字是当前的办法。
 SFTP 那条路保留作备用，给跑不了插件的设备用。
 
 ## 安装
@@ -30,16 +30,16 @@ cp -R koreader-plugin/cevtuo-capperr.koplugin /Volumes/Kindle/koreader/plugins/
 
 成功会弹一条消息，告诉你导出了几本书、文件写到了哪里。
 
-输出文件按设备类型落在这几个位置之一：
+输出文件落在**用户可见分区**的根目录 —— 也就是 `Device.home_dir`：
+Kindle 是 `/mnt/us/`，Kobo 是 `/mnt/onboard/`。这个值由 KOReader 按机型自己维护，
+插件不猜。USB 插上电脑就能直接拿走。
 
-| 设备 | 路径 |
-|---|---|
-| Kindle | `/mnt/onboard/cevtuo-capperr.json` |
-| 部分 Kindle 固件 | `/mnt/us/cevtuo-capperr.json` |
-| Kobo（SD 卡） | `/mnt/sdcard/cevtuo-capperr.json` |
-| 都找不到时 | KOReader 设置目录下 |
+⚠️ 只有在 `Device.home_dir` 为空或那个目录不存在时，才退回到 `/mnt/us`、
+`/mnt/onboard`、`/mnt/sd`、`/mnt/ext1` 这个列表去逐个探测，最后才落到 KOReader 设置目录。
 
-USB 插上电脑就能直接拿走 —— 这是"备用路径"存在的意义。
+> 第一版这里是**写死的列表，而且认错了设备**：把 `/mnt/onboard` 标成 Kindle
+> （那其实是 Kobo），Kobo 的 SD 卡也写成了 `/mnt/sdcard`（实际是 `/mnt/sd`）。
+> 列表本身能靠探测蒙对，但对着一张错的对照表去排查问题，会查错方向。
 
 ## 直接推送到服务器（可选）
 
@@ -58,8 +58,8 @@ USB 插上电脑就能直接拿走 —— 这是"备用路径"存在的意义。
 
 ## 它读什么、不读什么
 
-**只读** `statistics.sqlite3`，**只 SELECT**，不写统计库、不碰 Reading Insight、
-不碰任何别的插件的存储。
+**只读** `statistics.sqlite3`，只发 SELECT 和 PRAGMA，不改任何一条阅读统计，
+不碰 Reading Insight、不碰任何别的插件的存储。
 
 | 字段 | 来源 |
 |---|---|
@@ -70,18 +70,62 @@ USB 插上电脑就能直接拿走 —— 这是"备用路径"存在的意义。
 | 每日时长与翻页 | `page_stat_data` 按天聚合 |
 
 ⚠️ **进度没有现成字段**，统计库里不存百分比 —— 是从最后读的那一页算出来的。
+且只认 `page > 0` 的行：`page` 列的默认值是 0，一条没落到实页上的记录如果
+start_time 最新，会把一本快读完的书报成 0%。
 
 ⚠️ **每日聚合在 SQL 里做**，不是在 Lua 里。重度读者 `page_stat_data` 有几十万行，
 全读进内存是让设备因 OOM 被杀掉的经典方式。
 
-⚠️ **列会先探测再选。** `highlights` / `notes` 是后来版本才加的列，
+⚠️ **列会先探测再选。** `highlights` / `notes` / `total_read_pages` 都是后来版本才加的列，
 在旧库上直接 SELECT 会硬报错、整个导出失败。探测过之后，旧设备照样能导出，
-只是少那两个字段。
+只是少那几个字段。
 
-## ⚠️ 未在真机上跑过
+⚠️ 关于"绝不写库"的准确说法：连接是**读写模式**打开的，因为 WAL 库在无法创建
+`-shm` 文件时**根本不允许只读打开** —— 而那正是这台设备的情况。SQLite 关闭时
+可能自己做一次 WAL checkpoint，那是它自己的簿记，不是数据改动。
 
-这个插件是照着 KOReader 的插件 API 文档和 Statistics 插件建的表结构写的，
-**手上没有 Kindle 可以实测**。所以里面每一步都包了 `pcall`，
-失败会**明确弹消息说失败**，而不是写一个看起来像"最近没读书"的半空文件。
+## ⚠️ 第一版的两个硬伤（已修）
 
-第一次跑如果报错，把弹出的那条消息发我 —— 里面有具体的失败点和路径。
+第一版是照着记忆里的 lsqlite3 API 写的，**装上必定弹错**。两个都验过：
+
+1. **`db:nrows()` 这个方法不存在。** KOReader 用的不是通用 lsqlite3，是 stepelu 的
+   ljsqlite3，全部查询接口只有 `exec`（按**列**返回）/ `rowexec` / `prepare`+`step`。
+   （出处：<http://scilua.org/ljsqlite3.html>，以及 KOReader 自己的 `statistics.koplugin`
+   和 `vocabbuilder.koplugin` —— 两者都用 `prepare`/`step` 遍历行。）
+2. **模块名写错。** 第一版 `require("ljsqlite3")`；KOReader 里是
+   **`require("lua-ljsqlite3/init")`**。
+
+⚠️ 真正危险的不是报错，是**报错的内容是假的**：模块名错了会弹「这个 KOReader 没有带
+ljsqlite3」，方法名错了会弹「统计库里没有 book 表」—— 两条都会把人引到错误的排查方向。
+两个假消息都在 `test/` 里被复现过（见下）。
+
+⚠️ 还有一个只在真机上才会咬人的：ljsqlite3 把 SQLite 的 INTEGER 读成
+**`cdata<int64_t>`**，不是 Lua number。直接 `tostring` 会得到 `"7LL"` 而不是 `"7"` ——
+书 id 会全带 LL 后缀。所有数字都过一遍 `num()`（就是 KOReader 自己用的 `tonumber()` 包装）。
+
+## 测试：不用真机也能跑
+
+```bash
+cd koreader-plugin/test && ./test.sh
+```
+
+它拿**真实的 sqlite3 库**（表结构抄自 KOReader 的 Statistics 插件）跑插件**真实的
+`buildPayload()`**，在 LuaJIT 下。假的只有周围环境：KOReader 的 UI 模块，
+以及 ljsqlite3 本身（用 sqlite3 命令行做的 shim，**INTEGER 照旧返回 cdata<int64_t>**，
+所以数字处理这条路径是真的被测了）。
+
+三个分支共 **76 条断言**：
+
+| 模式 | 覆盖 |
+|---|---|
+| `main` | 5 本书；NULL 列、无页数书、空 last_open、书名里的单引号/换行/中文；进度与每日聚合 |
+| `legacy` | 老版本库（没有 `notes`/`highlights`/`total_read_pages`）照样能导出 |
+| `notime` | 连 `total_read_time` 都没有时，报的必须是那句明确的错 |
+
+⚠️ 它**证明不了**插件在 Kindle 上能用。它证明的是真正咬过人的那一层：SQL、
+行遍历 API、数字处理。
+
+## ⚠️ 仍未在真机上跑过
+
+UI 接线、文件路径、网络推送这三块还是「推理过、没跑过」。第一次跑如果报错，
+把弹出的那条消息发我 —— 里面有具体的失败点和路径。
