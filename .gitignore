@@ -68,3 +68,10 @@ yarn-error.log*
 
 # Douban lookup cache — scratch data, not project content
 .cache/
+
+# ⚠️ The KOReader device config: it carries the DEVICE bearer token in plain
+# text (that is unavoidable — it sits on a USB-visible partition). It must never
+# also be committed. The token is scoped to one thing, but "a leaked token that
+# can only append fake reading stats" is still a leak.
+cevtuo-capperr.conf.json
+**/cevtuo-capperr.conf.json

@@ -1,11 +1,17 @@
 # services/ingest — Kindle 阅读统计的接收端
 
 跑在**阿里云轻量服务器**上（`120.77.27.128`，地域 cn-shenzhen）。
-Kindle 连上任何 WiFi 之后把导出 POST 到这里，这里再把它提交进仓库。
+Kindle 连上任何 WiFi 之后把导出 POST 到这里，这里换算完再把结果发到网站上。
 
 ```
-Kindle ──POST──▶ 这台服务器 ──commit──▶ GitHub ──workflow──▶ 站点
+Kindle ──POST──▶ 这台服务器 ──GitHub API──▶ gh-pages ──▶ 站点
+                     │
+                     └─ 原始导出留在服务器上（永不入库）
 ```
+
+⚠️ 上面这条链路里**没有 workflow**。早先画的是 `commit → GitHub → workflow`，
+那条路需要服务器持有能推代码的 token、仓库里放一个 workflow 文件、还要烧
+Actions 额度。现在服务器只调两次 REST API 更新 `gh-pages` 上的**一个文件**。
 
 ## 为什么不是「推到 Mac 的局域网上」
 
@@ -26,39 +32,78 @@ token 没有别的权限，而能写仓库的 token 从不出现在设备上。*
 
 ## 部署
 
+⚠️ **跑的是打包好的单文件，不是 clone 仓库。**
+
+这台机器是 **CentOS 8，已 EOL**：官方源全死了，没有 `git`，包管理器也装不上；
+769MB 内存更放不下整个 workspace 的依赖安装。所以在开发机上 `bun build` 出两个
+~150KB 的文件传过去，这台机器上**除 Bun 本身外不需要安装任何东西**。
+
+⚠️ 打包会打断 `import.meta.url` 往上数三层的路径推导 —— `repoPath()`
+(`packages/pipeline-core`) 和 `defaultRepoRoot()` (`src/converter.ts`) 两个都是。
+两个都改成优先读 `CEVTUO_REPO_ROOT`。
+
+**漏掉第二个不会报错。** 数据目录会变成 `/data`，被 systemd 的
+`ProtectSystem=strict` 拦成 `EROFS: read-only file system`；如果没有那层加固，
+服务会正常启动、正常回 200，只是永远找不到数据。
+
 ```bash
-# 1. Bun
-curl -fsSL https://bun.sh/install | bash && sudo mv ~/.bun/bin/bun /usr/local/bin/
+# 0. 开发机：打包（服务器上没有构建这一步）
+bun build pipeline/src/cli/sync-paperr.ts --target=bun --outfile=/tmp/bundle/sync-paperr.js
+bun build services/ingest/src/server.ts    --target=bun --outfile=/tmp/bundle/server.js
 
-# 2. 代码（只取这一个服务 + 它依赖的两个 workspace 包）
-sudo git clone --depth 1 https://github.com/cevtuocjw/CEVTUO-Z /opt/cevtuo-ingest
-sudo useradd --system --shell /usr/sbin/nologin cevtuo
-sudo chown -R cevtuo:cevtuo /opt/cevtuo-ingest
+# 1. 服务器：Bun
+curl -fsSL https://bun.sh/install | bash
+# ⚠️ 拷真身，不要建符号链接。安装器把 bun 放在 /root/.bun/bin，而 /root 是 0700，
+#    服务用户穿不进去 —— systemd 只会给一个没有上下文的 203/EXEC，日志里一个字
+#    都不会解释为什么。
+cp /root/.bun/bin/bun /usr/local/bin/bun && chmod 755 /usr/local/bin/bun
 
-# 3. 环境变量
-sudo -u cevtuo tee /opt/cevtuo-ingest/.env >/dev/null <<'ENV'
-CEVTUO_DEVICE_TOKEN=<随机长串，等下要抄进 Kindle>
-CEVTUO_GITHUB_TOKEN=<fine-grained PAT>
-CEVTUO_ADMIN_PASSWORD=<网页的密码>
-CEVTUO_PORT=8789
-ENV
-sudo chmod 600 /opt/cevtuo-ingest/.env
+# 2. 服务器：目录与用户
+useradd --system --shell /usr/sbin/nologin cevtuo
+mkdir -p /opt/cevtuo-ingest/data/paperr
 
-# 4. 起服务
-sudo cp /opt/cevtuo-ingest/services/ingest/systemd/cevtuo-ingest.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now cevtuo-ingest
+# 3. 开发机：传两个包 + 现有数据
+scp /tmp/bundle/{server,sync-paperr}.js root@120.77.27.128:/opt/cevtuo-ingest/
+scp data/paperr/{raw-koreader,index}.json data/sync-meta.json root@120.77.27.128:/opt/cevtuo-ingest/data/paperr/
+
+# 4. 服务器：环境变量（走 stdin，不进 argv / history）
+cat > /opt/cevtuo-ingest/.env && chmod 600 /opt/cevtuo-ingest/.env
+#   CEVTUO_DEVICE_TOKEN=<随机长串，等下要抄进 Kindle>
+#   CEVTUO_ADMIN_PASSWORD=<管理页密码>
+#   CEVTUO_GITHUB_TOKEN=<fine-grained PAT>
+#   CEVTUO_PORT=8789
+#   CEVTUO_REPO_ROOT=/opt/cevtuo-ingest
+#   CEVTUO_PIPELINE_CMD=/opt/cevtuo-ingest/sync-paperr.js
+
+# 5. 起服务
+chown -R cevtuo:cevtuo /opt/cevtuo-ingest
+systemctl daemon-reload && systemctl enable --now cevtuo-ingest
 curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 ```
 
-### ⚠️ 不需要任何 GitHub 凭据
+### 两个文件，两个去处
 
-数据**不再提交到仓库**。原因：仓库是公开的，`data/` 会被提交到 main 并发布到
-Pages，两者都是人人可读 —— 所以阅读数据不能放那儿。
+| 文件 | 去哪儿 | 为什么 |
+|---|---|---|
+| `data/paperr/raw-koreader.json` | **只留在服务器上** | 设备原样导出。没有理由公开，而且它是设备所知的唯一一份拷贝 |
+| `data/paperr/index.json` | **推到 `gh-pages`** | 页面读的就是它。转换器算出来的公开视图 |
 
-现在这份数据存在**这台服务器上**，转换器也在这台机器上跑
-（`src/converter.ts` 调用 `pipeline/src/cli/sync-paperr.ts`）。
+⚠️⚠️ **需要一个 GitHub 凭据，这是绕不开的。**
 
-⇒ 没有 PAT 要建、要授权、要轮换、要担心泄露，仓库里也不需要 workflow 文件。
+曾经打算完全不要 —— 让数据只待在服务器上。**那样网站就永远看不到新数据**：页面
+读的是 Pages 源，不是这台机器。上一版 README 写着「不需要任何 GitHub 凭据」，那句
+话在那时是对的（转换和发布都还在 Mac 上做），但把服务器接进来之后就变成了错的，
+而且错得**没有症状** —— 设备推得开心，服务器存得开心，网站一动不动。
+
+用的是 **fine-grained PAT**，范围压到最小（已实测）：
+
+- 只授权 `cevtuocjw/CEVTUO-Z` 一个仓库，其余一律 404
+- 权限只给 **Contents: Read and write**
+- 实际只能写 `data/paperr/index.json` 这一个路径
+
+`src/publish.ts` 用两次 REST 调用完成，**不装 git**。先 GET 读回远端内容比字节，
+**一样就什么都不做** —— 设备每次连 WiFi 都推，无条件 PUT 就是每 30 分钟一个空提交，
+正是 `handleIngest` 已经在防的那件事。
 
 ⚠️ **备份靠设备**：KOReader 在 `statistics.sqlite3` 里留着完整历史，插件每次都全量
 导出，所以服务器丢了，下次同步就恢复了。这是「唯一一份放在这儿」可以接受的原因。
@@ -102,7 +147,7 @@ Pages，两者都是人人可读 —— 所以阅读数据不能放那儿。
 | POST | `/api/paperr` | Bearer `CEVTUO_DEVICE_TOKEN` | Kindle 推数据 |
 | GET | `/` | Basic | 管理页 |
 | GET | `/api/status` | Basic | 最后导出时间、书的数量 |
-| POST | `/api/rebuild` | Basic | 重新生成 index.json（本机跑转换器） |
+| POST | `/api/rebuild` | Basic | 重新生成 index.json（本机跑转换器）并推送到网站 |
 
 ### `/api/paperr` 的三种结果
 

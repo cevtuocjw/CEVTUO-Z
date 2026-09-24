@@ -30,12 +30,14 @@ import {
   isAdminAuthorized,
   renderAdminPage,
 } from './core';
+import { publisherFromEnv } from './publish';
 import { fsStore } from './store';
 
 const env = envFrom(process.env);
 const REPO_ROOT = process.env.CEVTUO_REPO_DIR ? resolve(process.env.CEVTUO_REPO_DIR) : defaultRepoRoot();
 const store = fsStore(REPO_ROOT);
 const converter = repoConverter(REPO_ROOT);
+const publisher = publisherFromEnv(REPO_ROOT);
 
 const PORT = Number(process.env.CEVTUO_PORT ?? 8789);
 const BIND = process.env.CEVTUO_BIND ?? '0.0.0.0';
@@ -156,10 +158,30 @@ const server = Bun.serve({
 
       try {
         const { status, body } = await handleIngest(env, store, converter, req.headers.get('authorization'), rawBody);
+
+        // ⚠️ Only on a real change. A publish is two GitHub calls; running them
+        // for an `unchanged` push would make every WiFi connect cost four
+        // requests to publish a file that is already correct.
+        //
+        // ⚠️ A publish failure does NOT fail the push. The export is on disk and
+        // the index is regenerated either way — the same reasoning as the
+        // converter itself. The reader gets a 202 and the message says what did
+        // not make it.
+        let message = body.message;
+        if (status === 202 && publisher) {
+          const pub = await publisher.publish();
+          if (!pub.ok) {
+            message = `${message}；但发布到网站失败：${pub.error}`;
+            console.error(`[publish] ${pub.error}`);
+          } else {
+            console.log(`[publish] ${pub.changed ? '已更新网站' : '网站已是最新'}`);
+          }
+        }
+
         // ⚠️ The outcome, never the body: the payload is the reader's entire
         // library, and server logs are the easiest thing in the world to leak.
-        console.log(`[ingest] ${ip} ${status} ${body.status} ${body.message}`);
-        return json(body, status);
+        console.log(`[ingest] ${ip} ${status} ${body.status} ${message}`);
+        return json({ ...body, message }, status);
       } catch (e) {
         const msg = scrubError(e).message;
         console.error(`[ingest] ${ip} 500 ${msg}`);
@@ -198,7 +220,16 @@ const server = Bun.serve({
       }
       if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
       const r = await handleRebuild(env, store, converter);
-      return json(r.body, r.status);
+
+      // ⚠️ Rebuild is the button you press after fixing a converter bug, so the
+      // whole point of it is to see the correction on the site afterwards.
+      let msg = (r.body as { message?: string }).message;
+      if (r.status === 200 && (r.body as { ok?: boolean }).ok && publisher) {
+        const pub = await publisher.publish();
+        if (!pub.ok) msg = `${msg}；但发布到网站失败：${pub.error}`;
+        else if (pub.changed) msg = `${msg}；已更新网站`;
+      }
+      return json({ ...r.body, message: msg }, r.status);
     }
 
     return json({ error: 'not found' }, 404);

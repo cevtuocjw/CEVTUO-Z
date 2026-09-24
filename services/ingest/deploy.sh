@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 # CEVTUO CAPPERR ingest — one-shot deploy for the Aliyun lightweight server.
 #
+# ⚠️⚠️ DO NOT RUN THIS AGAINST THE LIVE SERVER. It does not work there.
+#
+# It clones the repository and runs a workspace-wide dependency install, which
+# assumes a machine with `git` and enough memory. The live box is CentOS 8 —
+# EOL, mirrors gone, no `git`, no way to install one — with 769MB of RAM. Both
+# steps fail, and the clone step fails FIRST, leaving the unit file rewritten to
+# point at `src/server.ts` on a disk that has no `src/`.
+#
+# The real procedure is the "部署" section of README.md: `bun build` two single
+# files on the development machine and copy them over. Kept here only as the
+# record of the shape this started with, and because the secrets handling and
+# unit hardening below are still the reference for it.
+#
 #   CEVTUO_DEVICE_TOKEN=... CEVTUO_ADMIN_PASSWORD=... bash deploy.sh
 #
 # Idempotent: re-running it updates the code and restarts the service. Secrets

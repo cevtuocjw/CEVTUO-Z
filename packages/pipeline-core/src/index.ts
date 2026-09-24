@@ -251,6 +251,20 @@ export async function withRetry<T>(
 
 /** Repo-relative path → absolute, rooted at the repository. */
 export function repoPath(...segments: string[]): string {
+  // ⚠️ An explicit root wins over the derived one.
+  //
+  // The derived path assumes the SOURCE LAYOUT — this file lives at
+  // `packages/pipeline-core/src/`, three levels below the root. That stops being
+  // true the moment the pipeline is bundled, because `import.meta.url` then
+  // points at the bundle and `..'..'..'` walks off the end of the filesystem.
+  //
+  // The Aliyun ingest runs a BUNDLE: CentOS 8 is EOL so there is no `git`, and
+  // a 769MB box is no place for a full workspace `bun install`. Two bundled
+  // files and a data directory replace the whole checkout, and this is what
+  // tells them where `data/` is.
+  const forced = typeof process !== 'undefined' ? process.env?.CEVTUO_REPO_ROOT : undefined;
+  if (forced) return join(forced, ...segments);
+
   const here = new URL('.', import.meta.url).pathname;
   // packages/pipeline-core/src/index.ts → repo root is three levels up
   const root = join(here, '..', '..', '..');
