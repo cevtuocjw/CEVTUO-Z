@@ -196,9 +196,42 @@ const server = Bun.serve({
       }
     }
 
-    // ⚠️ `/api/paperr/current.json` was here — the password-gated "what am I
-    // reading" endpoint. Nothing ever wrote its file, so it could only 404. See
-    // the note in `core.ts`.
+    // ── Heartbeat (public, no auth) ────────────────────────────
+    //
+    // ⚠️ Public on purpose. The page reads this to answer "is the Kindle still
+    // syncing?", and putting it behind the admin password would mean the only
+    // person who can see it is the one who already knows how to check. It
+    // carries no titles and no per-book data — only when a push last arrived.
+    //
+    // ⚠️⚠️ This route was DELETED BY ACCIDENT, by an edit that removed the
+    // route above it. Both blocks were adjacent and the removal was done by
+    // slicing between two indices — the same mistake as the duplicated
+    // `ProgressBands` earlier. What it cost: the page's heartbeat fetch 404'd
+    // on every load, silently, because a failed diagnostic is designed to be
+    // silent. The only thing that caught it was a generic "Failed to load
+    // resource: 404" in the UI suite's console-error assertion.
+    //
+    // ⚠️ `/api/paperr/current.json` used to sit here too — the password-gated
+    // "what am I reading" endpoint. Nothing wrote its file, so it could only
+    // 404. See the note in `core.ts`.
+    if (url.pathname === '/api/paperr/heartbeat.json') {
+      const r = await handleAdminStatus(env, store);
+      const b = r.body as {
+        lastPushAt?: string | null;
+        lastChangeAt?: string | null;
+        pluginVersion?: string | null;
+        books?: number;
+      };
+      return json(
+        {
+          lastPushAt: b.lastPushAt ?? null,
+          lastChangeAt: b.lastChangeAt ?? null,
+          pluginVersion: b.pluginVersion ?? null,
+          books: b.books ?? 0,
+        },
+        200,
+      );
+    }
 
     // ── Admin surface (browser, Basic auth) ────────────────────
     if (url.pathname === '/' || url.pathname === '/api/status' || url.pathname === '/api/rebuild') {

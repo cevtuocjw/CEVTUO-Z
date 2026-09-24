@@ -42,6 +42,12 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
 
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
+  // ⚠️ Names the URL. A bare "Failed to load resource: 404" cost a round of
+  // investigation — the failing request was a diagnostic the page fetches and
+  // is designed to ignore, so nothing on screen pointed at it.
+  page.on('response', (r) => {
+    if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.url().slice(0, 120)}`);
+  });
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 200)); });
 
   await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
@@ -88,6 +94,34 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   // typo, not a style.
   const anyCePrefix = await page.evaluate(() => /CE-CAPPER/.test(document.body.innerText));
   check('no CE-CAPPER anywhere on the page', !anyCePrefix);
+
+  // ── The sync heartbeat endpoint ────────────────────────────
+  //
+  // ⚠️ Asserted DIRECTLY, because nothing else can see it fail.
+  //
+  // The page treats a failed heartbeat fetch as expected — the server being
+  // down is a real possibility, and a page that breaks because a diagnostic is
+  // unavailable is worse than one showing a dash. That is the right behaviour
+  // and it means a deleted route produces no error, no missing element, nothing
+  // a DOM assertion can find.
+  //
+  // It was deleted for real: an edit removed the block ABOVE it and took this
+  // one along, and every page load 404'd in silence. The only thing that
+  // noticed was the generic "Failed to load resource: 404" below — which is
+  // why that message now names the URL.
+  {
+    const hb = await page.evaluate(async () => {
+      try {
+        const r = await fetch('http://120.77.27.128:8789/api/paperr/heartbeat.json');
+        return { ok: r.ok, status: r.status, body: r.ok ? await r.json() : null };
+      } catch (e) {
+        return { ok: false, err: String(e).slice(0, 100) };
+      }
+    });
+    check('the sync heartbeat endpoint answers', hb.ok, JSON.stringify(hb).slice(0, 160));
+    check('the heartbeat carries a push time',
+          !!(hb.body && 'lastPushAt' in hb.body), JSON.stringify(hb.body).slice(0, 120));
+  }
 
   // ── No brand may invent a number ──────────────────────────
   //
