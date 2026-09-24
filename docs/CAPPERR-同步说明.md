@@ -49,8 +49,13 @@ WiFi 从没断过所以 `NetworkConnected` 不触发，一本书都还没合上�
 
 这条同样是 30 分钟间隔管着的，所以不会变成「每开一次 KOReader 推一次」。
 
-⚠️ 四条共用 **30 分钟的最小间隔**（`minIntervalMinutes`）。这是故意的：不合盖、
-不开飞行模式的话，上面这些钩子会疯狂触发，而 Kindle 的电池是靠「几周」计的。
+⚠️ 四条共用 **15 分钟的最小间隔**（`minIntervalMinutes`）。
+
+⚠️ 这个数字是**去抖动，不是省电**：推送的前提就是网络已经连着，一次 POST 只有 11KB。
+它唯一的职责是不让「连读几本书」把四个钩子触发成一串。
+
+⚠️ 但它有个副作用你得知道：**间隔没到时，合书什么都不会发生** ——
+看起来和「同步坏了」一模一样。想立刻推就用手动那个菜单项，它不受间隔限制。
 
 ⚠️ 这个间隔**只在推送成功后才计时**。服务器临时挂了不会导致接下来 30 分钟沉默。
 
@@ -111,7 +116,7 @@ koreader/plugins/cevtuo-capperr.koplugin/
   "url": "http://120.77.27.128:8789/api/paperr",
   "token": "<设备 token>",
   "autoOnWifi": true,
-  "minIntervalMinutes": 30
+  "minIntervalMinutes": 15
 }
 ```
 

@@ -17,6 +17,7 @@ command -v sqlite3 >/dev/null 2>&1 || { echo "需要 sqlite3" >&2; exit 2; }
 
 WORK="$(mktemp -d)"
 export CAPPERR_SHIM="$HERE/shim"
+export CAPPERR_INTERVAL=15
 export CAPPERR_PLUGIN="$PLUGIN"
 export CAPPERR_WORK="$WORK"
 export CAPPERR_HOME="$WORK/visible"

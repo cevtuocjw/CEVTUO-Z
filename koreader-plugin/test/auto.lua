@@ -209,7 +209,12 @@ check(fired() == 0, "autoOnWifi=false -> nothing SCHEDULED, not merely a no-op")
 -- this would be a push per book, on a device whose whole job is lasting weeks.
 reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
 NetworkMgr:_set(true); http._reset(); http._setResponse(1, 200)
-ageState(60)   -- one minute ago, inside the 30-minute default
+-- ⚠️ One minute ago is inside whatever the default is — but assert the ORDER of
+-- magnitude too, so lowering or raising the default cannot quietly make this
+-- pass for the wrong reason.
+local interval = tonumber(os.getenv("CAPPERR_INTERVAL") or "15")
+check(interval >= 5 and interval <= 60, "default interval is a sane debounce", interval)
+ageState(60)   -- one minute ago, inside the default
 inst:scheduleStartupSync()
 check(fired() == 1, "startup with a recent push -> task still scheduled")
 check(#http._calls() == 0, "startup within the interval -> NOTHING pushed", #http._calls())

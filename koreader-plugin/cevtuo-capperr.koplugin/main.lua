@@ -91,7 +91,21 @@ local PLUGIN_VERSION = "1.1.0"
 local AUTO_SYNC_DELAY = 3            -- seconds after NetworkConnected
 local CLOSE_PUSH_DELAY = 1           -- seconds after a document closes
 local HTTP_TIMEOUT = 20              -- seconds
-local MIN_INTERVAL_DEFAULT = 30      -- minutes between automatic pushes
+-- Minutes between automatic pushes.
+--
+-- ⚠️ 15, down from 30, and the reason is what the number is actually for.
+--
+-- The cost of a push is one POST of ~11KB over a radio that is ALREADY on —
+-- being connected is a precondition of every hook. So the interval is not a
+-- battery budget; it is a debounce, and its only job is to stop the four hooks
+-- firing in a burst when a reader closes several books in a row.
+--
+-- ⚠️ What 30 bought was a longer window in which closing a book does nothing at
+-- all, which reads as a broken sync rather than as a rate limit. The reader hit
+-- exactly that and reported it three times.
+--
+-- Still overridable per device with `minIntervalMinutes` in the conf file.
+local MIN_INTERVAL_DEFAULT = 15
 
 --- ⚠️ Shorter on the suspend path, and not for tidiness.
 -- `onSuspend` runs synchronously — a *scheduled* callback may never fire, because
