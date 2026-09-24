@@ -10,6 +10,7 @@ local SETTINGS = assert(os.getenv("CAPPERR_SETTINGS"), "CAPPERR_SETTINGS not set
 package.path = SHIM .. "/?.lua;" .. SHIM .. "/?/init.lua;" .. package.path
 
 local UIManager = require("ui/uimanager")
+local NetworkMgr = require("ui/network/manager")
 local http = require("socket.http")
 local rj = require("rapidjson")
 
@@ -49,6 +50,8 @@ local inst = setmetatable({ ui = { menu = { registerToMainMenu = function() end 
                           { __index = CevtuoCapperr })
 inst:registerEvents()
 check(type(inst.onNetworkConnected) == "function", "registerEvents installs onNetworkConnected")
+check(type(inst.onCloseDocument) == "function", "registerEvents installs onCloseDocument");
+check(type(inst.onSuspend) == "function", "registerEvents installs onSuspend")
 
 local fired = function() return UIManager:_runScheduled() end
 print("=== mode: auto ===")
@@ -99,6 +102,62 @@ inst:_onNetworkConnected(); fired()
 ageState(2 * 60)
 inst:_onNetworkConnected(); fired()
 check(#http._calls() == 2, "minIntervalMinutes=1 allows a push 2 minutes later", #http._calls())
+
+-- ── The other two triggers ─────────────────────────────────
+--
+-- ⚠️ These close a real hole: `NetworkConnected` fires only when WiFi
+-- TRANSITIONS. A reader who joins once and reads for three hours produces no
+-- second event, and none of that session leaves the device. The guard that
+-- makes this safe is `isConnected` — we never power the radio to sync.
+inst.onCloseDocument = inst._onCloseDocument
+inst.onSuspend = inst._onSuspend
+
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+http._reset(); http._setResponse(1, 200)
+
+NetworkMgr:_set(false)
+inst:_onCloseDocument()
+check(fired() == 0, "close while OFFLINE -> nothing scheduled")
+check(#http._calls() == 0, "close while OFFLINE -> no request")
+
+NetworkMgr:_set(true)
+inst:_onCloseDocument()
+check(fired() == 1, "close while ONLINE -> one scheduled task")
+check(#http._calls() == 1, "close while ONLINE -> pushed", #http._calls())
+check(readState() ~= nil, "close push recorded the clock")
+
+-- The debounce must apply here too — closing documents is far more frequent
+-- than reconnecting, and without it this trigger would fire constantly.
+http._reset()
+inst:_onCloseDocument(); fired()
+check(#http._calls() == 0, "a second close inside the interval does not push")
+
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t" })
+http._reset(); http._setResponse(1, 200)
+
+NetworkMgr:_set(false)
+inst:_onSuspend()
+check(#http._calls() == 0, "suspend while OFFLINE -> no request")
+
+NetworkMgr:_set(true)
+inst:_onSuspend()
+check(#http._calls() == 1, "suspend while ONLINE -> pushed WITHOUT a scheduler tick", #http._calls())
+check(readState() ~= nil, "suspend push recorded the clock")
+
+-- ⚠️ The suspend path must run SYNCHRONOUSLY. A scheduled callback may never
+-- fire — the device is already on its way down — so if this ever regresses to
+-- `scheduleIn`, the push silently stops happening on the one trigger that
+-- covers "WiFi on all day, device sleeping".
+check(fired() == 0, "suspend did NOT go through the scheduler")
+
+-- ⚠️ And it must use the shorter timeout: it blocks the suspend itself.
+check(http.TIMEOUT == 8, "suspend uses the short timeout", http.TIMEOUT)
+
+-- autoOnWifi=false must silence these too, not just the WiFi-connect one.
+reset(); writeConf({ url = "http://127.0.0.1:9/x", token = "t", autoOnWifi = false })
+http._reset()
+inst:_onCloseDocument(); inst:_onSuspend()
+check(fired() == 0 and #http._calls() == 0, "autoOnWifi=false silences close and suspend")
 
 print(string.format("PASS %d, FAIL %d", passes, #fails))
 for _, x in ipairs(fails) do print("  FAIL: " .. x) end

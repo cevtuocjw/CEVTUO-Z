@@ -66,6 +66,29 @@ local T = require("ffi/util").template
 
 local EXPORT_NAME = "cevtuo-capperr.json"
 
+-- ⚠️ Declared HERE, above every use, and that placement is load-bearing.
+--
+-- They started out beside the auto-sync section further down, which put
+-- `HTTP_TIMEOUT` textually AFTER `pushPayload`. In Lua a local only exists from
+-- its declaration onward, so inside `pushPayload` the name resolved to a GLOBAL
+-- that is nil — `http.TIMEOUT = timeout or nil` set nothing, and luasocket fell
+-- back to its own 60-second default. The device would block for a minute instead
+-- of twenty seconds, on the UI thread.
+--
+-- Caught by `auto.lua`'s "http timeout is bounded" assertion, not by reading it.
+local AUTO_SYNC_DELAY = 3            -- seconds after NetworkConnected
+local CLOSE_PUSH_DELAY = 1           -- seconds after a document closes
+local HTTP_TIMEOUT = 20              -- seconds
+local MIN_INTERVAL_DEFAULT = 30      -- minutes between automatic pushes
+
+--- ⚠️ Shorter on the suspend path, and not for tidiness.
+-- `onSuspend` runs synchronously — a *scheduled* callback may never fire, because
+-- the device is on its way to sleep. But the request then blocks the suspend
+-- itself, so the worst case is the reader holding the power button while a dead
+-- server is waited on. Eight seconds is long enough for a real POST and short
+-- enough not to be felt.
+local SUSPEND_TIMEOUT = 8
+
 local CevtuoCapperr = WidgetContainer:extend{
     name = "cevtuo-capperr",
     is_doc_only = false,
@@ -414,7 +437,7 @@ function CevtuoCapperr:readConfig()
     return cfg
 end
 
-function CevtuoCapperr:pushPayload(payload, cfg)
+function CevtuoCapperr:pushPayload(payload, cfg, timeout)
     cfg = cfg or self:readConfig()
     if not cfg then return false, nil end
 
@@ -428,7 +451,7 @@ function CevtuoCapperr:pushPayload(payload, cfg)
     -- hangs the request forever. We are on KOReader's UI thread — an unbounded
     -- wait here does not look like a failed sync, it looks like a bricked
     -- device. luasocket reads TIMEOUT off the http module as its default.
-    http.TIMEOUT = 20
+    http.TIMEOUT = timeout or HTTP_TIMEOUT
     local body = rapidjson.encode(payload)
     local resp = {}
     local sent, code = http.request{
@@ -509,9 +532,6 @@ end
 -- cable throws that away, so when a URL is configured the export is pushed by
 -- itself as soon as the device has a network.
 
-local AUTO_SYNC_DELAY = 3            -- seconds after NetworkConnected
-local MIN_INTERVAL_DEFAULT = 30      -- minutes between automatic pushes
-
 local function statePath()
     return settingsDir() .. "/cevtuo-capperr.state.json"
 end
@@ -549,7 +569,7 @@ end
 -- a popup would be nagging. Failures go to the log instead — the next
 -- successful connect retries, and the manual menu entry stays as the way to get
 -- a visible answer.
-function CevtuoCapperr:autoSync()
+function CevtuoCapperr:autoSync(timeout)
     local cfg, cfgErr = self:readConfig()
     if not cfg then
         if cfgErr then logger.warn("cevtuo-capperr: auto-sync off —", cfgErr) end
@@ -570,7 +590,7 @@ function CevtuoCapperr:autoSync()
         return
     end
 
-    local pushed, err = self:pushPayload(payload, cfg)
+    local pushed, err = self:pushPayload(payload, cfg, timeout)
     if pushed then
         -- Only a success moves the clock. A failure must not start a 30-minute
         -- silence when the server was merely down for a moment.
@@ -596,12 +616,68 @@ function CevtuoCapperr:_onNetworkConnected()
     UIManager:scheduleIn(AUTO_SYNC_DELAY, function() self:autoSync() end)
 end
 
+--- Push if — and only if — the radio is ALREADY on.
+--
+-- ⚠️ Guards on `NetworkMgr:isConnected()`, never on `willRerunWhenOnline`.
+-- `willRerunWhenOnline` would bring WiFi UP in order to run the callback, and
+-- that is the single thing this plugin must not do: a device whose whole job is
+-- lasting weeks should not power a radio because a sync wanted to happen. The
+-- file is written either way; the next connect carries it.
+function CevtuoCapperr:pushIfOnline(timeout)
+    local cfg = self:readConfig()
+    if not cfg then return end
+    if cfg.autoOnWifi == false then return end
+    if not NetworkMgr:isConnected() then return end
+    self:autoSync(timeout)
+end
+
+--- A document was closed. Push while the network is still up.
+--
+-- ⚠️ This closes a specific hole, and it is not a nicety.
+--
+-- `NetworkConnected` fires only when WiFi TRANSITIONS to connected. A reader who
+-- joins WiFi once and then reads for three hours never produces a second event,
+-- so none of that session leaves the device until the next reconnect — which may
+-- be days later, or never, if the radio simply stays on.
+--
+-- ⚠️ Delayed, unlike the suspend path: closing a document runs a UI transition,
+-- and `pushPayload` blocks. On suspend there is nothing left to animate, but also
+-- nothing left to schedule — see `_onSuspend`.
+function CevtuoCapperr:_onCloseDocument()
+    local cfg = self:readConfig()
+    if not cfg or cfg.autoOnWifi == false then return end
+    if not NetworkMgr:isConnected() then return end
+    UIManager:scheduleIn(CLOSE_PUSH_DELAY, function() self:autoSync() end)
+end
+
+--- The device is going to sleep.
+--
+-- ⚠️ Synchronous, deliberately. A `scheduleIn` callback here may never run: the
+-- device is already on its way down, and the scheduler is not guaranteed to get
+-- another turn. The price is that this blocks the suspend for up to
+-- `SUSPEND_TIMEOUT` seconds, which is why that timeout is not the usual 20.
+--
+-- ⚠️ It reads the config and checks the connection BEFORE running, so a device
+-- with no conf file — or with WiFi already down — pays nothing for this hook.
+function CevtuoCapperr:_onSuspend()
+    self:pushIfOnline(SUSPEND_TIMEOUT)
+end
+
 --- Hook the events we care about.
 --
--- Registered unconditionally and gated inside the handler on the config file,
+-- Registered unconditionally and gated inside each handler on the config file,
 -- so dropping a conf file onto the device takes effect without a restart.
+--
+-- ⚠️ Three triggers, not one, and each covers a case the others cannot:
+--   · onNetworkConnected  — WiFi just came up (the common case)
+--   · onCloseDocument     — was online all along, and a session just ended
+--   · onSuspend           — was online all along, and the device is going down
+-- The last two are also the reason `minIntervalMinutes` exists: they fire far
+-- more often than a reconnect does, and the debounce is what keeps them cheap.
 function CevtuoCapperr:registerEvents()
     self.onNetworkConnected = self._onNetworkConnected
+    self.onCloseDocument = self._onCloseDocument
+    self.onSuspend = self._onSuspend
 end
 
 function CevtuoCapperr:init()

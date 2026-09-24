@@ -956,3 +956,49 @@ Kobo 的 SD 卡是 `/mnt/sd` 不是 `/mnt/sdcard`。改成用 **`Device.home_dir
 - 阿里云部署（`120.77.27.128`，安全组要开 8789）
 - `.github/workflows/paperr.yml`（本机 token 无 `workflow` scope）
 - 页面没对着线上跑过
+
+---
+
+## 2026-09-24 收尾：插件补洞 + 上线清单
+
+### 插件：三个触发点（原来只有一个）
+
+`onNetworkConnected` 只在 WiFi **状态变化**时触发。读者连上一次 WiFi 然后连读三小时，
+**这三小时一个事件都不会产生**，数据要等下次重连才走 —— 可能是几天后，也可能永远不来。
+
+补了两个：
+
+| 触发 | 何时 | 为什么这样写 |
+|---|---|---|
+| `onNetworkConnected` | WiFi 刚连上 | 原有的，常见路径 |
+| `onCloseDocument` | 关书时**且已在线** | 延迟 1 秒 —— 关书有界面过渡，而推送是阻塞的 |
+| `onSuspend` | 睡眠时**且已在线** | **同步执行**，不排程 —— 设备正在睡，排程的回调可能永远不跑 |
+
+⚠️ 守卫用的是 `NetworkMgr:isConnected()`，**不是 `willRerunWhenOnline`** ——
+后者会**主动拉起 WiFi** 来跑回调，那正是这个插件绝不能做的事。
+文件反正已经写好了，下次连上再带走。
+
+⚠️ suspend 用 8 秒超时而不是 20：它阻塞的是睡眠本身，超时太长会变成
+"按着电源键等一个死掉的服务器"。
+
+⚠️ 又抓到一个真 bug：`HTTP_TIMEOUT` 原本声明在 `pushPayload` **之后**，
+Lua 的 local 只在其声明之后存在 ⇒ 那里解析成了 nil 全局 ⇒
+`http.TIMEOUT = timeout or nil` 什么都没设，luasocket 退回到自己的 **60 秒**默认值。
+设备会在 UI 线程上卡一分钟。是 `auto.lua` 的 "http timeout is bounded" 断言抓到的。
+**插件断言 126 条全过。**
+
+### 阿里云：我够不到
+
+- 我读了控制台：**`120.77.27.128`，cn-shenzhen**，防火墙已开 80/443/22/ICMP
+- 本机 `~/.ssh/id_ed25519` 试过 root/cevtuo/ubuntu/admin —— **都没装到服务器上**
+- 控制台的「命令助手」和「防火墙」表单是**自研 React 组件，对合成事件不响应**，
+  程序化填表提交一律报 `InvalidPort.ValueNotSupported`
+- ⇒ **没动那台服务器的任何东西**（没重置密码、没改密钥、没改防火墙）
+
+### 交出去的
+
+- `services/ingest/deploy.sh` —— 幂等一条命令：装 Bun → 克隆 → 建非 root 用户 →
+  写 `.env`(600) → systemd → 自检。秘密走环境变量不走 argv（argv 会进 `ps` 和 history）
+- `GO-LIVE.md` —— 六步清单，标了哪一步需要什么凭据、哪一步容易卡
+
+**剩下 6 步全在清单里，其中 ①③④ 各是一条命令或一次点击。**
