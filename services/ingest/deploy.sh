@@ -23,7 +23,7 @@ say() { echo "▸ $*"; }
 [ "$(id -u)" = "0" ] || die "需要 root：sudo bash deploy.sh"
 
 : "${CEVTUO_DEVICE_TOKEN:?请设置 CEVTUO_DEVICE_TOKEN（Kindle 上要抄这个）}"
-: "${CEVTUO_GITHUB_TOKEN:?请设置 CEVTUO_GITHUB_TOKEN（fine-grained PAT，Contents + Actions）}"
+: "${CEVTUO_GITHUB_TOKEN:?请设置 CEVTUO_GITHUB_TOKEN（fine-grained PAT，只要 Contents: Read and write）}"
 : "${CEVTUO_ADMIN_PASSWORD:?请设置 CEVTUO_ADMIN_PASSWORD（管理页密码）}"
 
 # ── 1. Bun ──────────────────────────────────────────────────

@@ -22,7 +22,10 @@
  * fronts anything else.
  */
 
+import { resolve } from 'node:path';
+
 import { scrubError } from '@cevtuo/pipeline-core';
+import { defaultRepoRoot, repoConverter } from './converter';
 import {
   envFrom,
   githubApi,
@@ -31,10 +34,24 @@ import {
   handleRebuild,
   isAdminAuthorized,
   renderAdminPage,
+  type Converter,
 } from './core';
 
 const env = envFrom(process.env);
 const api = githubApi(env);
+
+/**
+ * Where the repository lives on this machine.
+ *
+ * `src/` → `services/ingest/` → `services/` → repo root, hence three levels.
+ * Overridable so the service can be moved without editing code.
+ */
+const REPO_ROOT = process.env.CEVTUO_REPO_DIR
+  ? resolve(process.env.CEVTUO_REPO_DIR)
+  : defaultRepoRoot();
+
+const converter = repoConverter(REPO_ROOT);
+
 
 const PORT = Number(process.env.CEVTUO_PORT ?? 8789);
 const BIND = process.env.CEVTUO_BIND ?? '0.0.0.0';
@@ -117,7 +134,7 @@ const server = Bun.serve({
         return json(r.body, r.status);
       }
       if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-      const r = await handleRebuild(env, api);
+      const r = await handleRebuild(env, api, converter);
       return json(r.body, r.status);
     }
 
@@ -145,7 +162,7 @@ const server = Bun.serve({
     }
 
     try {
-      const { status, body } = await handleIngest(env, api, req.headers.get('authorization'), rawBody);
+      const { status, body } = await handleIngest(env, api, converter, req.headers.get('authorization'), rawBody);
       // ⚠️ Log the outcome, never the body: the export contains the reader's
       // entire library, and server logs are the easiest thing to leak.
       console.log(`[ingest] ${ip} ${status} ${body.status} ${body.message}`);
@@ -162,3 +179,4 @@ const server = Bun.serve({
 console.log(`[ingest] 监听 http://${BIND}:${server.port}`);
 console.log(`[ingest] 目标仓库 ${env.owner}/${env.repo}@${env.branch} · ${env.path}`);
 console.log(`[ingest] 体积上限 ${env.maxBytes} 字节 · 限速 ${RATE_LIMIT_PER_MINUTE}/分钟/IP`);
+console.log(`[ingest] 仓库检出 ${REPO_ROOT}`);

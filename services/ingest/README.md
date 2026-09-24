@@ -50,10 +50,14 @@ sudo systemctl daemon-reload && sudo systemctl enable --now cevtuo-ingest
 curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 ```
 
-### PAT 需要两个权限，都只给这一个仓库
+### PAT 只需要一个权限
 
-- **Contents: Read and write** —— 提交原始导出
-- **Actions: Read and write** —— 网页上那个「重新生成」按钮
+- **Contents: Read and write** —— 提交原始导出和生成的 index
+
+⚠️ **不需要 Actions 权限，也不需要仓库里有 workflow 文件。**
+转换器跑在**这台服务器上**（`src/converter.ts` 调用 `pipeline/src/cli/sync-paperr.ts`），
+不是跑在 GitHub Actions 里。最初的设计是提交原始文件然后由工作流转换，那要求
+推送用的 token 有 `workflow` scope、服务器的 PAT 有 `Actions: write` —— 两个都不必要。
 
 `CEVTUO_ADMIN_PASSWORD` **不设就没有管理页**（`/` 和 `/api/status` 一律 401）。
 这是故意的：忘记设变量应该导致「没有页面」，而不是「页面把书房公之于众」。
@@ -83,7 +87,7 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 | POST | `/api/paperr` | Bearer `CEVTUO_DEVICE_TOKEN` | Kindle 推数据 |
 | GET | `/` | Basic | 管理页 |
 | GET | `/api/status` | Basic | 最后导出时间、书的数量 |
-| POST | `/api/rebuild` | Basic | 触发重新生成（`workflow_dispatch`） |
+| POST | `/api/rebuild` | Basic | 重新生成 index.json（本机跑转换器） |
 
 ### `/api/paperr` 的三种结果
 
@@ -101,7 +105,10 @@ curl -s http://127.0.0.1:8789/health     # {"ok":true,...}
 
 ⚠️ **拿不了。** Kindle 没有入站地址、大部分时间在睡眠、还在不知道哪个 NAT 后面。
 所以管理页上那个按钮**不是**去拉设备数据，而是**拿仓库里已经存着的原始导出重新
-生成一次页面**。修完转换器的 bug 之后，这正是你想要的，而且完全不需要碰设备。
+跑一次转换器**。修完转换器的 bug 之后，这正是你想要的，而且完全不需要碰设备。
+
+⚠️ 转换失败**不会**影响原始导出。原始文件先提交、且永远保留 —— 它是设备所知的
+唯一一份拷贝，而设备可能几天都不再同步。index 随时可以从它重新算出来。
 
 ## Kindle 上的配置
 

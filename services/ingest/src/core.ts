@@ -46,6 +46,9 @@ export const DEFAULT_MAX_BYTES = 1024 * 1024;
 /** Where the raw export is kept. Must match `DATA_PATHS.paperrRaw`. */
 export const RAW_PATH = 'data/paperr/raw-koreader.json';
 
+/** The published index. Must match `DATA_PATHS.paperrIndex`. */
+export const INDEX_PATH = 'data/paperr/index.json';
+
 export interface Env {
   /** Bearer the Kindle presents. Grants exactly one thing: POSTing an export. */
   deviceToken: string;
@@ -64,7 +67,6 @@ export interface Env {
    * admin page, rather than with a page publishing the reader's library.
    */
   adminPassword: string | null;
-  workflowFile: string;
 }
 
 export function envFrom(source: Record<string, string | undefined>): Env {
@@ -84,7 +86,6 @@ export function envFrom(source: Record<string, string | undefined>): Env {
     path: source.CEVTUO_RAW_PATH ?? RAW_PATH,
     maxBytes: Number(source.CEVTUO_MAX_BYTES ?? DEFAULT_MAX_BYTES),
     adminPassword: source.CEVTUO_ADMIN_PASSWORD ?? null,
-    workflowFile: source.CEVTUO_WORKFLOW_FILE ?? 'paperr.yml',
   };
 }
 
@@ -96,6 +97,27 @@ export function envFrom(source: Record<string, string | undefined>): Env {
  * produces no commit" case, which is the one that decides whether this service
  * floods the repository.
  */
+/**
+ * Turns the device's raw export into the published index.
+ *
+ * ⚠️ Run HERE, on the receiving server, rather than in a GitHub Action.
+ *
+ * The first design committed the raw file and let a workflow convert it. That
+ * needed TWO things this deployment does not have to need:
+ *   · a `workflow` scope on the token that pushes the file, and
+ *   · an `Actions: write` permission on the server's PAT.
+ * Running the converter locally drops both. The PAT needs exactly one
+ * permission — Contents — and the repository needs no workflow file at all.
+ *
+ * ⚠️ It does NOT make the raw file redundant. The raw export is still committed
+ * first and kept verbatim, so a converter bug is still fixed by re-running this
+ * over data already on disk, with the Kindle nowhere in sight.
+ */
+export interface Converter {
+  /** Returns the index bytes, or an error string. Never throws. */
+  run(rawText: string): Promise<{ indexText: string } | { error: string }>;
+}
+
 export interface GithubFileApi {
   /** Returns the file's blob sha and decoded text, or null when absent. */
   getFile(path: string): Promise<{ sha: string; text: string } | null>;
@@ -105,12 +127,6 @@ export interface GithubFileApi {
     sha: string | null,
     message: string,
   ): Promise<{ commitSha: string }>;
-  /**
-   * Optional: only the admin rebuild needs it, so the verify fakes can omit it.
-   * Requires **Actions: write** on the PAT, on top of Contents — both scoped to
-   * this one repository.
-   */
-  dispatch?(): Promise<void>;
 }
 
 const GH = 'https://api.github.com';
@@ -157,15 +173,6 @@ export function githubApi(env: Env, doFetch: typeof fetch = fetch): GithubFileAp
       if (!res.ok) throw new Error(`GitHub ${res.status}: ${await safeText(res)}`);
       const body = (await res.json()) as { commit?: { sha?: string } };
       return { commitSha: body.commit?.sha ?? '' };
-    },
-
-    async dispatch() {
-      const res = await doFetch(`${GH}/repos/${env.owner}/${env.repo}/actions/workflows/${env.workflowFile}/dispatches`, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ref: env.branch }),
-      });
-      if (!res.ok) throw new Error(`GitHub ${res.status}: ${await safeText(res)}`);
     },
   };
 }
@@ -232,6 +239,7 @@ function reject(message: string, status = 400): { status: number; body: IngestRe
 export async function handleIngest(
   env: Env,
   api: GithubFileApi,
+  converter: Converter,
   authHeader: string | null,
   rawBody: string,
   now = new Date(),
@@ -310,16 +318,51 @@ export async function handleIngest(
     }) };
   }
 
+  const published = await publishIndex(env, api, converter, text);
+
   return {
     status: 202,
     body: IngestResponseSchema.parse({
       ok: true,
       status: 'committed',
-      message: '已提交',
+      // A converter failure is reported, not hidden — but the raw export is
+      // already safe, so this is a 202 with a caveat rather than a failure.
+      message: published.ok ? '已提交并重新生成' : `已提交原始导出；重新生成失败：${published.error}`,
       books: payload.books.length,
-      commitSha,
+      commitSha: published.ok ? published.commitSha : commitSha,
     }),
   };
+}
+
+/**
+ * Convert a raw export and commit the result.
+ *
+ * ⚠️ Called AFTER the raw export is committed, and its failure is never fatal.
+ * The raw file is the irreplaceable half — it is the only copy of what the
+ * device knows, and the device may not sync again for days. The index is
+ * derivable from it at any time, by this function or by hand.
+ */
+async function publishIndex(
+  env: Env,
+  api: GithubFileApi,
+  converter: Converter,
+  rawText: string,
+): Promise<{ ok: true; commitSha: string } | { ok: false; error: string }> {
+  const conv = await converter.run(rawText);
+  if ('error' in conv) return { ok: false, error: conv.error };
+
+  try {
+    const existing = await api.getFile(INDEX_PATH);
+    const { commitSha } = await api.putFile(
+      INDEX_PATH,
+      conv.indexText,
+      existing?.sha ?? null,
+      'data(paperr): 重新生成 index.json',
+    );
+    return { ok: true, commitSha };
+  } catch (e) {
+    return { ok: false, error: scrubError(e).message };
+  }
 }
 
 function safeJsonParse(text: string): unknown {
@@ -366,7 +409,10 @@ export async function handleAdminStatus(
     readingDays: 0,
     rawBytes: 0,
     rawPath: env.path,
-    canRebuild: typeof api.dispatch === 'function',
+    // ⚠️ Always true now. Rebuilding used to mean dispatching a GitHub Action,
+    // which required an Actions-scoped token; it now runs the converter here,
+    // so the only permission this server holds is Contents.
+    canRebuild: true,
   };
   let current: Awaited<ReturnType<GithubFileApi['getFile']>>;
   try {
@@ -396,16 +442,23 @@ export async function handleAdminStatus(
 export async function handleRebuild(
   env: Env,
   api: GithubFileApi,
-): Promise<{ status: number; body: { ok: boolean; message: string } }> {
-  if (typeof api.dispatch !== 'function') {
-    return { status: 501, body: { ok: false, message: 'PAT 没有 Actions: write，无法触发' } };
-  }
+  converter: Converter,
+): Promise<{ status: number; body: { ok: boolean; message: string; commitSha?: string } }> {
+  let current: Awaited<ReturnType<GithubFileApi['getFile']>>;
   try {
-    await api.dispatch();
-    return { status: 202, body: { ok: true, message: `已触发 ${env.workflowFile}` } };
+    current = await api.getFile(env.path);
   } catch (e) {
     return { status: 502, body: { ok: false, message: scrubError(e).message } };
   }
+  if (!current) {
+    return { status: 404, body: { ok: false, message: '仓库里还没有原始导出，先让设备同步一次' } };
+  }
+
+  const published = await publishIndex(env, api, converter, current.text);
+  if (!published.ok) {
+    return { status: 502, body: { ok: false, message: `重新生成失败：${published.error}` } };
+  }
+  return { status: 202, body: { ok: true, message: '已重新生成', commitSha: published.commitSha } };
 }
 
 /**
@@ -482,7 +535,7 @@ $('#b').onclick = async () => {
   $('#b').disabled = true; $('#msg').textContent = '触发中…';
   const r = await fetch('/api/rebuild', { method: 'POST' });
   const d = await r.json();
-  $('#msg').textContent = d.message + (r.ok ? '（大约 1 分钟后生效）' : '');
+  $('#msg').textContent = d.message + (r.ok ? '（已提交，站点稍后刷新）' : '');
   setTimeout(() => { $('#b').disabled = false; load(); }, 4000);
 };
 load().catch(() => { $('#msg').textContent = '读取失败'; });
