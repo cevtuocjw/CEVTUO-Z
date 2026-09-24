@@ -132,9 +132,16 @@ end
 -- resultset indexed BY COLUMN, so `res.name[i]` is the i-th column name, and
 -- `nrow` is returned separately rather than inferred with `#` (which is
 -- unreliable the moment a NULL shows up).
+-- Returns `cols, err`. The error is handed back rather than swallowed, so the
+-- caller can tell "this table has no such column" apart from "the probe itself
+-- blew up" — reporting the second as the first is how a real problem turns into
+-- a plausible-looking wrong answer.
 local function columnsOf(conn, table_name)
     local cols = {}
-    local res, nrow = conn:exec("PRAGMA table_info('" .. table_name .. "');")
+    local ok, res, nrow = pcall(function()
+        return conn:exec("PRAGMA table_info('" .. table_name .. "');")
+    end)
+    if not ok then return cols, tostring(res) end
     if not res or not res.name then return cols end
     for i = 1, (num(nrow) or 0) do
         local nm = res.name[i]
@@ -152,18 +159,24 @@ end
 -- before. Reusing it is the documented idiom, but a NULL column binds to nil —
 -- which either clears the slot or leaves the previous record's value sitting
 -- there, depending on the binding. A fresh table cannot show the old value.
+-- ⚠️ `prepare` is INSIDE the pcall, and that is the whole point. A query
+-- against a table that is not there throws at prepare time, not at step time.
+-- With the prepare outside, that throw escapes this function, escapes
+-- buildPayload, and takes the entire export down — when the right outcome is to
+-- lose only the fields that query was supplying. Caught by the `nopagestat`
+-- fixture, not by reading the code.
 local function eachRow(conn, sql, fn)
-    local stmt = conn:prepare(sql)
-    if not stmt then return false, "无法准备查询：" .. sql end
-
+    local stmt
     local ok, err = pcall(function()
+        stmt = conn:prepare(sql)
+        if not stmt then error("无法准备查询：" .. sql, 0) end
         local row, names = stmt:step({}, {})
         while row do
             fn(row, names)
             row = stmt:step({})
         end
     end)
-    stmt:close()
+    if stmt then pcall(function() stmt:close() end) end
 
     if not ok then return false, tostring(err) end
     return true
@@ -203,9 +216,12 @@ function CevtuoCapperr:buildPayload()
         return nil, T(_("打不开统计库：%1"), path)
     end
 
-    local bookCols = columnsOf(conn, "book")
+    local bookCols, colErr = columnsOf(conn, "book")
     if not bookCols.id then
         conn:close()
+        if colErr then
+            return nil, T(_("读 book 表结构失败：%1"), colErr)
+        end
         return nil, _("统计库里没有 book 表 —— 可能是还没读过书，或版本太旧。")
     end
 
@@ -293,18 +309,25 @@ function CevtuoCapperr:buildPayload()
     -- ⚠️ `page > 0` guards the rows a reader never actually landed on (the
     -- column defaults to 0). Without it a stray page-0 record at the newest
     -- start_time reports 0% for a book that was nearly finished.
-    eachRow(conn, [[
+    -- ⚠️ A failure here is logged, not fatal — losing the whole export over one
+    -- field would be the worse outcome. But it must not be SILENT: a book with
+    -- no progress and a query that blew up produce identical JSON, and only one
+    -- of them is a bug. `num(row[1])` is also checked before formatting: a NULL
+    -- id_book would make string.format("%d", nil) throw.
+    local ok_prog, err_prog = eachRow(conn, [[
         SELECT id_book, page, MAX(start_time) AS t
         FROM page_stat_data
         WHERE page > 0
         GROUP BY id_book
     ]], function(row)
-        local b = byId[string.format("%d", num(row[1]))]
+        local id = num(row[1])
+        local b = id and byId[string.format("%d", id)]
         local page, pages = num(row[2]), b and b.pages
         if b and pages and pages > 0 and page then
             b.progressPct = math.max(0, math.min(100, (page / pages) * 100))
         end
     end)
+    if not ok_prog then logger.warn("cevtuo-capperr: progress pass failed:", err_prog) end
 
     -- ── Daily ────────────────────────────────────────────────
     --
@@ -313,7 +336,7 @@ function CevtuoCapperr:buildPayload()
     -- plugin gets a device killed for OOM. `localtime` so a day means the
     -- reader's day, not UTC's.
     local daily = {}
-    eachRow(conn, [[
+    local ok_daily, err_daily = eachRow(conn, [[
         SELECT date(start_time, 'unixepoch', 'localtime') AS d,
                SUM(duration) AS s,
                COUNT(*) AS p
@@ -328,6 +351,8 @@ function CevtuoCapperr:buildPayload()
             }
         end
     end)
+    -- Same reasoning as the progress pass above: empty and broken look alike.
+    if not ok_daily then logger.warn("cevtuo-capperr: daily pass failed:", err_daily) end
 
     conn:close()
 
@@ -367,26 +392,43 @@ end
 -- ⚠️ The URL and token live in a settings file rather than in this source: a
 -- plugin is a plain-text Lua file sitting on a mounted USB partition, so
 -- anything hardcoded here is readable by anyone holding the Kindle.
-function CevtuoCapperr:pushPayload(payload)
+--- The optional config file. Returns `cfg`, or `nil` / `nil, err`.
+--   { "url": ..., "token": ..., "autoOnWifi": true, "minIntervalMinutes": 30 }
+function CevtuoCapperr:readConfig()
     local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
-    if not rapidjson_ok then return false, _("缺少 rapidjson") end
+    if not rapidjson_ok then return nil, _("缺少 rapidjson") end
 
     local cfg_path = settingsDir() .. "/cevtuo-capperr.conf.json"
     if lfs.attributes(cfg_path, "mode") ~= "file" then
-        return false, nil   -- not configured; file-only export is a valid mode
+        return nil   -- not configured; file-only export is a valid mode
     end
     local f = io.open(cfg_path, "r")
-    if not f then return false, nil end
+    if not f then return nil end
     local raw = f:read("*a")
     f:close()
 
     local ok, cfg = pcall(rapidjson.decode, raw)
     if not ok or type(cfg) ~= "table" or not cfg.url then
-        return false, _("cevtuo-capperr.conf.json 格式不对（需要 {\"url\":..., \"token\":...}）")
+        return nil, _("cevtuo-capperr.conf.json 格式不对（需要 {\"url\":..., \"token\":...}）")
     end
+    return cfg
+end
+
+function CevtuoCapperr:pushPayload(payload, cfg)
+    cfg = cfg or self:readConfig()
+    if not cfg then return false, nil end
+
+    local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
+    if not rapidjson_ok then return false, _("缺少 rapidjson") end
 
     local http = require("socket.http")
     local ltn12 = require("ltn12")
+
+    -- ⚠️ Without this, a server that accepts the connection and then goes quiet
+    -- hangs the request forever. We are on KOReader's UI thread — an unbounded
+    -- wait here does not look like a failed sync, it looks like a bricked
+    -- device. luasocket reads TIMEOUT off the http module as its default.
+    http.TIMEOUT = 20
     local body = rapidjson.encode(payload)
     local resp = {}
     local sent, code = http.request{
@@ -410,14 +452,28 @@ end
 
 --- Export, then optionally push. Every failure surfaces as a message.
 function CevtuoCapperr:run(interactive)
-    local payload, err = self:buildPayload()
+    -- ⚠️ buildPayload returns `nil, err` for the failures it expects, but a
+    -- throw it did not expect (a malformed query, a binding that errors instead
+    -- of returning nil) would otherwise escape into KOReader's menu callback as
+    -- a raw Lua error. Everything the user can trigger goes through here, so a
+    -- surprise still arrives as a sentence they can send back.
+    local ok, payload, err = pcall(function() return self:buildPayload() end)
+    if not ok then
+        err = T(_("导出时出错：%1"), tostring(payload))
+        payload = nil
+    end
+
     if not payload then
         if interactive then UIManager:show(InfoMessage:new{ text = err, timeout = 6 }) end
         logger.warn("cevtuo-capperr:", err)
         return
     end
 
-    local path, werr = self:writePayload(payload)
+    local wok, path, werr = pcall(function() return self:writePayload(payload) end)
+    if not wok then
+        werr = T(_("导出时出错：%1"), tostring(path))
+        path = nil
+    end
     if not path then
         if interactive then UIManager:show(InfoMessage:new{ text = werr, timeout = 6 }) end
         logger.warn("cevtuo-capperr:", werr)
@@ -446,8 +502,111 @@ function CevtuoCapperr:run(interactive)
     end
 end
 
+-- ── Automatic sync on WiFi connect ──────────────────────────────
+--
+-- The whole point of the plugin living inside KOReader is that the numbers are
+-- current the moment a book is closed. Waiting for someone to plug in a USB
+-- cable throws that away, so when a URL is configured the export is pushed by
+-- itself as soon as the device has a network.
+
+local AUTO_SYNC_DELAY = 3            -- seconds after NetworkConnected
+local MIN_INTERVAL_DEFAULT = 30      -- minutes between automatic pushes
+
+local function statePath()
+    return settingsDir() .. "/cevtuo-capperr.state.json"
+end
+
+--- When the last automatic push succeeded, or nil.
+--
+-- ⚠️ Persisted to disk rather than held in memory. On a Kindle, closing a
+-- document can be a fresh KOReader process, so an in-memory debounce resets
+-- constantly — and then "push when WiFi connects" quietly becomes "push on
+-- every single WiFi connect", which is the thing the debounce exists to stop.
+local function lastPushAt()
+    local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
+    if not rapidjson_ok then return nil end
+    local f = io.open(statePath(), "r")
+    if not f then return nil end
+    local raw = f:read("*a")
+    f:close()
+    local ok, st = pcall(rapidjson.decode, raw)
+    if ok and type(st) == "table" then return num(st.lastPushAt) end
+    return nil
+end
+
+local function rememberPush(at)
+    local rapidjson_ok, rapidjson = pcall(require, "rapidjson")
+    if not rapidjson_ok then return end
+    local f = io.open(statePath(), "w")
+    if not f then return end
+    f:write(rapidjson.encode({ lastPushAt = at, version = 1 }))
+    f:close()
+end
+
+--- Export and push, silently. Used by the WiFi hook.
+--
+-- ⚠️ Silent on purpose: this fires when the reader did not ask for anything, so
+-- a popup would be nagging. Failures go to the log instead — the next
+-- successful connect retries, and the manual menu entry stays as the way to get
+-- a visible answer.
+function CevtuoCapperr:autoSync()
+    local cfg, cfgErr = self:readConfig()
+    if not cfg then
+        if cfgErr then logger.warn("cevtuo-capperr: auto-sync off —", cfgErr) end
+        return
+    end
+
+    local now = os.time()
+    local min_interval = (num(cfg.minIntervalMinutes) or MIN_INTERVAL_DEFAULT) * 60
+    local last = lastPushAt()
+    if last and now - last < min_interval then
+        logger.dbg("cevtuo-capperr: auto-sync skipped, pushed", now - last, "s ago")
+        return
+    end
+
+    local ok, payload = pcall(function() return self:buildPayload() end)
+    if not ok or not payload then
+        logger.warn("cevtuo-capperr: auto-sync skipped, export failed:", tostring(payload))
+        return
+    end
+
+    local pushed, err = self:pushPayload(payload, cfg)
+    if pushed then
+        -- Only a success moves the clock. A failure must not start a 30-minute
+        -- silence when the server was merely down for a moment.
+        rememberPush(now)
+        logger.info("cevtuo-capperr: auto-synced", payload.totals.booksStarted, "books")
+    else
+        logger.warn("cevtuo-capperr: auto-sync push failed:", err)
+    end
+end
+
+--- ⚠️ Assigned as an INSTANCE field, not written as a class method.
+-- This is exactly how KOReader's own KOSync plugin does it, and it is the
+-- pattern that is known to receive the broadcast. A class-level method would
+-- look identical and is not what anything on the device has been proven with.
+function CevtuoCapperr:_onNetworkConnected()
+    local cfg = self:readConfig()
+    if not cfg then return end              -- unconfigured: nothing to do
+    if cfg.autoOnWifi == false then return end  -- absent means on
+
+    -- ⚠️ Delayed, and that is load-bearing. NetworkConnected fires while the
+    -- connection is still settling, and pushPayload BLOCKS on a synchronous
+    -- HTTP request — firing inside the handler freezes the UI mid-connect.
+    UIManager:scheduleIn(AUTO_SYNC_DELAY, function() self:autoSync() end)
+end
+
+--- Hook the events we care about.
+--
+-- Registered unconditionally and gated inside the handler on the config file,
+-- so dropping a conf file onto the device takes effect without a restart.
+function CevtuoCapperr:registerEvents()
+    self.onNetworkConnected = self._onNetworkConnected
+end
+
 function CevtuoCapperr:init()
     self.ui.menu:registerToMainMenu(self)
+    self:registerEvents()
 end
 
 function CevtuoCapperr:addToMainMenu(menu_items)

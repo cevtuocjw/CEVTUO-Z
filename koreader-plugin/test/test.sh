@@ -23,11 +23,15 @@ export CAPPERR_HOME="$WORK/visible"
 mkdir -p "$CAPPERR_HOME"
 
 status=0
-for mode in main legacy notime; do
+for mode in main legacy nopagestat notime; do
   mkdir -p "$WORK/dbdir_$mode"
   sqlite3 "$WORK/dbdir_$mode/statistics.sqlite3" < "$HERE/fixtures/$mode.sql"
   CAPPERR_SETTINGS="$WORK/dbdir_$mode" luajit "$HERE/run.lua" "$mode" || status=1
 done
+
+mkdir -p "$WORK/dbdir_auto"
+sqlite3 "$WORK/dbdir_auto/statistics.sqlite3" < "$HERE/fixtures/main.sql"
+CAPPERR_SETTINGS="$WORK/dbdir_auto" luajit "$HERE/auto.lua" || status=1
 
 if [ "${CAPPERR_KEEP:-0}" = "1" ]; then
   echo

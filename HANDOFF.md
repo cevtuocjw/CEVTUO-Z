@@ -740,3 +740,58 @@ Playwright 会跟着跳，所以验证脚本测的其实是自定义域名上的
 
 ⇒ **看到线上验证报错，先重跑一次再下结论。** 另外 curl 测试要加 `-L`，
 否则看到的永远是 301、会误判成站点挂了。
+
+---
+
+## 2026-09-24：KOReader 插件重写（第一版是坏的）
+
+**结论先行：第一版插件装上必定弹错。** 两个硬伤，都是照「记忆里的 API」写的：
+
+1. **`db:nrows()` 在 ljsqlite3 里根本不存在。** KOReader 用的不是通用 lsqlite3，是
+   stepelu 的 ljsqlite3，全部查询接口只有 `exec`（按**列**返回）/ `rowexec` /
+   `prepare`+`step`。
+2. **模块名是 `lua-ljsqlite3/init`**，不是 `ljsqlite3`。
+
+⚠️ **比报错更坏的是报错内容是假的**：模块名错 →「这个 KOReader 没有带 ljsqlite3」；
+方法名错 →「统计库里没有 book 表」。两条都会把排查引到错误方向。**两个假消息都已在
+测试里复现**（把 pre-fix 插件喂进同一个测试台，逐字打印出来）。
+
+顺带查出**输出路径表认错了设备**：`/mnt/onboard` 是 **Kobo** 不是 Kindle，
+Kobo 的 SD 卡是 `/mnt/sd` 不是 `/mnt/sdcard`。改成用 **`Device.home_dir`**
+（KOReader 自己按机型维护的「用户可见分区」），硬编码列表降级成兜底。
+
+还有条只在真机才咬人的：ljsqlite3 把 SQLite 的 INTEGER 读成
+**`cdata<int64_t>`**，`tostring` 出来是 `"7LL"` 不是 `"7"` —— 书 id 会全带 LL 后缀。
+所有数字过一遍 `tonumber`（KOReader 自己的插件就是这么干的）。
+
+## ✅ 已建：不用真机就能跑的测试台
+
+`koreader-plugin/test/` —— `./test.sh`。拿**真实的 sqlite3 库**（表结构抄自 KOReader
+的 Statistics 插件）跑插件**真实的 `buildPayload()`**，LuaJIT 下；ljsqlite3 用 sqlite3
+命令行做 shim，且**照旧返回 cdata<int64_t>**，所以数字处理那条路径是真被测了。
+
+| 模式 | 断言 |
+|---|---|
+| `main` | 51 条：NULL 列、无页数书、空 `last_open`、书名里的单引号/换行/中文、`page>0` 进度守卫、每日聚合 |
+| `legacy` | 21 条：老库（无 `notes`/`highlights`/`total_read_pages`）照样导出 |
+| `notime` | 4 条：连 `total_read_time` 都没有时，必须报那句明确的错 |
+
+**76/76 全过。** ⚠️ 它证明不了插件在 Kindle 上能用 —— UI 接线、文件路径、网络推送
+这三块仍是「推理过、没跑过」。
+
+## 顺带验掉的两条（这次没踩，因为先查了）
+
+- **`sorting_hint` 必须在 reader 和文件管理器两个菜单里都存在** ——
+  `is_doc_only = false` 会把菜单项注册进**两个**菜单。`MenuSorter` 里是
+  `findById(hint).sub_item_table` 且**不判空** ⇒ hint 解析不到不是「位置难看」，
+  是**构建菜单时直接抛错**。查过：两个菜单都有 `tools`，安全。
+- `lua-rapidjson` / `luasocket` / `lua-ljsqlite3` 都在 koreader-base 的 thirdparty 里；
+  `ffiUtil.template` 也确实存在。
+
+## 产物
+
+`koreader-plugin/dist/cevtuo-capperr.koplugin.zip`（7.8 KB）。
+解压后把整个 `cevtuo-capperr.koplugin/` 丢进 `koreader/plugins/`，重启 KOReader。
+
+**下一步不变**：先在真机跑一次拿到真实 JSON，再写
+`pipeline/src/sources/paperr/`。**现在写转换就是猜。**

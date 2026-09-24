@@ -22,6 +22,12 @@ local function check(cond, label, extra)
 end
 local function near(a, b) return type(a) == "number" and math.abs(a - b) < 1e-6 end
 
+local EXPECT = {
+  main       = { books = 5, finished = 2, secs = 57200, pages = 460, daily = 5 },
+  legacy     = { books = 1, finished = 0, secs = 5000,  pages = 0,   daily = 1 },
+  nopagestat = { books = 1, finished = 0, secs = 9000,  pages = 150, daily = 0 },
+}
+
 local ffi = require("ffi")
 -- Negative control: prove the shim really hands back cdata<int64_t>. If it did
 -- not, every assertion below about number handling would be testing nothing.
@@ -48,16 +54,13 @@ else
   if payload then
     local byid = {}
     for _, b in ipairs(payload.books) do byid[b.id] = b end
-    local want_books = (mode == "main") and 5 or 1
+    local e = EXPECT[mode]
 
-    check(#payload.books == want_books, "expected book count", #payload.books)
-    check(payload.totals.booksStarted == want_books, "totals.booksStarted", payload.totals.booksStarted)
-    check(payload.totals.booksFinished == (mode == "main" and 2 or 0),
-          "totals.booksFinished", payload.totals.booksFinished)
-    check(payload.totals.readSeconds == (mode == "main" and 57200 or 5000),
-          "totals.readSeconds", payload.totals.readSeconds)
-    check(payload.totals.pagesTurned == (mode == "main" and 460 or 0),
-          "totals.pagesTurned", payload.totals.pagesTurned)
+    check(#payload.books == e.books, "expected book count", #payload.books)
+    check(payload.totals.booksStarted == e.books, "totals.booksStarted", payload.totals.booksStarted)
+    check(payload.totals.booksFinished == e.finished, "totals.booksFinished", payload.totals.booksFinished)
+    check(payload.totals.readSeconds == e.secs, "totals.readSeconds", payload.totals.readSeconds)
+    check(payload.totals.pagesTurned == e.pages, "totals.pagesTurned", payload.totals.pagesTurned)
     check(payload.schemaVersion == 1, "schemaVersion")
 
     -- ⚠️ tostring() on cdata<int64_t> yields "7LL". If a book id ever contains
@@ -69,8 +72,9 @@ else
       check(b.lastOpen ~= nil, "lastOpen present", b.id)
     end
 
+    check(#payload.daily == e.daily, "expected daily bucket count", #payload.daily)
+
     if mode == "main" then
-      check(#payload.daily == 5, "5 daily buckets", #payload.daily)
       local dsecs = 0
       for _, d in ipairs(payload.daily) do
         dsecs = dsecs + d.s
@@ -97,14 +101,20 @@ else
             byid["3"] and byid["3"].title)
       check(byid["1"] and byid["1"].title == "深度工作", "non-ASCII title survived",
             byid["1"] and byid["1"].title)
-    else -- legacy: no notes / highlights / total_read_pages columns
+    elseif mode == "legacy" then -- no notes / highlights / total_read_pages columns
       check(byid["1"] and byid["1"].highlights == 0, "legacy: missing highlights -> 0",
             byid["1"] and byid["1"].highlights)
       check(byid["1"] and byid["1"].notes == 0, "legacy: missing notes -> 0")
       check(byid["1"] and byid["1"].totalReadPages == 0, "legacy: missing total_read_pages -> 0")
       check(byid["1"] and near(byid["1"].progressPct, 40), "legacy: progress 40",
             byid["1"] and byid["1"].progressPct)
-      check(#payload.daily == 1, "legacy: 1 daily bucket", #payload.daily)
+    elseif mode == "nopagestat" then
+      -- ⚠️ A missing page_stat_data means the progress and daily passes throw.
+      -- The book list must still come out: a secondary query must not be able
+      -- to take the whole export down with it.
+      check(byid["1"] and byid["1"].progressPct == nil, "nopagestat: no progress, not a crash")
+      check(byid["1"] and byid["1"].title == "没有翻页表的书", "nopagestat: book still exported",
+            byid["1"] and byid["1"].title)
     end
 
     local rj = require("rapidjson")
