@@ -541,7 +541,21 @@
       "totalReadTime": 160
     }
   ],
-  "current": null,
+  "current": {
+    "authors": "EpubPressX",
+    "estFinishedAt": "2026-09-27",
+    "highlights": 0,
+    "id": "41",
+    "lastOpen": "2026-09-24T09:14+08:00",
+    "notes": 0,
+    "originalTitle": "EpubPressX 2026-9-15",
+    "pages": 188,
+    "progressPct": 53.72340425531915,
+    "series": null,
+    "title": "news28 (EpubPressX 2026-9-15)",
+    "totalReadPages": 60,
+    "totalReadTime": 2081
+  },
   "daily": [
     {
       "d": "2026-09-03",
@@ -614,8 +628,107 @@
       "s": 120
     }
   ],
-  "dataVersion": "1f4097dda403",
+  "dataVersion": "0ff4c91e8650",
+  "hourly": [
+    {
+      "h": 0,
+      "s": 0
+    },
+    {
+      "h": 1,
+      "s": 0
+    },
+    {
+      "h": 2,
+      "s": 0
+    },
+    {
+      "h": 3,
+      "s": 0
+    },
+    {
+      "h": 4,
+      "s": 0
+    },
+    {
+      "h": 5,
+      "s": 0
+    },
+    {
+      "h": 6,
+      "s": 0
+    },
+    {
+      "h": 7,
+      "s": 0
+    },
+    {
+      "h": 8,
+      "s": 0
+    },
+    {
+      "h": 9,
+      "s": 0
+    },
+    {
+      "h": 10,
+      "s": 0
+    },
+    {
+      "h": 11,
+      "s": 0
+    },
+    {
+      "h": 12,
+      "s": 0
+    },
+    {
+      "h": 13,
+      "s": 0
+    },
+    {
+      "h": 14,
+      "s": 0
+    },
+    {
+      "h": 15,
+      "s": 0
+    },
+    {
+      "h": 16,
+      "s": 0
+    },
+    {
+      "h": 17,
+      "s": 0
+    },
+    {
+      "h": 18,
+      "s": 0
+    },
+    {
+      "h": 19,
+      "s": 0
+    },
+    {
+      "h": 20,
+      "s": 0
+    },
+    {
+      "h": 21,
+      "s": 0
+    },
+    {
+      "h": 22,
+      "s": 0
+    },
+    {
+      "h": 23,
+      "s": 0
+    }
+  ],
   "lastIngestPath": "koreader-push",
+  "monthly": [],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 2,

@@ -377,6 +377,49 @@ function CevtuoCapperr:buildPayload()
     -- Same reasoning as the progress pass above: empty and broken look alike.
     if not ok_daily then logger.warn("cevtuo-capperr: daily pass failed:", err_daily) end
 
+    -- ── By hour ─────────────────────────────────────────────
+    --
+    -- ⚠️ The one cut that makes "when do I read" answerable, and it can only be
+    -- made HERE: it needs each session's `start_time`, which the day-level
+    -- aggregate throws away. The reader asked for the time-of-day chart KOReader's
+    -- own insights plugin has, and no amount of client-side cleverness can
+    -- reconstruct it from a daily total.
+    --
+    -- ⚠️ `localtime`, like the daily series, so an hour means the reader's hour.
+    local hourly = {}
+    eachRow(conn, [[
+        SELECT CAST(strftime('%H', start_time, 'unixepoch', 'localtime') AS INTEGER) AS h,
+               SUM(duration) AS s
+        FROM page_stat_data
+        GROUP BY h ORDER BY h
+    ]], function(row)
+        local h = num(row[1])
+        if h then
+            hourly[#hourly + 1] = { h = h, s = num(row[2]) or 0 }
+        end
+    end)
+
+    -- ── By month ────────────────────────────────────────────
+    --
+    -- ⚠️ Not derivable from `daily` without keeping every day forever, and the
+    -- daily series is intentionally capped. A year of months is 12 rows.
+    local monthly = {}
+    eachRow(conn, [[
+        SELECT strftime('%Y-%m', start_time, 'unixepoch', 'localtime') AS m,
+               SUM(duration) AS s,
+               COUNT(*) AS p
+        FROM page_stat_data
+        GROUP BY m ORDER BY m
+    ]], function(row)
+        if row[1] then
+            monthly[#monthly + 1] = {
+                m = row[1],
+                s = num(row[2]) or 0,
+                p = num(row[3]) or 0,
+            }
+        end
+    end)
+
     conn:close()
 
     return {
@@ -385,6 +428,8 @@ function CevtuoCapperr:buildPayload()
         exportedAt = isoNow(),
         books = books,
         daily = daily,
+        hourly = hourly,
+        monthly = monthly,
         totals = {
             booksStarted = #books,
             booksFinished = finished,

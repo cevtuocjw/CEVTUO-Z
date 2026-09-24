@@ -411,3 +411,137 @@ export function ReadingHeat({ days, weeks = 12 }: { days: HeatDay[]; weeks?: num
     </View>
   );
 }
+
+// ── Hour grid ────────────────────────────────────────────────
+
+export interface HourBucket {
+  h: number;
+  s: number;
+}
+
+/**
+ * Seconds read in each hour of the day.
+ *
+ * ⚠️ This is the one chart that needed the DEVICE to change. It cannot be
+ * derived from a daily total — it needs each session's start time, and the
+ * day-level aggregate throws that away. The plugin now runs a second `GROUP BY`
+ * over the same table for it (see `koreader-plugin/cevtuo-capperr.koplugin/`).
+ *
+ * ⚠️ Renders an honest empty state when the array is all zeros, which is what a
+ * device that has not updated its plugin sends. A chart of 24 flat bars would
+ * read as "you never read" rather than "this data has not arrived yet".
+ */
+export function HourGrid({ hours }: { hours: HourBucket[] }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const peak = Math.max(0, ...hours.map((x) => x.s));
+  const active = picked !== null ? hours[picked] : undefined;
+  const busiest = hours.reduce((a, b) => (b.s > a.s ? b : a), hours[0]!);
+
+  if (peak === 0) {
+    return (
+      <View className="pc-hours">
+        <Text className="pc-readout">时段数据还没有</Text>
+        <Text className="pc-note">
+          需要新版插件（它会额外按小时聚合一次）。设备下次同步后这里就有图了。
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View className="pc-hours">
+      <Text className="pc-readout">
+        {active
+          ? `${active.h} 点 – ${active.h + 1} 点 · ${mins(active.s)}`
+          : `最常在 ${busiest.h} 点读 · ${mins(busiest.s)}`}
+      </Text>
+      <View className="pc-hours__row">
+        {hours.map((x, i) => (
+          <View
+            key={x.h}
+            className={picked === i ? 'pc-hours__col pc-hours__col--on' : 'pc-hours__col'}
+            onClick={() => setPicked(picked === i ? null : i)}
+          >
+            <View className="pc-hours__track">
+              <View
+                className="pc-hours__bar"
+                // A 2% floor so a hour with no reading still shows a mark; a
+                // column of literal nothing reads as a rendering fault.
+                style={`height:${Math.max(2, (x.s / peak) * 100)}%`}
+              />
+            </View>
+            {/* Every third hour, or the labels collide at phone width. */}
+            <Text className="pc-hours__label">{i % 3 === 0 ? String(i) : ''}</Text>
+          </View>
+        ))}
+      </View>
+      <Text className="pc-note">一天里每个小时的累计时长（本地时间）</Text>
+    </View>
+  );
+}
+
+// ── Records ──────────────────────────────────────────────────
+
+export interface RecordItem {
+  label: string;
+  value: string;
+  note?: string;
+}
+
+/** Personal bests. A plain row of numbers — no chart, because they are single values. */
+export function Records({ items }: { items: RecordItem[] }) {
+  return (
+    <View className="pc-records">
+      {items.map((r) => (
+        <View key={r.label} className="pc-records__cell">
+          <Text className="pc-records__value">{r.value}</Text>
+          <Text className="pc-records__label">{r.label}</Text>
+          {r.note && <Text className="pc-records__note">{r.note}</Text>}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ── Monthly bars ─────────────────────────────────────────────
+
+export interface MonthBucket {
+  m: string;
+  s: number;
+}
+
+/**
+ * Seconds read per calendar month.
+ *
+ * ⚠️ Hidden entirely below two months. One bar is not a trend, and a "monthly
+ * chart" with a single column implies history the device does not have yet.
+ */
+export function MonthBars({ months }: { months: MonthBucket[] }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  if (months.length < 2) return null;
+
+  const peak = Math.max(1, ...months.map((x) => x.s));
+  const active = months.find((x) => x.m === picked);
+
+  return (
+    <View className="pc-months">
+      <Text className="pc-readout">
+        {active ? `${active.m} · ${mins(active.s)}` : `${months.length} 个月 · 峰值 ${mins(peak)}`}
+      </Text>
+      <View className="pc-months__row">
+        {months.map((x) => (
+          <View
+            key={x.m}
+            className={picked === x.m ? 'pc-months__col pc-months__col--on' : 'pc-months__col'}
+            onClick={() => setPicked(picked === x.m ? null : x.m)}
+          >
+            <View className="pc-months__track">
+              <View className="pc-months__bar" style={`height:${Math.max(3, (x.s / peak) * 100)}%`} />
+            </View>
+            <Text className="pc-months__label">{x.m.slice(5)} 月</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}

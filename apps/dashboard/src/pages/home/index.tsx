@@ -9,12 +9,15 @@ import { CnsrStrips } from '../../components/CnsrStrips';
 import {
   assetUrl,
   fetchCoofIndex,
+  fetchPaperrIndex,
   fetchSyncMeta,
+  formatReadingTime,
   formatUpdatedAt,
   type CoofTitle,
 } from '../../platform/data';
 
 import '../../styles/demo.scss';
+import './index.scss';
 
 /**
  * Home — the index of the four brands.
@@ -80,11 +83,12 @@ const PANELS: BrandPanel[] = [
     key: 'paperr',
     title: 'CAPPERR',
     lede: 'Kindle 阅读 · 阅读时长、在读书目与划线，从设备同步',
+    // ⚠️ Placeholders. Replaced at render time by the live counts, like COOF's.
     stats: [
-      { value: '36h', label: '本月', note: '在读 3 本' },
-      { value: '12', label: '已读完', note: '本 · 本年度' },
+      { value: '—', label: '累计阅读', note: '' },
+      { value: '—', label: '读完', note: '' },
     ],
-    route: null,
+    route: '/pages/paperr/index',
   },
   {
     key: 'chealth',
@@ -103,6 +107,11 @@ export default function Home() {
   // decoration and must never be load-blocking: a failure here leaves the panel
   // exactly as it was before, rather than showing an error on an index page
   // whose job is to offer four doors.
+  // ⚠️ Fetched here rather than on the CAPPERR page only, because this panel
+  // now SHOWS charts instead of a placeholder pair of numbers. An index page
+  // that says "36h · 本月" about a brand whose page says 15.7h is a page lying
+  // quietly — the two read the same payload now.
+  const [paperr, setPaperr] = useState<PaperrIndex | null>(null);
   const [recent, setRecent] = useState<CoofTitle[]>([]);
   const [totals, setTotals] = useState<{ years: number; items: number } | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -120,6 +129,9 @@ export default function Home() {
           items: idx.collections.reduce((n, c) => n + c.count, 0),
         });
       })
+      .catch(() => {});
+    fetchPaperrIndex()
+      .then((d) => alive && setPaperr(d))
       .catch(() => {});
     fetchSyncMeta()
       .then((m) => alive && setUpdatedAt(formatUpdatedAt(m.generatedAt)))
@@ -160,7 +172,20 @@ export default function Home() {
                     { value: `${totals.years}`, label: '个年历', note: '2020–2026' },
                     { value: `${totals.items}`, label: '条记录', note: '全部年历' },
                   ]
-                : p.stats
+                : p.key === 'paperr' && paperr
+                  ? [
+                      {
+                        value: formatReadingTime(paperr.totals.readSeconds),
+                        label: '累计阅读',
+                        note: `${paperr.totals.pagesTurned} 页`,
+                      },
+                      {
+                        value: `${paperr.books.filter((b) => (b.progressPct ?? 0) >= 70).length}`,
+                        label: '读完',
+                        note: `共 ${paperr.books.length} 条`,
+                      },
+                    ]
+                  : p.stats
             }
             updatedAt={p.key === 'coof' ? updatedAt : null}
             // The last panel gets no chevron: there is nothing below it, and a
@@ -176,6 +201,30 @@ export default function Home() {
             {/* The live feed for CNSR: four glass strips, one per source,
                 cycling through that source's note lines. */}
             {p.key === 'cnsr' ? <CnsrStrips onOpen={() => open(p.route, p.title)} /> : null}
+
+            {/* The CAPPERR panel shows real charts, not a pair of numbers. The
+                whole point of the index page is to say what is behind each door
+                — and for this brand the answer is a shape, not a figure. */}
+            {p.key === 'paperr' && paperr ? (
+              <View className="home-paperr">
+                <CompositionDonut
+                  slices={(() => {
+                    const by = new Map<string, number>();
+                    for (const b of paperr.books) {
+                      const k = !b.originalTitle ? 'Books' : b.title.startsWith('news') ? 'News' : 'Unnamed';
+                      by.set(k, (by.get(k) ?? 0) + b.totalReadTime);
+                    }
+                    return [...by.entries()]
+                      .filter(([, v]) => v > 0)
+                      .sort((a, b) => ['Books', 'News', 'Unnamed'].indexOf(a[0]) - ['Books', 'News', 'Unnamed'].indexOf(b[0]))
+                      .map(([label, value]) => ({ key: label, label, value }));
+                  })()}
+                  format={formatReadingTime}
+                />
+                <View className="pc-gap" />
+                <ReadingCurve days={paperr.daily.slice(-30)} />
+              </View>
+            ) : null}
 
             {p.key === 'coof' && recent.length ? (
               <ScrollView className="recent__scroll" scrollX showScrollbar={false}>

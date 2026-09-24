@@ -38,7 +38,6 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const DATA_DIR = repoPath('data');
 const RAW_PATH = repoPath(LOCAL_PATHS.paperrRaw);
 const INDEX_PATH = repoPath(DATA_PATHS.paperrIndex);
-const CURRENT_PATH = repoPath(LOCAL_PATHS.paperrCurrent);
 const META_PATH = join(DATA_DIR, 'sync-meta.json');
 
 /** Mirrors the coof cadence so `nextScheduledAt` means the same thing app-wide. */
@@ -88,28 +87,28 @@ console.log(`  ▸ 进度可算 ${index.books.filter((b) => b.progressPct != nul
 console.log(`  ▸ 可预测读完时间 ${won} 本`);
 console.log(`  ▸ 当前在读: ${index.current ? index.current.title : '(无)'}`);
 
-// ── Write: one public file, one private ──────────────────────
+// ── Write ────────────────────────────────────────────────────
 //
-// ⚠️ The split is a PUBLISHING boundary, not a convenience. `index.json` is
-// committed to a public repository and served by a world-readable Pages site;
-// `current.json` never leaves the server. Which book the reader has open at this
-// moment is the one fact in this brand that is nobody else's business, and it is
-// kept in a separate FILE so the boundary is visible in `ls` — rather than being
-// a field some code path has to remember to strip.
+// ⚠️ ONE file, and `current` is in it. This was briefly split so that "which
+// book is open right now" stayed private while everything else went public; the
+// reader decided the whole reading dashboard is fine to publish, so the split is
+// gone and there is no second file to keep in step.
 //
-// ⚠️ `dataVersion` is recomputed over the PUBLIC body. Reusing the one
-// `buildPaperrIndex` produced would hash a `current` that the published file
-// does not contain, so the same published bytes could carry two different
-// versions depending on what the reader happened to have open.
-const publicBody = {
+// ⚠️ `dataVersion` still hashes the body WITHOUT `current`. Switching books
+// changes it, and hashing it would produce a commit for something no chart
+// shows — the exact no-op-commit failure the rest of this pipeline is built to
+// avoid.
+const body = {
   schemaVersion: 1 as const,
-  current: null,
+  current: index.current,
   books: index.books,
   totals: index.totals,
   daily: index.daily,
+  hourly: index.hourly,
+  monthly: index.monthly,
   lastIngestPath: index.lastIngestPath,
 };
-const publicIndex = { ...publicBody, dataVersion: contentHash(publicBody) };
+const publicIndex = { ...body, dataVersion: contentHash({ ...body, current: null }) };
 
 let written = 0;
 let unchanged = 0;
@@ -125,12 +124,6 @@ if (DRY_RUN) {
     unchanged++;
     console.log(`\n  · ${DATA_PATHS.paperrIndex} 无变化，跳过`);
   }
-
-  // ⚠️ Written even when the public file did not change — the reader may have
-  // switched books without reading a page, and `current` is the whole point of
-  // this file. It is not committed, so it costs nothing to rewrite.
-  const cur = await writeIfChanged(CURRENT_PATH, stableJson({ current: index.current }));
-  if (cur === 'written') written++;
 }
 
 // ── sync-meta ────────────────────────────────────────────────

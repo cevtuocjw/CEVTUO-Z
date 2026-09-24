@@ -707,3 +707,219 @@
   color: var(--text-secondary);
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
+
+// ── The overview panel scrolls WITHIN itself ─────────────────
+//
+// ⚠️ Same load-bearing pair as the shelf: Taro renders a ScrollView as an inline
+// element, so `flex: 1` on it does nothing and it grows to its content. The
+// wrapper claims the panel's leftover height; the ScrollView is anchored to all
+// four edges inside it.
+//
+// ⚠️ This exists because the page went from five full-height panels to two. The
+// alternative — keeping five — is four swipes between "what am I reading" and
+// "what have I read", and a chart nobody scrolls to is a chart nobody sees.
+.pr-scrollwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.pr-scroll {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+// Section headings inside the scrolling column. The panel's own title lives in
+// the margin; these separate the charts from each other.
+.pr-h {
+  display: block;
+  margin-top: t.$space-6;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-heading;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+.pr-sub {
+  display: block;
+  margin: t.$space-1 0 t.$space-3;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+.pr-current__kicker {
+  display: block;
+  margin-bottom: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+// 待看 is a different thing from 在读 — dimmed, not highlighted.
+.pr-row__pct--todo {
+  color: var(--text-tertiary);
+  letter-spacing: t.$track-label;
+}
+
+// ── Hour grid ────────────────────────────────────────────────
+.pc-hours {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-hours__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+  height: 76px;
+  gap: 1px;
+}
+
+.pc-hours__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  // ⚠️ 24 columns in ~350px is ~14px each. Without `min-width: 0` a flex child
+  // refuses to shrink below its content and the row overflows the panel.
+  min-width: 0;
+  height: 100%;
+  cursor: pointer;
+}
+
+.pc-hours__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.pc-hours__bar {
+  width: 100%;
+  background-color: var(--chart-4);
+  border-radius: t.$radius-tile;
+  transition: background-color 0.18s ease;
+}
+
+.pc-hours__col--on .pc-hours__bar {
+  background-color: var(--chart-1);
+}
+
+.pc-hours__label {
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+// ── Records ──────────────────────────────────────────────────
+.pc-records {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: t.$space-4;
+}
+
+.pc-records__cell {
+  display: flex;
+  flex-direction: column;
+  // Two per row on a phone; `flex-basis` with a min keeps them from collapsing
+  // to their content and stacking unevenly.
+  flex: 1 1 40%;
+  min-width: 0;
+}
+
+.pc-records__value {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-title;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+.pc-records__label {
+  margin-top: 2px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+.pc-records__note {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+
+// ── Month bars ───────────────────────────────────────────────
+.pc-months {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pc-months__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+  height: 72px;
+  gap: t.$space-2;
+}
+
+.pc-months__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  cursor: pointer;
+}
+
+.pc-months__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.pc-months__bar {
+  width: 100%;
+  background-color: var(--chart-5);
+  border-radius: t.$radius-tile;
+  transition: background-color 0.18s ease;
+}
+
+.pc-months__col--on .pc-months__bar {
+  background-color: var(--chart-1);
+}
+
+.pc-months__label {
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}

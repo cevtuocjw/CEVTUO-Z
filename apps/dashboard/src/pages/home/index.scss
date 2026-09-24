@@ -1,0 +1,15 @@
+// Home page — the index of the four brands.
+//
+// ⚠️ Only the CAPPERR panel adds anything here. The other three bring their own
+// sheets (COOF's poster strip, CNSR's glass strips); this one exists so the
+// paperr panel can hold charts without every chart importing home's layout.
+
+.home-paperr {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  // ⚠️ `min-height: 0` so the panel can shrink it. Without it a flex child
+  // refuses to go below its content, and two charts push the panel past the
+  // viewport on a phone.
+  min-height: 0;
+}

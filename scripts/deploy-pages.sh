@@ -78,8 +78,8 @@ cp -R data "$STAGE"/data
 # ⚠️ Add to this list in the same commit that gitignores anything new under
 # `data/`. The check below is what makes forgetting loud instead of silent.
 PRIVATE=(
-  "data/paperr/raw-koreader.json"
-  "data/paperr/current.json"
+  # ⚠️ paperr was listed here while its history was private. The reader decided
+  # the whole reading dashboard is public, so it is not any more. chealth still is.
   "data/chealth"
 )
 for rel in "${PRIVATE[@]}"; do

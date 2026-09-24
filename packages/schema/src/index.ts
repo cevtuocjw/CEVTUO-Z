@@ -471,6 +471,19 @@ export const PaperrRawSchema = z.object({
       p: z.number().nonnegative(),
     }),
   ),
+  /**
+   * Seconds read by hour of day, local time.
+   *
+   * ⚠️ Optional with a default, because it arrived after the first exports did.
+   * A device that has not updated its plugin sends nothing here, and a schema
+   * that demanded it would reject an export that is otherwise perfectly good.
+   */
+  hourly: z.array(z.object({ h: z.number().int().min(0).max(23), s: z.number().nonnegative() })).optional().default([]),
+  /** Seconds and pages by calendar month (`YYYY-MM`). Same reasoning as `hourly`. */
+  monthly: z
+    .array(z.object({ m: z.string().regex(/^\d{4}-\d{2}$/), s: z.number().nonnegative(), p: z.number().nonnegative() }))
+    .optional()
+    .default([]),
   totals: z.object({
     booksStarted: z.number().int().nonnegative(),
     booksFinished: z.number().int().nonnegative(),
@@ -549,6 +562,10 @@ export const PaperrIndexSchema = z.object({
   }),
   /** d = day, s = seconds read, p = pages turned. */
   daily: z.array(z.object({ d: DayKeySchema, s: z.number().int().nonnegative(), p: z.number().int().nonnegative() })),
+  /** h = hour 0–23, s = seconds read in that hour. Empty on older exports. */
+  hourly: z.array(z.object({ h: z.number().int().min(0).max(23), s: z.number().int().nonnegative() })).default([]),
+  /** m = `YYYY-MM`. Empty on older exports. */
+  monthly: z.array(z.object({ m: z.string(), s: z.number().int().nonnegative(), p: z.number().int().nonnegative() })).default([]),
   /** Set when the two ingest paths disagree — surfaced in diagnostics. */
   lastIngestPath: z.enum(['koreader-push', 'koreader-sftp']).nullable(),
 });

@@ -230,6 +230,14 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
     .slice(-SERIES_DAYS)
     .map((d) => ({ d: d.d, s: Math.round(d.s), p: Math.round(d.p) }));
 
+  // ⚠️ Filled to all 24 hours, including the ones with no reading. A chart of
+  // only the hours that happen to have data collapses the gaps and makes 3 a.m.
+  // look adjacent to 7 a.m.
+  const byHour = new Map(raw.hourly.map((x) => [x.h, x.s]));
+  const hourly = Array.from({ length: 24 }, (_, h) => ({ h, s: Math.round(byHour.get(h) ?? 0) }));
+
+  const monthly = raw.monthly.map((x) => ({ m: x.m, s: Math.round(x.s), p: Math.round(x.p) }));
+
   const newest = daily.length ? daily[daily.length - 1] : undefined;
   const anchorDay = newest ? newest.d : null;
 
@@ -324,6 +332,8 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
     books: labelled,
     totals,
     daily,
+    hourly,
+    monthly,
     lastIngestPath: opts.ingestPath ?? 'koreader-push',
   };
 

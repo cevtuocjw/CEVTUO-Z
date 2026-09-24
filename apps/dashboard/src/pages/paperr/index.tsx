@@ -1,20 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Input, ScrollView, Text, View } from '@tarojs/components';
+import { ScrollView, Text, View } from '@tarojs/components';
 
-import { CompositionDonut, ReadingCurve, ReadingHeat, WeekdayBars } from '../../components/PaperrCharts';
+import {
+  CompositionDonut,
+  HourGrid,
+  MonthBars,
+  ReadingCurve,
+  ReadingHeat,
+  Records,
+  WeekdayBars,
+} from '../../components/PaperrCharts';
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
-  NEED_PASSWORD,
-  clearPaperrPassword,
-  fetchPaperrCurrent,
   fetchPaperrIndex,
   formatAgo,
   formatDayMonth,
   formatReadingTime,
-  setPaperrPassword,
   type PaperrBook,
   type PaperrIndex,
 } from '../../platform/data';
@@ -26,12 +30,16 @@ import '../../styles/demo.scss';
 import './index.scss';
 
 /**
- * CE-CAPPERR — Kindle reading statistics.
+ * CAPPERR — Kindle reading statistics.
  *
- * ⚠️ Displayed as CAPPERR; the internal key, the route and `data/paperr/` all
- * stay `paperr`. Renaming a route means every shared URL breaks, and the data
- * path is pinned by `packages/schema/src/paths.ts` behind a drift guard — a
- * rename that reaches that far is a migration, not a relabel.
+ * ⚠️ The top bar says CAPPERR, not CE-CAPPERR. Every other brand here is COOF,
+ * CNSR, Chealth — a lone `CE-` prefix on one of four is not a style, it is a
+ * typo that survived because nobody compared them side by side.
+ *
+ * ⚠️ The internal key, the route and `data/paperr/` all stay `paperr`. Renaming
+ * a route means every shared URL breaks, and the data path is pinned by
+ * `packages/schema/src/paths.ts` behind a drift guard — a rename that reaches
+ * that far is a migration, not a relabel.
  *
  * ── Where the numbers come from ────────────────────────────────
  * KOReader's own `statistics.sqlite3`, read in-process by the plugin
@@ -40,56 +48,77 @@ import './index.scss';
  *
  * ⚠️ The aggregation happens ON THE DEVICE, in SQL. A heavy reader's
  * `page_stat_data` runs to hundreds of thousands of rows, and building that in
- * Lua is how a plugin gets a Kindle killed for OOM. So this page receives
- * totals and a daily series — never raw page events.
+ * Lua is how a plugin gets a Kindle killed for OOM.
  *
- * ⚠️ And that is also the ceiling on what can be charted here. There is no
- * per-hour and no per-book-per-day data in the payload, so "reading by time of
- * day" is a chart this data CANNOT support. The four charts below are the ones
- * the daily series genuinely answers.
+ * ⚠️ Everything here is public. The dashboard was briefly split so that "which
+ * book is open right now" stayed behind a password; the reader decided the whole
+ * thing is fine to publish, so there is no gate and no private fetch.
  *
- * ⚠️ The history, the charts and the shelf are PUBLIC — they come from
- * `data/paperr/index.json` like every other brand. The ONE thing behind a
- * password is the 在读 panel: which book is open right now. It is written to its
- * own file by the pipeline, never committed, and fetched from the sync server.
- * See `fetchPaperrCurrent` in platform/data.ts.
- *
- * ── What the titles mean ───────────────────────────────────────
- * Most rows are not books. The pipeline relabels machine-generated news digests
- * and bare article headlines to `newsN (原名)`, and untitled entries to
- * `unknownN (原名)`. KOReader's own documents are dropped before they get here.
- * Only rows it could not classify keep their original title.
+ * ── Two panels, on every screen size ───────────────────────────
+ * ⚠️ It was five. Five full-height panels is four swipes between "what am I
+ * reading" and "what have I read", and a chart nobody scrolls to is a chart
+ * nobody sees. The overview scrolls WITHIN its panel instead — one swipe, then
+ * scroll, which is the gesture people already have.
  */
 
-type Filter = 'all' | 'reading' | 'done' | 'books';
+/** A book counts as read at 70% — the reader's rule, not KOReader's 99%. */
+const DONE_PCT = 70;
+/** Below this it was opened and put down: 待看, not 在读. */
+const TODO_PCT = 10;
+
+type Bucket = 'reading' | 'done' | 'todo';
+
+function bucketOf(b: PaperrBook): Bucket {
+  const p = b.progressPct;
+  if (p != null && p >= DONE_PCT) return 'done';
+  if (p != null && p < TODO_PCT) return 'todo';
+  // No page count means KOReader never learned how long the book is; any
+  // reading at all is all we can go on.
+  return b.totalReadPages > 0 ? 'reading' : 'todo';
+}
+
+type Filter = 'all' | Bucket | 'books';
 
 const FILTERS: ReadonlyArray<{ key: Filter; label: string }> = [
   { key: 'all', label: '全部' },
   { key: 'reading', label: '在读' },
   { key: 'done', label: '读完' },
-  // ⚠️ Not "hide news" but "only books". With almost every row relabelled, the
-  // useful view is the one with the generated labels taken out.
-  { key: 'books', label: '只看书' },
+  { key: 'todo', label: '待看' },
+  // ⚠️ "只看书" was the old label and it was wrong: with almost every row
+  // relabelled, this filter does not show "books", it shows the rows that were
+  // NOT machine-generated. `Books` matches what the donut calls them.
+  { key: 'books', label: 'Books' },
 ];
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
-
-/**
- * KOReader's own rule, mirrored from the pipeline — finished at 99%+, and any
- * reading at all counts when it never learned the page count.
- */
-function isFinished(b: PaperrBook): boolean {
-  if (b.pages != null && b.pages > 0) return b.totalReadPages >= b.pages - 1;
-  return b.totalReadPages > 0;
-}
+const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /** A generated label rather than a name. */
 const isRelabelled = (b: PaperrBook): boolean => b.originalTitle != null;
 
-/** Which bucket a row falls in, for the donut. */
+/** The three buckets the donut and the filter both use. */
 function categoryOf(b: PaperrBook): string {
-  if (!b.originalTitle) return '原样保留';
-  return b.title.startsWith('news') ? '新闻摘要' : '无标题';
+  if (!b.originalTitle) return 'Books';
+  return b.title.startsWith('news') ? 'News' : 'Unnamed';
+}
+
+/** Longest run of consecutive days with any reading. */
+function bestStreak(days: { d: string; s: number }[]): number {
+  const read = days.filter((x) => x.s > 0).map((x) => x.d).sort();
+  let best = 0;
+  let run = 0;
+  let prev: string | null = null;
+  for (const d of read) {
+    if (prev) {
+      const gap = (Date.parse(`${d}T00:00:00Z`) - Date.parse(`${prev}T00:00:00Z`)) / 86_400_000;
+      run = gap === 1 ? run + 1 : 1;
+    } else {
+      run = 1;
+    }
+    best = Math.max(best, run);
+    prev = d;
+  }
+  return best;
 }
 
 export default function Paperr() {
@@ -97,14 +126,6 @@ export default function Paperr() {
   const [index, setIndex] = useState<PaperrIndex | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
-  // ⚠️ The public payload and the private one load INDEPENDENTLY. The shelf must
-  // render whether or not the reader has entered a password — gating the whole
-  // page on a secret that only protects one panel would make a working
-  // deployment look broken to anyone who has not been given the password.
-  const [current, setCurrent] = useState<PaperrBook | null>(null);
-  const [locked, setLocked] = useState(false);
-  const [pwDraft, setPwDraft] = useState('');
-  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -123,42 +144,34 @@ export default function Paperr() {
     };
   }, []);
 
-  useEffect(() => {
-    let alive = true;
-    fetchPaperrCurrent()
-      .then((d) => {
-        if (!alive) return;
-        setCurrent(d.current);
-        setLocked(false);
-      })
-      .catch((e: unknown) => {
-        if (!alive) return;
-        const msg = e instanceof Error ? e.message : String(e);
-        // ⚠️ "No password" is not an error — it is the normal state on a new
-        // device, and it only affects one panel.
-        if (msg === NEED_PASSWORD) setLocked(true);
-        else setCurrent(null);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [reloadKey]);
-
   const books = index?.books ?? [];
 
-  const stats = useMemo(() => {
-    const done = books.filter(isFinished).length;
-    return { done, reading: books.length - done };
+  const counts = useMemo(() => {
+    const c = { reading: 0, done: 0, todo: 0 } as Record<Bucket, number>;
+    for (const b of books) c[bucketOf(b)] += 1;
+    return c;
   }, [books]);
 
+  /**
+   * ⚠️ 待看 sorts LAST, always. The shelf's job is to show what is being read;
+   * a book that was opened once and abandoned is the least interesting thing on
+   * it, and putting it wherever its date lands buries the ones that matter.
+   */
   const shown = useMemo(() => {
-    if (filter === 'reading') return books.filter((b) => !isFinished(b));
-    if (filter === 'done') return books.filter(isFinished);
-    if (filter === 'books') return books.filter((b) => !isRelabelled(b));
-    return books;
+    const filtered = (() => {
+      if (filter === 'all') return books;
+      if (filter === 'books') return books.filter((b) => !isRelabelled(b));
+      return books.filter((b) => bucketOf(b) === filter);
+    })();
+    return [...filtered].sort((a, b) => {
+      const at = bucketOf(a) === 'todo' ? 1 : 0;
+      const bt = bucketOf(b) === 'todo' ? 1 : 0;
+      if (at !== bt) return at - bt;
+      return b.lastOpen.localeCompare(a.lastOpen);
+    });
   }, [books, filter]);
 
-  /** Composition, by reading TIME — counting rows would let 24 short digests
+  /** Composition, by reading TIME — counting rows would let 28 short digests
    *  outweigh the handful of things actually read at length. */
   const slices = useMemo(() => {
     const byCat = new Map<string, number>();
@@ -168,33 +181,53 @@ export default function Paperr() {
     }
     return [...byCat.entries()]
       .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
+      // Fixed order, so the donut's colours do not shuffle between renders.
+      .sort((a, b) => ['Books', 'News', 'Unnamed'].indexOf(a[0]) - ['Books', 'News', 'Unnamed'].indexOf(b[0]))
       .map(([label, value]) => ({ key: label, label, value }));
   }, [books]);
 
   const daily = useMemo(() => (index?.daily ?? []).slice(-30), [index]);
 
-  /** Which weekday the reading lands on. */
-  const bars = useMemo(() => {
+  /**
+   * ⚠️ THIS month only, at the reader's request. The all-time weekday totals
+   * answered "which day of the week do I read most, ever" — a question with one
+   * answer that never changes. The current month answers "how is this month
+   * going", which is what someone opening the page actually wants.
+   */
+  const monthBars = useMemo(() => {
+    const all = index?.daily ?? [];
+    const latest = all.length ? all[all.length - 1]!.d.slice(0, 7) : null;
     const totals = new Array<number>(7).fill(0);
-    for (const d of index?.daily ?? []) {
-      const [y, m, dd] = d.d.split('-').map(Number) as [number, number, number];
+    for (const d of all) {
+      if (!latest || !d.d.startsWith(latest)) continue;
+      const [y, mo, dd] = d.d.split('-').map(Number) as [number, number, number];
       // ⚠️ UTC throughout. `new Date('2026-09-24')` parses as UTC midnight and
-      // then `getDay()` reads it back in the VIEWER's timezone — a reader three
-      // hours behind would see every Sunday filed under Saturday.
-      const dow = (new Date(Date.UTC(y, m - 1, dd)).getUTCDay() + 6) % 7;
+      // `getDay()` reads it back in the VIEWER's timezone — a reader three hours
+      // behind would see every Sunday filed under Saturday.
+      const dow = (new Date(Date.UTC(y, mo - 1, dd)).getUTCDay() + 6) % 7;
       totals[dow] = (totals[dow] ?? 0) + d.s;
     }
     return WEEKDAYS.map((label, i) => ({ key: label, label, value: totals[i] ?? 0 }));
   }, [index]);
 
-  const totalSec = index?.totals.readSeconds ?? 0;
+  const records = useMemo(() => {
+    const all = index?.daily ?? [];
+    const topDay = all.reduce((a, b) => (b.s > a.s ? b : a), { d: '', s: 0, p: 0 });
+    const topPages = all.reduce((a, b) => (b.p > a.p ? b : a), { d: '', s: 0, p: 0 });
+    const month = monthBars.reduce((n, b) => n + b.value, 0);
+    return [
+      { label: '最长的一天', value: topDay.s > 0 ? formatReadingTime(topDay.s) : '—', note: topDay.d ? formatDayMonth(topDay.d) : undefined },
+      { label: '翻页最多', value: topPages.p > 0 ? `${topPages.p} 页` : '—', note: topPages.d ? formatDayMonth(topPages.d) : undefined },
+      { label: '最长连续', value: `${bestStreak(all)} 天`, note: '有阅读的日子' },
+      { label: '本月', value: month > 0 ? formatReadingTime(month) : '—', note: '累计时长' },
+    ];
+  }, [index, monthBars]);
 
   if (error || !index) {
     return (
       <View className="page">
         <Wallpaper />
-        <TopBar title="CE-CAPPERR" />
+        <TopBar title="CAPPERR" />
         <PageStack count={1}>
           <Section index={0} title="CAPPERR" hero={<PageHero brand="CAPPERR" />} compact>
             <View className="card">
@@ -207,137 +240,95 @@ export default function Paperr() {
     );
   }
 
+  const current = index.current;
   const finishNote = current?.estFinishedAt
     ? `预计 ${formatDayMonth(current.estFinishedAt)} 读完`
     : '还看不出读完时间';
-  const busyDay = bars.reduce((a, b) => (b.value > a.value ? b : a), bars[0]!);
 
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CE-CAPPERR" />
+      <TopBar title="CAPPERR" />
 
-      <PageStack count={5}>
+      <PageStack count={2}>
         <Section
           index={0}
-          title="CAPPERR"
+          title="概览"
           hero={<PageHero brand="CAPPERR" />}
           compact
-          lede="Kindle 阅读统计 · 只取 KOReader 自己的 statistics.sqlite3，不碰 Reading Insight"
           stats={[
-            { value: formatReadingTime(totalSec), label: '累计阅读', note: `${index.totals.pagesTurned} 页` },
-            { value: `${stats.done}`, label: '已读完', note: `共 ${books.length} 条` },
+            { value: formatReadingTime(index.totals.readSeconds), label: '累计阅读', note: `${index.totals.pagesTurned} 页` },
+            { value: `${counts.done}`, label: '读完', note: `共 ${books.length} 条` },
           ]}
-        />
+        >
+          {/* ⚠️ Same load-bearing wrapper as the shelf below: Taro renders a
+              ScrollView as an inline element, so `flex: 1` on it does nothing
+              and it grows to its content instead of scrolling. */}
+          <View className="pr-scrollwrap">
+            <ScrollView className="pr-scroll" scrollY>
+              {current && (
+                <View className="pr-current">
+                  <Text className="pr-current__kicker">在读</Text>
+                  <Text className="pr-current__title">{current.title}</Text>
+                  <View className="pr-bar">
+                    <View
+                      className="pr-bar__fill"
+                      style={`width:${current.progressPct == null ? 0 : Math.min(100, current.progressPct)}%`}
+                    />
+                  </View>
+                  <View className="pr-current__meta">
+                    <Text className="pr-current__pct">
+                      {current.progressPct == null ? '进度未知' : `${current.progressPct.toFixed(1)}%`}
+                    </Text>
+                    <Text className="pr-current__note">{finishNote}</Text>
+                  </View>
+                </View>
+              )}
+
+              <Text className="pr-h">构成</Text>
+              <Text className="pr-sub">按阅读时长切分。点图例可以选中。</Text>
+              <CompositionDonut slices={slices} format={formatReadingTime} />
+
+              <Text className="pr-h">趋势</Text>
+              <Text className="pr-sub">曲线是每天的时长，日历是同一份数据的另一种看法。</Text>
+              <ReadingCurve days={daily} />
+              <View className="pc-gap" />
+              <ReadingHeat days={index.daily} weeks={12} />
+
+              <Text className="pr-h">本月节奏</Text>
+              <Text className="pr-sub">这个月每个星期几的累计时长。点柱子看数值。</Text>
+              <WeekdayBars bars={monthBars} unit="这个月，按星期几" />
+
+              <Text className="pr-h">时段</Text>
+              <Text className="pr-sub">一天里每个小时读了多少。</Text>
+              <HourGrid hours={index.hourly} />
+
+              {/* ⚠️ The HEADING is hidden with the chart, not just the chart.
+                  `MonthBars` returns null below two months — one bar is not a
+                  trend — and a section heading with nothing under it reads as
+                  a chart that failed to load. */}
+              {index.monthly.length >= 2 && (
+                <>
+                  <Text className="pr-h">月份</Text>
+                  <MonthBars months={index.monthly} />
+                </>
+              )}
+
+              <Text className="pr-h">记录</Text>
+              <Records items={records} />
+
+              <Text className="pr-foot">数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局</Text>
+            </ScrollView>
+          </View>
+        </Section>
 
         <Section
           index={1}
-          title="在读"
-          lede={locked ? undefined : current ? undefined : '最近没有正在读的东西。'}
-        >
-          {locked ? (
-            // ⚠️ A small gate inside the panel, not a full-page one. The rest of
-            // the dashboard is public and has already rendered behind it.
-            <View className="pr-gate">
-              <Text className="pr-gate__why">「在读」不公开，需要口令才能看。</Text>
-              <Input
-                className="pr-gate__input"
-                password
-                value={pwDraft}
-                placeholder="同步口令"
-                onInput={(e) => setPwDraft(String((e.detail as { value?: string })?.value ?? ''))}
-                onConfirm={() => {
-                  if (!pwDraft) return;
-                  setPaperrPassword(pwDraft);
-                  setPwDraft('');
-                  setReloadKey((k) => k + 1);
-                }}
-              />
-              <View
-                className="pr-gate__btn"
-                onClick={() => {
-                  if (!pwDraft) return;
-                  setPaperrPassword(pwDraft);
-                  setPwDraft('');
-                  setReloadKey((k) => k + 1);
-                }}
-              >
-                <Text className="pr-gate__btn-t">解锁</Text>
-              </View>
-              <Text className="pr-gate__hint">只记在这台设备的浏览器里，不上传。</Text>
-            </View>
-          ) : current ? (
-            <View className="pr-current">
-              <Text className="pr-current__title">{current.title}</Text>
-
-              <View className="pr-bar">
-                <View
-                  className="pr-bar__fill"
-                  style={`width:${current.progressPct == null ? 0 : Math.min(100, current.progressPct)}%`}
-                />
-              </View>
-
-              <View className="pr-current__meta">
-                <Text className="pr-current__pct">
-                  {current.progressPct == null ? '进度未知' : `${current.progressPct.toFixed(1)}%`}
-                </Text>
-                <Text className="pr-current__note">{finishNote}</Text>
-              </View>
-
-              <Text className="pr-current__foot">
-                已读 {formatReadingTime(current.totalReadTime)} · {current.totalReadPages} 页 ·{' '}
-                {formatAgo(current.lastOpen)}
-              </Text>
-
-              <View className="pr-gate__btn" onClick={() => { clearPaperrPassword(); setLocked(true); setCurrent(null); }}>
-                <Text className="pr-gate__btn-t">锁定</Text>
-              </View>
-            </View>
-          ) : null}
-        </Section>
-
-        <Section
-          index={2}
-          title="构成"
-          lede="按阅读时长切分。点图例可以选中，再点一次取消。"
-          stats={[
-            { value: `${slices.length}`, label: '类别' },
-            { value: formatReadingTime(totalSec), label: '合计' },
-          ]}
-        >
-          <CompositionDonut slices={slices} format={formatReadingTime} />
-          <View className="pc-gap" />
-          <WeekdayBars bars={bars} unit="每个星期几的累计时长" />
-        </Section>
-
-        <Section
-          index={3}
-          title="趋势"
-          lede="曲线是每天的时长，日历是同一份数据另一种看法。"
-          stats={[
-            { value: `${index.daily.length}`, label: '有记录的天数' },
-            // ⚠️ NOT `周一` as the value. Stat values render at 40px, and two
-            // CJK glyphs there wrap inside the column — measured, it rendered as
-            // a bare "周" with the "一" clipped underneath. The weekday belongs
-            // in the label, where the type is 10px.
-            {
-              value: busyDay.value > 0 ? formatReadingTime(busyDay.value) : '—',
-              label: `最忙的周${busyDay.label}`,
-            },
-          ]}
-        >
-          <ReadingCurve days={daily} />
-          <View className="pc-gap" />
-          <ReadingHeat days={index.daily} weeks={12} />
-        </Section>
-
-        <Section
-          index={4}
           title="书架"
-          lede={`${shown.length} / ${books.length} 条`}
+          lede={`${shown.length} / ${books.length} 条 · 待看排在最后`}
           stats={[
-            { value: `${stats.reading}`, label: '在读' },
-            { value: `${stats.done}`, label: '读完' },
+            { value: `${counts.reading}`, label: '在读' },
+            { value: `${counts.todo}`, label: '待看' },
           ]}
           showCue={false}
         >
@@ -353,25 +344,13 @@ export default function Paperr() {
             ))}
           </View>
 
-          {/* ⚠️ The wrapper is load-bearing. Taro renders a ScrollView as
-              `<taro-scroll-view-core>`, which the browser treats as
-              `display: inline` — a `flex: 1` on it does nothing, so it grows to
-              its content instead of scrolling. Measured on this page before the
-              fix: the section's scrollHeight was 2077px inside a 1000px panel
-              with `overflow: visible`, so two thirds of the shelf spilled past
-              the panel and could not be reached.
-
-              ⚠️ And NOTHING in verify-paperr-ui.mjs could see it — every DOM
-              assertion passed against the broken layout. It took looking at a
-              screenshot. */}
           <View className="pr-listwrap">
             <ScrollView className="pr-list" scrollY>
               {shown.map((b) => {
-                const done = isFinished(b);
+                const bucket = bucketOf(b);
+                const pct = b.progressPct;
                 const meta = [
-                  b.authors && b.authors !== 'N/A' && !b.authors.includes('\n')
-                    ? b.authors.slice(0, 24)
-                    : null,
+                  b.authors && b.authors !== 'N/A' && !b.authors.includes('\n') ? b.authors.slice(0, 24) : null,
                   b.series,
                   b.pages ? `${b.pages} 页` : null,
                   formatReadingTime(b.totalReadTime),
@@ -388,10 +367,14 @@ export default function Paperr() {
                     </View>
 
                     <View className="pr-row__side">
-                      <Text className={done ? 'pr-row__pct pr-row__pct--done' : 'pr-row__pct'}>
-                        {done ? '读完' : b.progressPct == null ? '—' : `${Math.round(b.progressPct)}%`}
+                      <Text
+                        className={
+                          bucket === 'done' ? 'pr-row__pct pr-row__pct--done' : bucket === 'todo' ? 'pr-row__pct pr-row__pct--todo' : 'pr-row__pct'
+                        }
+                      >
+                        {bucket === 'todo' ? '待看' : bucket === 'done' ? '读完' : pct == null ? '—' : `${Math.round(pct)}%`}
                       </Text>
-                      {b.estFinishedAt && !done && (
+                      {b.estFinishedAt && bucket === 'reading' && (
                         <Text className="pr-row__eta">{formatDayMonth(b.estFinishedAt)}</Text>
                       )}
                     </View>
@@ -400,7 +383,7 @@ export default function Paperr() {
               })}
 
               <Text className="pr-foot">
-                数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局
+                {counts.reading} 在读 · {counts.done} 读完 · {counts.todo} 待看 · {bp.columns} 列布局
               </Text>
             </ScrollView>
           </View>
