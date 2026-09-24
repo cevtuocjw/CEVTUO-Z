@@ -40,9 +40,20 @@ export default function Chealth() {
           hero={<PageHero brand="CHEALTH" />}
           compact
           lede="健康数据。不进入公开仓库 —— GitHub Pages 即使私有仓库也是公网可读，所以这类数据走鉴权接口。"
+          // ⚠️ Dashes, and this file's OWN header already argues why.
+          //
+          // It says health data is "where that matters most: a wrong step count
+          // looks like a data bug, not a missing feature. Nothing here is wired
+          // to a source yet." — and then rendered 8,412 steps and 7h12 of sleep
+          // anyway. The comment was right and the code did the opposite of what
+          // it said, which is the failure a comment cannot catch.
+          //
+          // ⚠️ A fabricated number here is worse than on any other page: a wrong
+          // step count is indistinguishable from a real one, so it sends the
+          // reader looking for a bug in a pipeline that does not exist yet.
           stats={[
-            { value: '8,412', label: '今日步数', note: '步' },
-            { value: '7h12', label: '昨夜睡眠', note: '时 · 分' },
+            { value: '—', label: '今日步数', note: '' },
+            { value: '—', label: '昨夜睡眠', note: '' },
           ]}
         />
 
@@ -50,8 +61,11 @@ export default function Chealth() {
           index={1}
           title="来源"
           lede="多个来源合并，按天聚合。Samsung Health 只写每日汇总，没有日内时间戳，所以缺口要标注而不是渲染成零。"
+          // ⚠️ "7 个数据源" was a count of something nobody has connected —
+          // a claim with no source at all, on the panel whose whole subject is
+          // where the numbers come from.
           stats={[
-            { value: '7', label: '数据源', note: '个' },
+            { value: '—', label: '数据源', note: '个' },
             { value: '鉴权', label: '访问方式', note: 'Bearer token' },
           ]}
           showCue={false}

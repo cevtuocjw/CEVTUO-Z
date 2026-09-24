@@ -118,6 +118,17 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
           JSON.stringify(chealth));
     check('the live brands are still allowed real numbers', fabricated.length > 0 || values.length === 0,
           values.join(','));
+
+    // ⚠️ And the CHEALTH PAGE, not just its panel on the index. The same
+    // invented 8,412 / 7h12 lived in both files, and fixing the one visible from
+    // the index would have left the other one reachable by URL.
+    await page.goto(`${BASE}/#/pages/chealth/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.stats__value', { timeout: 20000 });
+    await page.waitForTimeout(600);
+    const chealthPage = await page.locator('.stats__value').allInnerTexts();
+    check('the CHEALTH page invents nothing either',
+          chealthPage.filter((v) => /\d/.test(v)).length === 0, JSON.stringify(chealthPage));
+
     await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.pr-row', { timeout: 20000 });
     await page.waitForTimeout(600);
