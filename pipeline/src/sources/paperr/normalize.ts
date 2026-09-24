@@ -161,6 +161,25 @@ export function normalizeInstant(raw: string): string {
   return `${m[1]}${DEVICE_OFFSET}`;
 }
 
+/**
+ * Feed names that are not people.
+ *
+ * ⚠️ `EpubPressX` and `RSS Daily Digest` are the two generators that produced
+ * most of this library — they are the SOURCE, and they land in the `authors`
+ * column because that is where KOReader put them. Left alone they read as
+ * author names on the shelf, which is worse than no author at all: "by
+ * RSS Daily Digest" tells the reader nothing and looks like a data error.
+ *
+ * The reader asked for these to be attributed to himself instead.
+ */
+const FEED_AUTHORS = new Set(['epubpressx', 'rss daily digest']);
+
+export function normalizeAuthors(raw: string | null | undefined): string {
+  const s = (raw ?? '').trim();
+  if (!s) return '';
+  return FEED_AUTHORS.has(s.toLowerCase()) ? 'cjw' : s;
+}
+
 export function normalizeSeries(raw: string | null | undefined): string | null {
   if (typeof raw !== 'string') return null;
   const s = raw.trim();
@@ -256,7 +275,7 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
       id: b.id,
       title: b.title,
       originalTitle: null, // set below, only when the title is rewritten
-      authors: b.authors ?? '',
+      authors: normalizeAuthors(b.authors),
       series: normalizeSeries(b.series),
       pages: b.pages ?? null,
       totalReadPages: b.totalReadPages,

@@ -923,3 +923,93 @@
   font-size: t.$font-micro;
   color: var(--text-tertiary);
 }
+
+// ── The overview grid ────────────────────────────────────────
+//
+// ⚠️ A wrap grid, not a stack. Every chart used to be full width on every
+// screen, which left half of a 900px viewport empty.
+//
+// ⚠️ `flex-wrap` + `flex-basis`, NOT CSS grid. Skyline does not implement
+// `display: grid`, and the whole design system here is flex for that reason —
+// a grid would render as a plain block stack in the mini program.
+//
+// ⚠️⚠️ The BASIS is the layout rule. The browser fits as many cells per row as
+// `basis × n + gaps` allows, so the column count follows the real panel width
+// with no breakpoints to keep in sync.
+//
+// An earlier version used percentages (`flex: 1 1 42%`) and pinned a fixed
+// two-up. The donut cell came out ~140px wide on a phone, and `.pc-donut__plot`
+// is a fixed 116px with `flex-shrink: 0` next to a legend with `min-width:
+// 52px` — so the chart overflowed its own cell, painted over the neighbouring
+// 记录 card, and swallowed the clicks meant for the donut legend. Playwright
+// caught it as "`<taro-text-core class="pc-records__label">` intercepts pointer
+// events", which is exactly the class of failure a screenshot would not show.
+.pr-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  // ⚠️ Row gap larger than column gap: charts need vertical air between them,
+  // but two cells in one row should read as siblings.
+  gap: t.$space-5 t.$space-4;
+}
+
+.pr-grid__cell {
+  display: flex;
+  flex-direction: column;
+  // 320px is where the widest charts here — the donut with its legend, the hour
+  // grid's 24 columns — stop fighting for room. Below it the browser wraps.
+  flex: 1 1 320px;
+  // ⚠️ Without this a cell refuses to shrink below its widest child, and one
+  // wide chart forces the whole row past the panel edge.
+  min-width: 0;
+}
+
+// Genuinely compact blocks — a 2×2 of short values, seven thin bars.
+//
+// ⚠️ 120px, and the number is not a guess. On a 390px phone the grid gets
+// 260px: the page gutter plus `.section__body`'s 48px right padding (the scroll
+// cue's lane) eat the rest. Two cells only share a row when
+// `2 × basis + 16px gap ≤ 260`, so anything above 122px silently wraps and the
+// phone gets a single column — which is the "都是上下排布" this was meant to
+// fix. 140px looked reasonable and produced exactly that.
+.pr-grid__cell--half {
+  flex: 1 1 120px;
+}
+
+// ⚠️ The first heading in a cell has no top margin to contribute — the grid gap
+// already separates the cells, and the margin double-spaced the first row.
+.pr-grid__cell > .pr-h:first-child {
+  margin-top: 0;
+}
+
+// ── Making the compact charts survive a 120px cell ───────────
+//
+// ⚠️ Both of these were found by LOOKING at a phone screenshot, not by an
+// assertion. 58 of 58 behavioural checks were green while the page showed
+// "最长的一／天" broken mid-word, "418／页" broken after the number, and seven
+// weekday values collided into "3.7h2.1h2.3h1.9h8.4h1.3h1.1h". Every element
+// was individually correct and correctly sized; only their sum was wrong.
+
+// Records carries its own two-up grid. Inside a half cell on a PHONE that is
+// two ~55px columns against a 5-glyph label, so it stacks; at 163px (the same
+// cell on a desktop panel) two columns clear the label and stacking only made
+// the column twice as tall as its neighbour for no gain.
+@include b.compact-only {
+  .pr-grid__cell--half .pc-records__cell {
+    flex: 1 1 100%;
+  }
+}
+
+// Seven value labels cannot fit across ~120px; "3.7h" alone is twice its share
+// of the width. The headline above the bars already names the peak day, and
+// tapping any bar reads its exact value out, so nothing is lost.
+.pr-grid__cell--half .pc-bars__value {
+  display: none;
+}
+
+// ⚠️ Same reasoning for the unit caption — it was wrapping onto two lines and
+// repeating what the cell's own title and subtitle already say.
+.pr-grid__cell--half .pc-note {
+  display: none;
+}

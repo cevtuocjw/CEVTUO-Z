@@ -121,7 +121,10 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
 
   // ── The filters ───────────────────────────────────────────
   const chip = (label) => page.locator('.pr-chip', { hasText: label });
-  for (const [label, expect] of [['在读', 3], ['读完', 29], ['待看', 4], ['Books', 1]]) {
+  // ⚠️ Books is 3: the dictionary, plus two RSS articles whose titles are real
+// headlines rather than a generated pattern, so no relabelling rule fires on
+// them. It was 1 while the unknown rule was still swallowing them.
+for (const [label, expect] of [['在读', 3], ['读完', 29], ['待看', 4], ['Books', 3]]) {
     await chip(label).click();
     await page.waitForTimeout(200);
     const n = await page.locator('.pr-row').count();
@@ -156,6 +159,31 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
     return { sh: el.scrollHeight, ch: el.clientHeight, top: el.scrollTop };
   });
   check('the overview panel scrolls to its last chart', !!scrollInfo && scrollInfo.top > 0, JSON.stringify(scrollInfo));
+
+  // ── The grid actually arranges by width ───────────────────
+  //
+  // ⚠️ "这几个图标块都应该自动排……可以分列，根据屏幕宽度". Counting the distinct
+  // `top` values of the cells tells us the real column count the browser chose —
+  // reading the CSS would only tell us what we hoped it would choose.
+  const grid = await page.evaluate(() => {
+    const cells = [...document.querySelectorAll('.pr-grid__cell')];
+    const perRow = {};
+    for (const c of cells) {
+      const r = c.getBoundingClientRect();
+      const k = Math.round(r.top);
+      perRow[k] = (perRow[k] ?? 0) + 1;
+    }
+    const counts = Object.values(perRow);
+    return {
+      cells: cells.length,
+      widestRow: counts.length ? Math.max(...counts) : 0,
+      // A cell whose children stick out of it is the donut-in-a-narrow-column
+      // failure: it paints over its neighbour and eats that neighbour's clicks.
+      spilling: cells.filter((c) => c.scrollWidth > c.clientWidth + 2).length,
+    };
+  });
+  check('图表块按宽度自动分列（至少一行两列）', grid.widestRow >= 2, JSON.stringify(grid));
+  check('没有图表块溢出自己的格子', grid.spilling === 0, JSON.stringify(grid));
 
   await page.screenshot({ path: `${OUT}/paperr-${tag}.png`, fullPage: false });
   await ctx.close();

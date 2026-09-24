@@ -6,6 +6,16 @@ import { PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
 import { CnsrStrips } from '../../components/CnsrStrips';
+// ⚠️ The CAPPERR block on this page draws two real charts. These two imports
+// were MISSING when that block was written — the page threw
+// `ReferenceError: CompositionDonut is not defined` the moment the fetch
+// resolved, so the whole brand panel rendered blank and the reader reported
+// "主页上的 capperr 这里记得有一些图表展示" twice.
+//
+// ⚠️ `tsc -b` did NOT catch it — the build succeeded. Nothing in this repo
+// type-checks the H5 app as part of `build:h5`. scripts/verify-back.mjs and
+// verify-paperr-ui.mjs now assert on console errors instead.
+import { CompositionDonut, ReadingCurve } from '../../components/PaperrCharts';
 import {
   assetUrl,
   fetchCoofIndex,

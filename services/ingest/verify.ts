@@ -279,8 +279,15 @@ async function main(): Promise<void> {
         eq(d.hourly.length, 24, 'real converter: hourly is filled to 24 slots');
         eq(d.totals.booksStarted, d.books.length, 'real converter: totals agree with the rows shown');
         check(d.books.every((b) => !/koreader/i.test(b.title)), 'real converter: no KOReader documents survive');
-        const labelled = d.books.filter((b) => /^(news|unknown)\d+ \(.+\)$/.test(b.title));
-        eq(labelled.length, d.books.length - 1, 'real converter: every relabelled row carries its original');
+        // ⚠️ Derived from the rows themselves, not from `books.length - 1`.
+        // That constant was written when exactly one row survived unrelabelled;
+        // normalizing the feed authors then moved two RSS articles out of the
+        // `unknown` bucket and the assertion started failing on a correct index.
+        const relabelled = d.books.filter((b) => b.originalTitle != null);
+        const labelled = relabelled.filter((b) => /^(news|unknown)\d+ \(.+\)$/.test(b.title));
+        eq(labelled.length, relabelled.length, 'real converter: every relabelled row carries its original');
+        eq(d.books.length - relabelled.length, 3,
+           'real converter: exactly three rows are real titles, not generated labels');
       }
     } catch (e) {
       check(false, 'real converter: could not run', String(e).slice(0, 120));

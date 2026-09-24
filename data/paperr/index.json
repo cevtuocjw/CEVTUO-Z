@@ -1,7 +1,7 @@
 {
   "books": [
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-27",
       "highlights": 0,
       "id": "41",
@@ -11,12 +11,12 @@
       "pages": 188,
       "progressPct": 53.72340425531915,
       "series": null,
-      "title": "news28 (EpubPressX 2026-9-15)",
+      "title": "news26 (EpubPressX 2026-9-15)",
       "totalReadPages": 60,
       "totalReadTime": 2081
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "40",
@@ -26,12 +26,12 @@
       "pages": 90,
       "progressPct": 84.44444444444444,
       "series": null,
-      "title": "news27 (EpubPressX 2026-9-14)",
+      "title": "news25 (EpubPressX 2026-9-14)",
       "totalReadPages": 52,
       "totalReadTime": 2272
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-27",
       "highlights": 0,
       "id": "36",
@@ -41,12 +41,12 @@
       "pages": 192,
       "progressPct": 100,
       "series": null,
-      "title": "news26 (EpubPressX 2026-9-9)",
+      "title": "news24 (EpubPressX 2026-9-9)",
       "totalReadPages": 75,
       "totalReadTime": 1380
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-26",
       "highlights": 0,
       "id": "37",
@@ -56,12 +56,12 @@
       "pages": 78,
       "progressPct": 64.1025641025641,
       "series": null,
-      "title": "news25 (EpubPressX 2026-9-10)",
+      "title": "news23 (EpubPressX 2026-9-10)",
       "totalReadPages": 3,
       "totalReadTime": 200
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "39",
@@ -71,12 +71,12 @@
       "pages": 123,
       "progressPct": 99.1869918699187,
       "series": null,
-      "title": "news24 (EpubPressX 2026-9-14)",
+      "title": "news22 (EpubPressX 2026-9-14)",
       "totalReadPages": 86,
       "totalReadTime": 1849
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-27",
       "highlights": 0,
       "id": "38",
@@ -86,7 +86,7 @@
       "pages": 125,
       "progressPct": 2.4,
       "series": null,
-      "title": "news23 (EpubPressX 2026-9-10)",
+      "title": "news21 (EpubPressX 2026-9-10)",
       "totalReadPages": 2,
       "totalReadTime": 136
     },
@@ -106,7 +106,7 @@
       "totalReadTime": 1539
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "34",
@@ -116,12 +116,12 @@
       "pages": 125,
       "progressPct": 97.6,
       "series": null,
-      "title": "news22 (EpubPressX 2026-9-11)",
+      "title": "news20 (EpubPressX 2026-9-11)",
       "totalReadPages": 93,
       "totalReadTime": 2288
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-27",
       "highlights": 0,
       "id": "33",
@@ -131,12 +131,12 @@
       "pages": 192,
       "progressPct": 100,
       "series": null,
-      "title": "news21 (COUNTRY · 2026-09-08)",
+      "title": "news19 (COUNTRY · 2026-09-08)",
       "totalReadPages": 76,
       "totalReadTime": 1353
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-10-03",
       "highlights": 0,
       "id": "32",
@@ -146,7 +146,7 @@
       "pages": 574,
       "progressPct": 99.12891986062718,
       "series": null,
-      "title": "news20 (未分类 · 2026-09-07)",
+      "title": "news18 (未分类 · 2026-09-07)",
       "totalReadPages": 177,
       "totalReadTime": 2478
     },
@@ -181,7 +181,7 @@
       "totalReadTime": 2288
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-26",
       "highlights": 0,
       "id": "30",
@@ -191,12 +191,12 @@
       "pages": 250,
       "progressPct": 100,
       "series": null,
-      "title": "news19 (COUNTRY · 2026-09-09)",
+      "title": "news17 (COUNTRY · 2026-09-09)",
       "totalReadPages": 169,
       "totalReadTime": 3769
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-10-10",
       "highlights": 0,
       "id": "29",
@@ -206,12 +206,12 @@
       "pages": 708,
       "progressPct": 0.423728813559322,
       "series": null,
-      "title": "news18 (ART＆FASHION · 2026-09-09)",
+      "title": "news16 (ART＆FASHION · 2026-09-09)",
       "totalReadPages": 2,
       "totalReadTime": 118
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-29",
       "highlights": 0,
       "id": "28",
@@ -221,12 +221,12 @@
       "pages": 220,
       "progressPct": 4.090909090909091,
       "series": null,
-      "title": "news17 (EpubPressX 2026-9-9)",
+      "title": "news15 (EpubPressX 2026-9-9)",
       "totalReadPages": 7,
       "totalReadTime": 360
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-10-05",
       "highlights": 0,
       "id": "27",
@@ -236,12 +236,12 @@
       "pages": 605,
       "progressPct": 92.06611570247934,
       "series": null,
-      "title": "news16 (未分类 · 2026-09-08)",
+      "title": "news14 (未分类 · 2026-09-08)",
       "totalReadPages": 136,
       "totalReadTime": 2289
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "26",
@@ -251,12 +251,12 @@
       "pages": 167,
       "progressPct": 100,
       "series": null,
-      "title": "news15 (FINANCE · 2026-09-07)",
+      "title": "news13 (FINANCE · 2026-09-07)",
       "totalReadPages": 131,
       "totalReadTime": 2778
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-27",
       "highlights": 0,
       "id": "25",
@@ -266,12 +266,12 @@
       "pages": 196,
       "progressPct": 100,
       "series": null,
-      "title": "news14 (ART＆FASHION · 2026-09-07)",
+      "title": "news12 (ART＆FASHION · 2026-09-07)",
       "totalReadPages": 89,
       "totalReadTime": 1722
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-28",
       "highlights": 0,
       "id": "22",
@@ -281,27 +281,27 @@
       "pages": 169,
       "progressPct": 94.67455621301775,
       "series": null,
-      "title": "news13 (HACKER NEWSROOM · 2026-09-05)",
+      "title": "news11 (HACKER NEWSROOM · 2026-09-05)",
       "totalReadPages": 5,
       "totalReadTime": 320
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "23",
       "lastOpen": "2026-09-08T13:59+08:00",
       "notes": 0,
-      "originalTitle": "Amanda Wakeley_ ‘Princess Diana wore one of my suits – it changed my business overnight’",
+      "originalTitle": null,
       "pages": 87,
       "progressPct": 97.70114942528735,
       "series": null,
-      "title": "news12 (Amanda Wakeley_ ‘Princess Diana wore one of my suits – it changed my business overnight’)",
+      "title": "Amanda Wakeley_ ‘Princess Diana wore one of my suits – it changed my business overnight’",
       "totalReadPages": 64,
       "totalReadTime": 1605
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-26",
       "highlights": 0,
       "id": "21",
@@ -311,12 +311,12 @@
       "pages": 76,
       "progressPct": 100,
       "series": null,
-      "title": "news11 (hack · 2026-09-05)",
+      "title": "news10 (hack · 2026-09-05)",
       "totalReadPages": 28,
       "totalReadTime": 275
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-29",
       "highlights": 0,
       "id": "16",
@@ -326,7 +326,7 @@
       "pages": 329,
       "progressPct": 99.69604863221885,
       "series": null,
-      "title": "news10 (ART＆FASHION · 2026-09-05)",
+      "title": "news9 (ART＆FASHION · 2026-09-05)",
       "totalReadPages": 127,
       "totalReadTime": 2861
     },
@@ -346,7 +346,7 @@
       "totalReadTime": 2635
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "19",
@@ -356,7 +356,7 @@
       "pages": 159,
       "progressPct": 100,
       "series": null,
-      "title": "news9 (EpubPressX 2026-9-5)",
+      "title": "news8 (EpubPressX 2026-9-5)",
       "totalReadPages": 126,
       "totalReadTime": 3551
     },
@@ -376,22 +376,22 @@
       "totalReadTime": 2515
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "17",
       "lastOpen": "2026-09-06T11:23+08:00",
       "notes": 0,
-      "originalTitle": "Samsung brings seamless updates to Galaxy Watch 9 and Watch Ultra 2 - SamMobile",
+      "originalTitle": null,
       "pages": 58,
       "progressPct": 96.55172413793103,
       "series": null,
-      "title": "news8 (Samsung brings seamless updates to Galaxy Watch 9 and Watch Ultra 2 - SamMobile)",
+      "title": "Samsung brings seamless updates to Galaxy Watch 9 and Watch Ultra 2 - SamMobile",
       "totalReadPages": 43,
       "totalReadTime": 999
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "15",
@@ -406,7 +406,7 @@
       "totalReadTime": 1345
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "13",
@@ -421,7 +421,7 @@
       "totalReadTime": 2055
     },
     {
-      "authors": "RSS Daily Digest",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "14",
@@ -436,7 +436,7 @@
       "totalReadTime": 25
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-26",
       "highlights": 0,
       "id": "12",
@@ -451,7 +451,7 @@
       "totalReadTime": 3252
     },
     {
-      "authors": "EpubPressX",
+      "authors": "cjw",
       "estFinishedAt": "2026-09-25",
       "highlights": 0,
       "id": "11",
@@ -542,7 +542,7 @@
     }
   ],
   "current": {
-    "authors": "EpubPressX",
+    "authors": "cjw",
     "estFinishedAt": "2026-09-27",
     "highlights": 0,
     "id": "41",
@@ -552,7 +552,7 @@
     "pages": 188,
     "progressPct": 53.72340425531915,
     "series": null,
-    "title": "news28 (EpubPressX 2026-9-15)",
+    "title": "news26 (EpubPressX 2026-9-15)",
     "totalReadPages": 60,
     "totalReadTime": 2081
   },
@@ -628,7 +628,7 @@
       "s": 120
     }
   ],
-  "dataVersion": "0ff4c91e8650",
+  "dataVersion": "15b06c551627",
   "hourly": [
     {
       "h": 0,

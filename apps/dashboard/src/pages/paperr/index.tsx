@@ -102,6 +102,35 @@ function categoryOf(b: PaperrBook): string {
   return b.title.startsWith('news') ? 'News' : 'Unnamed';
 }
 
+/**
+ * One chart cell in the overview grid.
+ *
+ * ⚠️ Module level, not defined inside the render. A component declared in the
+ * render body is a NEW type on every pass, so React unmounts and remounts the
+ * whole subtree — which throws away the `picked` state of every chart the moment
+ * anything else on the page re-renders.
+ */
+function Cell({
+  title,
+  sub,
+  half,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  /** Narrow enough to share a row even on a phone. */
+  half?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <View className={half ? 'pr-grid__cell pr-grid__cell--half' : 'pr-grid__cell'}>
+      <Text className="pr-h">{title}</Text>
+      {sub && <Text className="pr-sub">{sub}</Text>}
+      {children}
+    </View>
+  );
+}
+
 /** Longest run of consecutive days with any reading. */
 function bestStreak(days: { d: string; s: number }[]): number {
   const read = days.filter((x) => x.s > 0).map((x) => x.d).sort();
@@ -285,39 +314,50 @@ export default function Paperr() {
                 </View>
               )}
 
-              <Text className="pr-h">构成</Text>
-              <Text className="pr-sub">按阅读时长切分。点图例可以选中。</Text>
-              <CompositionDonut slices={slices} format={formatReadingTime} />
+              {/* ⚠️ A wrap grid, not a stack. Every chart used to be full width on
+                  every screen, which on a 900px viewport left half the panel empty
+                  — and even on a phone the donut, the records and the weekday bars
+                  are narrow enough to pair up. `--half` marks the ones that can
+                  share a row at ANY width; the rest pair up above 600px. */}
+              <View className="pr-grid">
+                {/* ⚠️ NOT `half`. The donut is a fixed 116px plot plus a legend
+                    with a 52px floor — about 240px of unshrinkable width. In a
+                    140px cell it overflows and paints over its neighbour. */}
+                <Cell title="构成" sub="按阅读时长切分。点图例可以选中。">
+                  <CompositionDonut slices={slices} format={formatReadingTime} />
+                </Cell>
 
-              <Text className="pr-h">趋势</Text>
-              <Text className="pr-sub">曲线是每天的时长，日历是同一份数据的另一种看法。</Text>
-              <ReadingCurve days={daily} />
-              <View className="pc-gap" />
-              <ReadingHeat days={index.daily} weeks={12} />
+                <Cell title="记录" sub="个人最好成绩。" half>
+                  <Records items={records} />
+                </Cell>
 
-              <Text className="pr-h">本月节奏</Text>
-              <Text className="pr-sub">这个月每个星期几的累计时长。点柱子看数值。</Text>
-              <WeekdayBars bars={monthBars} unit="这个月，按星期几" />
+                <Cell title="本月节奏" sub="这个月每个星期几。" half>
+                  <WeekdayBars bars={monthBars} unit="这个月" />
+                </Cell>
 
-              <Text className="pr-h">时段</Text>
-              <Text className="pr-sub">一天里每个小时读了多少。</Text>
-              <HourGrid hours={index.hourly} />
+                <Cell title="趋势" sub="曲线是每天的时长，日历是同一份数据的另一种看法。">
+                  <ReadingCurve days={daily} />
+                  <View className="pc-gap" />
+                  <ReadingHeat days={index.daily} weeks={12} />
+                </Cell>
 
-              {/* ⚠️ The HEADING is hidden with the chart, not just the chart.
-                  `MonthBars` returns null below two months — one bar is not a
-                  trend — and a section heading with nothing under it reads as
-                  a chart that failed to load. */}
-              {index.monthly.length >= 2 && (
-                <>
-                  <Text className="pr-h">月份</Text>
-                  <MonthBars months={index.monthly} />
-                </>
-              )}
+                <Cell title="时段" sub="一天里每个小时读了多少。">
+                  <HourGrid hours={index.hourly} />
+                </Cell>
 
-              <Text className="pr-h">记录</Text>
-              <Records items={records} />
+                {/* ⚠️ Heading hidden with the chart. `MonthBars` returns null below
+                    two months — one bar is not a trend — and a heading with
+                    nothing under it reads as a chart that failed to load. */}
+                {index.monthly.length >= 2 && (
+                  <Cell title="月份">
+                    <MonthBars months={index.monthly} />
+                  </Cell>
+                )}
+              </View>
 
-              <Text className="pr-foot">数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局</Text>
+              <Text className="pr-foot">
+                数据源 KOReader statistics.sqlite3 · {bp.columns} 列布局
+              </Text>
             </ScrollView>
           </View>
         </Section>
