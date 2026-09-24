@@ -847,3 +847,61 @@ Kobo 的 SD 卡是 `/mnt/sd` 不是 `/mnt/sdcard`。改成用 **`Device.home_dir
 2. **CAPPERR 页面还是 70 行空壳** —— 数据有了，页面没接。
 3. 插件还没加「**已在线时关书也推一次**」—— 现在的规则只在 WiFi 连上的瞬间触发，
    如果连上后连读三小时不断网，这段时间的数据要等下次重连才走。
+
+---
+
+## 2026-09-24 晚：CAPPERR 页面 + 标题三分类
+
+### 标题规则（最终形态，全在 `pipeline/src/sources/paperr/normalize.ts`）
+
+**三类，按顺序判定，先命中先赢：**
+
+| 类 | 规则 | 处理 |
+|---|---|---|
+| **隐藏** | `^koreader\b` / `^v?\d{4}\.\d{2}(\.\d+)?\s*:\s*koreader` | **整个不显示**（KOReader 自己的文档） |
+| **news** | `^EpubPressX\s+\d{4}-\d{1,2}-\d{1,2}` / `^.+ · \d{4}-\d{2}-\d{2}$` | 改名 `newsN` |
+| **unknown** | UUID / `^e-?book$` | 改名 `unknownN (原名)` |
+
+其余原样保留 —— **新闻文章、词典这类用户主动打开的东西不动**，
+替用户决定「什么算读书」是另一回事。
+
+41 → 隐藏 5 → **36 行**：24 news + 7 unknown + 5 真书。
+
+⚠️ **编号按首次打开时间（`lastOpen` 升序），不是数组位置。** 位置编号会让
+`news3` 每次同步指向不同文档 —— 在阅读记录里比没有编号更糟。
+
+⚠️ **`originalTitle` 字段**：24 行都叫 `newsN` 的列表是读不了的，看不出哪条是哪条。
+所以新增这个字段存设备原名，页面在「显示名里不含原名」时才把它作为副标题显示
+（`unknownN (原名)` 已含原名，就不重复）。
+
+⚠️ **`totals` 改成按可见集合重算**，不再透传设备的数字。透传会让页面顶部写
+「41 本」而下面是 36 行 —— 差的 5 本正是 KOReader 自己的发行说明。
+设备原始数字仍在 `raw-koreader.json` 里。
+
+### ⚠️⚠️ 页面 bug：54 条断言全过，但布局是坏的
+
+书架那一栏 `scrollHeight = 2077px` 塞在 `1000px` 的面板里且 `overflow: visible`
+—— **三分之二的书溢出面板、滚不到**。
+
+**54 条 DOM 断言一条都没发现**。是**看截图**看出来的。
+（对照组：COOF 的 section 是 `h:1000 / scrollH:1000`，正常。）
+
+修法抄 CNSR：外层 `position: relative; flex: 1; min-height: 0`，
+内层 ScrollView 四边绝对定位 —— 因为 Taro 把 ScrollView 渲染成
+`display: inline`，`flex: 1` 对它无效。修完四个 section 全部 `h == scrollH`，
+且**末行可达**（实测 `lastRowVisible: true`）。
+
+⇒ **又一次验证：断言看不见布局。截图必须真的看。**
+
+### 产物
+
+- `apps/dashboard/src/pages/paperr/index.tsx` + `index.scss`（页面从 70 行空壳变成真页面）
+- `scripts/verify-paperr-ui.mjs`（**54 条**，含真实点击筛选器）
+- `data/paperr/index.json`（36 行，dataVersion `68a497b67b19` 起）
+
+### ⚠️ 仍未做
+
+- 插件「已在线时关书也推一次」（补「一直连着 WiFi 就不推」的洞）
+- 阿里云部署（服务器 `120.77.27.128`，需开安全组 8789）
+- `.github/workflows/paperr.yml` 推不上去（本机 token 无 `workflow` scope）
+- 页面还没对着线上跑过一次

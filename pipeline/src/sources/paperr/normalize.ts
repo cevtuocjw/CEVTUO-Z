@@ -54,42 +54,70 @@ const MAX_PROJECTION_DAYS = 365;
 const NO_SERIES = new Set(['', 'n/a', 'na', 'none', '-', 'null', 'unknown', '未知']);
 
 /**
- * Titles that mean "this is not a book".
+ * Three-way triage of titles, taken from the REAL export.
  *
- * ⚠️ Written from the REAL export, where four of forty-one entries were
- * KOReader's own machinery rather than anything the reader chose to read: its
- * release notes twice ("v2026.07.2: KOReader 2026.07.2", "KOReader 2026.07
- * \"Sailing Walrus\""), the bare string "koreader", and two document UUIDs whose
- * metadata KOReader never managed to read.
+ * ⚠️ Order is load-bearing: HIDDEN first, then NEWS, then UNKNOWN. An entry must
+ * never reach a later stage once an earlier one has claimed it, or a KOReader
+ * document ends up both hidden and numbered.
  *
- * ⚠️ Deliberately CONSERVATIVE — it flags ARTIFACTS, not "content that is not a
- * novel". The reader's RSS digests (EpubPressX…, ART＆FASHION · …), the news
- * articles and the dictionary all stay exactly as they are. Those are things
- * they chose to open, and a rule that quietly relabelled them would be this
- * pipeline deciding what counts as reading.
+ * ⚠️ All numbering is CHRONOLOGICAL (ascending `lastOpen`), never positional.
+ * Position-based numbers renumber every entry whenever a book is added or
+ * removed, so "news3" would point at a different document on every sync — which
+ * is worse than no label at all in a reading log.
+ *
+ * ⚠️ And deliberately CONSERVATIVE throughout. These rules flag ARTIFACTS and
+ * GENERATED DIGESTS, not "content that is not a novel". Articles the reader
+ * opened by name ("Samsung brings seamless updates to…", "Beef production in
+ * Brazil…") keep their real headlines — relabelling those would be this pipeline
+ * deciding what counts as reading.
  */
-export const NON_BOOK_RULES: ReadonlyArray<{ id: string; re: RegExp }> = [
-  // A bare UUID: KOReader could not read the document's metadata at all.
-  { id: 'uuid', re: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i },
-  // "v2026.07.2: KOReader 2026.07.2" — the app's own release notes.
+
+/** KOReader's own documents. Dropped from the payload entirely. */
+const HIDDEN_RULES: ReadonlyArray<{ id: string; re: RegExp }> = [
+  // "v2026.07.2: KOReader 2026.07.2" — the app's release notes.
   { id: 'koreader-version', re: /^v?\d{4}\.\d{2}(?:\.\d+)?\s*:\s*koreader/i },
-  // "koreader", "KOReader 快速开始向导", "KOReader 2026.07.1" — the app itself.
+  // "koreader", "KOReader 快速开始向导", "KOReader 2026.07.1", "KOReader 2026.07 "Sailing Walrus"".
   { id: 'koreader', re: /^koreader\b/i },
-  // The title KOReader substitutes when it extracts nothing usable.
+];
+
+/**
+ * Generated news digests. Renamed to `newsN`.
+ *
+ * Two shapes, both machine-made: the EpubPressX dated edition, and the
+ * "<section> · <date>" digest (ART＆FASHION, COUNTRY, FINANCE, 未分类,
+ * HACKER NEWSROOM, hack…). Everything else keeps its title.
+ */
+const NEWS_RULES: ReadonlyArray<{ id: string; re: RegExp }> = [
+  { id: 'epubpressx', re: /^EpubPressX\s+\d{4}-\d{1,2}-\d{1,2}/i },
+  { id: 'digest', re: /^.+ · \d{4}-\d{2}-\d{2}$/ },
+];
+
+/**
+ * Entries with no usable title. Renamed to `unknownN (原名)`.
+ *
+ * ⚠️ `eBook` lands here and it is NOT the same species as the hidden ones: those
+ * are real books whose title KOReader failed to extract — one had 44 minutes of
+ * reading against it. The original is kept in the parentheses precisely so that
+ * stays visible.
+ */
+const UNKNOWN_RULES: ReadonlyArray<{ id: string; re: RegExp }> = [
+  { id: 'uuid', re: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i },
   { id: 'untitled', re: /^e-?book$/i },
 ];
 
-/** Which rule (if any) says this title is not a book. */
-export function nonBookRule(title: string): string | null {
+function matchRule(rules: ReadonlyArray<{ id: string; re: RegExp }>, title: string): string | null {
   const t = title.trim();
-  for (const rule of NON_BOOK_RULES) if (rule.re.test(t)) return rule.id;
+  for (const rule of rules) if (rule.re.test(t)) return rule.id;
   return null;
 }
 
-/** How a flagged entry is displayed. The original is kept inside the parens. */
-export function unknownLabel(n: number, original: string): string {
-  return `unknown${n} (${original})`;
-}
+export const hiddenRule = (title: string): string | null => matchRule(HIDDEN_RULES, title);
+export const newsRule = (title: string): string | null => matchRule(NEWS_RULES, title);
+export const unknownRule = (title: string): string | null => matchRule(UNKNOWN_RULES, title);
+
+export const newsLabel = (n: number): string => `news${n}`;
+/** How an untitled entry is displayed. The original is kept inside the parens. */
+export const unknownLabel = (n: number, original: string): string => `unknown${n} (${original})`;
 
 /** `"2026-09-24T09:14"` → `"2026-09-24T09:14+08:00"`. Already-offset values pass through. */
 export function normalizeInstant(raw: string): string {
@@ -186,6 +214,7 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
     .map((b) => ({
       id: b.id,
       title: b.title,
+      originalTitle: null, // set below, only when the title is rewritten
       authors: b.authors ?? '',
       series: normalizeSeries(b.series),
       pages: b.pages ?? null,
@@ -205,26 +234,48 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
       }),
     }));
 
-  // ── Not-a-book entries ─────────────────────────────────────
+  // ── Triage ─────────────────────────────────────────────────
   //
-  // ⚠️ Numbered by FIRST OPENED (ascending `lastOpen`), NOT by list position.
-  // Position-based numbering would renumber everything whenever a book was added
-  // or removed, so "unknown2" would point at a different document every sync —
-  // worthless in a reading log. Chronological numbering keeps a label bound to
-  // the entry that earned it.
-  //
-  // ⚠️ Nothing is dropped. The entry keeps its id, its page count and its
-  // reading time; only the DISPLAYED title changes, the original is preserved
-  // inside the parentheses, and the untouched original also remains in
-  // raw-koreader.json. A mis-flagged entry is therefore always recoverable.
-  const flagged = books
-    .filter((b) => nonBookRule(b.title) != null)
-    .sort((a, b) => a.lastOpen.localeCompare(b.lastOpen) || a.title.localeCompare(b.title));
-  const renamed = new Map(flagged.map((b, i) => [b.id, unknownLabel(i + 1, b.title)]));
-  const labelled: PaperrBook[] = books.map((b) => {
+  // ⚠️ Nothing is destroyed at the source: the untouched original stays in
+  // raw-koreader.json, and the renamed forms keep their full ids, page counts
+  // and reading time. Re-running this after a rule change is enough to undo
+  // anything — which is exactly why the rules live here and not in the plugin.
+  const visible = books.filter((b) => hiddenRule(b.title) == null);
+
+  const renamed = new Map<string, string>();
+  const rename = (
+    rule: (t: string) => string | null,
+    label: (n: number, b: PaperrBook) => string,
+  ): void => {
+    visible
+      .filter((b) => rule(b.title) != null)
+      .sort((a, b) => a.lastOpen.localeCompare(b.lastOpen) || a.title.localeCompare(b.title))
+      .forEach((b, i) => renamed.set(b.id, label(i + 1, b)));
+  };
+  // Disjoint rule sets, so the order between these two does not matter — only
+  // the order relative to HIDDEN above does.
+  rename(newsRule, (n) => newsLabel(n));
+  rename(unknownRule, (n, b) => unknownLabel(n, b.title));
+
+  const labelled: PaperrBook[] = visible.map((b) => {
     const next = renamed.get(b.id);
-    return next ? { ...b, title: next } : b;
+    // `originalTitle` is set ONLY when the display title was rewritten, so
+    // "was this relabelled?" is answerable from the data alone.
+    return next ? { ...b, title: next, originalTitle: b.title } : b;
   });
+
+  // ⚠️ Recomputed over the VISIBLE set rather than passed through from the
+  // device. Passing the device's numbers through would print "41 本" above a
+  // list of 36 rows, and the five that went missing are KOReader's own release
+  // notes. The device's own totals are still in raw-koreader.json.
+  const totals = {
+    booksStarted: labelled.length,
+    booksFinished: labelled.filter((b) =>
+      isFinished({ pages: b.pages, totalReadPages: b.totalReadPages }),
+    ).length,
+    readSeconds: labelled.reduce((n, b) => n + b.totalReadTime, 0),
+    pagesTurned: labelled.reduce((n, b) => n + b.totalReadPages, 0),
+  };
 
   // ── Current ────────────────────────────────────────────────
   // The book being read right now: most recently opened, and not finished.
@@ -238,7 +289,7 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
     schemaVersion: 1 as const,
     current,
     books: labelled,
-    totals: raw.totals,
+    totals,
     daily,
     lastIngestPath: opts.ingestPath ?? 'koreader-push',
   };

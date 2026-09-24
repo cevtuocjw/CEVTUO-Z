@@ -482,7 +482,20 @@ export type PaperrRaw = z.infer<typeof PaperrRawSchema>;
 
 export const PaperrBookSchema = z.object({
   id: z.string(),
+  /** Display title. Rewritten by the pipeline for non-book entries (see below). */
   title: z.string(),
+  /**
+   * The device's own title, kept whenever `title` was rewritten.
+   *
+   * ⚠️ Why this field exists: the pipeline relabels generated news digests to
+   * `news1`, `news2`, … so real books stand out. With two dozen of them, a list
+   * of bare `news7` says nothing — the reader cannot tell which digest that was.
+   * The page shows this underneath, for exactly the entries whose display title
+   * carries no information.
+   *
+   * Null for anything the pipeline left alone.
+   */
+  originalTitle: z.string().nullable(),
   authors: z.string(),
   series: z.string().nullable(),
   pages: z.number().int().nullable(),

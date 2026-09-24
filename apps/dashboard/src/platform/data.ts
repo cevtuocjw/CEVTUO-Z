@@ -27,6 +27,7 @@ import type {
   CnsrLine,
   CnsrSource,
   CnsrSourcesIndex,
+  PaperrIndex,
   SyncMeta,
 } from '../../../../packages/schema/src/index';
 
@@ -118,6 +119,7 @@ export type {
   CnsrLine,
   CnsrSource,
   CnsrSourcesIndex,
+  PaperrIndex,
   SyncMeta,
 };
 
@@ -183,6 +185,47 @@ export const fetchCoofLibrary = (collection: string): Promise<CoofLibrary> =>
  * The per-source payloads behind it are large (Learn alone is ~4900 lines), so
  * nothing should be fetched until this says there is something to fetch.
  */
+/**
+ * CE-CAPPERR — the Kindle's reading statistics.
+ *
+ * One file, and a small one (~40 KB for 36 books plus 90 days), because the
+ * device already did the aggregation: the plugin runs the `GROUP BY` inside
+ * SQLite and ships totals, not raw page events. Nothing to page here.
+ *
+ * ⚠️ `data/paperr/raw-koreader.json` is deliberately NOT fetched. It is the
+ * device's verbatim export, kept in the repository so a converter change can be
+ * re-run without touching the Kindle — not something the page ever renders.
+ */
+export const fetchPaperrIndex = (): Promise<PaperrIndex> =>
+  getJson<PaperrIndex>(DATA_PATHS.paperrIndex);
+
+/** Reading time, at the precision a dashboard actually needs. */
+export function formatReadingTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0m';
+  const hours = seconds / 3600;
+  if (hours >= 100) return `${Math.round(hours)}h`;
+  if (hours >= 10) return `${hours.toFixed(1)}h`;
+  if (hours >= 1) return `${hours.toFixed(2)}h`;
+  return `${Math.max(1, Math.round(seconds / 60))}m`;
+}
+
+/** `"2026-09-24T09:14+08:00"` → `"09-24"`. Sliced, never parsed: the offset is
+ *  already the device's own, and `new Date()` would re-interpret it in the
+ *  viewer's timezone and shift the day for anyone reading from abroad. */
+export const formatDayMonth = (iso: string): string => iso.slice(5, 10);
+
+/** How long ago, in the loosest useful unit. */
+export function formatAgo(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return '';
+  const days = Math.floor((now.getTime() - then) / 86_400_000);
+  if (days <= 0) return '今天';
+  if (days === 1) return '昨天';
+  if (days < 30) return `${days} 天前`;
+  if (days < 365) return `${Math.floor(days / 30)} 个月前`;
+  return `${Math.floor(days / 365)} 年前`;
+}
+
 export const fetchCnsrIndex = (): Promise<CnsrSourcesIndex> =>
   getJson<CnsrSourcesIndex>(DATA_PATHS.cnsrIndex);
 

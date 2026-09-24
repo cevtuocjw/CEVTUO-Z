@@ -1,0 +1,287 @@
+// CAPPERR page — Kindle reading statistics.
+//
+// ⚠️ `display:flex; flex-direction:…` on every container, legacy `rgba(r,g,b,a)`
+// colours, real-px media queries — the same three constraints the COOF and CNSR
+// sheets obey. Skyline defaults to flex-column/border-box and the WebView
+// renderer defaults to block/content-box, so identical source renders
+// differently unless the layout is explicit.
+
+@use '../../styles/tokens.scss' as t;
+@use '../../styles/breakpoints.scss' as b;
+// ⚠️ Chips are the same material as demo.scss's. A hand-rolled approximation
+// here is exactly how a design system starts reading as several.
+@use '../../styles/glass.scss' as g;
+
+// ── Currently reading ────────────────────────────────────────
+.pr-current {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pr-current__title {
+  display: block;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-title;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+  // ⚠️ Titles run long ("Amanda Wakeley_ 'Princess Diana wore one of my suits…'").
+  // Two lines, then clipped — an unbounded headline pushes the progress bar off
+  // the panel and the section stops being scannable.
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.pr-current__orig {
+  display: block;
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+.pr-bar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 4px;
+  margin-top: t.$space-4;
+  background-color: var(--divider);
+  border-radius: t.$radius-pill;
+  overflow: hidden;
+}
+
+.pr-bar__fill {
+  height: 100%;
+  background-color: var(--chart-1);
+  border-radius: t.$radius-pill;
+}
+
+.pr-current__meta {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  margin-top: t.$space-2;
+}
+
+.pr-current__pct {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-primary);
+}
+
+.pr-current__note {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+}
+
+// ── Daily strip ──────────────────────────────────────────────
+.pr-days {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+  height: 96px;
+  // ⚠️ A gap, not a margin per column: margins collapse differently between the
+  // two renderers and the bars end up unevenly spaced on one of them.
+  gap: 3px;
+}
+
+.pr-days__col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1;
+  // ⚠️ `min-width: 0` — without it a flex child refuses to shrink below its
+  // content width and 30 columns overflow the panel instead of narrowing.
+  min-width: 0;
+  height: 100%;
+}
+
+.pr-days__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.pr-days__bar {
+  width: 100%;
+  background-color: var(--chart-3);
+  border-radius: t.$radius-tile;
+}
+
+.pr-days__label {
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  // ⚠️ Rotated-free and clipped: 30 date labels cannot fit legibly side by
+  // side, and a truncated one still anchors the strip's ends.
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+// ── Filters ──────────────────────────────────────────────────
+.pr-filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: t.$space-2;
+  width: 100%;
+  margin-bottom: t.$space-4;
+}
+
+.pr-chip {
+  @include g.glass-inset;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-2 t.$space-3;
+  border-radius: var(--radius-chip);
+}
+
+.pr-chip--on {
+  background-color: var(--accent-soft);
+}
+
+.pr-chip__text {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  letter-spacing: t.$track-label;
+  color: var(--text-secondary);
+}
+
+.pr-chip--on .pr-chip__text {
+  color: var(--text-primary);
+}
+
+// ── Book rows ────────────────────────────────────────────────
+//
+// ⚠️ Two elements, and both are required. `flex: 1` + `min-height: 0` lets the
+// wrapper claim the panel's leftover height — without `min-height: 0` a flex
+// child refuses to shrink below its content. Then the ScrollView is anchored to
+// all four edges inside a positioned parent, because Taro renders it as
+// `display: inline` and it would otherwise simply grow.
+.pr-listwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.pr-list {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pr-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  padding: t.$space-3 0;
+  // ⚠️ A hairline between rows, not a card per row. Thirty bordered cards is a
+  // wall of boxes; the editorial style is one rule, repeated.
+  border-bottom: 1px solid var(--hairline);
+}
+
+.pr-row__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding-right: t.$space-3;
+}
+
+.pr-row__title {
+  display: block;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-body;
+  font-weight: t.$weight-medium;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.pr-row__orig {
+  display: block;
+  margin-top: 2px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.pr-row__meta {
+  display: block;
+  margin-top: t.$space-1;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pr-row__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  // ⚠️ Fixed, so the right column is a clean edge down the list. Letting it
+  // size to content makes "100%" and "—" produce two different alignments.
+  width: 56px;
+  flex-shrink: 0;
+}
+
+.pr-row__pct {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+
+.pr-row__pct--done {
+  color: var(--text-tertiary);
+  letter-spacing: t.$track-label;
+}
+
+.pr-row__eta {
+  margin-top: 2px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+.pr-foot {
+  display: block;
+  margin-top: t.$space-5;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  letter-spacing: t.$track-label;
+  color: var(--text-tertiary);
+}
