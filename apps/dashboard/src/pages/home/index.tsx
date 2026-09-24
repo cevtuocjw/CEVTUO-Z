@@ -117,9 +117,19 @@ const PANELS: BrandPanel[] = [
     key: 'chealth',
     title: 'CHEALTH',
     lede: '健康数据。步数、心率与睡眠，不进入公开仓库，走鉴权接口。',
+    // ⚠️ `—`, like the other three. These were "8,412" and "7h12" — invented
+    // numbers, formatted exactly like the live ones beside them on the same
+    // screen. A reader glancing at the index sees six figures; two of them were
+    // made up, and nothing on the page said which.
+    //
+    // ⚠️ And "尚未接入" on the card below is not enough to undo that: it is a
+    // small label on a control, while 8,412 is set at stat size. The rule this
+    // file already states for COOF applies here — a placeholder beside a live
+    // number is how a page starts lying — and a placeholder that looks like
+    // data is worse than a dash.
     stats: [
-      { value: '8,412', label: '今日步数', note: '步' },
-      { value: '7h12', label: '昨夜睡眠', note: '时 · 分' },
+      { value: '—', label: '今日步数', note: '' },
+      { value: '—', label: '昨夜睡眠', note: '' },
     ],
     route: null,
   },

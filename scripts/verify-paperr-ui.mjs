@@ -89,6 +89,40 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   const anyCePrefix = await page.evaluate(() => /CE-CAPPER/.test(document.body.innerText));
   check('no CE-CAPPER anywhere on the page', !anyCePrefix);
 
+  // ── No brand may invent a number ──────────────────────────
+  //
+  // ⚠️ Cross-page, and here rather than in a file of its own because this is
+  // where the other "the page must not lie" checks live.
+  //
+  // The CHEALTH panel shipped with hardcoded "8,412" steps and "7h12" sleep,
+  // formatted exactly like COOF's live totals on the same screen. A reader
+  // glancing at the index cannot tell which figures came from a pipeline and
+  // which were typed into the source. The `尚未接入` label on the card does not
+  // undo it — that is small type on a control, and 8,412 is set at stat size.
+  {
+    await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.stats__value', { timeout: 20000 });
+    await page.waitForTimeout(600);
+    const values = await page.locator('.stats__value').allInnerTexts();
+    const fabricated = values.filter((v) => /\d/.test(v) && v !== '—');
+    // A live figure is fine; the check is that the page does not render one
+    // while the matching pipeline has not run. COOF and CAPPERR are live here,
+    // so those numbers are expected — what must NOT appear is CHEALTH's.
+    const chealth = await page.evaluate(() => {
+      const panels = [...document.querySelectorAll('.section')];
+      const p = panels.find((e) => (e.querySelector('.section__title') || {}).textContent === 'CHEALTH');
+      if (!p) return null;
+      return [...p.querySelectorAll('.stats__value')].map((e) => e.textContent?.trim());
+    });
+    check('CHEALTH shows no invented figures', !!chealth && chealth.every((v) => v === '—'),
+          JSON.stringify(chealth));
+    check('the live brands are still allowed real numbers', fabricated.length > 0 || values.length === 0,
+          values.join(','));
+    await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.pr-row', { timeout: 20000 });
+    await page.waitForTimeout(600);
+  }
+
   // ── The shelf ─────────────────────────────────────────────
   const rowCount = await page.locator('.pr-row').count();
   check('shelf rendered', rowCount === 36, `rows=${rowCount}`);
