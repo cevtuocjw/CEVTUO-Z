@@ -91,6 +91,35 @@ for rel in "${PRIVATE[@]}"; do
   echo "  ▸ 已排除私有路径 $rel"
 done
 
+# ── ⚠️⚠️ `data/paperr/` has TWO writers, and this script is the wrong one ──
+#
+# The Aliyun ingest publishes `data/paperr/index.json` itself via the GitHub
+# API, every time the Kindle syncs. This script copies the whole `data/` tree
+# from the development machine and force-pushes gh-pages.
+#
+# Those two met on 2026-09-24 and the result was silent: the server published a
+# fresh index at 12:31:20 carrying the first real `hourly` data, and this script
+# replaced it 77 seconds later with the Mac's copy from before that sync. The
+# site showed stale numbers, the server's log said "已更新网站", and the only
+# way to find it was to diff the three copies field by field.
+#
+# So: the live index wins. Fetch what is actually published and use that. The
+# local file is only a fallback for a first-ever deploy or an offline machine.
+PAPERR_LIVE="http://apps.cevtuogrnd.com/CEVTUO-Z/data/paperr/index.json"
+if curl -fsS --noproxy '*' -m 20 "$PAPERR_LIVE" -o "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
+   && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/paperr/index.json.tmp','utf8'))" 2>/dev/null; then
+  mv "$STAGE/data/paperr/index.json.tmp" "$STAGE/data/paperr/index.json"
+  echo "  ▸ 保留线上已发布的 index.json（服务器拥有它，本脚本不覆盖）"
+else
+  rm -f "$STAGE/data/paperr/index.json.tmp"
+  echo "  ⚠️ 取不到线上 index.json —— 用本地副本。如果服务器刚发布过，这次发布会把它冲掉。" >&2
+fi
+
+# ⚠️ The device's raw export is server-only, per the ingest README. `cp -R data`
+# has been putting it on the public site, where it sat as a stale duplicate of
+# a file nothing reads.
+rm -f "$STAGE/data/paperr/raw-koreader.json"
+
 # GitHub Pages runs Jekyll unless told not to, and Jekyll silently drops paths
 # beginning with `_` — which would take build assets with it.
 touch "$STAGE"/.nojekyll

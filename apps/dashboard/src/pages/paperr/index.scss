@@ -334,11 +334,13 @@
 
 .pc-donut__plot {
   position: relative;
-  // ⚠️ 116px, down from 140. At 140 the legend beside it had ~55px for a
-  // category name and rendered "新闻摘…" — the label is the only part of the
-  // legend that carries meaning, so the ring yields the space.
-  width: 116px;
-  height: 116px;
+  // ⚠️ 132px. It was 140 (legend starved to ~55px and read "Unnam…"), then 116
+  // to give the legend back its room. Now that the cell is sized to what the
+  // chart actually needs rather than to a full grid column, the ring can take
+  // some of it back — the reader asked for the charts to be larger, and the
+  // legend still clears 60px for a category name at the narrowest column.
+  width: 132px;
+  height: 132px;
   flex-shrink: 0;
 }
 
@@ -466,12 +468,41 @@
   // ⚠️ `touch-action: none` — without it the browser claims a horizontal drag
   // as a page-scroll gesture and the scrub dies after the first few pixels.
   touch-action: none;
+  // ⚠️⚠️ THE LINK THAT WAS MISSING. `.pc-curve` is 170px, but its child here
+  // had no `flex`, so it stayed content-height — and the SVG inside it is
+  // `height: 100%` of an auto-height parent, which resolves to nothing and
+  // falls back to the viewBox ratio. The container's height never reached the
+  // chart, and the setting looked applied in devtools because it was.
+  //
+  // Same shape as the ScrollView in this project that needed a
+  // `position/relative + flex: 1` wrapper: a `height: 100%` descendant under an
+  // auto-height parent is not a layout, it is a coincidence.
+  flex: 1;
+  min-height: 0;
 }
 
 .pc-curve__svg {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+// ⚠️ An explicit height, because the SVG is `height: 100%` of an auto-height
+// parent — which resolves to the content height and left the curve as a thin
+// ribbon at the top of a cell whose neighbour (the month calendar) was four
+// times taller. The reader's complaint was "大屏上不注重图标展示"; a chart that
+// occupies a fifth of its column is exactly that.
+//
+// `preserveAspectRatio="none"` on the element means this stretches the drawing
+// vertically rather than letterboxing it, which is what a sparkline wants.
+.pc-curve {
+  height: 170px;
+}
+
+@include b.medium-up {
+  .pc-curve {
+    height: 230px;
+  }
 }
 
 .pc-curve__area {
@@ -764,6 +795,12 @@ $chart-h: 108px;
   text-shadow: 0 1px 8px var(--text-halo-strong);
 }
 
+/* ⚠️⚠️ TWO LINES RESERVED, always.
+   Every cell is [title][subtitle][chart]. The subtitles run one or two lines
+   depending on the words — 「个人最好成绩。」 is one, 「周一到周日，标出的是今天。」
+   is two — so the charts beside each other in a row started at different
+   heights. Nothing was individually wrong and the row looked hand-placed.
+   The reader's words were "尽量对齐". */
 .pr-sub {
   display: block;
   margin: t.$space-1 0 t.$space-3;
@@ -771,6 +808,7 @@ $chart-h: 108px;
   font-size: t.$font-caption;
   color: var(--text-secondary);
   text-shadow: 0 1px 8px var(--text-halo-strong);
+  min-height: 2.9em;
 }
 
 .pr-current__kicker {
@@ -973,9 +1011,13 @@ $chart-h: 108px;
 .pr-grid__cell {
   display: flex;
   flex-direction: column;
-  // 320px is where the widest charts here — the donut with its legend, the hour
-  // grid's 24 columns — stop fighting for room. Below it the browser wraps.
+  // 320px is where the widest charts here — the hour grid's 24 columns, the
+  // month calendar's seven — stop fighting for room. Below it the browser wraps.
   flex: 1 1 320px;
+  // ⚠️ Charts start at the top of their cell. Without this a row's short cell
+  // is stretched to the tallest one's height and its content floats in the
+  // middle of the hole, which on a 1100px screen is a lot of hole.
+  align-self: flex-start;
   // ⚠️ Without this a cell refuses to shrink below its widest child, and one
   // wide chart forces the whole row past the panel edge.
   min-width: 0;
@@ -991,6 +1033,14 @@ $chart-h: 108px;
 // fix. 140px looked reasonable and produced exactly that.
 .pr-grid__cell--half {
   flex: 1 1 120px;
+}
+
+// ⚠️ The donut needs ~240px (a fixed 116px plot beside a legend with a 52px
+// floor) and nothing like the 320px a full cell gets. Given the same basis as
+// the hour grid it took 343px of a 700px row and left the legend spread across
+// the slack, so the two charts beside it were squeezed to 153px each.
+.pr-grid__cell--ring {
+  flex: 1 1 250px;
 }
 
 // ⚠️ The first heading in a cell has no top margin to contribute — the grid gap

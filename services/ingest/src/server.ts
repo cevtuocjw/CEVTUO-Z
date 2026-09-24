@@ -224,8 +224,19 @@ const server = Bun.serve({
       // ⚠️ Rebuild is the button you press after fixing a converter bug, so the
       // whole point of it is to see the correction on the site afterwards.
       let msg = (r.body as { message?: string }).message;
-      if (r.status === 200 && (r.body as { ok?: boolean }).ok && publisher) {
+      // ⚠️ `ok`, NOT `status === 200`. `handleRebuild` answers 202 Accepted —
+      // the work is done but the response is not a fresh representation — and
+      // this read 200, so the whole publish block below never ran once. The
+      // endpoint kept saying "已重新生成" while the site kept showing whatever
+      // had been published last, which is the worst kind of wrong: the operator
+      // gets a success message and the data does not move.
+      if ((r.body as { ok?: boolean }).ok && publisher) {
         const pub = await publisher.publish();
+        // ⚠️ Logged on every outcome, not only on failure. Without the success
+        // case there is no way to tell "the publish ran and found nothing to do"
+        // from "the publish never ran" — which is exactly the ambiguity that
+        // cost a round of reverse-engineering the minified bundle.
+        console.log(`[publish] rebuild → ${pub.ok ? (pub.changed ? '已更新' : '远端已是最新') : `失败: ${pub.error}`}`);
         if (!pub.ok) msg = `${msg}；但发布到网站失败：${pub.error}`;
         else if (pub.changed) msg = `${msg}；已更新网站`;
       }

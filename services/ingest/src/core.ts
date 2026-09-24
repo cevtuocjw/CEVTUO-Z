@@ -423,7 +423,7 @@ export function renderAdminPage(): string {
  button:disabled{opacity:.4;cursor:default}
  #msg{margin-top:1.2em;color:var(--mut);min-height:1.6em}
 </style>
-<h1>CE-PAPERR 同步</h1>
+<h1>CAPPERR 同步</h1>
 <p class="sub">Kindle 的阅读数据存在这台服务器上。这里只做两件事：看它有多新，以及重新生成一次。</p>
 <table id="t"><tr><td>读取中…</td><td></td></tr></table>
 <button id="b" disabled>重新生成</button>

@@ -118,16 +118,24 @@ function Cell({
   title,
   sub,
   half,
+  ring,
   children,
 }: {
   title: string;
   sub?: string;
   /** Narrow enough to share a row even on a phone. */
   half?: boolean;
+  /** The donut: needs ~240px, nothing like a full cell, but more than a half. */
+  ring?: boolean;
   children: React.ReactNode;
 }) {
+  const cls = ring
+    ? 'pr-grid__cell pr-grid__cell--ring'
+    : half
+      ? 'pr-grid__cell pr-grid__cell--half'
+      : 'pr-grid__cell';
   return (
-    <View className={`pc-reveal ${half ? 'pr-grid__cell pr-grid__cell--half' : 'pr-grid__cell'}`}>
+    <View className={`pc-reveal ${cls}`}>
       <Text className="pr-h">{title}</Text>
       {sub && <Text className="pr-sub">{sub}</Text>}
       {children}
@@ -526,7 +534,7 @@ export default function Paperr() {
                 {/* ⚠️ NOT `half`. The donut is a fixed 116px plot plus a legend
                     with a 52px floor — about 240px of unshrinkable width. In a
                     140px cell it overflows and paints over its neighbour. */}
-                <Cell title="构成" sub="按阅读时长切分。点图例可以选中。">
+                <Cell title="构成" sub="按阅读时长切分。点图例可以选中。" ring>
                   <CompositionDonut slices={slices} format={formatReadingTime} />
                 </Cell>
 
