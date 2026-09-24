@@ -32,11 +32,11 @@ GitHub → Settings → Developer settings → **Fine-grained tokens** → Gener
 | 项 | 值 |
 |---|---|
 | Repository access | Only select repositories → **CEVTUO-Z** |
-| Permissions → Contents | **Read and write**（提交原始导出） |
-| Permissions → Actions | **Read and write**（管理页那个「重新生成」按钮） |
+| Permissions → Contents | **Read and write** |
+| Permissions → Actions | **不需要**（转换跑在服务器上，不走 Actions） |
 | Expiration | 你自己定 |
 
-⚠️ **只给这一个仓库、只给这两个权限。** 这个 token 会放在阿里云那台服务器上，
+⚠️ **只给这一个仓库、只给这一个权限。** 这个 token 会放在阿里云那台服务器上，
 一旦泄露，破坏范围就是这一个仓库。
 
 ---
@@ -58,6 +58,8 @@ Kindle 的配置文件要用它。脚本也会在最后再打印一次。
 
 脚本做的事：装 Bun → 克隆仓库 → 建专用非 root 用户 → 写 `.env`(600) →
 装 systemd 单元 → 启动 → 自检 `/health`。**可以重复跑**，会更新代码并重启。
+
+⚠️ 服务器**不需要任何 GitHub Actions 或 workflow 配置** —— 转换器就在这台机器上跑。
 
 ---
 
