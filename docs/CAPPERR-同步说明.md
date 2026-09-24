@@ -70,6 +70,10 @@ WiFi 从没断过所以 `NetworkConnected` 不触发，一本书都还没合上�
 
 ## 每次更新 KOReader 之后要做什么
 
+> ⚠️ 这一节只讲常规更新。**恢复出厂、换新机、重装 KOReader** 看
+> [`CAPPERR-恢复清单.md`](./CAPPERR-恢复清单.md) —— 那几种情况要多做几步，
+> 而且有一种是真的会丢东西。
+
 **先花 30 秒确认一下**：打开 KOReader → 工具菜单 → 看有没有「导出阅读统计（CEVTUO）」。
 
 | 情况 | 要做什么 |
@@ -111,8 +115,14 @@ koreader/plugins/cevtuo-capperr.koplugin/
 }
 ```
 
-丢了的话找我要一份 —— token 在服务器的 `/opt/cevtuo-ingest/.env` 里，
-**不要**发到任何公开的地方。
+丢了的话在 Mac 上跑：
+
+```bash
+bash scripts/cevtuo-device-config.sh
+```
+
+它会把整份配置打印出来，复制粘贴到 Kindle 上就行 —— token 从本机保存的副本里取，
+不用去翻服务器。**不要**把输出发到任何公开的地方。
 
 ---
 

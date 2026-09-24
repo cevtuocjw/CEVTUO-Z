@@ -75,3 +75,7 @@ yarn-error.log*
 # can only append fake reading stats" is still a leak.
 cevtuo-capperr.conf.json
 **/cevtuo-capperr.conf.json
+
+# ⚠️ 服务器 .env 的本地备份：里面是 device token、管理口令和 GitHub PAT。
+# 绝不能被提交。它是「阿里云那台没了」时的恢复来源之一。
+services/ingest/.env.server-backup
