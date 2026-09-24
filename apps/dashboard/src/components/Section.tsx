@@ -248,6 +248,12 @@ export interface PageStackProps {
    * context or a store: there is exactly one caller and one method.
    */
   apiRef?: React.MutableRefObject<PageStackApi | null>;
+  /**
+   * Panel to open on. Used when arriving at a page that was asked for a
+   * specific panel — the back control sends the reader to the panel whose
+   * brand they just left, not to the top of the index.
+   */
+  initialIndex?: number;
 }
 
 /**
@@ -258,7 +264,7 @@ export interface PageStackProps {
  * tall, so the arithmetic is exact, and it survives the panel list changing
  * length without re-measuring anything.
  */
-export function PageStack({ count, children, apiRef }: PageStackProps) {
+export function PageStack({ count, children, apiRef, initialIndex = 0 }: PageStackProps) {
   const [active, setActive] = useState(0);
   const containerRef = useRef<HTMLElement | null>(null);
   const height = useRef(1);
@@ -302,6 +308,15 @@ export function PageStack({ count, children, apiRef }: PageStackProps) {
     };
     measure();
 
+    // ⚠️ Jump instantly, and BEFORE the scroll listener is attached.
+    // A smooth scroll here would animate the index from the top panel down
+    // every time someone pressed back out of a brand page — a journey the
+    // reader did not ask for and has already taken once.
+    if (initialIndex > 0) {
+      el.scrollTop = initialIndex * height.current;
+      setActive(initialIndex);
+    }
+
     const onScroll = () => {
       // Guard against a zero height during the first paint, which would make
       // this a division by zero and pin the rail to the last panel.
@@ -316,7 +331,11 @@ export function PageStack({ count, children, apiRef }: PageStackProps) {
     // two panels.
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(measure);
+      ro = new ResizeObserver(() => {
+        // ⚠️ Re-measure only. Re-applying `initialIndex` here would yank the
+        // reader back every time the Fold is unfolded.
+        measure();
+      });
       ro.observe(el);
     }
 

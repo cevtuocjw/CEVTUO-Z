@@ -606,11 +606,15 @@
   vector-effect: non-scaling-stroke;
 }
 
+/* ⚠️ Left-aligned, under the grid — NOT `flex-end`.
+   The chart is capped at its natural width (177px) while the cell it sits in is
+   as wide as the column, so a right-aligned scale ends up floating in the empty
+   space beside the chart with nothing to connect it to. */
 .pc-heat__scale {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   width: 100%;
   margin-top: t.$space-2;
   gap: t.$space-1;
@@ -1012,4 +1016,255 @@
 // repeating what the cell's own title and subtitle already say.
 .pr-grid__cell--half .pc-note {
   display: none;
+}
+
+// ── Progress bands ───────────────────────────────────────────
+//
+// Ten columns of a count. The numbers are small (0–41), so the count is written
+// above each bar rather than relying on the height — at these magnitudes two
+// bars differing by one book are visually identical.
+.pc-bands {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.pc-bands__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  width: 100%;
+  gap: 4px;
+  height: 84px;
+}
+.pc-bands__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+.pc-bands__count {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+.pc-bands__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  // ⚠️ Fixed, not `flex: 1`. The count label above varies in presence — an
+  // empty band renders no label — so a flexible track would make the bars in
+  // one chart start at different heights and read as different scales.
+  height: 56px;
+}
+.pc-bands__bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background-color: var(--chart-4);
+  transition: background-color 0.18s ease;
+}
+// The bands at or past the 70% finish line. Same accent the donut and the
+// "读完" filter use, so one colour means one thing across the page.
+.pc-bands__bar--done {
+  background-color: var(--accent);
+}
+.pc-bands__label {
+  margin-top: 3px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+
+// ── Entrance animation ───────────────────────────────────────
+//
+// ⚠️ Every chart animates, and each one starts when IT becomes visible — not
+// when the page loads. The overview is one long scroll inside a panel; a
+// cascade fired at mount would be over before the reader reached the third
+// chart, and the charts below the fold would have silently finished.
+//
+// The class is applied from the DOM (see the page's useEffect) for the same
+// reason the curve binds its own listeners: Taro drops some of what React would
+// forward, and a ref on a <View> is not something this codebase can rely on.
+@keyframes pc-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.pc-reveal {
+  opacity: 0;
+}
+
+.pc-reveal--in {
+  animation: pc-rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+// Bars grow from the baseline rather than appearing at full height. Without
+// this the reveal is a fade of something already drawn, which reads as a
+// screenshot loading rather than a chart being drawn.
+@keyframes pc-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.pc-reveal--in .pc-bars__bar,
+.pc-reveal--in .pc-bands__bar,
+.pc-reveal--in .pc-months__bar,
+.pc-reveal--in .pc-hours__bar {
+  transform-origin: bottom;
+  animation: pc-grow 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+// ⚠️ `pathLength="1"` on the element normalises the geometry, so the dash
+// animation is exact at any data size. Guessing a dasharray in user units makes
+// the draw finish in the first tenth of the timeline for a short path and never
+// finish for a long one.
+@keyframes pc-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+.pc-reveal--in .pc-curve__line {
+  stroke-dasharray: 1;
+  animation: pc-draw 1.1s ease-out both;
+}
+@keyframes pc-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.pc-reveal--in .pc-curve__area,
+.pc-reveal--in .pc-donut__seg,
+.pc-reveal--in .pc-donut__ring,
+.pc-reveal--in .pc-cal__cell,
+.pc-reveal--in .pc-heat__cell {
+  animation: pc-fade 0.6s ease-out both;
+}
+
+// ── Period stats: today / this week / this month ─────────────
+.pc-periods {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: t.$space-3;
+  margin-bottom: t.$space-4;
+}
+.pc-periods__col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  // ⚠️ A rule down the left edge, not a border. A border between three columns
+  // draws two lines and leaves the outer edges open, so the group reads as
+  // three loose numbers rather than one block of three.
+  border-left: 2px solid var(--divider);
+  padding-left: t.$space-3;
+}
+.pc-periods__label {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-caption;
+  color: var(--text-secondary);
+}
+.pc-periods__value {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-title;
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+  text-shadow: 0 1px 8px var(--text-halo-strong);
+}
+.pc-periods__note {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+.pc-periods__delta {
+  margin-top: 2px;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+// ⚠️ Two colours, and they mean direction, not good/bad. Reading less this week
+// is not a failure, and a red number would say it was.
+.pc-periods__delta--up { color: var(--accent); }
+.pc-periods__delta--down { color: var(--text-secondary); }
+
+// ── This month, as a calendar ────────────────────────────────
+.pc-cal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 3px;
+}
+.pc-cal__head,
+.pc-cal__row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 3px;
+}
+.pc-cal__wd {
+  flex: 1;
+  text-align: center;
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  color: var(--text-tertiary);
+}
+.pc-cal__cellwrap {
+  flex: 1;
+  min-width: 0;
+}
+.pc-cal__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // ⚠️ `aspect-ratio` is not available in Skyline, so the height is a fixed
+  // value chosen to match the cell width at the narrowest column the grid
+  // produces. A square that is one pixel off is indistinguishable; one that
+  // collapses to zero is a broken chart.
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+// The same five-step ink scale the heatmap used. Colour is the wallpaper's job.
+.pc-cal__cell--l0 { background-color: var(--divider); }
+.pc-cal__cell--l1 { background-color: var(--chart-7); }
+.pc-cal__cell--l2 { background-color: var(--chart-5); }
+.pc-cal__cell--l3 { background-color: var(--chart-3); }
+.pc-cal__cell--l4 { background-color: var(--chart-1); }
+.pc-cal__cell--blank { background-color: transparent; cursor: default; }
+.pc-cal__cell--on { outline: 1.5px solid var(--text-primary); outline-offset: -1.5px; }
+.pc-cal__day {
+  font-family: t.$font-family-sans;
+  font-size: t.$font-micro;
+  // ⚠️ Haloed, because it sits on five different fills from near-white to
+  // near-black. A single ink colour is unreadable on one end of that ramp.
+  color: var(--text-primary);
+  text-shadow: var(--text-halo);
+}
+
+// ⚠️ Today's column in the week bars. A filled dot rather than a colour change:
+// every bar's fill already encodes a value, and recolouring one would make it
+// look like a different series.
+.pc-bars__col--now .pc-bars__label {
+  font-weight: t.$weight-semibold;
+  color: var(--text-primary);
+}
+.pc-bars__col--now .pc-bars__track {
+  outline: 1px dashed var(--text-tertiary);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+
+// ⚠️ Half a half. `记录` shares a row with `本周` on a desktop panel, so each
+// of its four values gets about 73px — and at the full title size "2.33h" plus
+// its label crowd the cell until the block reads as a wall of type rather than
+// four numbers. The reader's words were "记录这些部分字还是过大".
+@include b.medium-up {
+  .pr-grid__cell--half .pc-records__value {
+    font-size: t.$font-body;
+  }
+  .pr-grid__cell--half .pc-records__cell {
+    flex: 1 1 45%;
+  }
 }

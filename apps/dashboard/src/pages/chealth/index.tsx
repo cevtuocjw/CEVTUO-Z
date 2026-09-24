@@ -2,6 +2,7 @@ import { Text, View } from '@tarojs/components';
 
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
+import { homePanelUrl } from '../../platform/panels';
 import { Wallpaper } from '../../components/Wallpaper';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
@@ -30,7 +31,7 @@ export default function Chealth() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CHEALTH" />
+      <TopBar title="CHEALTH" backTo={homePanelUrl('chealth')} />
 
       <PageStack count={2}>
         <Section

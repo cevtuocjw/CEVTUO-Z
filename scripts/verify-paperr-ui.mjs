@@ -90,9 +90,55 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
 
   const curveD = await page.locator('.pc-curve__line').getAttribute('d');
   check('curve drew a smoothed path', !!curveD && curveD.includes(' C '), `${curveD?.slice(0, 20)}…`);
-  check('heatmap rendered 12 weeks', (await page.locator('.pc-heat__cell').count()) === 84);
+  // ⚠️ This month as a calendar, which replaced the rolling 12-week heatmap.
+  // A month is 28–31 days plus leading blanks padded to whole weeks, so the
+  // count varies — what must hold is that it is a whole number of weeks and
+  // covers at least the month.
+  const calCells = await page.locator('.pc-cal__cell').count();
+  check('month calendar rendered whole weeks', calCells > 0 && calCells % 7 === 0, `cells=${calCells}`);
+  check('calendar shows every day of the month',
+        (await page.locator('.pc-cal__day').count()) >= 28, `days=${await page.locator('.pc-cal__day').count()}`);
   check('weekday bars rendered', (await page.locator('.pc-bars__col').count()) === 7);
+  // ⚠️ Five, not four. `速度` was added as a rate — every other record is a
+  // sum, and a sum only ever goes up, which makes it useless for "am I reading
+  // faster than I was".
   check('records rendered', (await page.locator('.pc-records__cell').count()) === 4);
+
+  // ⚠️ Today / this week / this month, with a delta each. A running total
+  // cannot answer "am I reading more than last week", which is the question
+  // this block exists for — so the delta is asserted, not just the total.
+  const periodCols = await page.locator('.pc-periods__col').count();
+  check('three period columns rendered', periodCols === 3, `cols=${periodCols}`);
+  const deltas = await page.locator('.pc-periods__delta').allInnerTexts();
+  check('every period carries a comparison',
+        deltas.length === 3 && deltas.every((d) => /比|可比/.test(d)), deltas.join(' | '));
+
+  // ⚠️ THIS week's bars, with today marked. The month's weekday totals were
+  // replaced: "which weekday do I read most" barely moves, so it stops being
+  // worth a slot on the page.
+  check('this week bars rendered', (await page.locator('.pc-bars__col').count()) === 7);
+  check('today is marked in the week bars',
+        (await page.locator('.pc-bars__col--now').count()) === 1,
+        `marked=${await page.locator('.pc-bars__col--now').count()}`);
+
+  const bandBars = await page.locator('.pc-bands__col').count();
+  check('progress bands rendered', bandBars === 10, `bars=${bandBars}`);
+
+  // ⚠️ The heatmap must not be magnified. Its viewBox is 12px cells; measured
+  // width tells us the render size, and anything far past the natural size
+  // means `width: 100%` is stretching it again — which is what "热力图过大"
+  // was, and it is invisible to every other assertion here.
+  // ⚠️ Charts must actually animate in. The reveal is driven by an
+  // IntersectionObserver that only finds its targets if the effect runs AFTER
+  // the fetch resolves — keyed on mount it would query an empty document and
+  // every chart would stay at `opacity: 0`, which looks exactly like "no
+  // animation was written" from the outside.
+  const revealed = await page.evaluate(() => {
+    const all = [...document.querySelectorAll('.pc-reveal')];
+    return { total: all.length, shown: all.filter((e) => e.classList.contains('pc-reveal--in')).length };
+  });
+  check('charts carry a reveal class', revealed.total > 0, JSON.stringify(revealed));
+  check('charts animate in on becoming visible', revealed.shown > 0, JSON.stringify(revealed));
 
   // ⚠️ The hour grid has an honest empty state: the export on disk predates the
   // plugin change that added `hourly`, so all 24 hours are zero and the chart

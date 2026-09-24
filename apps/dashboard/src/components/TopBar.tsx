@@ -27,6 +27,19 @@ export interface TopBarProps {
   children?: React.ReactNode;
   /** The index itself — there is nowhere above it, so it offers no way back. */
   root?: boolean;
+  /**
+   * Where "back" goes when there is no page to pop.
+   *
+   * ⚠️ Not always the index's first panel. Deep-linking straight into CAPPERR
+   * and pressing back used to land on the home page's TOP — panel 1, COOF —
+   * because that is what `navigateTo('/pages/home/index')` renders. The reader
+   * had come from CAPPERR and had to swipe back down to it every time.
+   *
+   * A pop keeps the previous page's scroll position by itself, so this only
+   * matters on the push path — but it is the push path that a shared link, a
+   * bookmark or a refresh always takes.
+   */
+  backTo?: string;
 }
 
 /**
@@ -44,14 +57,14 @@ function stackDepth(): number {
   }
 }
 
-export function TopBar({ title, children, root = false }: TopBarProps) {
+export function TopBar({ title, children, root = false, backTo }: TopBarProps) {
   const bp = useBreakpoint();
   const back = !root;
 
   const onBack = () => {
     // ⚠️ The route we are leaving, captured before anything moves.
     const before = typeof window !== 'undefined' ? window.location.hash : '';
-    const HOME = '/pages/home/index';
+    const HOME = backTo ?? '/pages/home/index';
 
     try {
       // ⚠️ Pop when there is a stack, otherwise go to the index.

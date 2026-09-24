@@ -26,6 +26,7 @@ import Taro from '@tarojs/taro';
 
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
+import { homePanelUrl } from '../../platform/panels';
 import { Wallpaper } from '../../components/Wallpaper';
 import {
   assetUrl,
@@ -710,7 +711,7 @@ export default function Cnsr() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CNSR" />
+      <TopBar title="CNSR" backTo={homePanelUrl('cnsr')} />
 
       <PageStack count={1}>
         <Section

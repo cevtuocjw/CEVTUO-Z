@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
+import { PANEL_INDEX } from '../../platform/panels';
 import { PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { Wallpaper } from '../../components/Wallpaper';
@@ -15,15 +16,17 @@ import { CnsrStrips } from '../../components/CnsrStrips';
 // ⚠️ `tsc -b` did NOT catch it — the build succeeded. Nothing in this repo
 // type-checks the H5 app as part of `build:h5`. scripts/verify-back.mjs and
 // verify-paperr-ui.mjs now assert on console errors instead.
-import { CompositionDonut, ReadingCurve } from '../../components/PaperrCharts';
+import { MonthCalendar, WeekdayBars } from '../../components/PaperrCharts';
 import {
   assetUrl,
   fetchCoofIndex,
   fetchPaperrIndex,
   fetchSyncMeta,
+  formatDayMonth,
   formatReadingTime,
   formatUpdatedAt,
   type CoofTitle,
+  type SyncMeta,
 } from '../../platform/data';
 
 import '../../styles/demo.scss';
@@ -112,6 +115,23 @@ const PANELS: BrandPanel[] = [
   },
 ];
 
+/**
+ * Which panel to open on, from `?panel=N`.
+ *
+ * ⚠️ Clamped, not trusted. The parameter arrives from a URL that anyone can
+ * type, and an out-of-range value would scroll the index past its last panel
+ * into blank space with no way back but a reload.
+ */
+function initialPanelFromRoute(): number {
+  try {
+    const raw = Taro.getCurrentInstance()?.router?.params?.panel;
+    const n = Number(raw);
+    return Number.isInteger(n) && n >= 0 ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default function Home() {
   // ⚠️ Only COOF has a pipeline, so only COOF gets a preview strip. The strip is
   // decoration and must never be load-blocking: a failure here leaves the panel
@@ -122,9 +142,13 @@ export default function Home() {
   // that says "36h · 本月" about a brand whose page says 15.7h is a page lying
   // quietly — the two read the same payload now.
   const [paperr, setPaperr] = useState<PaperrIndex | null>(null);
+  // ⚠️ Read once, at mount. The route does not change while this page is open,
+  // and re-reading it on every render would fight the reader's own scrolling.
+  const [initialPanel] = useState(initialPanelFromRoute);
   const [recent, setRecent] = useState<CoofTitle[]>([]);
   const [totals, setTotals] = useState<{ years: number; items: number } | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [syncMeta, setSyncMeta] = useState<SyncMeta | null>(null);
   useEffect(() => {
     let alive = true;
     fetchCoofIndex('COOF2026')
@@ -144,12 +168,63 @@ export default function Home() {
       .then((d) => alive && setPaperr(d))
       .catch(() => {});
     fetchSyncMeta()
+      .then((m) => {
+        if (alive) setSyncMeta(m);
+        return m;
+      })
       .then((m) => alive && setUpdatedAt(formatUpdatedAt(m.generatedAt)))
       .catch(() => {});
     return () => {
       alive = false;
     };
   }, []);
+
+  /**
+   * This week and this month, for the CAPPERR panel.
+   *
+   * ⚠️ NOT the all-time totals. "15.7h 累计阅读" is a number that only ever goes
+   * up — on an index page whose job is to say what is behind each door, it says
+   * nothing about whether the door is currently in use. The reader asked for
+   * the current window in both the numbers AND the chart below them.
+   *
+   * ⚠️ Anchored on the last day in the DATA, not on today: the export is the
+   * device's, and a Kindle that has not synced for a week would otherwise show
+   * an empty week and look broken.
+   */
+  const paperrWindow = useMemo(() => {
+    const days = paperr?.daily ?? [];
+    if (!days.length) return null;
+    const anchors = days[days.length - 1]!.d;
+    const [y, m, d] = anchors.split('-').map(Number) as [number, number, number];
+    const shift = (key: string, n: number) => {
+      const [ky, km, kd] = key.split('-').map(Number) as [number, number, number];
+      const t = new Date(Date.UTC(ky, km - 1, kd) + n * 86_400_000);
+      const p2 = (x: number) => String(x).padStart(2, '0');
+      return `${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}-${p2(t.getUTCDate())}`;
+    };
+    const ws = shift(anchors, -((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7));
+    const mk = anchors.slice(0, 7);
+
+    const sum = (from: string, to: string) =>
+      days.filter((x) => x.d >= from && x.d <= to).reduce((n, x) => n + x.s, 0);
+
+    return {
+      weekSeconds: sum(ws, shift(ws, 6)),
+      monthSeconds: sum(`${mk}-01`, `${mk}-31`),
+      weekBars: ['一', '二', '三', '四', '五', '六', '日'].map((label, i) => {
+        const key = shift(ws, i);
+        return { key, label, value: sum(key, key) };
+      }),
+      calPeak: Math.max(1, ...days.filter((x) => x.d.startsWith(mk)).map((x) => x.s)),
+      latest: anchors,
+    };
+  }, [paperr]);
+
+  /** When the reading data last actually moved, from the sync log. */
+  const paperrUpdatedAt = useMemo(
+    () => syncMeta?.sources?.find((x) => x.id === 'koreader-push')?.lastSuccessAt ?? null,
+    [syncMeta],
+  );
 
   const open = (route: string | null, title: string) => {
     // ⚠️ The other three brands have no page content yet. Rather than navigate
@@ -166,7 +241,7 @@ export default function Home() {
       <Wallpaper />
       <TopBar title="CEVTUO-Z" root />
 
-      <PageStack count={PANELS.length}>
+      <PageStack count={PANELS.length} initialIndex={initialPanel}>
         {PANELS.map((p, i) => (
           <Section
             key={p.key}
@@ -182,22 +257,25 @@ export default function Home() {
                     { value: `${totals.years}`, label: '个年历', note: '2020–2026' },
                     { value: `${totals.items}`, label: '条记录', note: '全部年历' },
                   ]
-                : p.key === 'paperr' && paperr
+                : p.key === 'paperr' && paperrWindow
                   ? [
                       {
-                        value: formatReadingTime(paperr.totals.readSeconds),
-                        label: '累计阅读',
-                        note: `${paperr.totals.pagesTurned} 页`,
+                        value: formatReadingTime(paperrWindow.weekSeconds),
+                        label: '本周',
+                        note: '周一到今天',
                       },
                       {
-                        value: `${paperr.books.filter((b) => (b.progressPct ?? 0) >= 70).length}`,
-                        label: '读完',
-                        note: `共 ${paperr.books.length} 条`,
+                        value: formatReadingTime(paperrWindow.monthSeconds),
+                        label: '本月',
+                        note: `数据到 ${formatDayMonth(paperrWindow.latest)}`,
                       },
                     ]
                   : p.stats
             }
-            updatedAt={p.key === 'coof' ? updatedAt : null}
+            // ⚠️ Both brands carry a freshness line now. A panel with live
+            // numbers and no timestamp cannot be told from one whose sync died
+            // a week ago.
+            updatedAt={p.key === 'coof' ? updatedAt : p.key === 'paperr' ? paperrUpdatedAt : null}
             // The last panel gets no chevron: there is nothing below it, and a
             // cue there promises content that does not exist.
             showCue={i < PANELS.length - 1}
@@ -215,24 +293,15 @@ export default function Home() {
             {/* The CAPPERR panel shows real charts, not a pair of numbers. The
                 whole point of the index page is to say what is behind each door
                 — and for this brand the answer is a shape, not a figure. */}
-            {p.key === 'paperr' && paperr ? (
+            {p.key === 'paperr' && paperrWindow ? (
               <View className="home-paperr">
-                <CompositionDonut
-                  slices={(() => {
-                    const by = new Map<string, number>();
-                    for (const b of paperr.books) {
-                      const k = !b.originalTitle ? 'Books' : b.title.startsWith('news') ? 'News' : 'Unnamed';
-                      by.set(k, (by.get(k) ?? 0) + b.totalReadTime);
-                    }
-                    return [...by.entries()]
-                      .filter(([, v]) => v > 0)
-                      .sort((a, b) => ['Books', 'News', 'Unnamed'].indexOf(a[0]) - ['Books', 'News', 'Unnamed'].indexOf(b[0]))
-                      .map(([label, value]) => ({ key: label, label, value }));
-                  })()}
-                  format={formatReadingTime}
-                />
+                {/* ⚠️ This week's seven days and this month's calendar — both
+                    current windows. These were a donut and a 30-day curve,
+                    both of which are all-time shapes: correct, and useless for
+                    telling whether the door is currently in use. */}
+                <WeekdayBars bars={paperrWindow.weekBars} unit="本周" />
                 <View className="pc-gap" />
-                <ReadingCurve days={paperr.daily.slice(-30)} />
+                <MonthCalendar days={paperr?.daily ?? []} peak={paperrWindow.calPeak} />
               </View>
             ) : null}
 

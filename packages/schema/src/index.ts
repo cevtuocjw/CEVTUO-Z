@@ -460,6 +460,15 @@ export const PaperrRawBookSchema = z.object({
 export type PaperrRawBook = z.infer<typeof PaperrRawBookSchema>;
 
 export const PaperrRawSchema = z.object({
+  /**
+   * The plugin that produced this export.
+   *
+   * ⚠️ Optional, and it must stay optional: every export already on a device
+   * predates this field. `.optional()` rather than a default, because "the
+   * device did not say" and "the device said 1.0.0" are different answers and
+   * only one of them means an update is waiting.
+   */
+  pluginVersion: z.string().optional(),
   schemaVersion: z.literal(1),
   device: z.string(),
   exportedAt: z.string(),

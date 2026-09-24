@@ -25,6 +25,7 @@ import { Image, ScrollView, Text, View } from '@tarojs/components';
 import { MonthlyWave } from '../../components/MonthlyWave';
 import { PageHero, PageStack, Section, type PageStackApi } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
+import { homePanelUrl } from '../../platform/panels';
 import { YearDonuts } from '../../components/YearDonuts';
 import { Wallpaper } from '../../components/Wallpaper';
 import {
@@ -251,7 +252,7 @@ export default function Coof() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="COOF" />
+      <TopBar title="COOF" backTo={homePanelUrl('coof')} />
 
       <PageStack count={2} apiRef={stackApi}>
         <Section

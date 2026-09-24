@@ -76,6 +76,18 @@ local EXPORT_NAME = "cevtuo-capperr.json"
 -- of twenty seconds, on the UI thread.
 --
 -- Caught by `auto.lua`'s "http timeout is bounded" assertion, not by reading it.
+-- ⚠️ Bumped whenever the EXPORT SHAPE changes, and reported in every payload.
+--
+-- The server does not ask the device anything, so when a chart is empty there
+-- is no way to tell "this reader has no data there yet" from "this device is
+-- running a plugin that predates the field". That cost a round of guessing:
+-- `hourly` came back as an empty array and the only honest answer available was
+-- "probably an old plugin".
+--
+-- 1.0.0 — books, daily, totals
+-- 1.1.0 — + hourly and monthly aggregation
+local PLUGIN_VERSION = "1.1.0"
+
 local AUTO_SYNC_DELAY = 3            -- seconds after NetworkConnected
 local CLOSE_PUSH_DELAY = 1           -- seconds after a document closes
 local HTTP_TIMEOUT = 20              -- seconds
@@ -425,6 +437,8 @@ function CevtuoCapperr:buildPayload()
     return {
         schemaVersion = 1,
         device = "koreader",
+        -- ⚠️ Reported, not inferred. See PLUGIN_VERSION.
+        pluginVersion = PLUGIN_VERSION,
         exportedAt = isoNow(),
         books = books,
         daily = daily,

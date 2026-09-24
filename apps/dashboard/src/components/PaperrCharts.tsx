@@ -254,8 +254,13 @@ export function ReadingCurve({ days }: { days: CurvePoint[] }) {
 
       <View className="pc-curve__hit" ref={boxRef as never}>
         <svg className="pc-curve__svg" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none" aria-hidden="true">
+          {/* ⚠️ `pathLength={1}` normalises the geometry so the entrance
+              animation's dash offset is exact regardless of how long the path
+              is. Guessing a dasharray in user units makes a short path finish
+              its draw in the first tenth of the timeline and a long one never
+              finish it. */}
           <path className="pc-curve__area" d={area} />
-          <path className="pc-curve__line" d={line} />
+          <path className="pc-curve__line" d={line} pathLength={1} />
           {idx !== null && points[idx] ? (
             <>
               <line className="pc-curve__guide" x1={points[idx]!.x} y1={PAD_T - 8} x2={points[idx]!.x} y2={VB_H} />
@@ -277,7 +282,22 @@ export interface Bar {
 }
 
 /** Reading by weekday — the one cut the daily series can actually support. */
-export function WeekdayBars({ bars, unit }: { bars: Bar[]; unit: string }) {
+export function WeekdayBars({
+  bars,
+  unit,
+  activeKey,
+}: {
+  bars: Bar[];
+  unit: string;
+  /**
+   * The bar to mark as "now".
+   *
+   * ⚠️ Only meaningful when the bars are a WEEK. On a month's weekday totals
+   * every column is still in progress, so highlighting one would be a claim the
+   * data cannot support — the caller passes nothing there.
+   */
+  activeKey?: string;
+}) {
   const [picked, setPicked] = useState<string | null>(null);
   const peak = Math.max(1, ...bars.map((b) => b.value));
   const active = bars.find((b) => b.key === picked);
@@ -293,7 +313,11 @@ export function WeekdayBars({ bars, unit }: { bars: Bar[]; unit: string }) {
         {bars.map((b) => (
           <View
             key={b.key}
-            className={picked === b.key ? 'pc-bars__col pc-bars__col--on' : 'pc-bars__col'}
+            className={[
+              'pc-bars__col',
+              picked === b.key ? 'pc-bars__col--on' : '',
+              activeKey === b.key ? 'pc-bars__col--now' : '',
+            ].filter(Boolean).join(' ')}
             onClick={() => setPicked(picked === b.key ? null : b.key)}
           >
             <View className="pc-bars__track">
@@ -380,6 +404,21 @@ export function ReadingHeat({ days, weeks = 12 }: { days: HeatDay[]; weeks?: num
       <View className="pc-heat__scroll">
         <svg
           className="pc-heat__svg"
+          // ⚠️ Cap at the natural size, do NOT stretch.
+          //
+          // The viewBox is in cell units — 12px squares plus a 3px gutter — so
+          // `width: 100%` scales the whole grid up with the column. In a 343px
+          // cell that is 12px squares rendered at 23px, which is what "热力图
+          // 过大" was: the chart was not sized, it was being magnified. On a
+          // narrow phone the same rule would shrink it, so `width: 100%` stays
+          // and `max-width` does the capping.
+          // ⚠️ An OBJECT, not a template string. Every other `style` in this file
+          // is a string, because Taro's <View> accepts one — but this is a raw
+          // <svg>, which React renders as a DOM element, and React demands a
+          // mapping there. A string throws "The `style` prop expects a mapping
+          // from style properties to values, not a string", which takes down
+          // the whole page with an error that names no component.
+          style={{ maxWidth: `${cols * (CW + GAP) - GAP}px` }}
           viewBox={`0 0 ${cols * (CW + GAP)} ${7 * (CH + GAP)}`}
           aria-hidden="true"
         >
@@ -542,6 +581,207 @@ export function MonthBars({ months }: { months: MonthBucket[] }) {
           </View>
         ))}
       </View>
+    </View>
+  );
+}
+
+
+// ── Progress bands ───────────────────────────────────────────
+
+export interface ProgressBand {
+  label: string;
+  count: number;
+}
+
+/**
+ * How far into things the reader actually is.
+ *
+ * ⚠️ This is the chart that answers a question the shelf cannot. A list sorted
+ * by recency shows what was opened last; it does not show that eleven books are
+ * sitting between 10% and 30% — a shape you only see when you put them in
+ * buckets. The finished bar is drawn in the accent because it is the one bar
+ * whose height is good news.
+ */
+export function ProgressBands({ bands, doneFrom }: { bands: ProgressBand[]; doneFrom: number }) {
+  const peak = Math.max(1, ...bands.map((b) => b.count));
+  return (
+    <View className="pc-bands">
+      <Text className="pc-readout">
+        {bands.reduce((n, b) => n + b.count, 0)} 本，按进度分档
+      </Text>
+      <View className="pc-bands__row">
+        {bands.map((b, i) => (
+          <View key={b.label} className="pc-bands__col">
+            <Text className="pc-bands__count">{b.count > 0 ? b.count : ''}</Text>
+            <View className="pc-bands__track">
+              <View
+                className={
+                  // The bands at or past the finish line are the ones that count
+                  // as read, and they are the same 70% the rest of the page uses.
+                  i * 10 >= doneFrom ? 'pc-bands__bar pc-bands__bar--done' : 'pc-bands__bar'
+                }
+                style={`height:${Math.max(2, (b.count / peak) * 100)}%`}
+              />
+            </View>
+            <Text className="pc-bands__label">{b.label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// ── Today / this week / this month ───────────────────────────
+
+export interface PeriodRow {
+  key: string;
+  label: string;
+  seconds: number;
+  pages: number;
+  /**
+   * The same figure for the period immediately before — yesterday, last week,
+   * the previous month. ⚠️ `null` when there is no previous period in the data
+   * at all, which is different from a previous period of zero: one means "no
+   * comparison possible", the other means "you read nothing then".
+   */
+  prevSeconds: number | null;
+  prevLabel: string;
+}
+
+/**
+ * The three windows a reader actually thinks in.
+ *
+ * ⚠️ These are DELTAS against the previous window, not totals. Every other
+ * number on this page only ever goes up — "15.7h 累计" cannot answer "am I
+ * reading more than last week", and that is the question someone opening this
+ * page at 11pm actually has.
+ */
+export function PeriodStats({ periods, format }: { periods: PeriodRow[]; format: (s: number) => string }) {
+  return (
+    <View className="pc-periods">
+      {periods.map((p) => {
+        const delta =
+          p.prevSeconds == null || p.prevSeconds === 0
+            ? null
+            : Math.round(((p.seconds - p.prevSeconds) / p.prevSeconds) * 100);
+        return (
+          <View key={p.key} className="pc-periods__col">
+            <Text className="pc-periods__label">{p.label}</Text>
+            <Text className="pc-periods__value">{p.seconds > 0 ? format(p.seconds) : '—'}</Text>
+            <Text className="pc-periods__note">
+              {p.pages > 0 ? `${p.pages} 页` : '没有翻页'}
+            </Text>
+            {/* ⚠️ A delta needs a previous period to compare against. Saying
+                "+100%" on a first week with no history is arithmetically true
+                and completely useless. */}
+            <Text
+              className={
+                delta == null
+                  ? 'pc-periods__delta'
+                  : delta >= 0
+                    ? 'pc-periods__delta pc-periods__delta--up'
+                    : 'pc-periods__delta pc-periods__delta--down'
+              }
+            >
+              {delta == null
+                ? `没有${p.prevLabel}可比`
+                : `${delta >= 0 ? '+' : ''}${delta}% 比${p.prevLabel}`}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+// ── This month, as a calendar ────────────────────────────────
+
+export interface CalendarDay {
+  d: string;
+  s: number;
+}
+
+/**
+ * The current month laid out as a calendar.
+ *
+ * ⚠️ Replaces the rolling 12-week heatmap. That one answered "what does the
+ * last quarter look like" — a question whose answer barely changes from one day
+ * to the next. A calendar answers "how is THIS month going", and it puts the
+ * blank days next to the busy ones where the shape of the month is visible at a
+ * glance, including the days that have not happened yet.
+ */
+export function MonthCalendar({ days, peak }: { days: CalendarDay[]; peak: number }) {
+  const [picked, setPicked] = useState<CalendarDay | null>(null);
+
+  const { weeks, month, label } = useMemo(() => {
+    if (!days.length) return { weeks: [] as Array<Array<CalendarDay | null>>, month: '', label: '' };
+    // ⚠️ Anchored on the LAST day in the data, never on `new Date()`. The data
+    // is the device's, and the device may not have synced for days — anchoring
+    // on today would render an empty month and look like the sync had failed.
+    const last = days[days.length - 1]!.d;
+    const [y, m] = last.split('-').map(Number) as [number, number];
+    const monthKey = `${y}-${pad2(m)}`;
+    const byDay = new Map(days.filter((d) => d.d.startsWith(monthKey)).map((d) => [d.d, d.s]));
+
+    const first = new Date(Date.UTC(y, m - 1, 1));
+    // Monday-first, matching the bar charts' 一…日.
+    const lead = (first.getUTCDay() + 6) % 7;
+    const count = new Date(Date.UTC(y, m, 0)).getUTCDate();
+
+    const cells: Array<CalendarDay | null> = [];
+    for (let i = 0; i < lead; i += 1) cells.push(null);
+    for (let d = 1; d <= count; d += 1) {
+      const key = `${monthKey}-${pad2(d)}`;
+      cells.push({ d: key, s: byDay.get(key) ?? 0 });
+    }
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const out: Array<Array<CalendarDay | null>> = [];
+    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
+    return { weeks: out, month: monthKey, label: `${y} 年 ${m} 月` };
+  }, [days]);
+
+  const level = (s: number): number => {
+    if (s <= 0) return 0;
+    const f = s / Math.max(1, peak);
+    if (f > 0.66) return 4;
+    if (f > 0.33) return 3;
+    if (f > 0.12) return 2;
+    return 1;
+  };
+
+  return (
+    <View className="pc-cal">
+      <Text className="pc-readout">
+        {picked
+          ? `${dayLabel(picked.d)} · ${picked.s > 0 ? mins(picked.s) : '没有阅读'}`
+          : label}
+      </Text>
+      <View className="pc-cal__head">
+        {['一', '二', '三', '四', '五', '六', '日'].map((w) => (
+          <Text key={w} className="pc-cal__wd">{w}</Text>
+        ))}
+      </View>
+      {weeks.map((row, ri) => (
+        <View key={`${month}-${ri}`} className="pc-cal__row">
+          {row.map((c, ci) => (
+            <View key={c?.d ?? `pad-${ri}-${ci}`} className="pc-cal__cellwrap">
+              {c ? (
+                <View
+                  className={`pc-cal__cell pc-cal__cell--l${level(c.s)}${
+                    picked?.d === c.d ? ' pc-cal__cell--on' : ''
+                  }`}
+                  onClick={() => setPicked(picked?.d === c.d ? null : c)}
+                >
+                  <Text className="pc-cal__day">{Number(c.d.slice(8))}</Text>
+                </View>
+              ) : (
+                <View className="pc-cal__cell pc-cal__cell--blank" />
+              )}
+            </View>
+          ))}
+        </View>
+      ))}
     </View>
   );
 }

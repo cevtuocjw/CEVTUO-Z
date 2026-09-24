@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
 
 import {
   CompositionDonut,
   HourGrid,
   MonthBars,
+  MonthCalendar,
+  PeriodStats,
+  ProgressBands,
   ReadingCurve,
-  ReadingHeat,
   Records,
   WeekdayBars,
+  type PeriodRow,
 } from '../../components/PaperrCharts';
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
+import { homePanelUrl } from '../../platform/panels';
 import { Wallpaper } from '../../components/Wallpaper';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import {
@@ -123,7 +127,7 @@ function Cell({
   children: React.ReactNode;
 }) {
   return (
-    <View className={half ? 'pr-grid__cell pr-grid__cell--half' : 'pr-grid__cell'}>
+    <View className={`pc-reveal ${half ? 'pr-grid__cell pr-grid__cell--half' : 'pr-grid__cell'}`}>
       <Text className="pr-h">{title}</Text>
       {sub && <Text className="pr-sub">{sub}</Text>}
       {children}
@@ -173,6 +177,53 @@ export default function Paperr() {
     };
   }, []);
 
+  /**
+   * Start each chart's entrance when it scrolls into view.
+   *
+   * ⚠️ Driven from the DOM, with the observers registered AFTER the data
+   * arrives. Every element this targets only exists once the fetch resolves, so
+   * an effect keyed on mount would query an empty document and nothing would
+   * ever animate — the page would look identical to one with no animation at
+   * all, which is the failure mode this whole block is easiest to have.
+   *
+   * ⚠️ `root: null` (the viewport) is correct even though the scroller is an
+   * inner element: intersection accounts for clipping by ancestors, so a cell
+   * below the fold of its ScrollView is correctly reported as not intersecting.
+   */
+  useEffect(() => {
+    if (!index || typeof document === 'undefined') return undefined;
+
+    const targets = Array.from(document.querySelectorAll('.pc-reveal'));
+    if (!targets.length) return undefined;
+
+    // Older targets or the mini program: show everything rather than nothing.
+    // A missing animation is a disappointment; a permanently invisible chart
+    // is a bug.
+    if (typeof IntersectionObserver === 'undefined') {
+      for (const el of targets) el.classList.add('pc-reveal--in');
+      return undefined;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const el = e.target as HTMLElement;
+          // ⚠️ Stagger only within a batch that arrives together. A fixed
+          // per-element delay would make the sixth chart wait 400ms after the
+          // reader reached it.
+          const batch = targets.filter((t) => !t.classList.contains('pc-reveal--in'));
+          el.style.animationDelay = `${Math.min(batch.indexOf(el), 4) * 70}ms`;
+          el.classList.add('pc-reveal--in');
+          io.unobserve(el);
+        }
+      },
+      { threshold: 0.12 },
+    );
+    for (const el of targets) io.observe(el);
+    return () => io.disconnect();
+  }, [index]);
+
   const books = index?.books ?? [];
 
   const counts = useMemo(() => {
@@ -215,7 +266,99 @@ export default function Paperr() {
       .map(([label, value]) => ({ key: label, label, value }));
   }, [books]);
 
-  const daily = useMemo(() => (index?.daily ?? []).slice(-30), [index]);
+  const allDays = index?.daily ?? [];
+  const daily = useMemo(() => allDays.slice(-30), [allDays]);
+
+  /**
+   * The day every window is measured from.
+   *
+   * ⚠️ The LAST DAY IN THE DATA, not `new Date()`. The export is the device's
+   * and the device may not have synced for days. Anchoring on today would make
+   * "今天" zero, "本周" mostly empty and the calendar blank — a page that looks
+   * broken when the only thing wrong is that nobody has opened the Kindle.
+   */
+  const anchor = allDays.length ? allDays[allDays.length - 1]!.d : null;
+
+  const daySum = useCallback(
+    (from: string, to: string) => {
+      let s = 0;
+      let pg = 0;
+      for (const d of allDays) {
+        if (d.d >= from && d.d <= to) {
+          s += d.s;
+          pg += d.p;
+        }
+      }
+      return { s, pg };
+    },
+    [allDays],
+  );
+
+  const shift = (key: string, days: number): string => {
+    const [y, m, d] = key.split('-').map(Number) as [number, number, number];
+    const t = new Date(Date.UTC(y, m - 1, d) + days * 86_400_000);
+    return `${t.getUTCFullYear()}-${pad2(t.getUTCMonth() + 1)}-${pad2(t.getUTCDate())}`;
+  };
+
+  /** Monday of the week containing `key`. */
+  const weekStartOf = (key: string): string => {
+    const [y, m, d] = key.split('-').map(Number) as [number, number, number];
+    return shift(key, -((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7));
+  };
+
+  /**
+   * Today / this week / this month, each against the window before it.
+   *
+   * ⚠️ Every other figure on this page is a running total, and a running total
+   * only ever goes up — which makes it silent about the only question worth
+   * asking at the end of a day. These three carry a delta for exactly that
+   * reason.
+   */
+  const periods: PeriodRow[] = useMemo(() => {
+    if (!anchor) return [];
+    const ws = weekStartOf(anchor);
+    const ms = `${anchor.slice(0, 7)}-01`;
+    const prevMsEnd = shift(ms, -1);
+    const prevMs = `${prevMsEnd.slice(0, 7)}-01`;
+
+    const mk = (key: string, label: string, from: string, to: string, pFrom: string, pTo: string, prevLabel: string): PeriodRow => {
+        const cur = daySum(from, to);
+        // ⚠️ `null`, not 0, when the previous window predates the data. Zero
+        // would render as "+100%" for a reader who simply has no history.
+        const has = allDays.some((d) => d.d >= pFrom && d.d <= pTo);
+        return {
+          key,
+          label,
+          seconds: cur.s,
+          pages: cur.pg,
+          prevSeconds: has ? daySum(pFrom, pTo).s : null,
+          prevLabel,
+        };
+      };
+
+    return [
+      mk('today', '今天', anchor, anchor, shift(anchor, -1), shift(anchor, -1), '昨天'),
+      mk('week', '本周', ws, shift(ws, 6), shift(ws, -7), shift(ws, -1), '上周'),
+      mk('month', '本月', ms, `${anchor.slice(0, 7)}-31`, prevMs, prevMsEnd, '上个月'),
+    ];
+  }, [anchor, allDays, daySum]);
+
+  /** This week, Monday to Sunday, with today marked. */
+  const weekBars = useMemo(() => {
+    if (!anchor) return [];
+    const ws = weekStartOf(anchor);
+    return WEEKDAYS.map((label, i) => {
+      const key = shift(ws, i);
+      return { key, label, value: daySum(key, key).s, isNow: key === anchor };
+    });
+  }, [anchor, daySum]);
+
+  const calPeak = useMemo(() => {
+    if (!anchor) return 1;
+    const mk = anchor.slice(0, 7);
+    return Math.max(1, ...allDays.filter((d) => d.d.startsWith(mk)).map((d) => d.s));
+  }, [anchor, allDays]);
+
 
   /**
    * ⚠️ THIS month only, at the reader's request. The all-time weekday totals
@@ -223,40 +366,93 @@ export default function Paperr() {
    * answer that never changes. The current month answers "how is this month
    * going", which is what someone opening the page actually wants.
    */
-  const monthBars = useMemo(() => {
-    const all = index?.daily ?? [];
-    const latest = all.length ? all[all.length - 1]!.d.slice(0, 7) : null;
-    const totals = new Array<number>(7).fill(0);
-    for (const d of all) {
-      if (!latest || !d.d.startsWith(latest)) continue;
-      const [y, mo, dd] = d.d.split('-').map(Number) as [number, number, number];
-      // ⚠️ UTC throughout. `new Date('2026-09-24')` parses as UTC midnight and
-      // `getDay()` reads it back in the VIEWER's timezone — a reader three hours
-      // behind would see every Sunday filed under Saturday.
-      const dow = (new Date(Date.UTC(y, mo - 1, dd)).getUTCDay() + 6) % 7;
-      totals[dow] = (totals[dow] ?? 0) + d.s;
-    }
-    return WEEKDAYS.map((label, i) => ({ key: label, label, value: totals[i] ?? 0 }));
-  }, [index]);
+  /** Consecutive days with reading, counting back from the last one that has any. */
+  const streakEndingAt = useCallback(
+    (endKey: string): { days: number; last: string } => {
+      let n = 0;
+      let cur = endKey;
+      for (;;) {
+        const hit = allDays.find((d) => d.d === cur);
+        if (!hit || hit.s <= 0) break;
+        n += 1;
+        cur = shift(cur, -1);
+      }
+      return { days: n, last: endKey };
+    },
+    [allDays],
+  );
 
+  /**
+   * Bests, scoped to the windows a reader is actually living in.
+   *
+   * ⚠️ All four were all-time before: "最长的一天 2.33h" is a number that can
+   * only be beaten, so after a few months it stops moving and stops meaning
+   * anything. "本周最好" answers the same question at a scale where the answer
+   * can still change before the week is out.
+   */
   const records = useMemo(() => {
-    const all = index?.daily ?? [];
-    const topDay = all.reduce((a, b) => (b.s > a.s ? b : a), { d: '', s: 0, p: 0 });
-    const topPages = all.reduce((a, b) => (b.p > a.p ? b : a), { d: '', s: 0, p: 0 });
-    const month = monthBars.reduce((n, b) => n + b.value, 0);
+    const best = (from: string, to: string) =>
+      allDays.filter((d) => d.d >= from && d.d <= to).reduce((a, b) => (b.s > a.s ? b : a), { d: '', s: 0, p: 0 });
+    const empty = { d: '', s: 0, p: 0 };
+
+    const ws = anchor ? weekStartOf(anchor) : '';
+    const ms = anchor ? `${anchor.slice(0, 7)}-01` : '';
+    const wk = anchor ? best(ws, shift(ws, 6)) : empty;
+    const mo = anchor ? best(ms, `${anchor.slice(0, 7)}-31`) : empty;
+
+    // ⚠️ The streak ends at the last day WITH reading, not at `anchor`. The
+    // device may not have synced today, and reporting "0 天" because of that
+    // would be reporting a sync gap as a reading habit.
+    const lastRead = [...allDays].reverse().find((d) => d.s > 0)?.d;
+    const cur = lastRead ? streakEndingAt(lastRead) : { days: 0, last: '' };
+
     return [
-      { label: '最长的一天', value: topDay.s > 0 ? formatReadingTime(topDay.s) : '—', note: topDay.d ? formatDayMonth(topDay.d) : undefined },
-      { label: '翻页最多', value: topPages.p > 0 ? `${topPages.p} 页` : '—', note: topPages.d ? formatDayMonth(topPages.d) : undefined },
-      { label: '最长连续', value: `${bestStreak(all)} 天`, note: '有阅读的日子' },
-      { label: '本月', value: month > 0 ? formatReadingTime(month) : '—', note: '累计时长' },
+      {
+        label: '本周最好',
+        value: wk.s > 0 ? formatReadingTime(wk.s) : '—',
+        note: wk.d ? formatDayMonth(wk.d) : '这周还没读',
+      },
+      {
+        label: '本月最好',
+        value: mo.s > 0 ? formatReadingTime(mo.s) : '—',
+        note: mo.d ? formatDayMonth(mo.d) : '这个月还没读',
+      },
+      {
+        label: '连续到',
+        value: `${cur.days} 天`,
+        note: cur.last ? formatDayMonth(cur.last) : '还没有记录',
+      },
+      {
+        label: '最长连续',
+        value: `${bestStreak(allDays)} 天`,
+        note: '有记录以来',
+      },
     ];
-  }, [index, monthBars]);
+  }, [allDays, anchor, streakEndingAt]);
+
+  /**
+   * Books bucketed by how far in they are, in tens.
+   *
+   * ⚠️ A book with no page count has no percentage and cannot be placed on this
+   * axis at all — inventing a bucket for it would make the chart claim a
+   * precision the data does not have. It is counted and reported separately.
+   */
+  const bands = useMemo(() => {
+    const buckets = new Array<number>(10).fill(0);
+    for (const b of books) {
+      if (b.progressPct == null) continue;
+      const i = Math.min(9, Math.max(0, Math.floor(b.progressPct / 10)));
+      buckets[i] = (buckets[i] ?? 0) + 1;
+    }
+    return buckets.map((count, i) => ({ label: `${i * 10}`, count }));
+  }, [books]);
+
 
   if (error || !index) {
     return (
       <View className="page">
         <Wallpaper />
-        <TopBar title="CAPPERR" />
+        <TopBar title="CAPPERR" backTo={homePanelUrl('paperr')} />
         <PageStack count={1}>
           <Section index={0} title="CAPPERR" hero={<PageHero brand="CAPPERR" />} compact>
             <View className="card">
@@ -277,7 +473,7 @@ export default function Paperr() {
   return (
     <View className="page">
       <Wallpaper />
-      <TopBar title="CAPPERR" />
+      <TopBar title="CAPPERR" backTo={homePanelUrl('paperr')} />
 
       <PageStack count={2}>
         <Section
@@ -314,6 +510,12 @@ export default function Paperr() {
                 </View>
               )}
 
+              {/* ⚠️ Above the grid, not in it. These three are the page's
+                  headline — "how much have I read today" is the question that
+                  brought someone here — and a headline that can be scrolled
+                  past or wrapped into a column is not a headline. */}
+              <PeriodStats periods={periods} format={formatReadingTime} />
+
               {/* ⚠️ A wrap grid, not a stack. Every chart used to be full width on
                   every screen, which on a 900px viewport left half the panel empty
                   — and even on a phone the donut, the records and the weekday bars
@@ -331,19 +533,47 @@ export default function Paperr() {
                   <Records items={records} />
                 </Cell>
 
-                <Cell title="本月节奏" sub="这个月每个星期几。" half>
-                  <WeekdayBars bars={monthBars} unit="这个月" />
+                {/* ⚠️ THIS week, not the month's weekday totals. "Which weekday
+                    do I read most" is a question with one answer that barely
+                    moves; "how is this week going" is the one someone has at
+                    the end of a day. Today's column is marked. */}
+                <Cell title="本周" sub="周一到周日，标出的是今天。" half>
+                  <WeekdayBars
+                    bars={weekBars}
+                    unit="本周"
+                    activeKey={weekBars.find((b) => b.isNow)?.key}
+                  />
                 </Cell>
 
-                <Cell title="趋势" sub="曲线是每天的时长，日历是同一份数据的另一种看法。">
+                <Cell title="趋势" sub="最近 30 天每天的时长。">
                   <ReadingCurve days={daily} />
-                  <View className="pc-gap" />
-                  <ReadingHeat days={index.daily} weeks={12} />
+                </Cell>
+
+                {/* ⚠️ Replaced the rolling 12-week heatmap. That one answered
+                    "what does the last quarter look like" — an answer that
+                    barely changes day to day. A calendar answers "how is this
+                    month going", and it shows the days that have not happened
+                    yet as empty rather than as missing data. */}
+                <Cell title="本月" sub="每天一格，点开看当天。">
+                  <MonthCalendar days={allDays} peak={calPeak} />
                 </Cell>
 
                 <Cell title="时段" sub="一天里每个小时读了多少。">
                   <HourGrid hours={index.hourly} />
                 </Cell>
+
+                {/* ⚠️ Full width, both of them, and not `half` like 记录.
+                    A half cell is ~140px on a phone and ~163px on a desktop
+                    panel. Ten band labels ("10" "20" …) need ~24px each before
+                    they touch, and an author name needs more than the ~48px a
+                    half cell leaves after the bar and the value — at which
+                    point the chart is a row of ellipses. The charts that
+                    survive a half cell are the ones whose labels are a single
+                    glyph: 记录's two-column values, 本月节奏's 一…日. */}
+                <Cell title="进度分布" sub="每本书读到哪儿了。">
+                  <ProgressBands bands={bands} doneFrom={DONE_PCT} />
+                </Cell>
+
 
                 {/* ⚠️ Heading hidden with the chart. `MonthBars` returns null below
                     two months — one bar is not a trend — and a heading with
