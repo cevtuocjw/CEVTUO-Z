@@ -95,7 +95,14 @@ const PANELS: BrandPanel[] = [
   {
     key: 'paperr',
     title: 'CAPPERR',
-    lede: 'Kindle 阅读 · 阅读时长、在读书目与划线，从设备同步',
+    // ⚠️ NOT "与划线". This promised highlights for months and nothing ever
+    // displayed them — `highlights` and `notes` are in the payload and the
+    // schema, and the page reads neither. The data agrees: across 37 books the
+    // counts are 0 and 0, because KOReader keeps highlights in a separate
+    // database and the statistics `book` table's counter is not populated here.
+    // A lede is a promise about what is behind the door; this one described a
+    // room that does not exist.
+    lede: 'Kindle 阅读 · 今天、本周、本月的节奏，从设备同步',
     // ⚠️ Placeholders. Replaced at render time by the live counts, like COOF's.
     stats: [
       { value: '—', label: '累计阅读', note: '' },

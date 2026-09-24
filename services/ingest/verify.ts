@@ -308,6 +308,42 @@ async function main(): Promise<void> {
     }
   }
 
+  // ── Every field the page reads must exist in the payload ───
+  //
+  // ⚠️ This is the data-side twin of "功能写完但没接线". The page reads fields
+  // off the index; the pipeline writes them. Nothing was checking that the two
+  // lists agree, and the failure mode is silent — a field the page reads that
+  // the index does not carry arrives as `undefined`, renders as an empty chart
+  // or a NaN, and looks like a styling bug.
+  //
+  // ⚠️ And the reverse is how the reader got a lede promising 划线: a field can
+  // sit in the schema and the payload for months while NOTHING reads it. That
+  // direction is not an error, but it is worth knowing about — it is where a
+  // promise with no data behind it hides.
+  {
+    const idx = JSON.parse(readFileSync(repoPath('data/paperr/index.json'), 'utf8')) as Record<string, unknown>;
+    const books = (idx.books ?? []) as Array<Record<string, unknown>>;
+
+    // The book fields `pages/paperr` and `pages/home` actually render.
+    const READ_BY_PAGE = [
+      'id', 'title', 'originalTitle', 'authors', 'series', 'pages',
+      'totalReadTime', 'totalReadPages', 'lastOpen', 'progressPct', 'estFinishedAt',
+    ];
+    const missing = READ_BY_PAGE.filter((f) => books.length > 0 && !(f in (books[0] ?? {})));
+    eq(missing, [], 'index: every book field the page reads is present');
+
+    const topLevel = ['books', 'daily', 'hourly', 'monthly', 'totals', 'dataVersion'];
+    eq(topLevel.filter((k) => !(k in idx)), [], 'index: every top-level key the page reads is present');
+
+    // ⚠️ Reported, not asserted: a field nothing reads is not a bug, and
+    // failing here would block a deploy over a harmless extra.
+    const CARRIED_NOT_READ = ['highlights', 'notes'];
+    const orphans = CARRIED_NOT_READ.filter((f) => books.length > 0 && f in (books[0] ?? {}));
+    if (orphans.length) {
+      console.log(`  · 载入但无人读取的字段：${orphans.join(', ')}（不是错，但别再拿它写文案）`);
+    }
+  }
+
   console.log(`PASS ${passes.length}, FAIL ${failures.length}`);
   for (const f of failures) console.log(`  FAIL: ${f}`);
   process.exit(failures.length === 0 ? 0 : 1);

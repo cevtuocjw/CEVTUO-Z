@@ -247,6 +247,11 @@ for (const [label, expect] of [['在读', 3], ['读完', 29], ['待看', 4], ['B
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 try {
+  // ⚠️ 360 as well as 390. The donut cell's irreducible width was 266px and a
+  // 390px phone gives the grid 260 — so the overflow was 5px, and a check that
+  // only ran at 390 would have kept passing after any small regression made it
+  // worse. 360 is a real phone (and the narrowest we claim to support).
+  await run(browser, { scheme: 'dark', viewport: { width: 360, height: 780 }, mobile: true }, 'narrow');
   await run(browser, { scheme: 'dark', viewport: { width: 390, height: 844 }, mobile: true }, 'phone');
   await run(browser, { scheme: 'light', viewport: { width: 900, height: 1000 }, mobile: false }, 'wide');
 } finally {

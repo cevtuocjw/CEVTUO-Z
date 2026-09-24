@@ -334,13 +334,14 @@
 
 .pc-donut__plot {
   position: relative;
-  // ⚠️ 132px. It was 140 (legend starved to ~55px and read "Unnam…"), then 116
-  // to give the legend back its room. Now that the cell is sized to what the
-  // chart actually needs rather than to a full grid column, the ring can take
-  // some of it back — the reader asked for the charts to be larger, and the
-  // legend still clears 60px for a category name at the narrowest column.
-  width: 132px;
-  height: 132px;
+  // ⚠️ 132px, up from 116 — the reader asked for the charts to be larger and
+  // the cell is now sized to what the chart needs rather than to a grid column.
+  //
+  // ⚠️ Except on a phone, where 132 + the legend's own minimum exceeds the
+  // 260px the grid gets, and the cell overflows into its neighbour. 120px there,
+  // which still clears the 116 it was.
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
 }
 
@@ -431,8 +432,21 @@
 
 .pc-legend__label {
   flex: 1;
-  // Four CJK glyphs at caption size — the longest category name is 4 characters.
-  min-width: 52px;
+  // ⚠️⚠️ `min-width: 0`, NOT 52px.
+  //
+  // The floor was there because the CATEGORY NAME was being squeezed to nothing
+  // by a long value ("44559 分钟"). That is handled where it belongs now — the
+  // value carries `flex-shrink: 0` and the formatter emits compact times ("46m",
+  // "11.7h") — so the floor is redundant, and it was costing real layout.
+  //
+  // With 52px the donut cell's irreducible width was
+  //     132 (plot) + 16 (gap) + 16 (row padding) + 8 (dot) + 8 + 52 + 8 + 26
+  //   = 266px
+  // against the 260px a 390px phone gives the grid. The cell overflowed by 5px,
+  // which put the legend's text on top of the neighbouring card. At 360px it
+  // would have been 28px. `text-overflow: ellipsis` is the graceful answer when
+  // there genuinely is not room; a hard floor is not.
+  min-width: 0;
   margin-left: t.$space-2;
   font-family: t.$font-family-sans;
   font-size: t.$font-caption;
@@ -1032,7 +1046,15 @@ $chart-h: 108px;
 // phone gets a single column — which is the "都是上下排布" this was meant to
 // fix. 140px looked reasonable and produced exactly that.
 .pr-grid__cell--half {
-  flex: 1 1 120px;
+  // ⚠️ 104px, down from 120. Two of these plus the 16px gap have to fit the
+  // grid at the NARROWEST phone we claim to support: 360px of screen leaves the
+  // grid 230px, and 120 + 120 + 16 = 256 does not fit — so a 360px phone got a
+  // single column and the two-up layout the reader asked for silently did not
+  // happen there. 104 + 104 + 16 = 224 fits, with slack.
+  //
+  // At that width each of 记录's four cells is ~50px, which still holds "2.33h"
+  // and a four-glyph label on one line each.
+  flex: 1 1 104px;
 }
 
 // ⚠️ The donut needs ~240px (a fixed 116px plot beside a legend with a 52px
@@ -1338,4 +1360,14 @@ $chart-h: 108px;
 }
 .pr-grid__cell--half .pc-records__label {
   font-size: t.$font-micro;
+}
+
+
+// ⚠️ The desktop panel gives the grid 700px, where the ring can be larger
+// without the legend paying for it.
+@include b.medium-up {
+  .pc-donut__plot {
+    width: 132px;
+    height: 132px;
+  }
 }
