@@ -163,6 +163,20 @@ async function main(): Promise<void> {
     eq(writes(), ['raw'], 'first push: exactly the raw export is written');
     eq(JSON.parse(raw() ?? 'null')?.books?.length, 41, 'first push: the raw export is stored verbatim');
     eq(JSON.parse(raw() ?? 'null')?.exportedAt, RAW.exportedAt, 'first push: including its exportedAt');
+    // ⚠️ VERBATIM, and this assertion has to compare the TEXT — the previous
+    // version compared a parsed field, which passes just as happily for a
+    // re-serialised, schema-normalised copy. That is what it was.
+    eq(raw(), RAW_TEXT.endsWith('\n') ? RAW_TEXT : `${RAW_TEXT}\n`,
+       'first push: the export is stored byte for byte, not re-serialised');
+    // ⚠️ And the consequence: a field the schema has never heard of must still
+    // survive. This is what makes a future plugin upgrade diagnosable.
+    {
+      const { store: s2, raw: r2 } = memStore();
+      const extra = JSON.stringify({ ...RAW, somethingFromAFuturePlugin: { a: 1 } });
+      await handleIngest(ENV, s2, CONV, AUTH, extra);
+      check((r2() ?? '').includes('somethingFromAFuturePlugin'),
+            'unknown fields survive storage — a newer plugin is not silently flattened');
+    }
     IngestResponseSchema.parse(r.body);
   }
 

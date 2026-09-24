@@ -255,7 +255,28 @@ export function buildPaperrIndex(raw: PaperrRaw, opts: BuildOptions = {}): Paper
   const byHour = new Map(raw.hourly.map((x) => [x.h, x.s]));
   const hourly = Array.from({ length: 24 }, (_, h) => ({ h, s: Math.round(byHour.get(h) ?? 0) }));
 
-  const monthly = raw.monthly.map((x) => ({ m: x.m, s: Math.round(x.s), p: Math.round(x.p) }));
+  // ⚠️ Derived from `daily` when the device did not send it.
+  //
+  // `monthly` is the one aggregate the pipeline can reconstruct, because a day
+  // already carries its date — grouping the days by `YYYY-MM` IS the monthly
+  // total. So a plugin that predates the field costs the reader nothing here.
+  //
+  // ⚠️ `hourly` cannot be reconstructed, and that asymmetry is the point: a day
+  // is a date plus a duration, and no arithmetic recovers which hour of it was
+  // spent reading. That chart has to say "this needs a newer plugin" honestly
+  // rather than draw twenty-four empty bars.
+  const monthly = raw.monthly.length
+    ? raw.monthly.map((x) => ({ m: x.m, s: Math.round(x.s), p: Math.round(x.p) }))
+    : [...daily
+        .reduce((acc, d) => {
+          const key = d.d.slice(0, 7);
+          const cur = acc.get(key) ?? { s: 0, p: 0 };
+          acc.set(key, { s: cur.s + d.s, p: cur.p + d.p });
+          return acc;
+        }, new Map<string, { s: number; p: number }>())
+        .entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([m, v]) => ({ m, s: Math.round(v.s), p: Math.round(v.p) }));
 
   const newest = daily.length ? daily[daily.length - 1] : undefined;
   const anchorDay = newest ? newest.d : null;

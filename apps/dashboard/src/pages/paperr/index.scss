@@ -510,12 +510,24 @@
   width: 100%;
 }
 
+// ⚠️⚠️ ONE height for every bar chart, defined once.
+//
+// These were 88px, 84px, 76px and 72px — four charts, four numbers, chosen one
+// at a time. Nothing was wrong with any of them individually and the set looked
+// like four different people had drawn it: the baselines did not line up when
+// two charts shared a row, and the eye read the height difference as a
+// difference in the data. The reader's words were "尽量对齐，UI 风格要统一".
+//
+// 108px, up from the largest of them: these are the page's main content and
+// they were sized like footnotes.
+$chart-h: 108px;
+
 .pc-bars__row {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
   width: 100%;
-  height: 88px;
+  height: $chart-h;
   gap: t.$space-1;
 }
 
@@ -789,7 +801,7 @@
   flex-direction: row;
   align-items: flex-end;
   width: 100%;
-  height: 76px;
+  height: $chart-h;
   gap: 1px;
 }
 
@@ -886,7 +898,7 @@
   flex-direction: row;
   align-items: flex-end;
   width: 100%;
-  height: 72px;
+  height: $chart-h;
   gap: t.$space-2;
 }
 
@@ -999,11 +1011,11 @@
 // two ~55px columns against a 5-glyph label, so it stacks; at 163px (the same
 // cell on a desktop panel) two columns clear the label and stacking only made
 // the column twice as tall as its neighbour for no gain.
-@include b.compact-only {
-  .pr-grid__cell--half .pc-records__cell {
-    flex: 1 1 100%;
-  }
-}
+// ⚠️ REMOVED the compact-only single-column rule. Stacking four records into a
+// 120px column made that cell three times its neighbour's height, and the big
+// value type then filled it — "记录这些部分字还是过大". Two columns of ~55px hold
+// "2.33h" and a four-glyph label on one line each, at every width.
+
 
 // Seven value labels cannot fit across ~120px; "3.7h" alone is twice its share
 // of the width. The headline above the bars already names the peak day, and
@@ -1034,7 +1046,7 @@
   align-items: flex-end;
   width: 100%;
   gap: 4px;
-  height: 84px;
+  height: $chart-h;
 }
 .pc-bands__col {
   display: flex;
@@ -1050,16 +1062,23 @@
   font-size: t.$font-micro;
   color: var(--text-secondary);
   margin-bottom: 2px;
+  // ⚠️ Reserved even when empty. An empty band renders no text, and without a
+  // fixed line the tracks in that column shift up and its baseline no longer
+  // matches its neighbours'.
+  height: 13px;
+  line-height: 13px;
 }
 .pc-bands__track {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   width: 100%;
-  // ⚠️ Fixed, not `flex: 1`. The count label above varies in presence — an
-  // empty band renders no label — so a flexible track would make the bars in
-  // one chart start at different heights and read as different scales.
-  height: 56px;
+  // ⚠️ `flex: 1`, like every other bar chart in this file — the fixed 56px was
+  // the reason this chart's bars were shorter than 时段's inside the same
+  // nominal row height. The count label above is absolutely reserved instead,
+  // so an empty band still occupies its line and the tracks stay equal.
+  flex: 1;
+  min-height: 0;
 }
 .pc-bands__bar {
   width: 100%;
@@ -1260,11 +1279,13 @@
 // of its four values gets about 73px — and at the full title size "2.33h" plus
 // its label crowd the cell until the block reads as a wall of type rather than
 // four numbers. The reader's words were "记录这些部分字还是过大".
-@include b.medium-up {
-  .pr-grid__cell--half .pc-records__value {
-    font-size: t.$font-body;
-  }
-  .pr-grid__cell--half .pc-records__cell {
-    flex: 1 1 45%;
-  }
+// ⚠️ Every width, not just `medium-up`. The cell is ~120px on a phone and
+// ~163px on a desktop panel — the phone is the tighter case, and scoping this
+// to wide screens left the reader's complaint standing on the device they
+// actually read it on.
+.pr-grid__cell--half .pc-records__value {
+  font-size: t.$font-body;
+}
+.pr-grid__cell--half .pc-records__label {
+  font-size: t.$font-micro;
 }

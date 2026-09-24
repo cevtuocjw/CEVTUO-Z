@@ -247,7 +247,22 @@ export async function handleIngest(
 
   // ⚠️ `exportedAt` is kept in the stored file (genuinely useful when diagnosing
   // a device) even though it is excluded from the comparison above.
-  await store.writeRaw(`${JSON.stringify(payload, null, 2)}\n`);
+  // ⚠️⚠️ The DEVICE'S BYTES, not a re-serialisation of the parsed object.
+  //
+  // This used to be `JSON.stringify(payload)`, which reads as harmless and is
+  // not: zod fills in every `.default()` and drops every key the schema does
+  // not declare. So the stored file stopped being a record of what the device
+  // sent and became a record of what THIS VERSION of the schema understands.
+  //
+  // The cost showed up immediately. `hourly` and `monthly` are `.default([])`,
+  // so an export from a plugin that predates those fields came back with both
+  // present and empty — and "the reader has no hourly data yet" became
+  // indistinguishable from "this device runs a plugin that cannot produce it".
+  // Answering that took a round of guessing and a wrong conclusion.
+  //
+  // The raw export is the only copy of what the device knows, and it is the
+  // thing every future diagnosis reads. Store it as it arrived.
+  await store.writeRaw(rawBody.endsWith('\n') ? rawBody : `${rawBody}\n`);
 
   // ⚠️ Conversion runs AFTER the raw write and its failure is never fatal. The
   // raw export is the half that cannot be reconstructed; the index is derivable
@@ -313,6 +328,16 @@ export interface AdminStatus {
   rawBytes: number;
   canRebuild: boolean;
   message?: string;
+  /**
+   * What the device said about itself, straight out of the stored export.
+   *
+   * ⚠️ Null when absent, which is itself the answer: every plugin before 1.1.0
+   * omits it, so `null` means "this device predates the field" and a version
+   * string means "this device can produce hourly data". Without this the only
+   * way to tell was to read the stored JSON and know which fields are zod
+   * defaults — and that cost a wrong conclusion once already.
+   */
+  pluginVersion: string | null;
 }
 
 export async function handleAdminStatus(
@@ -326,18 +351,19 @@ export async function handleAdminStatus(
     readingDays: 0,
     rawBytes: 0,
     canRebuild: true,
+    pluginVersion: null,
   };
   let raw: string | null;
   try {
     raw = await store.readRaw();
   } catch (e) {
-    return { status: 500, body: { ...base, ok: false, message: scrubError(e).message } };
+    return { status: 500, body: { ...base, ok: false, message: scrubError(e).message, pluginVersion: null } };
   }
-  if (!raw) return { status: 200, body: { ...base, message: '还没有数据，先让设备同步一次' } };
+  if (!raw) return { status: 200, body: { ...base, message: '还没有数据，先让设备同步一次', pluginVersion: null } };
 
   const parsed = PaperrRawSchema.safeParse(safeJsonParse(raw));
   if (!parsed.success) {
-    return { status: 200, body: { ...base, ok: false, message: '已存的原始导出不符合 schema' } };
+    return { status: 200, body: { ...base, ok: false, message: '已存的原始导出不符合 schema', pluginVersion: null } };
   }
   return {
     status: 200,
@@ -347,6 +373,10 @@ export async function handleAdminStatus(
       books: parsed.data.books.length,
       readingDays: parsed.data.daily.length,
       rawBytes: raw.length,
+      // ⚠️ Read from the STORED EXPORT, so it can only be as truthful as what
+      // was stored — which is why `handleIngest` now keeps the device's bytes
+      // instead of a re-serialisation of them.
+      pluginVersion: parsed.data.pluginVersion ?? null,
     },
   };
 }
@@ -402,6 +432,10 @@ export function renderAdminPage(): string {
 const $ = (s) => document.querySelector(s);
 const rows = [
   ['设备最后导出', (d) => d.lastExportAt || '—'],
+  // ⚠️ "—" is a real answer here, not a gap. Every plugin before 1.1.0 omits
+  // the field, so a dash means "this device cannot produce hourly data yet" —
+  // which is exactly the question someone asking why 时段 is empty has.
+  ['设备插件版本', (d) => d.pluginVersion || '— （1.1.0 以前的插件不报版本）'],
   ['书的数量', (d) => d.books],
   ['有阅读记录的天数', (d) => d.readingDays],
   ['原始文件大小', (d) => (d.rawBytes / 1024).toFixed(1) + ' KB'],

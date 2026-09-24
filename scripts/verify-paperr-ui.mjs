@@ -69,9 +69,18 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   const rowCount = await page.locator('.pr-row').count();
   check('shelf rendered', rowCount === 36, `rows=${rowCount}`);
 
+  // ⚠️ These two used to look for "15.7h" and "29" anywhere in the panel and
+  // pass — but they were written for a top stat block that no longer exists, and
+  // "15.7h" also happens to be the donut's centre label. They were asserting a
+  // coincidence. Anchored on `.pc-periods` now, which is the block that is
+  // actually supposed to carry the current-window numbers.
   const heroText = await page.locator('.section').first().innerText();
-  check('overview shows the computed total', heroText.includes('15.7h'), heroText.replace(/\n/g, ' ').slice(0, 80));
-  check('overview counts the finished books at 70%', heroText.includes('29'), heroText.replace(/\n/g, ' ').slice(0, 80));
+  check('no all-time total in the headline', !heroText.includes('累计阅读'),
+        heroText.replace(/\n/g, ' ').slice(0, 80));
+  const periodText = await page.locator('.pc-periods').innerText();
+  check('period block leads with today / week / month',
+        ['今天', '本周', '本月'].every((w) => periodText.includes(w)),
+        periodText.replace(/\n/g, ' ').slice(0, 80));
 
   // ── The charts ────────────────────────────────────────────
   check('donut rendered', (await page.locator('.pc-donut__seg').count()) === 3);

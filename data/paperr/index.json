@@ -628,7 +628,7 @@
       "s": 120
     }
   ],
-  "dataVersion": "15b06c551627",
+  "dataVersion": "41b91fbee077",
   "hourly": [
     {
       "h": 0,
@@ -728,7 +728,13 @@
     }
   ],
   "lastIngestPath": "koreader-push",
-  "monthly": [],
+  "monthly": [
+    {
+      "m": "2026-09",
+      "p": 2627,
+      "s": 56547
+    }
+  ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 2,

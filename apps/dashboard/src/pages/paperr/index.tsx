@@ -481,10 +481,11 @@ export default function Paperr() {
           title="概览"
           hero={<PageHero brand="CAPPERR" />}
           compact
-          stats={[
-            { value: formatReadingTime(index.totals.readSeconds), label: '累计阅读', note: `${index.totals.pagesTurned} 页` },
-            { value: `${counts.done}`, label: '读完', note: `共 ${books.length} 条` },
-          ]}
+          // ⚠️ NO all-time stat block. It said "15.7h 累计阅读 / 29 读完" — two
+          // figures that only ever go up, sitting directly above a block that
+          // already reports today, this week and this month. The reader asked
+          // for the current windows in both places; showing both meant the
+          // loudest numbers on the page were the least actionable ones.
         >
           {/* ⚠️ Same load-bearing wrapper as the shelf below: Taro renders a
               ScrollView as an inline element, so `flex: 1` on it does nothing
