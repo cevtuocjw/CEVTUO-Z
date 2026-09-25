@@ -2,7 +2,7 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 150,
+      "count": 152,
       "latestAt": "2026-09-25",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
@@ -46,16 +46,16 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 150
+    "total": 152
   },
-  "dataVersion": "54a76e421807",
+  "dataVersion": "d4aa5ce974e0",
   "genres": [
     {
-      "count": 107,
+      "count": 109,
       "name": "剧情"
     },
     {
-      "count": 30,
+      "count": 31,
       "name": "喜剧"
     },
     {
@@ -63,7 +63,7 @@
       "name": "惊悚"
     },
     {
-      "count": 19,
+      "count": 20,
       "name": "犯罪"
     },
     {
@@ -155,28 +155,72 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "法国",
-      "卢森堡",
-      "比利时"
+      "加拿大"
     ],
     "director": [],
     "genres": [
       "剧情",
       "喜剧"
     ],
-    "id": "3e609462-a4af-8181-b817-f798d20c5d29",
+    "id": "3e609462-a4af-8133-af8d-ca7c3a0777a4",
     "mediaType": "影",
-    "note": "第73届圣塞巴斯蒂安国际电影节",
-    "order": 149,
-    "poster": "data/coof/posters/3e609462-a4af-8181-b817-f798d20c5d29.jpg",
+    "note": "第72届戛纳电影节获奖名单",
+    "order": 151,
+    "poster": "data/coof/posters/3e609462-a4af-8133-af8d-ca7c3a0777a4.jpg",
     "rating": null,
-    "runtimeMin": 94,
+    "runtimeMin": 117,
     "status": "watched",
-    "title": "春中六日 Six jours, ce printemps-là",
+    "title": "哥哥的爱人 La femme de mon frère",
     "watchedAt": "2026-09-25",
-    "year": 2025
+    "year": 2019
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "3e609462-a4af-8133-af8d-ca7c3a0777a4",
+      "mediaType": "影",
+      "note": "第72届戛纳电影节获奖名单",
+      "order": 151,
+      "poster": "data/coof/posters/3e609462-a4af-8133-af8d-ca7c3a0777a4.jpg",
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "哥哥的爱人 La femme de mon frère",
+      "watchedAt": "2026-09-25",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "3e609462-a4af-812b-8ed9-d87b8a8cd32c",
+      "mediaType": "影",
+      "note": "第28届英国独立电影奖获奖",
+      "order": 150,
+      "poster": "data/coof/posters/3e609462-a4af-812b-8ed9-d87b8a8cd32c.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "废人 Wasteman",
+      "watchedAt": "2026-09-25",
+      "year": 2025
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -595,51 +639,6 @@
       "status": "watched",
       "title": "如何大赚一笔 How to Make a Killing",
       "watchedAt": "2026-08-30",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "西班牙"
-      ],
-      "director": [],
-      "genres": [
-        "科幻"
-      ],
-      "id": "3cc09462-a4af-80b2-bae9-e4e40bdde7ea",
-      "mediaType": "影",
-      "note": null,
-      "order": 130,
-      "poster": "data/coof/posters/3cc09462-a4af-80b2-bae9-e4e40bdde7ea.jpg",
-      "rating": null,
-      "runtimeMin": 97,
-      "status": "watched",
-      "title": "The Perfect Lover 人格",
-      "watchedAt": "2026-08-30",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "法国",
-        "罗马尼亚"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3cb09462-a4af-800c-bdf8-e3107234c1e3",
-      "mediaType": "影",
-      "note": "Ganna+",
-      "order": 129,
-      "poster": "data/coof/posters/3cb09462-a4af-800c-bdf8-e3107234c1e3.jpg",
-      "rating": null,
-      "runtimeMin": 94,
-      "status": "watched",
-      "title": "女仆日记 Journal d’une femme de chambre",
-      "watchedAt": "2026-08-29",
       "year": 2026
     }
   ],

@@ -1,8 +1,54 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "a70467632704",
+  "dataVersion": "ddcffa0b2fad",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "3e609462-a4af-8133-af8d-ca7c3a0777a4",
+      "mediaType": "影",
+      "note": "第72届戛纳电影节获奖名单",
+      "order": 151,
+      "poster": "data/coof/posters/3e609462-a4af-8133-af8d-ca7c3a0777a4.jpg",
+      "rating": null,
+      "runtimeMin": 117,
+      "status": "watched",
+      "title": "哥哥的爱人 La femme de mon frère",
+      "watchedAt": "2026-09-25",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "3e609462-a4af-812b-8ed9-d87b8a8cd32c",
+      "mediaType": "影",
+      "note": "第28届英国独立电影奖获奖",
+      "order": 150,
+      "poster": "data/coof/posters/3e609462-a4af-812b-8ed9-d87b8a8cd32c.jpg",
+      "rating": null,
+      "runtimeMin": 90,
+      "status": "watched",
+      "title": "废人 Wasteman",
+      "watchedAt": "2026-09-25",
+      "year": 2025
+    },
     {
       "cast": [],
       "collection": "COOF2026",
