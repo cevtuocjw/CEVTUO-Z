@@ -3,16 +3,31 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T22:42+08:00",
+ "updatedAt": "2026-09-25T23:08+08:00",
  "counts": {
   "days": 7,
-  "lines": 32,
+  "lines": 31,
   "hidden": 60,
   "links": 13,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3e509462-a4af-8172-b332-d1720da7cdb3",
+   "date": "2026-09-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ray-Ban Meta Audio，纯听歌的AI眼镜这是Meta第一款纯音频眼镜，没有摄像头，主打听歌和AI语音交互。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3e109462-a4af-81c8-aa5d-c43cfebfd4bf",
    "date": "2026-09-20",
@@ -302,26 +317,6 @@
     {
      "k": "paragraph",
      "t": "9月4日，OpenAI正式发布GPT-6 Astra，宣布AGI时代开启。它是史上最强、最协调模型，直接操作电脑完成工作，编程、数学、网络安全全面刷新纪录，还能零越界执行任务。GPT-6发布会最后，OpenAI总裁Greg Brockman直接甩下一句：Welcome to the AGI era.（欢迎来到AGI时代）",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3c909462-a4af-80a9-83ad-e9df3284382d",
-   "date": "2026-08-28",
-   "title": "The choices we make about AI now are critical _ Bill Gates",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Antigravity 指 Google 的智能体式开发平台：它不只是像 Cursor 那样在编辑器里补全代码，而是让 AI agent 能跨代码编辑器、终端和浏览器规划、执行并验证一整项任务。你可以把它理解为 Google 面向“多 agent 编程与自动化”的 Cursor + Claude Code + 任务编排平",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "与此同时，极致性价比和普惠是这两款模型的定位。GLM-5.3-Flash 的定价前所未有，限时折扣内每百万 Token 输入是 0.4 元，输出 1.4 元，缓存命中 0.115 元，是 GLM-5.3 的 1/20。Qwen3.8-Flash 的价格同样感人，每百万 Tokens 输入仅 1 元、输出 3 元，是 Qwen3.8-Max 的 1/12。作为对比，现阶段涨价后的 DeepSeek V4 Flash 价格是每百万 Token 输入是 1.5 元，输出 4.5 元，缓存命中 0.05 元，而高峰时段还是空闲时段的两倍。目前高峰时段为北京时间周一至周五 9:00 - 12:00、14:00 - 18:00，其余为空闲时段。一边要比较模型界的「拼多多」DeepSeek V4 Flash 的价格，一边又要比较智能上限，动不动就对标 Claude Opus 5、Fable 5 等。",
      "links": []
     }
    ],

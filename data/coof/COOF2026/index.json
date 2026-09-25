@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 149,
-      "latestAt": "2026-09-19",
+      "count": 150,
+      "latestAt": "2026-09-25",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,16 +46,16 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 149
+    "total": 150
   },
-  "dataVersion": "0f9c352471ce",
+  "dataVersion": "54a76e421807",
   "genres": [
     {
-      "count": 106,
+      "count": 107,
       "name": "剧情"
     },
     {
-      "count": 29,
+      "count": 30,
       "name": "喜剧"
     },
     {
@@ -155,25 +155,53 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "德国"
+      "法国",
+      "卢森堡",
+      "比利时"
     ],
     "director": [],
     "genres": [
-      "剧情"
+      "剧情",
+      "喜剧"
     ],
-    "id": "3e009462-a4af-8158-9527-ea3c73ae69d7",
+    "id": "3e609462-a4af-8181-b817-f798d20c5d29",
     "mediaType": "影",
-    "note": null,
-    "order": 148,
-    "poster": "data/coof/posters/3e009462-a4af-8158-9527-ea3c73ae69d7.jpg",
+    "note": "第73届圣塞巴斯蒂安国际电影节",
+    "order": 149,
+    "poster": "data/coof/posters/3e609462-a4af-8181-b817-f798d20c5d29.jpg",
     "rating": null,
-    "runtimeMin": 86,
+    "runtimeMin": 94,
     "status": "watched",
-    "title": "镜的第三乐章 Miroirs No. 3",
-    "watchedAt": "2026-09-19",
+    "title": "春中六日 Six jours, ce printemps-là",
+    "watchedAt": "2026-09-25",
     "year": 2025
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "卢森堡",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "3e609462-a4af-8181-b817-f798d20c5d29",
+      "mediaType": "影",
+      "note": "第73届圣塞巴斯蒂安国际电影节",
+      "order": 149,
+      "poster": "data/coof/posters/3e609462-a4af-8181-b817-f798d20c5d29.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "春中六日 Six jours, ce printemps-là",
+      "watchedAt": "2026-09-25",
+      "year": 2025
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -613,30 +641,6 @@
       "title": "女仆日记 Journal d’une femme de chambre",
       "watchedAt": "2026-08-29",
       "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "法国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "传记",
-        "历史"
-      ],
-      "id": "3ca09462-a4af-8046-a7f6-c3fa8d7702be",
-      "mediaType": "影",
-      "note": null,
-      "order": 128,
-      "poster": "data/coof/posters/3ca09462-a4af-8046-a7f6-c3fa8d7702be.jpg",
-      "rating": null,
-      "runtimeMin": 175,
-      "status": "watched",
-      "title": "卡蜜儿·克劳岱尔 Camille Claudel",
-      "watchedAt": "2026-08-28",
-      "year": 1988
     }
   ],
   "schemaVersion": 1
