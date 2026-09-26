@@ -3,16 +3,62 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-24T11:16+08:00",
+ "updatedAt": "2026-09-26T11:39+08:00",
  "counts": {
   "days": 5,
-  "lines": 22,
+  "lines": 23,
   "hidden": 0,
-  "links": 7,
-  "images": 3,
+  "links": 5,
+  "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3e509462-a4af-816c-871b-dc06aeac3a23",
+   "date": "2026-09-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ray-Ban Meta Audio、Ray-Ban Meta第三代、Meta Glasses新系列，从349美元到449美元，覆盖不同人群不同场景。核心点就一个，让AI眼镜变成像普通眼镜一样，人人能戴、天天能戴",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta放大招！AI眼镜阵容扩充至100款",
+     "links": [
+      {
+       "t": "Meta放大招！AI眼镜阵容扩充至100款",
+       "href": "https://mp.weixin.qq.com/s/MO_XNYGHcRqj-yX7mL2JQA",
+       "title": "Meta放大招！AI眼镜阵容扩充至100款",
+       "desc": "9月24日，Meta Connect 2026。除了VR眼镜，Meta还掏出了一大把AI眼镜，多到年底要超过100个款式。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "成立于2022年的 PANE，正在成为中国本土鞋履消费市场中一个颇为特殊的样本，品牌由男装品牌 Full Monty 创始人陈宁发起。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "据最新报道，PANE 已于今年8月完成新一轮融资，投资方为专注消费领域的上海黑蚁资本BA Capital，具体融资金额尚未披露，企查查信息显示，黑蚁资本创始人何愚已于8月19日出任 PANE 董事。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3e509462a4af8106ae6ef8f9c240b96c.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3e509462a4af81b293b9e6b4b30f2055.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 0
+  },
   {
    "id": "3e109462-a4af-809b-9ba4-f12387f5d7d1",
    "date": "2026-09-20",
@@ -184,52 +230,6 @@
      "caption": ""
     }
    ],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3d209462-a4af-80bf-8869-e13de15737de",
-   "date": "2026-09-05",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-     "links": [
-      {
-       "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-       "href": "https://www.robinsonpelham.com/?srsltid=AfmBOoq3XtOkd8xtu7XHGryNpHMA8AqIp9YDTo49sFBHIXsiCNRfE8iq",
-       "title": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-       "desc": "Robinson Pelham was born out of a mutual desire to create beautiful, timeless pieces that spark joy. More than 25 years later, our bold, colourful and versatile bespoke and ready-to-wear jewellery is "
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Shaun Leane Jewellery",
-     "links": [
-      {
-       "t": "Shaun Leane Jewellery",
-       "href": "https://shaunleane.com/?gad_source=1&gad_campaignid=24032989863&gbraid=0AAAAADBi1VyCJ_ZFl1ZvKx_9ANX_khzlW&gclid=Cj0KCQjw--7UBhCpARIsAGJBptjT5cZjiP2StA-bBg0oA-F_Gubv8VGj-M2rr0Cuod9Ai8IgXowCgQQaAjjEEALw_wcB",
-       "title": "Shaun Leane Jewellery",
-       "desc": "Free UK Standard Delivery - Discover Shaun Leane Statement Making Jewellery. Collectable pieces for everyday wear"
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-     "links": [
-      {
-       "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-       "href": "https://www.meccano.com/product/meccano-pro-aston-martin-aramco-formula-one-race-car/",
-       "title": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-       "desc": "Introducing the Meccano Pro Aston Martin Aramco Formula 1 Race Car, the perfect engineering challenge for passionate builders. This advanced building set has 1203 real metal parts and 2 real tools to "
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [],
    "imagesSeen": 0
   }
  ]
