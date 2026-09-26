@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 152,
-      "latestAt": "2026-09-25",
+      "count": 155,
+      "latestAt": "2026-09-26",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 152
+    "total": 155
   },
-  "dataVersion": "d4aa5ce974e0",
+  "dataVersion": "7f6321053b53",
   "genres": [
     {
-      "count": 109,
+      "count": 111,
       "name": "剧情"
     },
     {
@@ -71,15 +71,15 @@
       "name": "动作"
     },
     {
-      "count": 12,
+      "count": 13,
       "name": "爱情"
     },
     {
-      "count": 12,
+      "count": 13,
       "name": "纪录片"
     },
     {
-      "count": 10,
+      "count": 11,
       "name": "传记"
     },
     {
@@ -155,26 +155,94 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "加拿大"
+      "Lebanon/France"
     ],
     "director": [],
     "genres": [
-      "剧情",
-      "喜剧"
+      "剧情"
     ],
-    "id": "3e609462-a4af-8133-af8d-ca7c3a0777a4",
+    "id": "3e709462-a4af-81b2-9dbf-d3e818c6aff1",
     "mediaType": "影",
-    "note": "第72届戛纳电影节获奖名单",
-    "order": 151,
-    "poster": "data/coof/posters/3e609462-a4af-8133-af8d-ca7c3a0777a4.jpg",
+    "note": null,
+    "order": 154,
+    "poster": "data/coof/posters/3e709462-a4af-81b2-9dbf-d3e818c6aff1.jpg",
     "rating": null,
-    "runtimeMin": 117,
+    "runtimeMin": 98,
     "status": "watched",
-    "title": "哥哥的爱人 La femme de mon frère",
-    "watchedAt": "2026-09-25",
-    "year": 2019
+    "title": "贝鲁特酒店 Beyrouth hôtel",
+    "watchedAt": "2026-09-26",
+    "year": 2011
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "Lebanon/France"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3e709462-a4af-81b2-9dbf-d3e818c6aff1",
+      "mediaType": "影",
+      "note": null,
+      "order": 154,
+      "poster": "data/coof/posters/3e709462-a4af-81b2-9dbf-d3e818c6aff1.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "贝鲁特酒店 Beyrouth hôtel",
+      "watchedAt": "2026-09-26",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "传记"
+      ],
+      "id": "3e709462-a4af-81f8-a1d4-d61513af9d77",
+      "mediaType": "影",
+      "note": "第98届奥斯卡金像奖 最佳影片(提名) 史蒂文·斯皮尔伯格 / 尼可拉斯·冈达 / 丽萨·马歇尔 / 皮帕·哈里斯 / 萨姆·门德斯\n第83届金球奖 电影类 最佳剧情片\n第79届英国电影学院奖 电影奖 最佳影片(提名)",
+      "order": 153,
+      "poster": "data/coof/posters/3e709462-a4af-81f8-a1d4-d61513af9d77.jpg",
+      "rating": null,
+      "runtimeMin": 125,
+      "status": "watched",
+      "title": "哈姆奈特 Hamnet",
+      "watchedAt": "2026-09-26",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3e709462-a4af-814c-911a-c34460cad617",
+      "mediaType": "影",
+      "note": "第37届马德普拉塔电影节获奖 《孤独地貌》是由加拿大导演杰奎琳·米尔斯执导的纪录片，记录了自然学家佐伊·卢卡斯在偏远的塞布尔岛长达40余年的生活与环保实践。影片通过科学与电影的融合，探讨人类活动对自然环境的影响，并以十六毫米胶片拍摄，呈现了岛屿独特的地貌生态。",
+      "order": 152,
+      "poster": "data/coof/posters/3e709462-a4af-814c-911a-c34460cad617.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "孤独地貌 Geographies of Solitude",
+      "watchedAt": "2026-09-26",
+      "year": 2022
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -570,76 +638,6 @@
       "title": "一切从头来过 La Condition",
       "watchedAt": "2026-09-12",
       "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "惊悚",
-        "喜剧"
-      ],
-      "id": "3d309462-a4af-804d-ab8f-c9d25aa737b5",
-      "mediaType": "影",
-      "note": null,
-      "order": 134,
-      "poster": "data/coof/posters/3d309462-a4af-804d-ab8f-c9d25aa737b5.jpg",
-      "rating": null,
-      "runtimeMin": 105,
-      "status": "watched",
-      "title": "致命之旅 Over Your Dead Body",
-      "watchedAt": "2026-09-06",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "法国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3d209462-a4af-80d6-b7bf-e31ebdd2c1ea",
-      "mediaType": "影",
-      "note": null,
-      "order": 132,
-      "poster": "data/coof/posters/3d209462-a4af-80d6-b7bf-e31ebdd2c1ea.jpg",
-      "rating": null,
-      "runtimeMin": 128,
-      "status": "watched",
-      "title": "伪钞之王 L’Affaire Bojarski",
-      "watchedAt": "2026-09-05",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "喜剧",
-        "惊悚"
-      ],
-      "id": "3cc09462-a4af-80eb-903b-f9c6a6ccb03f",
-      "mediaType": "影",
-      "note": null,
-      "order": 131,
-      "poster": "data/coof/posters/3cc09462-a4af-80eb-903b-f9c6a6ccb03f.jpg",
-      "rating": null,
-      "runtimeMin": 105,
-      "status": "watched",
-      "title": "如何大赚一笔 How to Make a Killing",
-      "watchedAt": "2026-08-30",
-      "year": 2026
     }
   ],
   "schemaVersion": 1

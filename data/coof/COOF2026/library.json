@@ -1,8 +1,77 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "ddcffa0b2fad",
+  "dataVersion": "84d6c23821e8",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "Lebanon/France"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3e709462-a4af-81b2-9dbf-d3e818c6aff1",
+      "mediaType": "影",
+      "note": null,
+      "order": 154,
+      "poster": "data/coof/posters/3e709462-a4af-81b2-9dbf-d3e818c6aff1.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "贝鲁特酒店 Beyrouth hôtel",
+      "watchedAt": "2026-09-26",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "传记"
+      ],
+      "id": "3e709462-a4af-81f8-a1d4-d61513af9d77",
+      "mediaType": "影",
+      "note": "第98届奥斯卡金像奖 最佳影片(提名) 史蒂文·斯皮尔伯格 / 尼可拉斯·冈达 / 丽萨·马歇尔 / 皮帕·哈里斯 / 萨姆·门德斯\n第83届金球奖 电影类 最佳剧情片\n第79届英国电影学院奖 电影奖 最佳影片(提名)",
+      "order": 153,
+      "poster": "data/coof/posters/3e709462-a4af-81f8-a1d4-d61513af9d77.jpg",
+      "rating": null,
+      "runtimeMin": 125,
+      "status": "watched",
+      "title": "哈姆奈特 Hamnet",
+      "watchedAt": "2026-09-26",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3e709462-a4af-814c-911a-c34460cad617",
+      "mediaType": "影",
+      "note": "第37届马德普拉塔电影节获奖 《孤独地貌》是由加拿大导演杰奎琳·米尔斯执导的纪录片，记录了自然学家佐伊·卢卡斯在偏远的塞布尔岛长达40余年的生活与环保实践。影片通过科学与电影的融合，探讨人类活动对自然环境的影响，并以十六毫米胶片拍摄，呈现了岛屿独特的地貌生态。",
+      "order": 152,
+      "poster": "data/coof/posters/3e709462-a4af-814c-911a-c34460cad617.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "孤独地貌 Geographies of Solitude",
+      "watchedAt": "2026-09-26",
+      "year": 2022
+    },
     {
       "cast": [],
       "collection": "COOF2026",
