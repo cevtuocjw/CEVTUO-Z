@@ -1,38 +1,29 @@
 {
   "brands": {
     "coof": {
-      "changedAt": "2026-09-23T17:18+08:00",
-      "dataVersion": "1c1b154bab5e",
+      "changedAt": "2026-09-26T17:42+08:00",
+      "dataVersion": "9fe94271edf0",
       "parts": {
-        "COOF2026": "0f9c352471ce"
+        "COOF2026": "7f6321053b53"
       }
     }
   },
   "cadence": "PT5H",
-  "generatedAt": "2026-09-24T12:31+08:00",
-  "nextScheduledAt": "2026-09-24T13:00+08:00",
+  "generatedAt": "2026-09-26T17:42+08:00",
+  "nextScheduledAt": "2026-09-26T18:00+08:00",
+  "runId": "36233574590",
   "schemaVersion": 1,
   "sources": [
     {
       "changed": true,
       "id": "notion-coof",
-      "itemsIn": 149,
-      "lastAttemptAt": "2026-09-23T17:18+08:00",
-      "lastSuccessAt": "2026-09-23T17:18+08:00",
-      "latencyMs": 1916,
+      "itemsIn": 155,
+      "lastAttemptAt": "2026-09-26T17:42+08:00",
+      "lastSuccessAt": "2026-09-26T17:42+08:00",
+      "latencyMs": 1699,
       "staleAfterHours": 15,
-      "status": "ok"
-    },
-    {
-      "changed": true,
-      "id": "koreader-push",
-      "itemsIn": 36,
-      "lastAttemptAt": "2026-09-24T12:31+08:00",
-      "lastSuccessAt": "2026-09-24T12:31+08:00",
-      "latencyMs": 5,
-      "staleAfterHours": 168,
       "status": "ok"
     }
   ],
-  "trigger": "local"
+  "trigger": "schedule"
 }
