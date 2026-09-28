@@ -3,16 +3,134 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-24T11:16+08:00",
+ "updatedAt": "2026-09-28T10:54+08:00",
  "counts": {
   "days": 5,
-  "lines": 22,
+  "lines": 21,
   "hidden": 0,
-  "links": 7,
-  "images": 3,
+  "links": 2,
+  "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3e909462-a4af-8162-818e-e87d903ba221",
+   "date": "2026-09-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "创始人、创意总监 Charlie Hedin 曾在 Acne Studios 担任 CEO 助理，随后到巴黎从事品牌的全球传播工作。他在接受 AnOther 采访时说，自己辗转多个城市生活，却一直难以找到合适的床品和毛巾，这成为他创立 Tekla 的起点。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "2017 年成立于哥本哈根的 Tekla，是一个以床品、毛巾和睡衣为核心的生活方式品牌。它把日常织物与个人风格联系起来：纯色、格纹与条纹床品可以自由搭配，睡衣兼顾休息与日间穿着，毯子的颜色则来自建筑师对居住空间的观察。家",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta官方确认，Muse Charm是一款可放进口袋、用于与Muse实时语音交互的设备，更多细节将在今年晚些时候公布",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Galeries Lafayette、Le Bon Marché、Breuninger、Nordstrom、Free People、Anthropologie等零售商都在销售它的产品。品牌最大的市场仍然是意大利，之后是英国和德国，美国市场最近一个季度也录得双位数增长。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "品牌已与Falc集团合作，产品进入全球2500个销售点，包括Kith、Le Bon Marché等知名店铺，并推出过与Walter van Beirendonck等品牌的联名款",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Flower Mountain（山雾花野）是一个2015年成立于东京的户外潮流鞋履品牌，由中国设计师杨超和日本设计师太田圭辅共同创立，灵感源自自然与户外文化。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "“les sachets sous vide”（真空袋）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "La Grande Épicerie de Paris，巴黎左岸一家 gourmet 食品百货",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3e909462a4af812fad3aca1afd44e7b3.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3e909462a4af81cc882bcf272ff6c081.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3e909462a4af8179b641d5ce974c760f.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 3
+  },
+  {
+   "id": "3e709462-a4af-8165-91ec-cd07f72b560a",
+   "date": "2026-09-26",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e509462-a4af-816c-871b-dc06aeac3a23",
+   "date": "2026-09-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ray-Ban Meta Audio、Ray-Ban Meta第三代、Meta Glasses新系列，从349美元到449美元，覆盖不同人群不同场景。核心点就一个，让AI眼镜变成像普通眼镜一样，人人能戴、天天能戴",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta放大招！AI眼镜阵容扩充至100款",
+     "links": [
+      {
+       "t": "Meta放大招！AI眼镜阵容扩充至100款",
+       "href": "https://mp.weixin.qq.com/s/MO_XNYGHcRqj-yX7mL2JQA",
+       "title": "Meta放大招！AI眼镜阵容扩充至100款",
+       "desc": "9月24日，Meta Connect 2026。除了VR眼镜，Meta还掏出了一大把AI眼镜，多到年底要超过100个款式。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "成立于2022年的 PANE，正在成为中国本土鞋履消费市场中一个颇为特殊的样本，品牌由男装品牌 Full Monty 创始人陈宁发起。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "据最新报道，PANE 已于今年8月完成新一轮融资，投资方为专注消费领域的上海黑蚁资本BA Capital，具体融资金额尚未披露，企查查信息显示，黑蚁资本创始人何愚已于8月19日出任 PANE 董事。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3e509462a4af8106ae6ef8f9c240b96c.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3e509462a4af81b293b9e6b4b30f2055.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 2
+  },
   {
    "id": "3e109462-a4af-809b-9ba4-f12387f5d7d1",
    "date": "2026-09-20",
@@ -82,155 +200,8 @@
     }
    ],
    "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3df09462a4af806392b4cda3dc314581.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3dc09462-a4af-8059-8abb-ef5fcaedcaf3",
-   "date": "2026-09-15",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "supernote.com rowling",
-     "links": [
-      {
-       "t": "supernote.com rowling",
-       "href": "https://supernote.com/JK"
-      }
-     ]
-    }
-   ],
-   "more": 0,
    "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3d409462-a4af-802c-b1b7-f739e24415e1",
-   "date": "2026-09-07",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Bleu de Chauffe生产的Germinal工装夹克，由极其耐磨的有机鼹鼠皮面料制成，100% 法国原产，触感光滑。配色有四种，选择更丰富。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "很少有夹克能像值得信赖的法国蓝色工装夹克“Bleu de travail”那样具有永恒、实用的风格。\n法国复古品牌Fleurs de Bagne。夹克使用的质地偏厚的棉质鼹鼠皮Moleskine",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "关于产品价格在IFA 2026展会上报道，产品提供了199美元的早鸟价，正式发售后的价格则为299美元，差不多人民币2000元左右样子",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "ODYSS N1目前对常规西餐的饮食热量识别准确率已达到90%以上。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "目的就是，作为牵线搭桥的媒人，帮助当地农民将不符合标准的大米，一路送达婚礼。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "于是，2025 年，Wikifarmer 联合 Chalastra 农业合作社，并邀请创意机构 McCann Worldgroup 作为传播策划方，推出了 The Wedding Rice（“婚庆大米”）项目。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "fragment顶灯",
-     "links": []
-    },
-    {
-     "k": "bookmark",
-     "t": "OpenTrailPaper",
-     "links": [
-      {
-       "t": "OpenTrailPaper",
-       "href": "https://opentrailpaper.com/",
-       "title": "OpenTrailPaper",
-       "desc": "Open-source bike computer firmware for the LilyGO T5S3 4.7\" E-Paper PRO, with offline maps, GPX routes, FIT recording and Bluetooth sensors."
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "tt35636239",
-     "links": [
-      {
-       "t": "tt35636239",
-       "href": "https://www.imdb.com/title/tt35636239/"
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3d709462a4af80caa94bc3217d1ab619.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3d709462a4af80a69ae1f1c2070cff99.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3d209462-a4af-80bf-8869-e13de15737de",
-   "date": "2026-09-05",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-     "links": [
-      {
-       "t": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-       "href": "https://www.robinsonpelham.com/?srsltid=AfmBOoq3XtOkd8xtu7XHGryNpHMA8AqIp9YDTo49sFBHIXsiCNRfE8iq",
-       "title": "Robinson Pelham | Bold, Versatile, British Fine Jewellery",
-       "desc": "Robinson Pelham was born out of a mutual desire to create beautiful, timeless pieces that spark joy. More than 25 years later, our bold, colourful and versatile bespoke and ready-to-wear jewellery is "
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Shaun Leane Jewellery",
-     "links": [
-      {
-       "t": "Shaun Leane Jewellery",
-       "href": "https://shaunleane.com/?gad_source=1&gad_campaignid=24032989863&gbraid=0AAAAADBi1VyCJ_ZFl1ZvKx_9ANX_khzlW&gclid=Cj0KCQjw--7UBhCpARIsAGJBptjT5cZjiP2StA-bBg0oA-F_Gubv8VGj-M2rr0Cuod9Ai8IgXowCgQQaAjjEEALw_wcB",
-       "title": "Shaun Leane Jewellery",
-       "desc": "Free UK Standard Delivery - Discover Shaun Leane Statement Making Jewellery. Collectable pieces for everyday wear"
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-     "links": [
-      {
-       "t": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-       "href": "https://www.meccano.com/product/meccano-pro-aston-martin-aramco-formula-one-race-car/",
-       "title": "Meccano Pro Aston Martin Aramco Formula One Race Car - Meccano",
-       "desc": "Introducing the Meccano Pro Aston Martin Aramco Formula 1 Race Car, the perfect engineering challenge for passionate builders. This advanced building set has 1203 real metal parts and 2 real tools to "
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
+   "imagesSeen": 1
   }
  ]
 }

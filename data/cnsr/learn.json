@@ -3,16 +3,76 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T17:25+08:00",
+ "updatedAt": "2026-09-28T10:54+08:00",
  "counts": {
-  "days": 6,
-  "lines": 42,
-  "hidden": 67,
+  "days": 5,
+  "lines": 48,
+  "hidden": 70,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3e909462-a4af-8148-8121-db3f2633d716",
+   "date": "2026-09-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "真实世界报告：澳大利亚治疗用品管理局（TGA）截至2025年5月，已收到44份与司美格鲁肽相关的眼部疾病报告，其中明确包含8份失明报告和13份缺血性视神经病变报告。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "监管机构确认：欧洲药品管理局（EMA）的药物警戒风险评估委员会（PRAC）已正式得出结论，NAION是含司美格鲁肽药物（如Ozempic、Wegovy、Rybelsus）的“非常罕见”的不良反应。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "风险显著增加：一项于2026年发表的荟萃分析显示，使用司美格鲁肽的2型糖尿病患者发生NAION的风险，是使用其他降糖药物的2.17倍。另一项针对随机对照试验的荟萃分析也得出了类似结论，风险比值（OR）为3.92。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "多项研究和监管机构的评估确认了这种关联的存在：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "NAION是由于供应视神经的血管血流减少，导致视神经受损，从而引起突发、无痛的单眼视力丧失，且这种损伤常常是不可逆的。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "核心关联：司美格鲁肽与NAION",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "非动脉炎性前部缺血性视神经病变（NAION）。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "非动脉炎性前部缺血性视神经病变（NAION）。与 司美格鲁肽",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "伦敦萨沃伊酒店，也是Gucci的品牌根源",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "▶ 较低：精米白面、糯米、汤圆、粽子等。⑥",
+     "links": []
+    }
+   ],
+   "more": 3,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3e409462-a4af-81b3-acbb-d17b9e58c271",
    "date": "2026-09-23",
@@ -246,36 +306,6 @@
     {
      "k": "paragraph",
      "t": "sophistication 复杂",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3db09462-a4af-80fc-ac66-c48259b9e9ab",
-   "date": "2026-09-14",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "sinead o conner  爱尔兰歌手",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "地中海科西嘉岛（Corsica）的居民或具有科西嘉血统的人。科西嘉岛目前属于法国，是法国的一个特殊地位领土单位。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Hurstwood Holdings 是一家总部位于英国曼彻斯特的私人持有型房地产投资与开发集团，主要业务集中在商业地产、住宅开发和自助仓储（self-storage）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "“STAMINA lifestyle”通常不是一个泛指的生活方式品牌，而是英国 NHS 体系中的一项前列腺癌患者运动与生活方式干预项目。STAMINA 是缩写，意思是 Supported exercise TrAining for Men with prostate caNcer on Androgen deprivation therapy，即“为接受雄激素剥夺治疗的前列腺癌男性提供支持性运动训练”。",
      "links": []
     }
    ],

@@ -294,6 +294,126 @@ async function run(browser, { scheme, viewport }, tag) {
   const afterToggle = await page.evaluate((sel) => document.querySelectorAll(`${sel} .cn__day--on`).length, scopeSel);
   check('点日期能切换展开', afterToggle === tree2.openDays + 1, `${tree2.openDays} → ${afterToggle}`);
 
+  // ── 「N 天」must equal the number of days the tree actually draws ──
+  //
+  // ⚠️ Written for a bug that shipped on 2026-09-23 and was found on 09-28.
+  //
+  // `counts.days` was `st.segs.length` — the number of `@日期` MARKERS — while
+  // the tree draws one panel per DISTINCT date. Learn and tech-learn each carry
+  // two markers on one date and TECH-AI two on two dates, so the column header
+  // read 「6 天」/「7 天」 over a tree of 5. Both numbers were on screen at once,
+  // three feet apart, disagreeing — the same shape as the RWP `body_len` vs 「字」
+  // bug, where a reader concludes the software is broken rather than the label.
+  //
+  // ⚠️ Collapsed months must be opened first. A collapsed month renders NO day
+  // nodes at all, so counting without expanding reads 0 and then passes against
+  // a correct page and a broken one alike.
+  {
+    for (let pass = 0; pass < 2; pass += 1) {
+      await page.evaluate((sel) => {
+        for (const kind of ['year', 'month']) {
+          document.querySelectorAll(`${sel} .cn__node--${kind}`).forEach((n) => {
+            if (!n.querySelector('.cn__caret--on')) n.click();
+          });
+        }
+      }, scopeSel);
+      await page.waitForTimeout(300);
+    }
+    const claims = await page.evaluate((sel) => {
+      const headSel = sel === '.cn__col' ? '.cn__col-m' : '.cnsr-sheet__m';
+      return [...document.querySelectorAll(sel)].map((root) => {
+        const head = root.querySelector(headSel)?.textContent ?? '';
+        const m = /(\d+)\s*天/.exec(head);
+        return {
+          claimed: m ? Number(m[1]) : null,
+          drawn: new Set([...root.querySelectorAll('.cn__day-t')].map((e) => e.textContent.trim())).size,
+        };
+      });
+    }, scopeSel);
+    const wrong = claims.filter((c) => c.claimed === null || c.claimed !== c.drawn);
+    check(
+      '每个来源的「N 天」等于树里画出的日数',
+      claims.length > 0 && wrong.length === 0,
+      claims.map((c) => `${c.claimed}=${c.drawn}`).join(' ') || '一个可比的子树都没有',
+    );
+  }
+
+  // ── The image cap is stated, and never as a negative ──────
+  //
+  // ⚠️ `imagesSeen` was declared in the schema, promised by a comment, written
+  // into every payload as `?? 0`, and never assigned — so it read 0 on entries
+  // that held two images. Shopping now sits exactly on its 5-image cap, which
+  // makes the field load-bearing: 09-28 kept 3 and 09-24 kept 2, so 09-18's
+  // image was dropped and the day has to say so.
+  //
+  // ⚠️ The negative check is separate and not decoration: every payload
+  // published before today carries `imagesSeen: 0` beside a non-empty `images`,
+  // and the obvious `seen - kept` render prints 「另有 -1 未显示」 against it.
+  {
+    const audit = await page.evaluate(async (sel) => {
+      const idx = await (await fetch('data/cnsr/index.json')).json();
+      const heads = [...document.querySelectorAll(`${sel} .cn__node--day`)].map((n) => ({
+        date: n.querySelector('.cn__day-t')?.textContent.trim() ?? '',
+        label: n.querySelector('.cn__node-n')?.textContent.trim() ?? '',
+      }));
+      const capped = [];
+      for (const s of idx.sources) {
+        const p = await (await fetch(s.path)).json();
+        for (const e of p.entries) {
+          const seen = Math.max(e.imagesSeen ?? 0, e.images.length);
+          if (seen > e.images.length) capped.push({ date: e.date, kept: e.images.length, seen });
+        }
+      }
+      return { capped, heads, headCount: heads.length };
+    }, scopeSel);
+
+    // ⚠️ Only days that are actually ON SCREEN can be checked.
+    //
+    // Wide renders all four trees, so Shopping's capped day is always there.
+    // Narrow shows ONE source in the sheet — and by this point in the run that
+    // is Learn (the tree checks opened card 1), which has no images at all.
+    // Comparing Shopping's dates against Learn's rendered headers is what the
+    // first version of this assertion did, and it reported a failure against a
+    // page that was rendering correctly.
+    const onScreen = audit.capped.filter((c) => audit.heads.some((h) => h.date === c.date));
+    const unstated = onScreen.filter(
+      (c) => !audit.heads.some((h) => h.date === c.date && /未显示/.test(h.label)),
+    );
+    check(
+      '图片被上限截掉的日子，标题里说明了',
+      unstated.length === 0,
+      `屏上可比 ${onScreen.length} 天 / 被说明 ${onScreen.length - unstated.length} · ${onScreen.map((c) => `${c.date} ${c.kept}/${c.seen}`).join(', ')}`,
+    );
+    // ⚠️ The guard against the line above going vacuous. Without it, deleting
+    // `imgLabel` AND the imagesSeen plumbing leaves nothing on screen to
+    // compare, `unstated` is empty, and the suite reports green.
+    check(
+      '载荷里确实有被上限截掉的图（否则上面那条是空转）',
+      audit.capped.length > 0,
+      audit.capped.map((c) => `${c.date} ${c.kept}/${c.seen}`).join(', ') || '没有任何一天被截',
+    );
+    // ⚠️ This one is a CANARY, not a live check — say so rather than let the
+    // next reader assume it earns its line.
+    //
+    // As written it cannot fail: `imgLabel` subtracts `imgs` (Σ kept) from
+    // `imgsSeen` (Σ max(seen, kept)), and that is ≥ by construction. So no
+    // payload on earth makes it go red today, and I could not build a negative
+    // control for it the way the other two have.
+    //
+    // It fires only if someone drops the `Math.max(..., e.images.length)` clamp
+    // while refactoring — and then it fires on exactly the case that motivated
+    // the clamp: every payload published before 2026-09-28 carries
+    // `imagesSeen: 0` beside a non-empty `images`, and the unclamped render
+    // prints 「另有 -1 未显示」. Keep it for that, not as evidence the page is
+    // right today.
+    const negative = audit.heads.filter((h) => /-\d/.test(h.label));
+    check(
+      '日标题里不出现负数（只防 clamp 被删，当前不可达）',
+      audit.heads.length > 0 && negative.length === 0,
+      negative.slice(0, 3).map((h) => `${h.date} ${h.label}`).join(' | ') || `${audit.heads.length} 个日标题`,
+    );
+  }
+
   // ── Images only where allowed ─────────────────────────────
   if (wide) {
     const imgs = await page.evaluate(() =>

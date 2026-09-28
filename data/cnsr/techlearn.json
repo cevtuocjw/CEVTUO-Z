@@ -3,16 +3,68 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-23T17:25+08:00",
+ "updatedAt": "2026-09-28T10:54+08:00",
  "counts": {
-  "days": 6,
-  "lines": 14,
+  "days": 5,
+  "lines": 19,
   "hidden": 0,
-  "links": 4,
+  "links": 3,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3e909462-a4af-8171-91af-c64af320f8b6",
+   "date": "2026-09-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "分布式视听，普通人听上去比较模糊，简单点说，政府、公共交通、能源等等，这些领域的指挥控制中心，都需要海量音视频信号实时调度到大屏幕上，从而实现精准调控。魅视科技所做的，正是这项业务。2015年，魅视科技在业内率先推出基于类区块链技术的无中心服务器、完全去中心化分布式系统，此后经过不断迭代和创新，逐步发展成为国内一流的AI边缘计算&智能分布式视听解决方案提供商",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "洛图科技 9 月 27 日发布的月度追踪报告显示，2026 年 8 月中国笔记本电脑线上全渠道（不含企业官方平台）销量为 122.3 万台，同比下降 20.8%；销额同比下降 11.1%。当月成交均价为 7885 元，同比上涨 12.3%。洛图认为，成交结构向中高端产品移动，拉大了销量与销额跌幅的差距。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "在路由器上安装 udpxy 和 luci-app-udpxy 插件后，通常需要配置 IPTV 接口（获取组播数据）、设置防火墙规则，并启动 udpxy 服务。配置成功后，即可将原来的组播地址转换为 HTTP 地址进行播放",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "典型配置示例（以 OpenWrt 为例）：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "udpxy 是一个轻量级的 UDP-to-HTTP 组播流量中继守护进程。它的核心作用是作为“协议转换器”，将运营商提供的、只能在特定网络内传播的 IPTV 组播流，转换成普通设备（如手机、电脑、智能电视）可以访问的 HTTP 单播流。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "腾讯，又造了个良心App",
+     "links": [
+      {
+       "t": "腾讯，又造了个良心App",
+       "href": "https://mp.weixin.qq.com/s/8ekbFvO4Lhw549fO4iNogA",
+       "title": "腾讯，又造了个良心App",
+       "desc": "用起来还挺意外"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "Chatterfly 腾讯 微信",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3e109462-a4af-8191-8dff-daa7f1a43bfb",
    "date": "2026-09-20",
@@ -129,40 +181,6 @@
        "href": "https://panwriter.com/",
        "title": "PanWriter",
        "desc": ""
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3ab09462-a4af-808e-8100-dbdddf521beb",
-   "date": "2026-07-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "「三星表盘精选」，来自夸克网盘分享。\n夸克网盘无需下载在线播放视频，畅享原画5倍速，支持电视投屏。\n/~c7073a0UZx~:/\n链接：夸克网盘分享\n提取码：7eXJ",
-     "links": [
-      {
-       "t": "夸克网盘分享",
-       "href": "https://pan.quark.cn/s/7d25fd51c09a",
-       "title": "夸克网盘分享",
-       "desc": "夸克网盘是夸克推出的一款云服务产品，功能包括云存储、高清看剧、文件在线解压、PDF一键转换等。通过夸克网盘可随时随地管理和使用照片、文档、手机资料，目前支持Android、iOS、PC、iPad。"
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Wero - European payment solution",
-     "links": [
-      {
-       "t": "Wero - European payment solution",
-       "href": "https://wero-wallet.eu/",
-       "title": "Wero - European payment solution",
-       "desc": "Experience fast and secure digital payments with Wero’s wallet, enabling you to send and receive money between bank accounts in under 10 seconds."
       }
      ]
     }

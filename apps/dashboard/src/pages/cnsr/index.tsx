@@ -315,6 +315,26 @@ function CnsrTree({ source }: { source: CnsrSource }) {
                             const n = d.entries.reduce((k, e) => k + e.lines.length, 0);
                             const more = d.entries.reduce((k, e) => k + e.more, 0);
                             const imgs = d.entries.reduce((k, e) => k + e.images.length, 0);
+                            // ⚠️ Clamped against `images.length`, and that is not
+                            // paranoia: every payload published before 2026-09-28
+                            // carries `imagesSeen: 0` beside a non-empty `images`
+                            // (the extractor never assigned the field), and the
+                            // unclamped subtraction renders 「另有 -2 未显示」.
+                            const imgsSeen = d.entries.reduce(
+                              (k, e) => k + Math.max(e.imagesSeen ?? 0, e.images.length),
+                              0,
+                            );
+                            // ⚠️ Three cases, not two. `imgs` can be 0 while
+                            // `imgsSeen` is 1 — Shopping's 09-18 held one image
+                            // and the 5-image cap had already been spent on
+                            // 09-28 and 09-24 — so a label built as "N 图" plus a
+                            // separate "+M" suffix would print a bare
+                            // 「另有 1 未显示」 with no noun to attach it to.
+                            const imgLabel = imgsSeen
+                              ? imgs
+                                ? ` · ${imgs} 图${imgsSeen > imgs ? `（另有 ${imgsSeen - imgs} 未显示）` : ''}`
+                                : ` · ${imgsSeen} 图未显示`
+                              : '';
                             return (
                               // One glass panel per DAY, not per line — the day
                               // is the unit the reader thinks in, and the panel
@@ -326,7 +346,12 @@ function CnsrTree({ source }: { source: CnsrSource }) {
                                   <Text className="cn__node-n">
                                     {n ? `${n} 行` : '无内容'}
                                     {more ? ` +${more}` : ''}
-                                    {imgs ? ` · ${imgs} 图` : ''}
+                                    {/* ⚠️ Stated, not hidden — the same rule the
+                                        line cap follows one line above. The cap
+                                        kept 5 of 6 that Shopping held; a header
+                                        reading 「5 图」 alone says the day held
+                                        five. */}
+                                    {imgLabel}
                                   </Text>
                                 </View>
 

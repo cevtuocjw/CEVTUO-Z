@@ -262,7 +262,22 @@ function visit(b, st) {
 
   if (marker) {
     const title = text.replace(marker.rendered, '').replace(/^[\s\-–—:：|]+/, '').trim();
-    st.segs.push({ id: b.id, date: marker.date, title, lines: st.cur.lines, images: st.cur.images });
+    st.segs.push({
+      id: b.id,
+      date: marker.date,
+      title,
+      lines: st.cur.lines,
+      images: st.cur.images,
+      // ⚠️ What the day HELD, before the cap: kept refs + dropped ones.
+      //
+      // This is the field the schema promises the UI can use to say there is
+      // more, and it was never assigned — `imagesSeen` fell through its `?? 0`
+      // on every entry of every source, so a payload holding 2 images in a day
+      // also claimed that day had held 0. Captured HERE, on the segment being
+      // closed, because both counters live on `st.cur` and the next line throws
+      // it away.
+      imagesSeen: st.cur.images.length + (st.cur.imagesSkipped ?? 0),
+    });
     st.cur = { lines: [], images: [] };
     st.days.add(marker.date);
     if (st.days.size >= st.maxDates) st.stop = true;
@@ -279,7 +294,14 @@ function visit(b, st) {
       st.imageCount += 1;
       st.pending.push({ blockId: b.id, url, external: b.image?.type === 'external', caption: text });
       st.cur.images.push({ i: st.pending.length - 1, caption: text, src: '' });
-    } else if (url) {
+    } else if (url && st.images) {
+      // ⚠️ `st.images` is repeated in this condition on purpose.
+      //
+      // This branch also catches the THREE sources that keep no images at all
+      // (`images: false`), and counting those would give Learn / tech-learn /
+      // TECH-AI a non-zero `imagesSeen` — which the page reads as "this source
+      // has no images", not "images were dropped". Only a source that does keep
+      // them can have any dropped.
       st.cur.imagesSkipped = (st.cur.imagesSkipped ?? 0) + 1;
     }
     return;
@@ -461,7 +483,10 @@ for (const src of wanted) {
   console.log(`  反向遍历：${st.calls} 次请求，${((Date.now() - t0) / 1000).toFixed(0)}s${st.stop ? '（读够 5 天即停）' : '（读完整页）'}`);
   const preamble = st.cur.lines.length;
   console.log(`  跳过 ${st.skipped} 个 before/old 子树；最老标记之上（页面头部）忽略 ${preamble} 行`);
-  console.log(`  得到 ${st.segs.length} 天 / ${lines} 行${hidden ? `（超 10 行被截掉 ${hidden} 行）` : ''}`);
+  // ⚠️ Both numbers, because they are genuinely different: a day is a distinct
+  // date, a `@日期` is a marker, and one date can carry two markers. Printing
+  // only the marker count under the word 天 is what put "6 天" over a 5-day tree.
+  console.log(`  得到 ${st.days.size} 天（${st.segs.length} 个 @日期）/ ${lines} 行${hidden ? `（超 10 行被截掉 ${hidden} 行）` : ''}`);
   if (st.segs.length) console.log(`  日期：${st.segs[st.segs.length - 1].date} → ${st.segs[0].date}`);
   for (const e of st.errors.slice(0, 3)) console.log(`  ✗ ${e}`);
 
@@ -532,10 +557,18 @@ for (const src of wanted) {
     console.log(`  链接预览：${hrefs.length} 个目标，取到 ${metas.filter(Boolean).length} 个标题`);
   }
 
-  console.log(`  最近 5 天：`);
+  // ⚠️ The label counts MARKERS, not days. This loop prints one row per
+  // `@日期` and there can be more rows than distinct dates, so 最近 5 天 over six
+  // rows is the same off-by-a-label this script just stopped making elsewhere.
+  console.log(`  最近 ${MAX_DATES} 个 @日期（${st.segs.length} 条 / ${st.days.size} 天）：`);
   for (const s of st.segs) {
     const first = s.lines[0]?.t?.slice(0, 44) ?? '(无内容)';
-    console.log(`    ${s.date}  ${String(s.lines.length).padStart(2)} 行${s.more ? `(+${s.more})` : ''}  ${s.images.length ? `${s.images.length}图 ` : ''}${first}`);
+    // ⚠️ `n/m图` only when the cap actually bit. This readout is where a dead
+    // `imagesSeen` would have been visible for a year: it printed `n图` from
+    // `images.length` alone, so "5 of 12" and "5" looked identical.
+    const seen = s.imagesSeen ?? 0;
+    const img = s.images.length ? `${s.images.length}${seen > s.images.length ? `/${seen}` : ''}图 ` : '';
+    console.log(`    ${s.date}  ${String(s.lines.length).padStart(2)} 行${s.more ? `(+${s.more})` : ''}  ${img}${first}`);
   }
   const linkCount = st.segs.reduce((n, s) => n + s.lines.reduce((m, l) => m + (l.links?.length ?? 0), 0), 0);
   console.log(`  链接 ${linkCount} 个`);
@@ -546,7 +579,14 @@ for (const src of wanted) {
     notionId: src.id,
     window: `最近 ${MAX_DATES} 个 @日期`,
     updatedAt: nowLocal(),
-    counts: { days: st.segs.length, lines, hidden, links: linkCount, images: images.length, skippedSubtrees: st.skipped },
+    // ⚠️ `st.days.size`, NOT `st.segs.length`.
+    //
+    // A segment is one `@date` MARKER, and one date can carry two of them
+    // (Learn has two on 2026-09-20; TECH-AI has two on 09-20 and two on 09-08).
+    // The page renders this as 「N 天」 and, immediately below, draws one panel
+    // per DISTINCT date — so `segs.length` put "7 天" over a tree of 5. Two
+    // numbers about the same thing, disagreeing, on one screen.
+    counts: { days: st.days.size, lines, hidden, links: linkCount, images: images.length, skippedSubtrees: st.skipped },
     /** Newest first — the order the page reads from the bottom up. */
     entries: st.segs.map((s) => ({
       id: s.id,
