@@ -261,8 +261,18 @@ export default function Chealth() {
             四个块都做成不一样大就变成噪音了。
           */}
           <View className="chc__mosaic">
+            {/*
+              ⚠️ 每块的结构是「**彩色圆底图标 + 标签**」在上、大数字在下 —— 这是
+              三星健康最有辨识度的一处排法，读者点名要「图标尽量一样」。
+              原来只有一行文字标签，没有任何图形，所以整页读起来像表格。
+            */}
             <View className="chc__tile chc__tile--wide chc__tile--blue">
-              <Text className="chc__tile-label">今日步数</Text>
+              <View className="chc__mhead">
+                <View className="chc__badge chc__badge--steps">
+                  <Icon name="steps" />
+                </View>
+                <Text className="chc__mlabel">今日步数</Text>
+              </View>
               <Text className="chc__tile-v">
                 {t?.stepsToday !== null && t?.stepsToday !== undefined
                   ? Math.round(t.stepsToday).toLocaleString('en-US') : '—'}
@@ -274,7 +284,12 @@ export default function Chealth() {
             </View>
 
             <View className="chc__tile chc__tile--narrow">
-              <Text className="chc__tile-label">7 天睡眠</Text>
+              <View className="chc__mhead">
+                <View className="chc__badge chc__badge--sleep">
+                  <Icon name="moon" />
+                </View>
+                <Text className="chc__mlabel">睡眠</Text>
+              </View>
               <Text className="chc__tile-v">
                 {t?.sleep7dHours ?? '—'}
                 <Text className="chc__tile-u">h</Text>
@@ -282,7 +297,12 @@ export default function Chealth() {
             </View>
 
             <View className="chc__tile chc__tile--half">
-              <Text className="chc__tile-label">7 天活动消耗</Text>
+              <View className="chc__mhead">
+                <View className="chc__badge chc__badge--kcal">
+                  <Icon name="flame" />
+                </View>
+                <Text className="chc__mlabel">活动消耗</Text>
+              </View>
               <Text className="chc__tile-v">
                 {t?.activeCalories7d !== undefined ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—'}
                 <Text className="chc__tile-u">kcal</Text>
@@ -290,13 +310,23 @@ export default function Chealth() {
             </View>
 
             <View className="chc__tile chc__tile--half">
-              <Text className="chc__tile-label">7 天距离</Text>
+              <View className="chc__mhead">
+                <View className="chc__badge chc__badge--dist">
+                  <Icon name="route" />
+                </View>
+                <Text className="chc__mlabel">距离</Text>
+              </View>
               <Text className="chc__tile-v">
                 {t?.distance7dKm ?? '—'}
                 <Text className="chc__tile-u">km</Text>
               </Text>
             </View>
           </View>
+          {/* ⚠️ 「7 天」从标签里挪到这里**统一说一次**。放在每个块里会把窄块
+              的标签挤成三行（实测：「7 天睡眠」折成「7/天/睡眠」）。 */}
+          <Text className="chc__tile-note" style={{ marginTop: 7 }}>
+            睡眠 · 活动消耗 · 距离 都是最近 7 天；步数是今天
+          </Text>
         </Section>
 
         {/*

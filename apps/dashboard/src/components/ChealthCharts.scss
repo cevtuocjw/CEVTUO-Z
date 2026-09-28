@@ -424,3 +424,51 @@ $chart-h: 108px;
 //    所以把会话卡片的展开箭头也染成蓝色 —— 读者扫一眼就知道哪些能点。
 .chc__fold-mark { color: var(--blue, #1d3cff); opacity: 0.85; }
 .chc__fold:hover .chc__fold-mark { opacity: 1; }
+
+// ── 三星健康那种「彩色圆底 + 白色图标」的指标头 ──────────────
+// ⚠️ 这是三星健康**最有辨识度**的一处：每个指标不是一行文字，而是
+//    一个实心彩色圆 + 里面的白色图标 + 数字 + 标签。
+//    读者 2026-09-28 点名要这个：「尤其是对于数据的展示上的那些图标
+//    怎么做的一定要尽量一样」。
+//
+// ⚠️ 每个指标一个色，色值集中在上面 `.chc, .chc__mosaic` 那一行，
+//    不散落在这里 —— 散开写必然漂移，改主题时也找不全。
+.chc__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  color: #fff;          // 图标永远白色 —— 三星就是这么做的
+  font-size: 17px;      // 图标尺寸走 1em，所以这里等于设定图标大小
+
+  // ⚠️ 圆底用**实色**，不用半透明。半透明底在一堆浅色卡片里会糊成一片，
+  //    而三星那种一眼能认出「这是步数」的辨识度，恰恰来自实色的高对比。
+  &--steps { background: var(--m-steps, #3ecf8e); }
+  &--heart { background: var(--m-heart, #ff5a72); }
+  &--sleep { background: var(--m-sleep, #8b7cf6); }
+  &--kcal  { background: var(--m-kcal, #ff9f43); }
+  &--dist  { background: var(--m-dist, #4aa3ff); }
+  &--plain { background: color-mix(in srgb, currentColor 18%, transparent); color: inherit; }
+}
+
+// 圆底 + 标签一行；数字单独一行在下面（三星的排法）
+.chc__mhead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chc__mlabel {
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: 0.78;
+  min-width: 0;
+}
+
+// ⚠️ 指标标签**不折行**。窄块里「7 天睡眠」会被挤成三行（实测），
+//    三星健康那边标签永远是单行 —— 长了就换短词，不是折行。
+.chc__mlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
