@@ -116,8 +116,21 @@ export function Legend({ items }: { items: { label: string; color: string }[] })
  *   · **The peak is marked.** It is the one number a heart-rate chart exists to
  *     show, and it is exactly what a smoothed line hides.
  */
-export function HeartChart({ series }: { series: [number, number][] }) {
-  if (!series || series.length < 2) return <Text className="chc__axis">心率曲线数据不足</Text>;
+export function SeriesChart({
+  series,
+  name,
+  unit = '',
+  peakNote = '',
+}: {
+  series: [number, number][];
+  /** 曲线名，用于「数据不足」那句 —— 四个指标共用这一个组件。 */
+  name: string;
+  /** 数值单位，拼在范围标签后面（`W` / `rpm` / `km/h`；心率留空）。 */
+  unit?: string;
+  /** 说明这条线是**曲线**的极值、不等于上面那个原始峰值。 */
+  peakNote?: string;
+}) {
+  if (!series || series.length < 2) return <Text className="chc__axis">{name}数据不足</Text>;
 
   const W = 300;
   const H = 56;
@@ -156,9 +169,29 @@ export function HeartChart({ series }: { series: [number, number][] }) {
       */}
       <View className="chc__axis">
         <Text>{Math.round(pts[0]?.[0] ?? 0)} 分</Text>
-        <Text>曲线 {lo}–{hi}（原始峰值见上）</Text>
+        <Text>曲线 {lo}–{hi}{unit}{peakNote}</Text>
         <Text>{Math.round(tMax)} 分</Text>
       </View>
     </View>
+  );
+}
+
+/**
+ * 一次运动的心率曲线。
+ *
+ * ⚠️ 读者点名要的，而平均值画不出来。手机端发的是 `[距开始几分钟, bpm]`，
+ *    已经降采样、并强制包含峰值。
+ *
+ * ⚠️ 它现在只是 [SeriesChart] 的一层薄包装 —— 功率/踏频/速度也要画同一种图，
+ *    四份实现必然漂移（这个项目因为「同一件事两处实现」吃过亏：字数统计算法
+ *    一篇文章数出 127 和 109）。
+ */
+export function HeartChart({ series }: { series: [number, number][] }) {
+  return (
+    <SeriesChart
+      series={series}
+      name="心率曲线"
+      peakNote="（原始峰值见上）"
+    />
   );
 }

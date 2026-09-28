@@ -285,6 +285,14 @@ export interface ChealthSession {
   powerMax?: number;
   speedMaxMps?: number;
   cadenceAvg?: number;
+  /** ⚠️ `[minutesSinceStart, W]`, ≤120 points. The shape of the ride — an
+   *  average cannot distinguish 4 min at 400W + 4 min at 100W from a steady
+   *  250W, and those are different workouts. */
+  powerSeries?: [number, number][];
+  /** ⚠️ `[minutesSinceStart, rpm]`, ≤120 points. */
+  cadenceSeries?: [number, number][];
+  /** ⚠️ `[minutesSinceStart, m/s]`, ≤120 points. */
+  speedSeries?: [number, number][];
   /** ⚠️ Which app measured the HR — the watch and MyWhoosh disagree, and the
    *  phone deliberately does not average them. */
   hrSource?: string;

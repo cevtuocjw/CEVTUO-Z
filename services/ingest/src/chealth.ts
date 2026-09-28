@@ -144,6 +144,24 @@ const SessionSchema = z.object({
   speedMaxMps: z.number().optional(),
   cadenceAvg: z.number().optional(),
   /**
+   * ⚠️ 过程序列 —— `[距开始第几分钟, 值]`，手机端已逐分钟聚合并降采样到 ≤120 点。
+   *
+   * ⚠️ 和 `hrSeries` 同一个理由：读者要的是「**经历过程中**的变化」，
+   *    而一个平均值画不出曲线。
+   *
+   * ⚠️ 功率尤其如此 —— 一场间歇骑行的均值会把
+   *    「4 分钟 400W + 4 分钟 100W」和「全程 250W」显示成同一个数字，
+   *    而这两件事在训练上完全不同。
+   *
+   * ⚠️⚠️ 这三个字段必须**显式列在这里**。`z.object` 默认会**静默丢掉**
+   *    schema 里没写的键，而手机端已经在发了 —— 症状是「手机明明推了、
+   *    服务器上就是没有」，零报错。同一个坑这个项目记过一次
+   *    （原始导出被 zod 解析后存下来，`.default()` 补上、不认识的键丢掉）。
+   */
+  powerSeries: z.array(z.tuple([z.number(), z.number()])).max(200).optional(),
+  cadenceSeries: z.array(z.tuple([z.number(), z.number()])).max(200).optional(),
+  speedSeries: z.array(z.tuple([z.number(), z.number()])).max(200).optional(),
+  /**
    * ⚠️ WHICH app measured the heart rate, because a ride has two possible
    * sources and they disagree: the watch (Samsung Health, on the wrist) and
    * MyWhoosh (a chest strap or an estimate). Averaging them yields a number

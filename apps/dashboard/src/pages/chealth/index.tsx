@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from '@tarojs/components';
 
-import { BarRow, HeartChart, Legend, Spark } from '../../components/ChealthCharts';
+import { BarRow, HeartChart, Legend, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { homePanelUrl } from '../../platform/panels';
@@ -296,6 +296,42 @@ export default function Chealth() {
                   <View>
                     <Text className="card__label">心率曲线</Text>
                     <HeartChart series={sess.hrSeries} />
+                  </View>
+                ) : null}
+
+                {/*
+                  ⚠️ 功率 / 踏频 / 速度的**过程曲线**，不只是平均值。
+                  读者要的是「经历过程中」的变化：平均功率会把
+                  「4 分钟 400W + 4 分钟 100W」和「全程 250W」显示成同一个数字，
+                  而这两件事在训练上完全不同。
+                  ⚠️ 四张图共用 SeriesChart —— 各写一遍必然漂移。
+                */}
+                {sess.powerSeries && sess.powerSeries.length > 1 ? (
+                  <View>
+                    <Text className="card__label">功率曲线</Text>
+                    <SeriesChart series={sess.powerSeries} name="功率曲线" unit=" W" peakNote="（原始峰值见上）" />
+                  </View>
+                ) : null}
+
+                {sess.cadenceSeries && sess.cadenceSeries.length > 1 ? (
+                  <View>
+                    <Text className="card__label">踏频曲线</Text>
+                    <SeriesChart series={sess.cadenceSeries} name="踏频曲线" unit=" rpm" />
+                  </View>
+                ) : null}
+
+                {/*
+                  ⚠️ 速度存的是 m/s（Health Connect 的单位），**在渲染时换成 km/h** ——
+                  页面别的地方、以及读者的常识，用的都是 km/h。换算只在这一处做。
+                */}
+                {sess.speedSeries && sess.speedSeries.length > 1 ? (
+                  <View>
+                    <Text className="card__label">速度曲线</Text>
+                    <SeriesChart
+                      series={sess.speedSeries.map(([t, v]) => [t, Math.round(v * 36) / 10] as [number, number])}
+                      name="速度曲线"
+                      unit=" km/h"
+                    />
                   </View>
                 ) : null}
 
