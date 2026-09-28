@@ -544,3 +544,14 @@ $chart-h: 108px;
 // ⚠️ 指标标签**不折行**。窄块里「7 天睡眠」会被挤成三行（实测），
 //    三星健康那边标签永远是单行 —— 长了就换短词，不是折行。
 .chc__mlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/**
+ * ⚠️ 正文里的强调。
+ *
+ * 之前这里是 `**这样**` —— Markdown 语法写在 JSX 文本里，**原样渲染**，
+ * 读者看到的是两个星号。见 index.tsx 里那两处的注释。
+ */
+.chc__em {
+  color: var(--text-primary);
+  font-weight: 600;
+}

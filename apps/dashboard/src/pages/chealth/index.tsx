@@ -658,9 +658,19 @@ export default function Chealth() {
                   );
                 })}
               </View>
+              {/* ⚠️⚠️ 这里原来是 `取的是**最近 30 天实测到的最高值**` ——
+                  Markdown 的粗体标记**原样渲染**，读者看到的是两个星号。
+
+                  ⚠️ 它在页面上挂了很久没人报，因为星号夹在中文里看着像排版符号，
+                     不像错误 —— 这正是「看起来像那么回事」的错最难被发现的原因。
+
+                  改成嵌套 `<Text>`：强调还在，而且不再依赖一个**永远不会发生**的
+                  解析。⚠️ 别在 JSX 里写 Markdown。 */}
               <Text className="card__label">
-                基准最高心率 {refMaxHr} —— 取的是**最近 30 天实测到的最高值**，不是 220−年龄。
-                代价是它偏低（没尽全力就到不了真最大值），所以这个划分整体偏严。
+                基准最高心率 {refMaxHr} —— 取的是
+                <Text className="chc__em">最近 30 天实测到的最高值</Text>
+                ，不是 220−年龄。代价是它偏低（没尽全力就到不了真最大值），
+                所以这个划分整体偏严。
               </Text>
             </View>
           ) : null}
@@ -712,8 +722,12 @@ export default function Chealth() {
                 ) : null}
               </View>
               <Text className="card__label">
-                ⚠️ 「—」是**上周没有可比数据**，不是上周为零。两者用一个百分比表示会得到一个
-                看起来很确定、实际没有依据的数。静息心率是**越低越好**，箭头按那个方向画。
+                ⚠️ 「—」是
+                <Text className="chc__em">上周没有可比数据</Text>
+                ，不是上周为零。两者用一个百分比表示会得到一个看起来很确定、
+                实际没有依据的数。静息心率是
+                <Text className="chc__em">越低越好</Text>
+                ，箭头按那个方向画。
               </Text>
             </View>
           ) : null}
@@ -744,8 +758,10 @@ export default function Chealth() {
                 连续达标 {streak} 天（每天 ≥ 8,000 步）
               </Text>
               <Text className="card__label">
-                ⚠️ 从最新一天往回数，**缺数据的日子算断**，不算跳过 —— 那天可能确实没走，
-                也可能手机没同步，我们不知道，所以不替它猜。
+                ⚠️ 从最新一天往回数，
+                <Text className="chc__em">缺数据的日子算断</Text>
+                ，不算跳过 —— 那天可能确实没走，也可能手机没同步，
+                我们不知道，所以不替它猜。
               </Text>
             </View>
           ) : null}
@@ -795,7 +811,10 @@ export default function Chealth() {
               </View>
               <Text className="card__label">
                 ⚠️ NP 是给「间歇骑比匀速骑累得多」这件事用的：30 秒滚动平均后取四次方平均再开四次方。
-                **但我们没有 30 秒数据** —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP **偏低**。
+                <Text className="chc__em">但我们没有 30 秒数据</Text>
+                —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP
+                <Text className="chc__em">偏低</Text>
+                。
                 ⚠️ 不算 IF / TSS：那两个都要 FTP，而 FTP 得专门测。拿「最佳 20 分钟 × 0.95」估一个再算 TSS，
                 会得到一个看起来很专业、其实是我们编的数字。
               </Text>
