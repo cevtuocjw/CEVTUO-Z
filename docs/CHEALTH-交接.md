@@ -1,419 +1,331 @@
-# CHEALTH 交接 —— 2026-09-28 收尾
+# CHEALTH 交接 —— 2026-09-28 晚
 
-> 给下一个窗口的自己/助手看。**先读「一句话现状」和「开场白」，其余按需查。**
-> 上一版（09-24）里有一条**错的**，见下面「⚠️ 上一版交接里错的那条」——别再照它做。
+> 给下一个窗口的助手看。**先读「一句话现状」和「开场白」，其余按需查。**
+> 这份是**当晚重写的**，替换了当天早上那版（那版里「搬域名 / 开 HTTPS」那些待办都做完了）。
 
 ---
 
 ## 一句话现状
 
-**手机端的自动同步修好并验证通过**（09-28 12:29，后台推 16,502 字节、HTTP 202 committed、0 次读取失败）。
-**阿里云的 HTTPS 已经打通**（`https://api.cevtuogrnd.com:8443`，实测 200）。
-**网站 HTTPS 已开通并实测**（09-28 下午：`https_enforced: true`，HTTP 全部 301 跳转；
-两个心跳从真实 HTTPS 页面拿到 200，无混合内容）。
-**仪表盘当晚搬到了自己的域名 `https://z.cevtuogrnd.com/`**（根路径），
-旧地址两条都仍然可用。⚠️ 搬域名踩的坑见「域名：两个域名，两回事」一节 ——
-**必须做的有两处**：`ALLOWED_ORIGINS` 加新域名、`deploy-pages.sh` 写 CNAME。
-
-⚠️⚠️ **开通 HTTPS 时踩到了一次真实的站点中断（约 20 分钟）** —— 根因是
-gh-pages 里一个躺了六天的 `CNAME` 文件在抢域名。**动手前先读下面「域名归属」一节。**
+**线上是好的、可用的、且经过验证的。**
 
 ```
-Galaxy Watch8 ─┐
-               ├─→ 三星健康 ─┐
-MyWhoosh→Strava ┘            │
-                             ├─→ Health Sync ─→ Health Connect ─→ CEVTUO Health (v2.4)
-               手机传感器 ────┘                                          │ POST
-                                                                        ▼
-                                          阿里云 120.77.27.128:8789 (HTTP) ←手机/Kindle
-                                                    │         :8443 (HTTPS，新)
-                                                    │ AES-GCM
-                                                    ▼
-                                          gh-pages 密文 ──→ 浏览器用口令解开
+网站          https://z.cevtuogrnd.com/
+CHEALTH 页    https://z.cevtuogrnd.com/#/pages/chealth/index
+主页 CHEALTH  https://z.cevtuogrnd.com/#/pages/home/index?panel=3
+口令          在 services/ingest/.env.server-backup 里，键名 CEVTUO_HEALTH_PASSPHRASE
+              取它：
+                grep '^CEVTUO_HEALTH_PASSPHRASE=' services/ingest/.env.server-backup | cut -d= -f2-
+
+              ⚠️⚠️ **口令的明文绝不写进这个文件，也绝不写进任何被跟踪的文件。**
+                 这个仓库是**公开**的，写了就等于把健康数据的解密密钥公开发布。
+                 我 2026-09-28 晚差一点就这么干了 —— 写完交接文档时顺手把口令抄了进去，
+                 幸亏在 push 之前查了一下 `git log -S`。那个 commit 还没推，已 amend 掉。
+                 **往文档里写密钥是个肌肉记忆式的动作，而它在这里的代价是全局的。**
 ```
+
+四个验证器全绿（**每次部署后都要跑**）：
+
+```
+bun scripts/verify-https-live.mjs    9/9    全站 HTTPS + 混合内容
+bun scripts/verify-copy.mjs          5/5    页面上渲染出来的字（Markdown 星号 / NaN / undefined）
+bun scripts/verify-home-stats.mjs    7/7    主页数字截断
+bun scripts/verify-chealth-ui.mjs   12/12   CHEALTH 版式 + 交互 + 配色 + 解锁入口
+```
+
+⚠️ **别只看构建通过**。这个项目里「构建全绿、页面白屏」发生过三次，
+「断言全绿、数据没动」发生过两次。**唯一可靠的是驱动真实页面 + 读 DOM + 亲眼看图。**
 
 ---
 
-## 开场白（直接复制给新窗口）
+## 开场白（直接粘给下一个窗口）
 
-```
-继续 CEVTUO-Z 的 CHEALTH 部分。先读 docs/CHEALTH-交接.md（2026-09-28 版）。
-手机用 adb 操作（无线调试已开，别用 MCP —— 那条被 Cherry Studio 的工具清单卡住）。
-  D="adb-RFCY71VRZKJ-r2l6Vm._adb-tls-connect._tcp"
-  adb -s "$D" shell ...        # ⚠️ 必须带 -s，否则「多于一个设备」失败
-
-当前可用的验证命令：
-  bun run typecheck
-  bun run services/ingest/verify-chealth.ts        # 76 条
-  bun scripts/verify-cnsr-ui.mjs                   # 122 条，需先起本地服务
-  bun scripts/verify-coof-ui.mjs                   # 97 条，同上
-  bun scripts/verify-paperr-ui.mjs                 # 168 条，同上
-  bun scripts/verify-https-live.mjs                # 9 条，打线上真实域名
-
-我这轮想让你做：
-  [在这里写你要做的事]
-
-⚠️ 工作树已清空（2026-09-28）。但**推 main 之前先 `git fetch`** ——
-   远端有定时 Actions 在写 `sync: coof data` 提交。
-```
+> 继续 CEVTUO-Z 的 CHEALTH。先读 `docs/CHEALTH-交接.md`（2026-09-28 晚这版，别找早上的）。
+>
+> 三件事，按顺序：
+>
+> 1. **把十屏收进三屏**：`components/Sheet.tsx` + `Sheet.scss` 已经写好并提交
+>    （`42c4a49`），但**还没接到页面上**。接线方案见交手里的「下一步 A」。
+>    ⚠️ 我上一次尝试用脚本搬 JSX 把文件改崩了（9 处语法错误），已回退 ——
+>    **别再用脚本跨 300 行搬 JSX**，改用「把每个弹窗内容抽成局部组件」的做法。
+>
+> 2. **三星那套视觉全面改造**：柱状图的配色做了（每指标一色、今天满色、过去 42% 淡版），
+>    但**目标线 / 达标进度 / 字重层级 / 卡片圆角间距**都还没动。读者原话：
+>    「现在完全 CSS 看起来不像三星的 APP 那个界面，太不像了」。
+>
+> 3. 做完上面两件再跑四个验证器 + `bun run typecheck` + 部署。
+>
+> 手机用 adb（`export PATH=/opt/homebrew/bin:$PATH`，设备 `adb-RFCY71VRZKJ-r2l6Vm._adb-tls-connect._tcp`）。
+> **别用 AndroMeld 的 MCP**（Cherry Studio 只转发 19 个工具里的 9 个，缺的正好是读屏和输入）。
 
 ---
 
-## ⚠️ 上一版交接（09-24）里错的那条 —— 别再照它做
+## 今晚做完的事（都已部署 + 验证 + 提交）
 
-上一版说「**CNSR / COOF 两个页面一直没做审计，是欠得最久的**」。
-
-**审计早就做了**，`scripts/verify-cnsr-ui.mjs`（110 条）和 `scripts/verify-coof-ui.mjs`（97 条）
-都是 2026-09-23 提交的（`930dd9a`），09-28 实测全绿。**没有任何东西要做。**
-（这一版里 CNSR 套件已经从 110 涨到 **122**，见下。）
-
-这是这个项目**第三次**出现交接记录与事实不符。**照着交接做之前，先花一分钟验一下它说的还在不在。**
-
----
-
-## ✅ 2026-09-28 做完并验证的事
-
-### 1. CNSR 两个 bug（已发布到线上，跑的是线上 URL）
-
-| bug | 根因 | 修法 |
-|---|---|---|
-| 页面显示「N 天」比树里画的多 | `counts.days = st.segs.length`（`@日期` **标记**数），而树按**去重日期**画节点。Learn 有两条 09-20、TECH-AI 有两条 09-20 和两条 09-08 ⇒ 表头 7 天压 5 个节点 | 改成 `st.days.size` |
-| `imagesSeen` 永远 0 | 从没被赋值；旁边的 `imagesSkipped` 也被 `st.cur = {}` 丢掉 | 在 push 段时算 `images.length + imagesSkipped` |
-
-改完后 Shopping **正好顶满 5 图上限**，09-18 那张被挤掉 ⇒ 载荷里现在真实存在 `images:0 / imagesSeen:1`。
-
-**CNSR 套件 110 → 122 条**，两条新断言都做了负向对照：
-- 把 `days` 改回 6 → 三个视口全红
-- 把 `imagesSeen` 置 0 → 「空转护栏」全红（这条护栏很值：它证明了另一条断言会空转通过）
-
-⚠️ 「日标题里不出现负数」那条**当前不可能失败**（clamp 使其结构性成立），已改名标注为**哨兵**，别拿它当证据。
-
-### 2. 阿里云 HTTPS —— `https://api.cevtuogrnd.com:8443` 已实测可用
-
-```
-https://api.cevtuogrnd.com:8443/health              → 200
-证书 subject=CN = api.cevtuogrnd.com · Let's Encrypt · notAfter=Dec 27
-```
-
-完整链路，**全部绕开 yum**（CentOS 8.2 已 EOL，`yum install nginx certbot` 必失败）：
-
-| 步骤 | 关键点 |
+| commit | 做了什么 |
 |---|---|
-| DNS | 阿里云 hichina。`api.cevtuogrnd.com A → 120.77.27.128` |
-| acme.sh | ⚠️ 服务器上 **`raw.githubusercontent.com` 超时**，但 **`codeload.github.com` 通** ⇒ `curl -sL https://codeload.github.com/acmesh-official/acme.sh/tar.gz/refs/heads/master \| tar xz -C /opt` |
-| 证书 | **DNS-01 不需要 80 端口**：`acme.sh --issue --dns dns_ali -d api.cevtuogrnd.com --server letsencrypt --home /opt/acme-home --keylength ec-256` |
-| 续期 | cron 每天 4 次；`--reloadcmd` 里**必须带 chown**（见坑） |
-| TLS | **Bun 自己终结**，不装 nginx：`server.ts` 里加了 **8443 → 127.0.0.1:8789 的转发器** |
-| 防火墙 | 轻量应用服务器 SWAS-OPEN API：`swas.cn-shenzhen.aliyuncs.com` / `2020-06-01`，**参数名是 `RuleProtocol` 不是 `Protocol`** |
+| `2357c5d` | **修「09-26 之后没有过程数据」** —— 见下面「今晚最大的坑」 |
+| `42c4a49` | 弹窗 + 图标格组件（**地基，未接线**） |
+| `d9358c3` | 六屏拆成十屏 + 翻页提示说实话 |
+| `2b9f870` | CHEALTH 加解锁输入框（**之前根本没有入口**） |
+| `d4c6af7` | 柱状图用每个指标自己的颜色 |
+| `f89498f` | 「默认选中今天」从来没生效过 + 缺数据被画成横线 |
+| `73b8a6a` | 页面上渲染出 Markdown 星号（全站 5 处） |
+| `6056bd3` | 主页 CHEALTH 接上数据 + 修数字压数字 |
+| `c217b16` | 服务端按 start 合并会话 ⇒ 删不掉旧记录 |
 
-阿里云凭据在 **`~/.aliyun/`**（`config.json` 600 权限 + 自写的 `rpc.mjs` 签名器，不进仓库）。
+⚠️ CEVTUO-Z 的 commit 都在本地，**没有 push 到 GitHub**。要推的话先 `git fetch`
+（远端有定时 Actions 在写数据），而且本机 token **没有 `workflow` 权限**。
 
-### 3. ⭐⭐ 手机自动同步为什么四天不动 —— 三层套娃，已修并验证
+---
 
-**症状**：心跳每 15 分钟更新，数据从 09-24 起四天不动。页面把两个时间戳并排显示，不置一词。
+## ⚠️⚠️ 今晚最大的坑：过滤加错了层
 
-| 层 | 是什么 | 怎么发现的 |
+**症状**：读者问「为什么 9 月 26 日开始的数据就没有任何过程和详细数据」。
+解封线上索引逐场看：
+
+```
+09-23 18:44 BIKING   hr=64 功率=60 踏频=60 速度=60   ✓
+09-24 19:04 RUNNING  hr=29 速度=29
+09-26 19:49 BIKING   hr=0  功率=0  踏频=0  速度=0    ✗ 全空
+```
+
+**根因**：我上一轮为了排除 Google Fit 的重复活动，把过滤加进了
+`SyncWorker.records()` —— 那个函数是**全同步唯一的读取入口**。
+放在那里看起来正是「只写一处、不会漏」的典范，于是它把**测量值**一起滤掉了。
+会话本身还活着（另一条路径读的），所以症状是**有活动、没有曲线**。
+
+**修法**：过滤只用在 `collectSessions` 挑会话那一处。
+- 会话**会**重复（同一场骑行两条记录）⇒ 要滤
+- 测量值只是被镜像 ⇒ 不该滤
+
+⚠️ **「唯一入口」听起来安全，但入口里做掉的判断会影响它下面所有的用途。**
+
+⚠️ 我当时还走错一次：看到 09-26 没有心率，而探针显示**心率只有 healthsync 在写**，
+就断言「不是 fitness 的问题」。那个推论只证明了**心率**不是 fitness 写的 ——
+**用一条记录类型否证了一整类**。
+
+⚠️ 另一个教训：我拿「上报负载字节数」当判据（13899 → 14163），而**只差 264，
+根本不足以证明修好了**（真正修好后也是 14163）。判据必须是**逐场看 `hrSeries` 的长度**。
+
+手机端改动**不在 CEVTUO-Z 仓库里**，在 `~/cevtuo-health`（独立 git 仓库，已提交 `2357c5d`）。
+远端是 `github.com/cevtuocjw/cevtuo-health`。
+
+⚠️ 这条我第一版写成了「没有远端仓库」—— **是错的**，`git remote -v` 一查就有。
+（上一份交接里也有这条错的，我照抄了没核。**交接文档里的每条事实都要当场验一遍**，
+它最大的风险不是漏，是**把上一版的错抄下来**，而抄下来的错看起来最权威。）
+
+---
+
+## 今晚挖出的五个 bug —— 有四个是同一个形状
+
+| # | 症状 | 真相 |
 |---|---|---|
-| **1** | **manifest 缺 `android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND`** ⇒ 后台读 Health Connect 抛 `SecurityException: Caller does not have permission to read data … from other applications` | 前后台对照 |
-| **2** | 每次同步 **450 次 `readRecords`**（30 天 × 15 类型）撑爆 Health Connect 配额 ⇒ `API call quota exceeded`（一次同步 451 次） | logcat |
-| 3 | ~~Health Sync 漏天~~ / ~~手机没数据~~ | **两个都是错的**，别再往这两个方向查 |
+| 1 | 主页 CHEALTH 那格永远是「— / 未解锁」 | `route: null`，索引页根本没接线 |
+| 2 | `9686` 压在 `5.78h` 上 | `.stats__item` 固定 118px 且不裁剪，字号写死 62.4px |
+| 3 | 睡眠块标签是「睡.」 | 四块字号同一个 30px，而可用宽度是 144/98/53px |
+| 4 | 柱状图「默认选中今天」 | `useState` 初值在 `days` 为空时求值 ⇒ 永远停在第 0 根 |
+| 5 | 缺数据显示成一根横线 | `—` 在 21px 粗体下**就是一条分隔线** |
 
-**决定性证据是 app 自己打的字节数**（比任何截图都值钱）：
+**共同点：都不是崩溃，都过了类型检查，都能截出一张「看着还行」的图。**
+⇒ 只能靠**量出来的数**（`scrollWidth` / `clientWidth` / 第几根 / 计算出来的颜色）抓住。
 
-```
-后台 12:14   同步 HTTP 200    157 字节   读取失败 46   ← 空载荷 ⇒ 服务器正确地回 unchanged
-前台 12:17   同步 HTTP 200  18003 字节   读取失败 0
-后台 12:29   同步 HTTP 202  16502 字节   读取失败 0   ← 修好之后
-```
-
-**修法**：
-1. `SyncWorker.kt`：`for (i in DAYS - REFRESH_DAYS until DAYS)`，每次只回读 **3 天**（服务器按日期 merge，本来只需填缺口）⇒ 450 次降到 ~45 次
-2. `AndroidManifest.xml`：加 `READ_HEALTH_DATA_IN_BACKGROUND`，然后 `adb shell pm grant` 授上
-
-⚠️ 这两条**必须一起**：只修 #2 不修 #1，配额照样爆；只修 #1 不修 #2，后台读照样全拒。
+⚠️ 还有一条元教训：**占位符比真数据短，就替真数据挡了一整类 bug。**
+那四格数字以前永远是「—」（一个字符），所以「固定宽度 + 不收缩字号」的问题
+一直没暴露。**占位符必须是「最坏情况」的形状，不只是「长得像占位符」。**
 
 ---
 
-## ⭐ 域名：两个域名，两回事（2026-09-28 晚定案）
+## ⚠️ 这个项目里会复发的四个陷阱
 
-| 域名 | 归谁 | 服务什么 |
-|---|---|---|
-| **`z.cevtuogrnd.com`** | **`cevtuocjw/CEVTUO-Z`** | **仪表盘，根路径** ← 真实站点 |
-| `apps.cevtuogrnd.com` | **`cevtuocjw.github.io` 用户站** | 根 = CEVTUOGRND 落地页；`/CEVTUO-RWP/` = RWP |
+**① 幽灵类 `.chc`**
+SCSS 里 `.chc { &__rows { … } }` 编译成 `.chc__rows`（真在用），
+但**裸的 `.chc` 选择器匹配不到任何东西** —— 挂它上面的自定义属性全部解析为空。
+咬了两次（马赛克的 `var(--blue)`、柱状图的 `var(--m)`），症状都是「颜色变灰，别的一切正常」。
+**判断方法**：`getComputedStyle(document.querySelector('.chc__rows')).getPropertyValue('--m-steps')`，
+空字符串就是没挂上。**类型检查、构建、截图都不会告诉你。**
 
-**真实站点 = `https://z.cevtuogrnd.com/`**（`https_enforced: true`）。
-旧地址两条**都仍然可用**：`apps.cevtuogrnd.com/CEVTUO-Z/` 直接服务同一份内容
-（GitHub 按路径服务），`cevtuocjw.github.io/CEVTUO-Z/` 301 过去。
-实测两边 HTML 与数据 md5 一致 —— 是同一份，不是副本。
+**② `.card` 的特异性**
+`.card` 是单类选择器。任何**单类**的 `.chc__xxx` 和它特异性平手，
+胜负由样式表顺序决定 —— 而 demo.scss 在后，`.card` 的 `flex-direction: row` 一直赢。
+⇒ 要改布局就得写**两个类**：`.card.chc__stack`、`.card.chc__unlock`。
+咬了两次（`.chc__stack`、`.chc__unlock` —— 后者让输入框只剩 4px 宽，手机上打不了字）。
 
-### ⚠️⚠️ CNAME 规则（这是这份交接里最容易做错的一处）
+**③ `cqw` 量的是内容盒，不是外框**
+按块宽（81px）算成 `24cqw`，字号掉到 12.6px 比标签还小。真正的分母是内容宽 53px。
 
-⭐ **gh-pages 上必须有 `CNAME` 文件，内容必须是这个仓库真正拥有的域名。**
-
-- ✅ **`z.cevtuogrnd.com`** —— 本仓库自己的域名
-- ❌ **绝不能写 `apps.cevtuogrnd.com`** —— 那是**用户站**的域名。
-  项目站声明了别人的域名，GitHub 就把它搬到那个域名的根路径、顶掉落地页、
-  两个仓库打架（后设置的报 `Invalid cname: already taken by another
-  repository in your account`）。
-  ⚠️ **这个冲突不会自己暴露**：只要用户站那边也持有同一域名，两边能共存、
-  站点看起来完全正常；只有当有人按文档「移除再重新添加自定义域名」去触发
-  HTTPS 签发时才会炸出来 —— **而那一刻站点已经断了**（2026-09-28 实际发生过，
-  中断约 20 分钟）。**恢复顺序**：删 gh-pages 的 CNAME →
-  `PUT CEVTUO-Z/pages {cname:null}` → 再 `PUT 用户站/pages {cname:"apps.cevtuogrnd.com"}`。
-
-⚠️⚠️ **`deploy-pages.sh` 是「新建舞台目录 → force-push」，舞台上没有的东西在
-gh-pages 上就不存在了。** 所以它**必须自己写 CNAME** —— 我漏了这一步，GitHub
-在设置自定义域名时写下的 CNAME 被 force-push 删掉，后果是 **`z.cevtuogrnd.com`
-整站 404**（GitHub 的「Site not found」页），**而 API 里的 `cname` 字段仍然显示
-正确** —— 一个只在真实域名的真实页面上才看得见的故障。
-**换域名时 `deploy-pages.sh` 里那一行必须跟着改。**
-
-### ⚠️⚠️ 换域名/开 HTTPS 时，「守卫 URL」会静默失效（咬过两次）
-
-`deploy-pages.sh` 里那两个「取线上已发布版本」的 URL（paperr / chealth）
-指向站点当前地址。站点一旦 301，而 `curl -fsS` **不带 `-L`**
-⇒ 拿到空 body ⇒ JSON 校验失败 ⇒ **守卫静默失效**：
-
-- 第一次（开 Enforce HTTPS）：**`data/chealth/index.json` 被从 gh-pages 删掉**
-- 第二次（搬域名）：提前想到，拦住了
-
-现已改成新域名**并且加了 `-L`**；chealth 那段取不到时**直接 `exit 1` 中止发布**
-（paperr 能退回本地副本，chealth 退回不了 —— Mac 上根本没有那个目录）。
+**④ 服务端 `mergeSessions` 是整表替换**
+`incoming` 是**整段窗口的完整列表**（`collectSessions` 每次读 30 天全天窗，
+和日期循环那个只重读 `REFRESH_DAYS` 的增量**不是一回事**）。
+⚠️ 所以手机端读会话失败时**不能发空数组**，要**不放这个键** ——
+`undefined` = 「没读到」（保留旧值），`[]` = 「窗口内真的没有」（清空）。
+手机端 `SyncWorker` 已经改成不放了。
 
 ---
 
-## 下一步（按顺序）
+## 下一步 A：把十屏收进三屏（读者明确要求）
 
-### ① 开网站 HTTPS 之前的两处改动 —— ✅ 已完成并实测
-
-实测（Playwright）：HTTPS 页面 fetch `http://120.77.27.128:8789/…` 会
-`requestfailed: mixed-content`，Chrome 直接拦。而 `fetchPaperrHeartbeat` /
-`fetchChealthHeartbeat` 都是 `catch { return null }` ⇒ **页面显示一个「—」，零报错**。
-
-1. `services/ingest/src/server.ts` 的 `ALLOWED_ORIGINS`（当时**只有
-   `http://apps.cevtuogrnd.com`**）要加上 https 那条。站点变 HTTPS 后 Origin 是
-   `https://…`，**不在白名单 ⇒ CORS 照样拦死**。
-   （服务器 `.env` 里没有 origin 覆盖，所以是代码默认值。）
-   ⚠️ **2026-09-28 已经加过两轮**：先是 `https://apps.cevtuogrnd.com`，
-   搬域名后又是 `https://z.cevtuogrnd.com`。**站点换地址时这里必须跟着加** ——
-   漏了的症状仍然是两个「—」和零报错。
-2. `apps/dashboard/src/platform/data.ts` 的 `CHEALTH_HEARTBEAT_URL` / `PARRER_HEARTBEAT_URL`
-   改成 `https://api.cevtuogrnd.com:8443/…`。
-
-⚠️ 改完**必须在真实 HTTPS 上下文里验**。本地 `127.0.0.1` 是安全上下文，**这个坑已经骗过一次**。
-
-### ② 开 GitHub Pages 的 HTTPS —— ✅ 已完成
+### 目标结构
 
 ```
-https_enforced: true     http://  →  301  https://
-证书实测 subject = apps.cevtuogrnd.com
-https://apps.cevtuogrnd.com/{,CEVTUO-Z/,CEVTUO-RWP/}  全部 200
+屏 0「今天」    hero + 马赛克四块 + 图标格（六个入口）
+屏 1「运动」    筛选 chips + 会话列表（卡片要压缩：图标 + 一行 + 关键数）
+屏 2「趋势」    步数 / 睡眠 / 消耗 三张柱状图
 ```
 
-⚠️ **旧版这一节的两条判断都是错的，别再照着推理：**
+六个入口点开是弹窗：`zones` 心率区间 / `week` 周对比 / `power` 功率 /
+`streak` 连续达标 / `kinds` 类型分布 / `sources` 数据来源。
+另有 `session` 弹窗放单场运动的四条曲线。
 
-| 旧版说 | 实际 |
-|---|---|
-| 「证书从来没签过」 | GitHub 一直拿 **`*.github.io` 兜底证书**（SAN 里没有该域名）⇒ 浏览器报 `ERR_TLS_CERT_ALTNAME_INVALID`。**是「签错」不是「没签」** |
-| 「缺 GitHub 的 TXT 校验记录」 | **官方文档明确：域名校验不是 HTTPS 的前提**（只在域名被占用时才要）。`pending_domain_unverified_at` 和 `protected_domain_state` 都是 `null` |
+### 当前文件结构（`pages/chealth/index.tsx`）
 
-**真根因就是上面那个 CNAME 冲突。** 清除后按官方文档做「移除再重新添加自定义域名」，
-**一次成功**（`https_certificate.state = "approved"`）。
+```
+265-298   Section「需要口令」   ← PageStack 外面
+308       <PageStack count={10}>
+309-392   Section 0 CHEALTH（hero + mosaic + tile-note）
+406-554   Section 1 运动
+556-579   Section 2 步数与睡眠
+581-616   Section 3 消耗
+618-721   Section 4 心率与来源    ← 要变成 Sheet('sources')
+722-766   Section 5 分析          ← Sheet('zones')
+778-839   Section 6 周对比        ← Sheet('week')
+841-864   Section 7 功率          ← Sheet('power')
+866-885   Section 8 连续达标      ← Sheet('streak')
+887-946   Section 9 类型分布      ← Sheet('kinds')
+947       </PageStack>
+```
 
-⭐ 两个操作要点：
-- 「**移除再重新添加**」才是触发器；`PUT` **同一个值**回去是**空操作**。
-- 判断证书**不要用 macOS 自带的 curl**（LibreSSL 3.3.6，打 8443 直接
-  `Connection reset by peer`）。用 `node:tls` 看 `getPeerCertificate()` 或用 `bun` 的 fetch。
+（行号是回退后的当前值，动手前先 `grep -n "^        <Section" | head -20` 核一遍。）
 
-### ③ 提交 —— ✅ 已完成
+### ⚠️⚠️ 怎么做（别再犯我那个错）
 
-6 个提交已推送到 `main`（`70b8c44`）。⚠️ **推之前先 `git fetch`** —— 远端有定时
-Actions 在写 `sync: coof data` 提交，直接 push 会被拒。见「未提交清单」。
+**不要写脚本跨几百行搬 JSX。** 我试过，脚本跑完 typecheck 报 9 处语法错误
+（打开的 `<Sheet ...>` 没被正确闭合），只能整体回退。
+
+**推荐做法**：在同文件里把每个 Section 的内容抽成**局部组件**，例如
+
+```tsx
+function ZonesPanel({ zones, zoneMinutes, refMaxHr }: …) { return (…原样搬过来…); }
+```
+
+然后在 `</PageStack>` **外面**渲染：
+
+```tsx
+<Sheet open={sheet === 'zones'} title="心率区间" onClose={closeSheet}>
+  <ZonesPanel … />
+</Sheet>
+```
+
+这样**不需要移动任何 JSX**，只是把它包一层函数 —— 搬错了 typecheck 立刻会报。
+
+**每搬一段就跑一次 `bun run typecheck`**，不要搬完六个再跑。
+
+### 已经写好的东西（`components/Sheet.tsx` / `Sheet.scss`，commit `42c4a49`）
+
+```tsx
+<Sheet open={boolean} title={string} onClose={() => void}>{children}</Sheet>
+<IconGrid items={[{ key, icon, label, value? }]} onPick={(key) => void} />
+```
+
+- `max-height: 86vh`（留一截主屏在视野里，全屏面板和「跳走了」没区别）
+- 蒙层吃掉点击；面板自己 `stopPropagation`（点内容是想**看**，不是想关）
+- 状态用**一个** `sheet: string | null`，不是每个弹窗一个 boolean
+  （同时开两个弹窗是用不了的状态，不该能表示出来）
+- `IconGrid` 是**三列**（四列在 390px 上每格约 88px，中文标签只能缩到 9px，没法读）
+
+⚠️ 接完线记得把 `PageStack count={10}` 改成 `{3}`，并在屏 0 加：
+
+```tsx
+<IconGrid onPick={openSheet} items={[
+  { key: 'zones',  icon: 'heart',  label: '心率区间', value: zoneMinutes > 0 ? `${Math.round(zoneMinutes)}分` : undefined },
+  { key: 'week',   icon: 'up',     label: '周对比' },
+  { key: 'power',  icon: 'power',  label: '功率' },
+  { key: 'streak', icon: 'trophy', label: '连续达标', value: streak > 0 ? `${streak}天` : undefined },
+  { key: 'kinds',  icon: 'bike',   label: '类型分布' },
+  { key: 'sources',icon: 'watch',  label: '数据来源' },
+]} />
+```
+
+（`zoneMinutes` / `streak` 都是页面里已有的 `useMemo`。）
 
 ---
 
-## ⚠️ 坑（每条都会复发；标 🆕 的是这次新踩的）
+## 下一步 B：三星视觉（读者的原话是「太不像了」）
 
-### 🆕 这次新踩的
+**已经做了**：柱状图每指标一色（步数绿 `#3ecf8e` / 睡眠紫 `#8b7cf6` / 消耗橙
+`#ff9f43`），今天满色、过去 42% 淡版、空白保持灰。色值只在
+`ChealthCharts.scss` 的 `--m-*` 定义一次，`tone` 传的是**名字**不是色值。
 
-- ⚠️⚠️ **`adb install -r` 会重置 Health Connect 授权？—— 实测：不会。**
-  我一度这么以为并写进了结论。`dumpsys package` 显示普通 health 权限全是 `granted=true`，
-  只有后台那条是 false。**先查 `dumpsys`，别猜。**
-- ⚠️ **`adb exec-out screencap -p > x.png` 在 macOS 上产出坏 PNG**（`sips` 读不出尺寸）。
-  用 `shell screencap -p /sdcard/x.png` + `pull`。
-- ⚠️⚠️ **一台手机会同时出现两条 adb 连接**（一条带 ` (2)`），不带 `-s` 必失败。固定用一个名字。
-- ⚠️ **`~/.aliyun/rpc.mjs` 里不能 slice 输出** —— 我 slice 2500 把 19 条记录的 JSON 截断，
-  报错却是「Property name must be a string literal」，指向调用方而不指向那一刀。
-- ⚠️ **调阿里云 API 要 `NO_PROXY=aliyuncs.com`**，否则走代理。
-- ⚠️⚠️ **`acme.sh --install-cert` 写出的私钥属主是 root**，而 systemd 服务以 `cevtuo` 跑
-  ⇒ `EACCES`，TLS 起不来。**chown 必须写进 `--reloadcmd`**，否则每次续期后又会静默挂掉。
-  （和记忆里 `ln -sf /root/.bun/bin/bun` 那个 203/EXEC 是同一形状。）
-- ⚠️ **`rg` 在阿里云那台机器上不存在**，用 `grep`。
-- ⚠️⚠️ **一次失败的 `rg` 让 `&&` 链短路**，于是 typecheck/build 根本没跑，而我拿旧 bundle 探测
-  然后奇怪为什么新代码没生效。**看到「没生效」先确认构建真的跑了。**
-- ⚠️ **`rg --glob '*.scss'` 静默匹配 0 个文件**时，我据此误报「`chc__stale` 没定义」。
-  它其实在 `ChealthComponents.scss:77`。**rg 返回空 ≠ 不存在，先换一种查法。**
-- ⚠️⚠️ **判断 HTTPS / 证书不要用 macOS 自带的 curl。** 它是 **LibreSSL 3.3.6**，
-  打 `api.cevtuogrnd.com:8443` 时握手阶段直接 `Connection reset by peer`（**exit 35**），
-  而服务器**完全正常**。Chrome 和 bun 都没问题。
-  ⭐ **改用 `node:tls` 取 `getPeerCertificate()`，或用 `bun` 的 fetch。**
-- ⚠️⭐ **`ERR_TLS_CERT_ALTNAME_INVALID` 说明证书存在但名字不对，不是「没有证书」。**
-  这两者症状完全不同 —— 我一度把前者读成后者，差点往「证书没签发过」的方向查。
-- ⚠️ **`gh api "...?ref=gh-pages"` 在 zsh 里 `?` 会被当通配符**，不加引号整条命令失败
-  （报 `no matches found`）。**URL 里带 `?` 一律加引号。**
+**还没做**：
+1. **目标线 / 达标进度** —— 三星另一半辨识度来自「9,686 / 目标 10,000」那种进度感。
+   现在只有裸数字。步数目标 8000（`stepStreak` 里已经用了这个数）。
+2. **睡眠口径** —— hero 上显示 **7 天累计 37.7h**。三星展示**昨夜**或**每晚均值**。
+   「37.7h」不是任何人理解睡眠的方式，**这个数值口径本身该改**。
+3. **运动卡片标题折行**（「50 分/钟」被拆开、类型图标跟着错位）
+4. **来源表里的 ⚠️ 独占一行**；心率区间「118 分」的「分」折行
+5. 字重层级、卡片圆角与间距、图标格和弹窗的视觉细化
 
-### 测试方法本身会骗人
-
-- ⚠️⚠️ **localhost 是「安全上下文」，线上 HTTP 不是。** `crypto.subtle` 在本地永远可用、
-  在线上永远是 `undefined`。测加密、剪贴板、地理位置、Service Worker —— **本地跑通什么都不说明**。
-- ⚠️ **CDN 10 分钟缓存**。`?t=` **没用**（GitHub Pages 的 CDN 忽略查询串）；用 `cache: 'no-store'`。
-- ⚠️ **构建通过什么都说明不了，断言全绿也说明不了，截图也骗人。**
-  唯一可靠的是：驱动真实页面、读事件前后的 DOM、然后**亲眼看图（而且要放大看）**。
-
-### 静默失败（本项目高发区）
-
-- ⚠️⚠️ **「回执是成功、数据没动」** —— 这是本项目最贵的形状，已经出现**至少四次**：
-  `handleRebuild` 返回 202 被判成 200；CAPPERR 的 `unchanged`；CHEALTH 的
-  `200 unchanged` 携带空载荷；以及这次手机报「同步成功」而服务器什么都没收到。
-  **看到成功码不等于数据动了。**
-- ⚠️ **`changed` 只看 days** → 运动明细变了却回 200「数据没有变化」。已修（会话变了也算）。
-- ⚠️ **单类选择器之间胜负由样式表引入顺序决定**。`.chc__stack` 干不过 `.card`，因为 `demo.scss` 在后面。用两个类。
-- ⚠️ **`&.card#{&}__stack` 会编译成 `.chc.card.chc__stack`**，要求三个类同时存在，**sass 不报错**。
-- ⚠️ **属于组件的样式不能住在页面里**（图表 CSS 曾在 `pages/paperr/index.scss`，主页没 import 它）。
-- ⚠️ **`deploy-pages.sh` 是「新舞台目录 + force-push」** ⇒ 舞台上没有的东西在 gh-pages 上就**不存在了**。
-  已加保护（paperr / chealth 都取线上那份），输出里会打印「保留线上已发布的 …」。
-
-### 数据类
-
-- ⚠️ **Health Connect 载荷是 30 天滑窗** ⇒ 服务端必须按日期 merge。
-- ⚠️ **`readRecords` 必须跟进 `pageToken`**，单页会少报 33 倍。
-- ⚠️ **步数有三个写入方**（healthsync / fitness / android），直接 sum = 三倍。
-- ⚠️ **保留期按「最新数据日期」算，不按墙上时钟**。
-- ⚠️ **`TotalCaloriesBurnedRecord` 含基础代谢**（恒定 ~1662/天），必须和活动消耗分开显示。
-
-### 手机操作类
-
-- ⚠️ **不要用 adb 点三星健康那个「关于」页** —— 它会在两次 `uiautomator dump` 之间**重排**。这类页面让用户点。
-- ⚠️ 版本号行下面紧挨着「京ICP备05068163号-86A」**链接**，点偏就跳浏览器。
-
----
-
-## 验证套件（都要保持全绿）
-
-| 命令 | 条数 | 覆盖 |
-|---|---|---|
-| `bun run typecheck` | — | `tsc -b` + dashboard 单独一遍（根 tsconfig **排除 apps**） |
-| `bun run services/ingest/verify-chealth.ts` | **76** | 滑窗累积、0 不是缺失、密文不含明文、保留期不按墙上时钟 |
-| `bun scripts/verify-cnsr-ui.mjs` | **122** | 「N 天」= 树里日数、图片上限有说明、裸链接、热力图 |
-| `bun scripts/verify-coof-ui.mjs` | **97** | 年轮弹窗、波浪图、海报网格 |
-| `bun scripts/verify-paperr-ui.mjs` | **168** | 书架、图表、CHEALTH 停摆判决（**夹具从索引的 `to` 推导**） |
-| `bun scripts/verify-https-live.mjs` | **9** | **真实 HTTPS 域名**：页面自己发出的心跳请求拿到 200 且是 https |
-
-### 本地起服务
-
-```bash
-cd ~/Documents/CEVTUO-Z
-(cd apps/dashboard && bun run build:h5)
-rm -rf /tmp/cevtuo-serve && mkdir -p /tmp/cevtuo-serve/data/chealth
-cp -R apps/dashboard/dist/. /tmp/cevtuo-serve/
-cp -R data/coof data/cnsr data/paperr /tmp/cevtuo-serve/data/
-cp data/sync-meta.json /tmp/cevtuo-serve/data/
-curl -sL --noproxy '*' -o /tmp/cevtuo-serve/data/chealth/index.json \
-  "https://z.cevtuogrnd.com/data/chealth/index.json"
-# ⚠️ `https://` 和 `-L` 都要 —— 站点开 HTTPS 后明文地址 301，
-#    不带 `-L` 会拿到空 body，而后面的 JSON 校验会静默失败。
-# 再起一个把 /z 映射到 /tmp/cevtuo-serve 的静态服务在 8096
-```
+⚠️ 改视觉之前先看一眼**真实的三星健康截图**。不要凭「编辑风格」这种模糊描述猜 ——
+这个项目已经在 Liquid Glass 上因为「看着合理」被骗过一次。
 
 ---
 
 ## 常用命令
 
 ```bash
-# ── 手机（adb 在 /opt/homebrew/bin，⚠️ 必须 -s）──
 export PATH=/opt/homebrew/bin:$PATH
+cd ~/Documents/CEVTUO-Z
+
+bun run typecheck          # ⚠️ 改任何 dashboard 代码后都要跑（根 tsconfig 排除了 apps）
+bun run app:build:h5       # H5 构建
+bash scripts/deploy-pages.sh   # 发布到 gh-pages
+bash scripts/deploy-ingest.sh  # 发布 services/ingest 到阿里云
+
+# 本地预览（⚠️ 每次构建都会清掉 dist/data，要重新链）
+mkdir -p /tmp/sv && ln -sfn ~/Documents/CEVTUO-Z/apps/dashboard/dist /tmp/sv/z
+ln -sfn ../../../data apps/dashboard/dist/data
+(cd /tmp/sv && python3 -m http.server 8125 &)
+bun scripts/shot-panel.mjs "http://127.0.0.1:8125/z/#/pages/chealth/index?k=<口令>" /tmp/out 10
+
+# 手机（⚠️ 必须带 -s，⚠️ 别用 AndroMeld 的 MCP）
 D="adb-RFCY71VRZKJ-r2l6Vm._adb-tls-connect._tcp"
-adb -s "$D" shell input keyevent KEYCODE_WAKEUP
-adb -s "$D" shell screencap -p /sdcard/_c.png && adb -s "$D" pull /sdcard/_c.png /tmp/p.png
-adb -s "$D" shell uiautomator dump /sdcard/ui.xml && adb -s "$D" pull /sdcard/ui.xml /tmp/ui.xml
-adb -s "$D" logcat -c ; adb -s "$D" logcat -d | grep CevtuoHealth
-
-# 构建 + 装 app（~/cevtuo-health，⚠️ 不在 git 下）
-export JAVA_HOME=~/android-toolchain/jdk/Contents/Home ANDROID_HOME=~/android-toolchain/sdk
-TOK=$(grep '^CEVTUO_HEALTH_TOKEN=' ~/Documents/CEVTUO-Z/services/ingest/.env.server-backup | cut -d= -f2-)
-~/android-toolchain/gradle/gradle-8.11.1/bin/gradle :app:assembleDebug --no-daemon -PcevtuoDeviceToken="$TOK"
+adb -s "$D" shell monkey -p com.cevtuo.health -c android.intent.category.LAUNCHER 1
+#   按钮：① 授权 ② 探针 ②B 新鲜度 ②C 写入方 ②D 全量盘点 ②E 运动明细
+#         ③ 立即上报一次（app 重启后 y≈1525） ④ 开自动上报
+cd ~/cevtuo-health
+JAVA_HOME="$HOME/android-toolchain/jdk/Contents/Home" \
+  ~/android-toolchain/gradle/gradle-8.11.1/bin/gradle assembleDebug
 adb -s "$D" install -r app/build/outputs/apk/debug/app-debug.apk
-
-# ── 服务端 ──
-bash scripts/deploy-ingest.sh          # 只传代码，不碰 .env
-
-# ── 网站 ──
-(cd apps/dashboard && bun run build:h5) && bash scripts/deploy-pages.sh
-
-# ── 状态 ──
-curl -s --noproxy '*' http://120.77.27.128:8789/api/chealth/heartbeat.json
-curl -s --noproxy '*' https://api.cevtuogrnd.com:8443/api/chealth/heartbeat.json
-bash scripts/chealth-phone-setup.sh status
 ```
 
-⚠️ 宿主机有代理 ⇒ **脚本里的 curl 必须加 `--noproxy '*'`**（阿里云 API 走 `NO_PROXY=aliyuncs.com`）。
+⚠️ **开本地预览前先 `lsof -nP -i :8096` 看一眼** —— 那里曾经有一个上次会话遗留的
+bun 服务，我差点截到它的旧页面当成结果。
 
-⚠️⚠️ **上面那两条 `curl https://…:8443/…` 在本机永远失败** —— macOS 自带 curl 是
-LibreSSL 3.3.6，握手中就被 reset。**别把它读成「服务器坏了」**。改用：
+---
 
-```bash
-bun -e "console.log(await (await fetch('https://api.cevtuogrnd.com:8443/api/chealth/heartbeat.json')).text())"
+## 数据链路（别搞混）
+
+```
+Galaxy Watch8 ─▶ Samsung Health ─▶ Health Connect ─▶ CEVTUO Health(手机)
+                                                          │ 每 15 分钟 POST
+                                                          ▼
+                                         阿里云 120.77.27.128:8789
+                                                          │ GitHub API
+                                                          ▼
+                                                    gh-pages ─▶ CDN ─▶ 浏览器
 ```
 
----
+⚠️ 服务端 → CDN 最多 **10 分钟**。刚推完就红，先看心跳的 `lastPushAt`，别急着改代码。
 
-## ✅ 未提交清单 —— 已清空（2026-09-28）
+⚠️ Health Connect 里有**五个写入方**：`healthsync`（三星健康过桥）、
+`com.google.android.apps.fitness`（**已排除，只排会话不排测量值**）、
+`com.sec.android.app.shealth`、`android`（手机裸传感器）、`com.fitbit.FitbitMobile`。
+**心率只有 healthsync 在写**；步数三家都写，绝不能相加。
 
-工作树干净，6 个提交已推送到 `main`（`70b8c44`）：
-CHEALTH 密文链路 / CNSR 两处修复 / 验证脚本重写 / 部署脚本去 CNAME /
-线上 HTTPS 实测脚本 / 合并远端自动提交。
-
-⚠️⚠️ **推 `main` 之前先 `git fetch`**：远端有**定时 Actions 在写**
-`sync: coof data …` 提交，直接 push 会被拒。
-
-⚠️⚠️ **那些自动提交可能是用旧提取器生成的。** 2026-09-28 实测：远端
-`data/cnsr/techai.json` 的 `counts.days = 7`（旧 bug），本地是 `5`（修复版）。
-- 但比对 `generatedAt` 和两边最新笔记日期后确认**两边数据一样新**，
-  远端只是晚 53 分钟重跑一遍却带着 bug ⇒ **留本地的**。
-- 合并用 `git merge origin/main`（不用 rebase，`ours` 语义更直观），
-  冲突只在 `data/cnsr/*.json`，`git checkout --ours data/cnsr` 解决。
-
-⭐ **`~/cevtuo-health`（手机 app 源码）已 `git init` 并首次提交**（11 文件）。
-在此之前它一直是**裸目录** —— 修自动同步时改的 `SyncWorker.kt` 和
-`AndroidManifest.xml` 没有任何备份。⚠️ **它没有远端仓库**，要单独备份。
-
----
-
-## 手机上那个 App 的按钮
-
-`CEVTUO Health`（`com.cevtuo.health`）不是产品，是诊断工具：
-
-| 按钮 | 作用 |
-|---|---|
-| ①② | 授权 / 看库里有什么 |
-| **②B 新鲜度** | 每个指标「数据是什么时候的」vs「什么时候被写进来的」 |
-| **②C 各类型的写入方** | 按 `dataOrigin` 拆开九个类型。**最有用的一个** |
-| ②D 全量盘点 | 34 个类型哪些有数据 |
-| ②E 运动明细 | 每条运动的来源、段、圈、路线 |
-| ③ 立即上报 | 手动推一次（**前台**，配额更高） |
-| ④ | 打开每 15 分钟自动上报 |
-
-⭐ **logcat 里 app 自己打的字节数是判据**：正常 1.6–2.4 万字节；**157 字节 = 读全失败了**。
-
----
-
-## 一些数字（免得下次重新量）
-
-- 手机：**SM-F9660**，国行 CSC=CHC，三星健康 7.00.6.012，**Android 16**，adb serial `RFCY71VRZKJ`
-- 手机局域网 IP `192.168.8.37`（ARP 里叫 `jingwei-de-z-fold7`）
-- Health Connect 支持 50+ 类型；App 申请 **31 个 READ 权限**
-- **有数据的 11 类**：步数、距离、步频、总消耗、活动消耗、心率、静息心率、血氧、睡眠、运动、速度
-- 09-23 那次骑行：36.92 km / 63 分钟 / 273W 均 / 470W 峰 / 76rpm / 心率 143 均 182 峰 / 1612 kcal
-- 阿里云：**CentOS 8.2 EOL**、2 核 769MB、30G 盘用 3.2G、只监听 8789 + 8443
-- 轻量服务器 InstanceId `3c48961bcca24df58794261b164faf71`；防火墙 80/443/22/ICMP/8789/8443
-- **AndroMeld 免费版**：镜像启动 30 次/周（周一 00:00 GMT+8 重置）—— 有了 adb 就别开镜像了
+⚠️ 小米那边（`com.mi.health` 跳绳 / `com.tangramfactory.smartrope`）在 Health Connect 里
+**零条记录** —— 国产版「三方数据管理」里没有 Health Connect 入口（国际版有，
+但拿不到米家设备的数据）。可行的路是**小米官方数据导出**（隐私中心 → 管理您的数据），
+拿到 CSV 之后由 CEVTUO Health 的写权限写进 Health Connect。
+写权限**已授**：`WRITE_EXERCISE` / `WRITE_DISTANCE` / `WRITE_ACTIVE_CALORIES_BURNED`。
+⚠️ `READ_EXERCISE_ROUTES` **授不上**（系统里 `granted=false` 且没有 `USER_SET` 标记，
+点授权也不弹对话框），所以**所有会话都没有 GPS 轨迹**。
