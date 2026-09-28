@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Text, View } from '@tarojs/components';
 
 import type { ChealthDay } from '../platform/data';
@@ -30,12 +30,25 @@ export function BarRow({
   pick,
   today,
   unit = '',
+  tone = 'steps',
 }: {
   days: ChealthDay[];
   pick: (d: ChealthDay) => number | undefined;
   today: string;
   /** 单位后缀，只用在选中的那根柱子的数值气泡上。 */
   unit?: string;
+  /**
+   * 这个指标的颜色，对应 `.chc__mosaic` 上那组 `--m-*` token。
+   *
+   * ⚠️ 三星健康最有辨识度的一点是**每个指标一个固定的色**：步数绿、睡眠紫、
+   *    消耗橙、距离蓝、心率红。读者扫一眼颜色就知道自己在看哪个指标，
+   *    不用回去读标题。之前四张图共用 `--chart-3` 一个灰，
+   *    四张图长得一模一样，颜色不承载任何信息。
+   *
+   * ⚠️ 这里传的只是**名字**，不是色值。色值只在 `ChealthCharts.scss` 的
+   *    `--m-*` 那一行定义一次 —— 传色值就一定会有两份定义，然后漂移。
+   */
+  tone?: 'steps' | 'sleep' | 'kcal' | 'dist' | 'heart';
 }) {
   const vals = days.map(pick);
   const max = Math.max(1, ...vals.map((v) => v ?? 0));
@@ -68,7 +81,12 @@ export function BarRow({
   const curV = cur ? pick(cur) : undefined;
 
   return (
-    <View className="chc__rows">
+    <View
+      className="chc__rows"
+      // ⚠️ 自定义属性必须 `as CSSProperties` —— TS 的 CSSProperties 不认 `--x`，
+      //    不转的话是类型错误，而运行时其实完全正常。
+      style={{ ['--m' as string]: `var(--m-${tone})` } as CSSProperties}
+    >
       {/* 数值气泡：跟着选中的那根柱子。没有这一行，点击就只是「变了个颜色」，
           读者还是不知道那根柱子是多少。 */}
       {/* ⚠️⚠️ 缺数据时**不能只显示一个 `—`**。

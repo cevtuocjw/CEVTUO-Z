@@ -27,13 +27,27 @@ $chart-h: 108px;
     flex: 1 1 0;
     min-width: 0;
     border-radius: 3px 3px 0 0;
-    background: var(--chart-3);
+    // ⚠️⚠️ 每张图用**自己那个指标的颜色**（`--m`，由 BarRow 的 `tone` 传进来）。
+    //    原来四张图共用 `--chart-3` 一个灰 —— 四张图长得一模一样，
+    //    颜色不承载任何信息。三星那边扫一眼颜色就知道在看哪个指标。
+    //
+    // ⚠️ 过去的日子是**这个颜色的淡版**，今天是**满色**：一眼看出哪根是今天，
+    //    同时整张图仍然是这个指标的颜色。
+    // ⚠️ 淡版用 `color-mix` 从同一个色算出来，**不另写一个色值** ——
+    //    另写一个就一定会和满色漂移（这个项目已经因为「同一件事两处定义」
+    //    吃过两次亏）。
+    background: color-mix(in srgb, var(--m, var(--chart-3)) 42%, transparent);
     // ⚠️ A floor, so a zero day is a visible stub rather than nothing. "No
     // bar" and "no day" look identical otherwise.
     min-height: 2px;
 
+    // ⚠️ 空白的日子保持灰色，**不能染成指标色** —— 没有记录和「记录是零」
+    //    必须一眼分得开，而一根淡色的短柱两件事都像。
     &--empty { background: var(--chart-empty, rgba(128, 128, 128, 0.18)); }
-    &--today { background: var(--chart-1); }
+    // ⚠️ 今天必须**明显**不同：只差一点明度的话，在一排同色柱子里看不出来。
+    &--today { background: var(--m, var(--chart-1)); }
+    // ⚠️ 选中一根**过去**的日子时也要满色，否则「选中」只剩宽度一个线索。
+    &--sel { background: var(--m, var(--chart-2)); }
   }
 
   &__axis {
@@ -230,12 +244,28 @@ $chart-h: 108px;
 //    而且改主题时找不全。
 // ⚠️ 色值是照着三星健康的语感挑的（步数绿、心率红、睡眠紫、消耗橙、
 //    距离蓝），不是随便取的 —— 读者对「哪个颜色是哪个指标」是有预期的。
-// ⚠️ 变量挂**两个**作用域：`.chc` 是图表组件自己的根，`.chc__mosaic` 在
-//    Section 里、**不在** `.chc` 内部 —— 只挂 `.chc` 的话马赛克上的
-//    `var(--blue)` 解析不出来，蓝色块会渲染成普通浅灰（实测踩到）。
-//    一个声明两个选择器，避免复制成两份。
+// ⚠️⚠️ `.chc` 是一个**幽灵类** —— 没有任何元素带这个类。
+//
+//    SCSS 里 `.chc { &__rows { … } }` 编译出来是 `.chc__rows`，那个类是真在用的；
+//    但**裸的 `.chc` 选择器匹配不到任何东西**，挂在它上面的自定义属性
+//    因此全部解析为空。
+//
+//    ⇒ 这个坑已经咬了**两次**，两次的症状都是「颜色变成灰色，别的一切正常」：
+//      · 第一次：马赛克的 `var(--blue)` 解析不出来，蓝色块渲染成浅灰
+//      · 第二次（2026-09-28）：柱状图的 `var(--m)` 解析不出来，
+//        四张图又退回同一个灰。行内 `--m: var(--m-steps)` **确实写上去了**，
+//        但 `--m-steps` 自己是空的 —— 而 DOM 里看起来一点问题都没有。
+//
+//    ⇒ 所以：**加新作用域，别删旧的**。下面这一串是「所有真的会用到这些色值
+//      的容器」，每一个都是实测出来的真实类名。
+//
+//    ⚠️ 判断方法（不要再靠猜）：在浏览器里取
+//      `getComputedStyle(document.querySelector('.chc__rows')).getPropertyValue('--m-steps')`
+//      —— 返回值是空字符串就是没挂上。类型检查、构建、截图**都不会告诉你**。
 .chc,
-.chc__mosaic { --m-steps: #3ecf8e; --m-heart: #ff5a72; --m-sleep: #8b7cf6; --m-kcal: #ff9f43; --m-dist: #4aa3ff; }
+.chc__mosaic,
+.chc__rows,
+.chc__zones { --m-steps: #3ecf8e; --m-heart: #ff5a72; --m-sleep: #8b7cf6; --m-kcal: #ff9f43; --m-dist: #4aa3ff; }
 
 // ── 柱状图的数值气泡 ───────────────────────────────────────
 .chc__readout {

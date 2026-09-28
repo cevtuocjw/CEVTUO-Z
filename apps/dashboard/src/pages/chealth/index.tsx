@@ -471,12 +471,12 @@ export default function Chealth() {
         >
           <View className="card chc__stack">
             <Text className="card__label">步数 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.steps} today={today} unit=" 步" />
+            <BarRow days={recent} pick={(d) => d.steps} today={today} unit=" 步" tone="steps" />
           </View>
 
           <View className="card chc__stack">
             <Text className="card__label">睡眠 · 最近 14 天（小时）</Text>
-            <BarRow days={recent} pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)} today={today} unit=" 小时" />
+            <BarRow days={recent} pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)} today={today} unit=" 小时" tone="sleep" />
             {/* ⚠️ Said rather than silently tolerated. Sessions can overlap —
                 the watch and the phone both write, and a session crossing
                 midnight lands in two days — so a single day can exceed 24h.
@@ -518,11 +518,11 @@ export default function Chealth() {
           </View>
           <View className="card chc__stack">
             <Text className="card__label">总消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.calories} today={today} unit=" kcal" />
+            <BarRow days={recent} pick={(d) => d.calories} today={today} unit=" kcal" tone="kcal" />
           </View>
           <View className="card chc__stack">
             <Text className="card__label">活动消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" />
+            <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" tone="kcal" />
           </View>
         </Section>
 

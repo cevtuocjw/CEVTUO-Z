@@ -153,6 +153,57 @@ check(
   dashes.length ? `${dashes.length} 处读数是破折号：${dashes[0]}` : '没有裸破折号读数',
 );
 
+// ── 柱状图必须是**每个指标自己的颜色** ────────────────────────
+//
+// ⚠️⚠️ 这条防的是「幽灵类」，而它是这个项目里最难自己暴露的一类错：
+//
+//    `--m-steps` 那组 token 挂在 `.chc` 上 —— 而**没有任何元素带 `chc` 这个类**。
+//    SCSS 里 `.chc { &__rows { … } }` 编译出来是 `.chc__rows`，那个类是真在用的，
+//    但裸的 `.chc` 匹配不到任何东西。后果：BarRow 行内的 `--m: var(--m-steps)`
+//    **确实写上去了**，而 `--m-steps` 自己是空的 ⇒ 四张图又退回同一个灰。
+//
+//    ⚠️ DOM 看起来完全正常，类型检查、构建、截图**都不会报**。
+//       只有把计算出来的颜色读出来才知道。这个坑已经咬了两次
+//       （第一次是马赛克的 `--blue`）。
+const tones = await page.evaluate(() =>
+  [...document.querySelectorAll('.chc__rows')].map((r) => {
+    const bars = [...r.querySelectorAll('.chc__bar')];
+    const today = bars.find((b) => b.className.includes('--today'));
+    const past = bars.find(
+      (b) => !b.className.includes('--today') && !b.className.includes('--empty'),
+    );
+    return {
+      m: getComputedStyle(r).getPropertyValue('--m').trim(),
+      today: today ? getComputedStyle(today).backgroundColor : '',
+      past: past ? getComputedStyle(past).backgroundColor : '',
+    };
+  }),
+);
+
+const noTone = tones.filter((t) => !t.m);
+check(
+  '每张柱状图拿到了自己指标的颜色 token',
+  noTone.length === 0 && tones.length > 0,
+  noTone.length
+    ? `${noTone.length} 张的 --m 是空的（幽灵类没挂上，会退回灰色）`
+    : tones.map((t) => t.m).join(' / '),
+);
+
+const sameColor = tones.filter((t) => t.today !== '' && t.today === t.past);
+check(
+  '「今天」那根和过去的日子颜色不同',
+  sameColor.length === 0,
+  sameColor.length
+    ? `${sameColor.length} 张的今天和过去同色（今天认不出来）`
+    : `例如今天 ${tones[0]?.today} vs 过去 ${tones[0]?.past}`,
+);
+
+check(
+  '不同指标用不同颜色',
+  new Set(tones.map((t) => t.m)).size >= 2,
+  `${new Set(tones.map((t) => t.m)).size} 种：${[...new Set(tones.map((t) => t.m))].join(' ')}`,
+);
+
 /**
  * ⚠️ 本机跑的时候 ingest 心跳那条报错是**环境造成的，不是页面坏了**：
  *    `ALLOWED_ORIGINS` 里没有 `127.0.0.1`，线上有。
