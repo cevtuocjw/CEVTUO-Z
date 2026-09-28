@@ -23,7 +23,7 @@ Kindle（KOReader 插件）
 GitHub Pages
    │  ⑥ 网站读 data/paperr/index.json
    ▼
-http://apps.cevtuogrnd.com/CEVTUO-Z/#/pages/paperr/index
+https://z.cevtuogrnd.com/#/pages/paperr/index
 ```
 
 ⚠️ 中间**没有你的电脑**。这就是当初把服务放到阿里云的全部理由 —— 读书发生在

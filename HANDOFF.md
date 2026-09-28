@@ -9,8 +9,11 @@
 
 个人数据仪表盘。四个品牌页：**COOF**（电影）/ **CNSR**（笔记）/ **CE-PaperR**（Kindle）/ **Chealth**（健康）。
 目标形态：**微信小程序 + Android**，一套 Taro 代码。仓库根目录自包含。
-⚠️ 计划域名是 `z.cevtuogrnd.com`，**但它至今没有 DNS 记录** —— 现在能打开的
-只有 `http://apps.cevtuogrnd.com/CEVTUO-Z/`（纯 HTTP，证书签不下来）。
+✅ **真实站点 = `https://z.cevtuogrnd.com/`**（2026-09-28 起，根路径，HTTPS）。
+⚠️ 这里原本写的是「计划域名是 `z.cevtuogrnd.com` 但没有 DNS 记录，只能用
+`http://apps.cevtuogrnd.com/CEVTUO-Z/`」——**计划已经落地了**。旧地址仍可用，
+服务同一份内容。证书之前签不下来的真正原因是 gh-pages 里的 `CNAME` 在抢
+用户站的域名，不是域名配置问题。
 
 ---
 
@@ -733,8 +736,9 @@ bun scripts/verify-coof-ui.mjs http://127.0.0.1:8096/z /tmp/coof-ui   # 97 项
 ## ⚠️ 线上 URL 会 301，刚部署完可能抽风
 
 `https://cevtuocjw.github.io/CEVTUO-Z/...` **不是最终地址** —— 它 301 到
-**`http://apps.cevtuogrnd.com/CEVTUO-Z/...`**（注意是 **http**，那个域名的证书
-从没签发过，见上文 TLS 那节）。
+**`http://apps.cevtuogrnd.com/CEVTUO-Z/...`**，而那条现在服务的内容与
+**`https://z.cevtuogrnd.com/`** 完全相同（2026-09-28 起 z 才是真地址，
+见上文「站点地址」一节）。
 
 Playwright 会跟着跳，所以验证脚本测的其实是自定义域名上的内容，这没问题。
 但**刚 push 完 gh-pages 的那一两分钟，这条跳转链会间歇性 502 / 报错** ——

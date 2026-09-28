@@ -53,6 +53,29 @@ z.cevtuogrnd.com      ← 本项目
 
 两个都在 `services/sync-trigger` 的 CORS 白名单里 —— 因为项目页将来要从分发页链接过来。
 
+### ✅ 2026-09-28 落地：`z.cevtuogrnd.com` → **GitHub Pages**（上面表格里的 H5 那条线）
+
+用户明确要求「这个项目的域名用 `z.cevtuogrnd.com`」，已实现：
+
+```
+https://z.cevtuogrnd.com/          ← 仪表盘，根路径，HTTPS，已开 Enforce HTTPS
+apps.cevtuogrnd.com/CEVTUO-Z/      ← 旧地址仍可用，服务同一份内容（实测 md5 一致）
+```
+
+⚠️ **这一节原先写着「通过后：解析 `z.cevtuogrnd.com` → 申请 SSL 证书 → 开 HTTPS」，
+那是排在阿里云备案流程里的第 6 步。** 现在它用在 GitHub Pages 上了 ——
+**与上面表格并不矛盾**（表格里 H5/Android 走的就是 GitHub Pages，
+备案只约束内地服务器），但**小程序那条线要注意**：
+
+- 小程序需要**已备案**域名，而备案只发给内地服务器 ⇒ 它**不能**用现在这个
+  GitHub Pages 上的 `z.cevtuogrnd.com`
+- 将来做小程序时，要么**再给一个域名**（如 `api.cevtuogrnd.com` 已经这么用了），
+  要么**刻意把 z 迁到阿里云** —— 后者会让 H5 那条线失效，是一次有代价的操作，
+  不要顺手做
+
+⚠️ 另：`z.cevtuogrnd.com` 现在是本仓库的**自定义域名**，gh-pages 上**必须**有
+`CNAME` 文件写它（`deploy-pages.sh` 负责写）。用别人的域名会被 GitHub 拒绝。
+
 ⚠️ 将来加新项目:一台服务器跑多个项目是标准做法,nginx 按域名分流 +
 每个项目独立目录 + 独立 systemd 服务。**不需要每个项目买一台。**
 

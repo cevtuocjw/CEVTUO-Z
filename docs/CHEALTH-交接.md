@@ -190,9 +190,13 @@ gh-pages 上就不存在了。** 所以它**必须自己写 CNAME** —— 我�
 `requestfailed: mixed-content`，Chrome 直接拦。而 `fetchPaperrHeartbeat` /
 `fetchChealthHeartbeat` 都是 `catch { return null }` ⇒ **页面显示一个「—」，零报错**。
 
-1. `services/ingest/src/server.ts:97` 的 `ALLOWED_ORIGINS` 目前**只有 `http://apps.cevtuogrnd.com`**。
-   站点变 HTTPS 后 Origin 是 `https://…`，**不在白名单 ⇒ CORS 照样拦死**。
+1. `services/ingest/src/server.ts` 的 `ALLOWED_ORIGINS`（当时**只有
+   `http://apps.cevtuogrnd.com`**）要加上 https 那条。站点变 HTTPS 后 Origin 是
+   `https://…`，**不在白名单 ⇒ CORS 照样拦死**。
    （服务器 `.env` 里没有 origin 覆盖，所以是代码默认值。）
+   ⚠️ **2026-09-28 已经加过两轮**：先是 `https://apps.cevtuogrnd.com`，
+   搬域名后又是 `https://z.cevtuogrnd.com`。**站点换地址时这里必须跟着加** ——
+   漏了的症状仍然是两个「—」和零报错。
 2. `apps/dashboard/src/platform/data.ts` 的 `CHEALTH_HEARTBEAT_URL` / `PARRER_HEARTBEAT_URL`
    改成 `https://api.cevtuogrnd.com:8443/…`。
 

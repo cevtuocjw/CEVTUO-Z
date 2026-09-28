@@ -2,20 +2,25 @@
 
 ## 站点地址（先看这个）
 
-**https://cevtuocjw.github.io/CEVTUO-Z/ 会 301 到 http://apps.cevtuogrnd.com/CEVTUO-Z/**
-
 ```
-http://apps.cevtuogrnd.com/CEVTUO-Z/          ← 首页
-http://apps.cevtuogrnd.com/CEVTUO-Z/#/pages/paperr/index    ← CAPPERR
+https://z.cevtuogrnd.com/                     ← 首页
+https://z.cevtuogrnd.com/#/pages/paperr/index ← CAPPERR
 ```
 
-⚠️ **是 `http://`，不是 `https://`。** `apps.cevtuogrnd.com` 是 GitHub Pages 的
-自定义域名，但证书一直没签发成功 —— Pages 设置里写着
-「Enforce HTTPS — Unavailable for your site because your domain is not properly
-configured」。所以只有一个纯 HTTP 的地址。
+**2026-09-28 起，`z.cevtuogrnd.com` 就是真地址了** —— 这正是项目文档
+（HANDOFF / docs/HOSTING.md）里一直写的那个**计划域名**，现在落地了。
 
-⚠️ **`z.cevtuogrnd.com` 打不开，因为这个域名根本没有 DNS 记录。**
-项目文档（HANDOFF / docs/HOSTING.md）里一直写它，那是**计划**，不是现状。
+⚠️ 这一节之前写的是「只能用 `http://apps.cevtuogrnd.com/CEVTUO-Z/`，证书签不下来，
+`z.cevtuogrnd.com` 没有 DNS 记录」。**两条都已经不成立**：
+证书签发失败的真正原因不是域名配置，是本仓库 gh-pages 里一个 `CNAME` 文件
+在抢用户站的域名（见 docs/CHEALTH-交接.md 的「域名」一节）。
+
+旧地址**仍然可用**，服务的是同一份内容（实测 HTML 与数据 md5 一致）：
+
+```
+https://apps.cevtuogrnd.com/CEVTUO-Z/      ← 同一份内容，GitHub 按路径服务
+https://cevtuocjw.github.io/CEVTUO-Z/      ← 301 到上面那条
+```
 
 ⚠️ **这也是为什么「在读」必须走 HTTP。** 页面在 http 上，接口也在
 `http://120.77.27.128:8789` 上 —— 两边都是 http，请求能发出去。
@@ -129,5 +134,5 @@ Kindle 连上 WiFi，等几秒。然后：
 
 ## 之后
 
-页面地址见文件开头 —— 是 `http://apps.cevtuogrnd.com/CEVTUO-Z/`，
+页面地址见文件开头 —— 是 `https://z.cevtuogrnd.com/`，
 CAPPERR 在 `/pages/paperr/index`。
