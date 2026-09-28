@@ -250,32 +250,54 @@ export default function Chealth() {
           hero={<PageHero brand="CHEALTH" />}
           compact
           lede="三星健康 → Health Connect → 手机上的 CEVTUO Health → 阿里云 → 这里。每 15 分钟一次，中间没有电脑。"
-          stats={[
-            {
-              value: t?.stepsToday !== null && t?.stepsToday !== undefined
-                ? Math.round(t.stepsToday).toLocaleString('en-US') : '—',
-              label: '今日步数',
-              // ⚠️ Says "so far" out loud. Without it, a morning reading of
-              // 3,163 against a ~22,000 median reads as a collapse.
-              note: partial ? '截至现在' : '至今',
-            },
-            {
-              value: t?.sleep7dHours !== undefined ? `${t.sleep7dHours}h` : '—',
-              label: '7 天睡眠',
-              note: '共',
-            },
-            {
-              value: t?.activeCalories7d !== undefined ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—',
-              label: '7 天活动消耗',
-              note: 'kcal',
-            },
-            {
-              value: t?.distance7dKm !== undefined ? `${t.distance7dKm}` : '—',
-              label: '7 天距离',
-              note: 'km',
-            },
-          ]}
-        />
+        >
+          {/*
+            ⚠️ 这里原来用 `stats={[...]}`，出来是**等分的 2×2 四宫格**。
+            读者 2026-09-28 明确说「不要完全对得太齐」，并给了 Depo Studio 那套
+            参考：**块与块大小不等**，而且有一个强烈的蓝色。
+
+            ⚠️ 但不等大小是**为了表达层级**，不是为了花：
+            今日步数最大（块最宽、字最大、蓝色实底），其余按重要性递减。
+            四个块都做成不一样大就变成噪音了。
+          */}
+          <View className="chc__mosaic">
+            <View className="chc__tile chc__tile--wide chc__tile--blue">
+              <Text className="chc__tile-label">今日步数</Text>
+              <Text className="chc__tile-v">
+                {t?.stepsToday !== null && t?.stepsToday !== undefined
+                  ? Math.round(t.stepsToday).toLocaleString('en-US') : '—'}
+                <Text className="chc__tile-u">步</Text>
+              </Text>
+              {/* ⚠️ 「截至现在」必须说出来。不说的话，早上读到 3,123
+                  而中位数接近 22,000，看起来像塌了。 */}
+              <Text className="chc__tile-note">{partial ? '截至现在 · 今天还没过完' : '至今'}</Text>
+            </View>
+
+            <View className="chc__tile chc__tile--narrow">
+              <Text className="chc__tile-label">7 天睡眠</Text>
+              <Text className="chc__tile-v">
+                {t?.sleep7dHours ?? '—'}
+                <Text className="chc__tile-u">h</Text>
+              </Text>
+            </View>
+
+            <View className="chc__tile chc__tile--half">
+              <Text className="chc__tile-label">7 天活动消耗</Text>
+              <Text className="chc__tile-v">
+                {t?.activeCalories7d !== undefined ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—'}
+                <Text className="chc__tile-u">kcal</Text>
+              </Text>
+            </View>
+
+            <View className="chc__tile chc__tile--half">
+              <Text className="chc__tile-label">7 天距离</Text>
+              <Text className="chc__tile-v">
+                {t?.distance7dKm ?? '—'}
+                <Text className="chc__tile-u">km</Text>
+              </Text>
+            </View>
+          </View>
+        </Section>
 
         {/*
           ⚠️「正在骑 MyWhoosh」——这个徽标**只在 true 时出现**，false 时什么都不显示。

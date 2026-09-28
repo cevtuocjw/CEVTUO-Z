@@ -16,7 +16,7 @@
 type Name =
   | 'steps' | 'heart' | 'flame' | 'moon' | 'route' | 'bolt' | 'clock'
   | 'power' | 'cadence' | 'bike' | 'run' | 'gym' | 'swim' | 'walk'
-  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark' | 'chev';
+  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark' | 'chev' | 'arrow';
 
 const S = { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none' } as const;
 const stroke = {
@@ -152,6 +152,9 @@ function Body({ name }: { name: Name }) {
     // 展开/收起。⚠️ 用 SVG 而不是 `▾` 字符 —— 那个字形取决于装的字体。
     case 'chev':
       return <path d="M6 9.5 12 15.5l6-6" {...stroke} />;
+    // ↗ —— 「这里可以点」。参考图（Depo Studio）里统一的交互符号。
+    case 'arrow':
+      return <path d="M7 17 17 7M9.5 7H17v7.5" {...stroke} />;
     default:
       return null;
   }
