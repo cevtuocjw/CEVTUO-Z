@@ -360,6 +360,9 @@ $chart-h: 108px;
   justify-content: space-between;
   min-width: 0;
   box-sizing: border-box;
+  // ⚠️ 让块里的字号能按**这个块自己的宽度**算（`cqw`）—— 见文件末尾那段长注释。
+  //    没有它，`min(24cqw, …)` 里的 cqw 会退化成按视口算，窄块照样被撑爆。
+  container-type: inline-size;
   padding: 12px 13px;
   border-radius: 15px;
   background: color-mix(in srgb, currentColor 5%, transparent);
@@ -390,7 +393,12 @@ $chart-h: 108px;
 .chc__tile-v {
   font-family: var(--font-display, inherit);
   // ⚠️ 数字**大**才有主视觉。原来和正文同字号，所以整页像文档不像仪表盘。
-  font-size: 30px;
+  //
+  // ⚠️⚠️ 但「大」必须是**装得下的大**。原来这里写死 30px、四块一个值，
+  //    而四块的可用宽度分别是 144 / 98 / 53 px —— 于是窄块和半块全在截断
+  //    （实测：「37.7h」要 75px 只有 53px；「7,632kcal」要 110px 只有 98px）。
+  //    改成按**块自己的宽度**算，见各变体的覆盖规则。
+  font-size: min(27cqw, 42px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -1px;
@@ -398,7 +406,71 @@ $chart-h: 108px;
   display: block;
 }
 
-.chc__tile--wide .chc__tile-v { font-size: 44px; letter-spacing: -1.8px; }
+/**
+ * ⚠️⚠️ 四块的宽度差三倍，字号却曾经是同一个 30px。
+ *
+ * 2026-09-28 量的（390px 视口，Playwright 读真实布局）：
+ *
+ *     mosaic 6 列 × 35.83px，gap 9px，块内边距 13px
+ *     宽块 span4 = 170px → 可用 144px
+ *     半块 span3 = 125px → 可用  98px     「106.4km」要 104px、「7,632kcal」要 110px
+ *     窄块 span2 =  81px → 可用  53px     「37.7h」要 75px
+ *
+ * ⇒ 三块里有三处在截断，只有主角那块是够的。
+ *
+ * ⚠️⚠️ 这和主页索引卡的 `.stats__value` 是**同一个 bug 类**：
+ *    **固定宽度 + 不收缩的字号 = 截断**。同一个毛病在这个项目里出现了两次，
+ *    两次都是「以前的值恰好短，所以看不出来」。
+ *    ⇒ 所以这次不用「再调一个数」，而是让字号**从容器宽度推导**，窄了自动小。
+ *
+ * ⚠️ 用 `cqw`（容器查询单位）而不是 `vw`：`vw` 是视口宽，桌面端抽屉展开后
+ *    视口没变但块变宽了，字号就跟不上；`cqw` 跟的正是块本身。
+ *    需要 `.chc__tile` 上的 `container-type: inline-size`。
+ *
+ * ⚠️⚠️ 而且 `cqw` 量的是**内容盒**，不是块的外框 —— 我第一次按块宽
+ *    （窄块 81px）算成 24cqw，结果字号掉到 **12.6px，比标签还小**。
+ *    真正的分母是内容宽：窄块 53px / 半块 98px / 宽块 142px。
+ *    下面每个系数都是按**内容宽**反推的。
+ *
+ * ⚠️ 每一条都先写一个 px 兜底再写 cqw 版：不认识 `cqw` 的环境（小程序 WebView）
+ *    会丢掉第二条，用回兜底值，而不是把字号解析成 0。
+ */
+.chc__tile--wide .chc__tile-v {
+  font-size: 42px;
+  font-size: min(29cqw, 60px); // 142px × 29% ≈ 41px
+  letter-spacing: -1.8px;
+}
+
+.chc__tile--half .chc__tile-v {
+  font-size: 26px;
+  font-size: min(26cqw, 42px); // 98px × 26% ≈ 25px
+}
+
+.chc__tile--narrow .chc__tile-v {
+  font-size: 20px;
+  font-size: min(37cqw, 36px); // 53px × 37% ≈ 20px
+}
+
+/**
+ * ⚠️ 窄块的标签**允许折行**，不跟着其它块一起 `nowrap + ellipsis`。
+ *
+ * 那里一行要放下「圆底 30px + 间距 8px + 标签 24px」= 62px，而可用宽度只有 53px。
+ * `nowrap` 遇到这种情况会打省略号 —— 而「睡眠」被截成「睡.」之后，
+ * **那个点看起来像个标点，不像省略号**，于是没有人会想到它是被切掉的。
+ *
+ * ⚠️ 标签只有两个字，折行之后视觉上仍然是一行（圆底下面单独一行），
+ *    但一个字都不丢。**丢字的截断比多占一行糟得多。**
+ */
+.chc__tile--narrow .chc__mhead {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.chc__tile--narrow .chc__mlabel {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
 
 .chc__tile-u {
   font-size: 12.5px;
