@@ -216,6 +216,39 @@ export function Section({
     </View>
   ) : null;
 
+  /**
+   * ⚠️⚠️ 面板自己感知「内容有没有滚到底」，并据此改那句提示。
+   *
+   * 起因（2026-09-28 实测）：CHEALTH 六屏里**四屏**的内容比面板高 ——
+   * 运动要滚 562px、分析要滚 1353px。而提示一直写着「下滑」。
+   * 读者滑一下，**滚动的是面板内部**，不是到下一屏 ——
+   * 提示说的和做的是两件事，读者会以为卡住了。
+   *
+   * ⇒ 没到底时说「本屏还有内容」，到底了才说「下滑」。
+   *   同一句话在两种状态下含义不同，所以让**状态自己决定说什么**，
+   *   而不是让每个调用点自己去猜该传哪个 cueText。
+   */
+  const bodyRef = useRef<HTMLElement | null>(null);
+  const [scrollCue, setScrollCue] = useState('');
+
+  // ⚠️ 故意**不写依赖数组** —— 内容变高变矮（切筛选器、展开会话卡片）
+  //    都不会触发 scroll 事件，只在挂载时算一次会永远停在一个错的答案上。
+  //    每轮渲染重算一次的代价是读一个 scrollHeight；而 setState 同值时
+  //    React 会自己跳过重渲染，不会死循环。
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return undefined;
+    const sync = () => {
+      // ⚠️ 4px 容差：亚像素取整会让「已经到底」也算成还剩一点，
+      //    于是提示永远停在「还有内容」，而那等于没说。
+      const more = el.scrollHeight - el.clientHeight - el.scrollTop;
+      setScrollCue(more > 4 ? '本屏还有内容' : '');
+    };
+    sync();
+    el.addEventListener('scroll', sync, { passive: true });
+    return () => el.removeEventListener('scroll', sync);
+  });
+
   return (
     <View className="section">
       {/* ⚠️ Order matters for screen readers and for the visual stack: the
@@ -237,6 +270,7 @@ export function Section({
 
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <View
+        ref={bodyRef}
         className={`section__body${onPress ? ' section__body--pressable' : ''}${
           wide ? ' section__body--wide' : ''
         }`}
@@ -266,7 +300,9 @@ export function Section({
 
       {showCue ? (
         <View className="section__cue">
-          <Text className="section__cue-text">{cueText}</Text>
+          {/* ⚠️ 没滚到底时说「本屏还有内容」—— 见上面 scrollCue 的注释。
+              两者都是「往下」，但一个是**在这一屏里**，一个是**到下一屏**。 */}
+          <Text className="section__cue-text">{scrollCue || cueText}</Text>
           <Text className="section__cue-mark">▼</Text>
         </View>
       ) : null}

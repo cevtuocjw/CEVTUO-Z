@@ -305,7 +305,7 @@ export default function Chealth() {
         读者看到的是六屏空白，而不是一句「还没解锁」。
       */}
       {pass && !err ? (
-      <PageStack count={6}>
+      <PageStack count={10}>
         <Section
           index={0}
           title="CHEALTH"
@@ -763,7 +763,23 @@ export default function Chealth() {
               </Text>
             </View>
           ) : null}
+        </Section>
 
+        {/*
+          ⚠️⚠️ 这里原来是**一屏**，实测内容高 2077px 而面板只有 724px ——
+             `要滚 1353`，差不多两屏。
+
+          ⚠️ 在 scroll-snap 的栈里，一屏塞两屏内容手感是坏的：读者要先在面板
+             **内部**滚 1353px，再一甩才到下一屏；而「下滑」那个提示说的是
+             「下面还有一屏」，于是提示和实际行为对不上。
+
+          ⇒ 拆成三屏，每屏一个话题。它在最后一屏，所以**不用给前面的屏重新编号**。
+        */}
+        <Section
+          index={6}
+          title="周对比"
+          lede="最近 7 天 vs 再往前 7 天。箭头按「这个指标是变好还是变坏」画，不是按数值变大 —— 静息心率是越低越好。"
+        >
           {week.length ? (
             <View className="card chc__stack">
               <Text className="card__label">
@@ -820,7 +836,13 @@ export default function Chealth() {
               </Text>
             </View>
           ) : null}
+        </Section>
 
+        <Section
+          index={7}
+          title="功率"
+          lede="功率来自骑行台 / 码表那一路 —— 三星根本记不了功率和踏频，所以这两项只有骑行台那次才有。"
+        >
           {bests.length ? (
             <View className="card chc__stack">
               <Text className="card__label">
@@ -839,7 +861,13 @@ export default function Chealth() {
               </View>
             </View>
           ) : null}
+        </Section>
 
+        <Section
+          index={8}
+          title="连续达标"
+          lede="按每天 8000 步算。缺数据的日子算断，不算跳过 —— 那天可能确实没走，也可能手机没同步。"
+        >
           {streak > 0 ? (
             <View className="card chc__stack">
               <Text className="card__label">
@@ -854,7 +882,13 @@ export default function Chealth() {
               </Text>
             </View>
           ) : null}
+        </Section>
 
+        <Section
+          index={9}
+          title="类型分布"
+          lede="最近 30 天里走路以外的活动，按类型合计的时长。"
+        >
           {kinds.length ? (
             <View className="card chc__stack">
               <Text className="card__label">
