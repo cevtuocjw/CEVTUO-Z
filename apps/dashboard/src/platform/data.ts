@@ -36,6 +36,12 @@ import type {
 /**
  * Deployed origin — the mini-program's request base and the last-resort fallback.
  *
+ * ⚠️ `z.cevtuogrnd.com` as of 2026-09-28: the dashboard moved off
+ * `apps.cevtuogrnd.com/CEVTUO-Z/` onto a short domain of its own. A project
+ * site that declares a custom domain is served at that domain's ROOT — the
+ * `/CEVTUO-Z/` path is gone (a redirect stub is parked at the old address).
+ * Before that it was `apps.cevtuogrnd.com` — see the CNAME note further down.
+ *
  * ⚠️ `https://` as of 2026-09-28. It was `http://` before that, on the stated
  * grounds that `apps.cevtuogrnd.com` had no certificate and "the HTTPS URL does
  * not serve this site at all".
@@ -53,7 +59,7 @@ import type {
  * request domain, and Pages never is. But https is a precondition for that
  * anyway, so this is the value to have in place rather than `http://`.
  */
-const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
+const PROD_ORIGIN = 'https://z.cevtuogrnd.com';
 
 /**
  * Data origin.

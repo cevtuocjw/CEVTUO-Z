@@ -112,6 +112,13 @@ const ALLOWED_ORIGINS = new Set(
       // all, so it could never have matched anything.
       'http://apps.cevtuogrnd.com',
       'https://apps.cevtuogrnd.com',
+      // ⚠️ 仪表盘从 2026-09-28 起有了自己的域名。项目站一旦声明自定义域名，
+      // GitHub 就把它服务在**该域名根路径**上，不再是 `/CEVTUO-Z/`。
+      //
+      // ⚠️ 少了这两条，HTTPS 页面上的心跳会被 CORS 拒绝 —— 而两个 fetch 都是
+      // `catch { return null }`，症状只有页面上两个「—」和零报错。
+      'https://z.cevtuogrnd.com',
+      'http://z.cevtuogrnd.com',
       'https://cevtuocjw.github.io',
       'http://cevtuocjw.github.io',
       // ⚠️ The local verification port. `scripts/verify-paperr-ui.mjs` serves a

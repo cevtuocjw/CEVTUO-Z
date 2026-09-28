@@ -26,7 +26,11 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 
-const BASE = process.argv[2] ?? 'https://apps.cevtuogrnd.com/CEVTUO-Z';
+// ⚠️ 仪表盘从 2026-09-28 起在 `z.cevtuogrnd.com` **根路径**上 —— 项目站
+// 一旦声明自定义域名，GitHub 就把它搬离 `/CEVTUO-Z/`。
+// 旧的 `apps.cevtuogrnd.com/CEVTUO-Z/` 会 301 过来（GitHub 自动做的），
+// 所以老地址也能跑，但断言「页面是哪个 origin」时会拿到重定向之后的那个。
+const BASE = process.argv[2] ?? 'https://z.cevtuogrnd.com';
 
 /**
  * CHEALTH 页面要在「解锁态」下驱动，否则它渲染的是口令输入框，

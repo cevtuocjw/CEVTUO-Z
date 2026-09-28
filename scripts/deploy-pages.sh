@@ -90,12 +90,18 @@ cp -R data "$STAGE"/data
 #
 # So: the live index wins. Fetch what is actually published and use that. The
 # local file is only a fallback for a first-ever deploy or an offline machine.
-# ⚠️⚠️ `https://`, NOT `http://`. 站点 2026-09-28 开了 Enforce HTTPS，
-# 明文地址全部 301。而 `curl -fsS` **不带 `-L`** ⇒ 301 的响应体是空的 ⇒
-# 下面的 JSON 校验失败 ⇒ 守卫**静默失效**，本地副本把服务器发布的那份冲掉。
-# 这个坑真实发生过（见下面 chealth 那段造成的删除）。
-PAPERR_LIVE="https://apps.cevtuogrnd.com/CEVTUO-Z/data/paperr/index.json"
-if curl -fsS --noproxy '*' -m 20 "$PAPERR_LIVE" -o "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
+# ⚠️⚠️ 这个 URL 必须指向**站点当前的**地址，而且 curl 必须带 `-L`。
+#
+# 它被重定向咬过**两次**：
+#   1. 站点开 Enforce HTTPS 后，`http://` 全部 301 ⇒ 不带 `-L` 拿到空 body
+#      ⇒ JSON 校验失败 ⇒ 守卫静默失效（那次把 chealth 索引删掉了）。
+#   2. 仪表盘搬到 `z.cevtuogrnd.com` 后，`apps.cevtuogrnd.com/CEVTUO-Z/`
+#      整条路径也变成 301 ⇒ 同样的失效方式，只是原因换了一个。
+#
+# 所以这里同时做两件事：URL 跟着站点走，**并且加 `-L`** ——
+# 下一个搬地址的人不会再因为忘记改这里而删掉数据。
+PAPERR_LIVE="https://z.cevtuogrnd.com/data/paperr/index.json"
+if curl -fsSL --noproxy '*' -m 20 "$PAPERR_LIVE" -o "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/paperr/index.json.tmp','utf8'))" 2>/dev/null; then
   mv "$STAGE/data/paperr/index.json.tmp" "$STAGE/data/paperr/index.json"
   echo "  ▸ 保留线上已发布的 index.json（服务器拥有它，本脚本不覆盖）"
@@ -129,9 +135,9 @@ fi
 # paperr 那段可以退回本地副本（最坏是旧数据）；这一段退回不了，因为
 # **Mac 上根本没有 `data/chealth/` 目录**。所以「拿不到线上的」等于
 # 「这次发布会删掉它」——那是不可接受的副作用，宁可不发布。
-CHEALTH_LIVE="https://apps.cevtuogrnd.com/CEVTUO-Z/data/chealth/index.json"
+CHEALTH_LIVE="https://z.cevtuogrnd.com/data/chealth/index.json"
 mkdir -p "$STAGE/data/chealth"
-if curl -fsS --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
+if curl -fsSL --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/chealth/index.json.tmp','utf8'))" 2>/dev/null; then
   mv "$STAGE/data/chealth/index.json.tmp" "$STAGE/data/chealth/index.json"
   echo "  ▸ 保留线上已发布的 chealth/index.json（服务器拥有它，本脚本不覆盖也不删除）"
@@ -155,28 +161,35 @@ rm -f "$STAGE/data/paperr/raw-koreader.json"
 # beginning with `_` — which would take build assets with it.
 touch "$STAGE"/.nojekyll
 
-# ── ⚠️⚠️ 这个分支**绝不能**有 CNAME 文件 ─────────────────────────────
+# ── ⚠️⚠️ CNAME：必须写，而且必须写对 ────────────────────────────────
 #
-# 这里曾经是 `cp site/CNAME "$STAGE"/CNAME`，内容 `apps.cevtuogrnd.com`。
-# 2026-09-28 它把一个潜伏了很久的域名冲突掀到了台面上，代价是一次真实的
-# 站点中断 —— 记在这里，免得有人再"顺手加回来"。
+# 这里有一个来回，两边都是真的，别只记住其中一半。
 #
-# 事实是：`apps.cevtuogrnd.com` 这个自定义域名**归 `cevtuocjw.github.io`
-# 用户站所有**，用户站就是那个在根路径上服务 CEVTUOGRND 落地页的仓库。
-# CEVTUO-Z 只是挂在它下面的一个**项目路径** `/CEVTUO-Z/`，本来不需要、
-# 也不该自己声明这个域名。
+# **曾经是错的**：`cp site/CNAME "$STAGE"/CNAME`，内容 `apps.cevtuogrnd.com`。
+# 那个域名**归 `cevtuocjw.github.io` 用户站所有**（根路径上那个 CEVTUOGRND
+# 落地页），CEVTUO-Z 只是挂在它下面的项目路径 `/CEVTUO-Z/`。项目站声明了
+# 别人的域名，GitHub 就把它搬到那个域名的根路径、顶掉落地页、两个仓库打架。
+# 更阴的是它**不会自己暴露** —— 只要用户站那边也持有同一域名，两边能共存、
+# 站点看起来完全正常；只有当有人按文档「移除再重新添加自定义域名」去触发
+# HTTPS 签发时才会炸出来，而那一刻站点已经断了。（2026-09-28 实际发生过。）
+# 所以当时**删掉了 site/CNAME**，这是对的。
 #
-# ⚠️ 一个项目站一旦声明了域名，GitHub 就把它从 `/CEVTUO-Z/` **搬到根路径**，
-# 于是：所有指向 `/CEVTUO-Z/` 的链接和书签全部 404，落地页被顶掉，
-# 而且两个仓库会为同一个域名打架 —— 谁后设置谁报
-# `Invalid cname: already taken by another repository in your account`。
+# ⚠️⚠️ **但「删掉」不是结论，只是当时那个值错了。** 2026-09-28 晚些时候仪表盘
+# 搬到了自己的域名 `z.cevtuogrnd.com`（与用户站无关，不冲突），于是 CNAME
+# 文件**必须回来** —— 而这个脚本是「新建舞台目录 → force-push」，舞台上没有
+# 的东西在 gh-pages 上就不存在了。我漏了这一步，GitHub 在我设置域名时写下的
+# CNAME 被这次 force-push 删掉，后果是 **`z.cevtuogrnd.com` 整站 404**
+# （GitHub 的「Site not found」页），而 API 里的 `cname` 字段仍然显示正确 ——
+# 一个只在真实域名的真实页面上才看得见的故障。
 #
-# ⚠️ 更阴的是它**不会自己暴露**：只要用户站那边也持有同一个域名，两边能共存，
-# 站点看起来完全正常。只有当有人按 GitHub 文档「移除再重新添加自定义域名」
-# 去触发 HTTPS 证书签发时，冲突才会炸出来 —— 而那时站点已经断了。
+# ⭐ 所以规则是：**CNAME 文件必须存在，且内容必须是这个仓库真正拥有的域名。**
+#    - ✅ `z.cevtuogrnd.com` —— 本仓库的域名
+#    - ❌ `apps.cevtuogrnd.com` —— 用户站的域名，写了就是抢
 #
-# HTTPS 证书是**按域名**签发的，跟哪个仓库持有它无关。所以在项目站这边
-# 保持没有 CNAME 才是对的。
+# ⚠️ 换域名时**这一行必须跟着改**，否则站点会静默消失。
+CEVTUO_SITE_DOMAIN="${CEVTUO_SITE_DOMAIN:-z.cevtuogrnd.com}"
+printf '%s\n' "$CEVTUO_SITE_DOMAIN" > "$STAGE/CNAME"
+echo "  ▸ CNAME → $CEVTUO_SITE_DOMAIN"
 
 # The publish branch is generated output only — it shares no history with `main`
 # and never gets merged back, so an orphan root keeps its log readable instead of
