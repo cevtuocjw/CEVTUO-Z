@@ -132,9 +132,29 @@ rm -f "$STAGE/data/paperr/raw-koreader.json"
 # GitHub Pages runs Jekyll unless told not to, and Jekyll silently drops paths
 # beginning with `_` — which would take build assets with it.
 touch "$STAGE"/.nojekyll
-if [[ -f site/CNAME ]]; then
-  cp site/CNAME "$STAGE"/CNAME
-fi
+
+# ── ⚠️⚠️ 这个分支**绝不能**有 CNAME 文件 ─────────────────────────────
+#
+# 这里曾经是 `cp site/CNAME "$STAGE"/CNAME`，内容 `apps.cevtuogrnd.com`。
+# 2026-09-28 它把一个潜伏了很久的域名冲突掀到了台面上，代价是一次真实的
+# 站点中断 —— 记在这里，免得有人再"顺手加回来"。
+#
+# 事实是：`apps.cevtuogrnd.com` 这个自定义域名**归 `cevtuocjw.github.io`
+# 用户站所有**，用户站就是那个在根路径上服务 CEVTUOGRND 落地页的仓库。
+# CEVTUO-Z 只是挂在它下面的一个**项目路径** `/CEVTUO-Z/`，本来不需要、
+# 也不该自己声明这个域名。
+#
+# ⚠️ 一个项目站一旦声明了域名，GitHub 就把它从 `/CEVTUO-Z/` **搬到根路径**，
+# 于是：所有指向 `/CEVTUO-Z/` 的链接和书签全部 404，落地页被顶掉，
+# 而且两个仓库会为同一个域名打架 —— 谁后设置谁报
+# `Invalid cname: already taken by another repository in your account`。
+#
+# ⚠️ 更阴的是它**不会自己暴露**：只要用户站那边也持有同一个域名，两边能共存，
+# 站点看起来完全正常。只有当有人按 GitHub 文档「移除再重新添加自定义域名」
+# 去触发 HTTPS 证书签发时，冲突才会炸出来 —— 而那时站点已经断了。
+#
+# HTTPS 证书是**按域名**签发的，跟哪个仓库持有它无关。所以在项目站这边
+# 保持没有 CNAME 才是对的。
 
 # The publish branch is generated output only — it shares no history with `main`
 # and never gets merged back, so an orphan root keeps its log readable instead of
