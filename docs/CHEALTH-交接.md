@@ -9,8 +9,11 @@
 
 **手机端的自动同步修好并验证通过**（09-28 12:29，后台推 16,502 字节、HTTP 202 committed、0 次读取失败）。
 **阿里云的 HTTPS 已经打通**（`https://api.cevtuogrnd.com:8443`，实测 200）。
-**网站 HTTPS 也已开通并实测**（09-28 下午：`https_enforced: true`，HTTP 全部 301 跳转，
-三个站点 HTTPS 均 200；两个心跳从真实 HTTPS 页面拿到 200，无混合内容）。
+**网站 HTTPS 已开通并实测**（09-28 下午：`https_enforced: true`，HTTP 全部 301 跳转；
+两个心跳从真实 HTTPS 页面拿到 200，无混合内容）。
+**仪表盘当晚搬到了自己的域名 `https://z.cevtuogrnd.com/`**（根路径），
+旧地址两条都仍然可用。⚠️ 搬域名踩的坑见「域名：两个域名，两回事」一节 ——
+**必须做的有两处**：`ALLOWED_ORIGINS` 加新域名、`deploy-pages.sh` 写 CNAME。
 
 ⚠️⚠️ **开通 HTTPS 时踩到了一次真实的站点中断（约 20 分钟）** —— 根因是
 gh-pages 里一个躺了六天的 `CNAME` 文件在抢域名。**动手前先读下面「域名归属」一节。**
@@ -131,26 +134,51 @@ https://api.cevtuogrnd.com:8443/health              → 200
 
 ---
 
-## ⚠️⚠️ 域名归属 —— 照着旧版做会搞坏站点（2026-09-28 实际发生过）
+## ⭐ 域名：两个域名，两回事（2026-09-28 晚定案）
 
-**旧版这一节写的是「去 GitHub Settings → Pages 存自定义域名」。那个仓库指错了。**
+| 域名 | 归谁 | 服务什么 |
+|---|---|---|
+| **`z.cevtuogrnd.com`** | **`cevtuocjw/CEVTUO-Z`** | **仪表盘，根路径** ← 真实站点 |
+| `apps.cevtuogrnd.com` | **`cevtuocjw.github.io` 用户站** | 根 = CEVTUOGRND 落地页；`/CEVTUO-RWP/` = RWP |
 
-| 事实 | |
-|---|---|
-| `apps.cevtuogrnd.com` 归谁 | **`cevtuocjw.github.io`（用户站）**，就是根路径上那个 CEVTUOGRND 落地页 |
-| `CEVTUO-Z` 是什么 | 只是挂在它下面的**项目路径** `/CEVTUO-Z/` |
-| `CEVTUO-Z/pages` 报 `cname: null` | **正常**，不是「域名没存进设置」 |
+**真实站点 = `https://z.cevtuogrnd.com/`**（`https_enforced: true`）。
+旧地址两条**都仍然可用**：`apps.cevtuogrnd.com/CEVTUO-Z/` 直接服务同一份内容
+（GitHub 按路径服务），`cevtuocjw.github.io/CEVTUO-Z/` 301 过去。
+实测两边 HTML 与数据 md5 一致 —— 是同一份，不是副本。
 
-**为什么不能给 CEVTUO-Z 设域名**：一个项目站一旦声明域名，GitHub 就把它从
-`/CEVTUO-Z/` **搬到根路径** ⇒ 所有旧链接 404、落地页被顶掉、两个仓库为同一域名打架
-（后设置的报 `Invalid cname: already taken by another repository in your account`）。
+### ⚠️⚠️ CNAME 规则（这是这份交接里最容易做错的一处）
 
-⚠️⚠️ **这个冲突不会自己暴露**：只要用户站那边也持有同一域名，两边能共存、站点
-看起来完全正常。**只有当有人按 GitHub 文档「移除再重新添加自定义域名」去触发
-HTTPS 签发时才会炸出来 —— 而那一刻站点已经断了。**
+⭐ **gh-pages 上必须有 `CNAME` 文件，内容必须是这个仓库真正拥有的域名。**
 
-**恢复顺序**（必须先释放再认领）：删 gh-pages 的 `CNAME` →
-`PUT CEVTUO-Z/pages {cname:null}` → 再 `PUT cevtuocjw.github.io/pages {cname:"apps.cevtuogrnd.com"}`。
+- ✅ **`z.cevtuogrnd.com`** —— 本仓库自己的域名
+- ❌ **绝不能写 `apps.cevtuogrnd.com`** —— 那是**用户站**的域名。
+  项目站声明了别人的域名，GitHub 就把它搬到那个域名的根路径、顶掉落地页、
+  两个仓库打架（后设置的报 `Invalid cname: already taken by another
+  repository in your account`）。
+  ⚠️ **这个冲突不会自己暴露**：只要用户站那边也持有同一域名，两边能共存、
+  站点看起来完全正常；只有当有人按文档「移除再重新添加自定义域名」去触发
+  HTTPS 签发时才会炸出来 —— **而那一刻站点已经断了**（2026-09-28 实际发生过，
+  中断约 20 分钟）。**恢复顺序**：删 gh-pages 的 CNAME →
+  `PUT CEVTUO-Z/pages {cname:null}` → 再 `PUT 用户站/pages {cname:"apps.cevtuogrnd.com"}`。
+
+⚠️⚠️ **`deploy-pages.sh` 是「新建舞台目录 → force-push」，舞台上没有的东西在
+gh-pages 上就不存在了。** 所以它**必须自己写 CNAME** —— 我漏了这一步，GitHub
+在设置自定义域名时写下的 CNAME 被 force-push 删掉，后果是 **`z.cevtuogrnd.com`
+整站 404**（GitHub 的「Site not found」页），**而 API 里的 `cname` 字段仍然显示
+正确** —— 一个只在真实域名的真实页面上才看得见的故障。
+**换域名时 `deploy-pages.sh` 里那一行必须跟着改。**
+
+### ⚠️⚠️ 换域名/开 HTTPS 时，「守卫 URL」会静默失效（咬过两次）
+
+`deploy-pages.sh` 里那两个「取线上已发布版本」的 URL（paperr / chealth）
+指向站点当前地址。站点一旦 301，而 `curl -fsS` **不带 `-L`**
+⇒ 拿到空 body ⇒ JSON 校验失败 ⇒ **守卫静默失效**：
+
+- 第一次（开 Enforce HTTPS）：**`data/chealth/index.json` 被从 gh-pages 删掉**
+- 第二次（搬域名）：提前想到，拦住了
+
+现已改成新域名**并且加了 `-L`**；chealth 那段取不到时**直接 `exit 1` 中止发布**
+（paperr 能退回本地副本，chealth 退回不了 —— Mac 上根本没有那个目录）。
 
 ---
 
@@ -286,8 +314,10 @@ rm -rf /tmp/cevtuo-serve && mkdir -p /tmp/cevtuo-serve/data/chealth
 cp -R apps/dashboard/dist/. /tmp/cevtuo-serve/
 cp -R data/coof data/cnsr data/paperr /tmp/cevtuo-serve/data/
 cp data/sync-meta.json /tmp/cevtuo-serve/data/
-curl -s --noproxy '*' -o /tmp/cevtuo-serve/data/chealth/index.json \
-  "http://apps.cevtuogrnd.com/CEVTUO-Z/data/chealth/index.json"
+curl -sL --noproxy '*' -o /tmp/cevtuo-serve/data/chealth/index.json \
+  "https://z.cevtuogrnd.com/data/chealth/index.json"
+# ⚠️ `https://` 和 `-L` 都要 —— 站点开 HTTPS 后明文地址 301，
+#    不带 `-L` 会拿到空 body，而后面的 JSON 校验会静默失败。
 # 再起一个把 /z 映射到 /tmp/cevtuo-serve 的静态服务在 8096
 ```
 
