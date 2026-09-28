@@ -301,7 +301,7 @@ export default function Chealth() {
                 <View className="chc__sesshead">
                   <Icon name={typeIcon(sess.type)} className="chc__ico" />
                   <Text className="card__label">
-                    {typeLabel(sess.type)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
+                    {typeLabel(sess.type, sess.exerciseType)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
                   </Text>
                 </View>
                 <View className="chc__legend">

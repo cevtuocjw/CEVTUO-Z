@@ -322,30 +322,104 @@ export function typeBreakdown(sessions: ChealthSession[]): TypeSlice[] {
  * 显示 `TYPE_0` 至少能让人去查；显示「未知」是一条死路 ——
  * 既不知道是什么，也不知道该去哪里加映射。
  */
-const TYPE_CN: Record<string, string> = {
-  BIKING: '骑行',
-  BIKING_STATIONARY: '室内骑行',
-  RUNNING: '跑步',
-  RUNNING_TREADMILL: '跑步机',
-  WALKING: '走路',
-  HIKING: '徒步',
-  SWIMMING_POOL: '游泳',
-  SWIMMING_OPEN_WATER: '公开水域游泳',
-  STRENGTH_TRAINING: '力量训练',
-  ELLIPTICAL: '椭圆机',
-  ROWING_MACHINE: '划船机',
-  YOGA: '瑜伽',
-  PILATES: '普拉提',
-  STAIR_CLIMBING: '爬楼',
-  HIGH_INTENSITY_INTERVAL_TRAINING: 'HIIT',
-  BADMINTON: '羽毛球',
-  BASKETBALL: '篮球',
-  SOCCER: '足球',
-  TENNIS: '网球',
-  SKIING: '滑雪',
-  SNOWBOARDING: '单板滑雪',
-  DANCING: '跳舞',
-  STRETCHING: '拉伸',
-};
+/**
+ * Health Connect 的**完整**运动类型表。
+ *
+ * ⚠️⚠️ 这张表是**从 SDK 的类文件里读出来的**，不是凭记忆写的：
+ *
+ *     unzip -o connect-client-1.1.0.aar classes.jar
+ *     javap -p -constants .../ExerciseSessionRecord.class
+ *
+ * 为什么较这个真：手机端只映射了 12 个类型，其余的走 `else -> "TYPE_$t"`，
+ * 于是页面上出现过一行 **`TYPE_0`** —— 一个读者完全看不懂的机器名。
+ * 而「0 是什么」如果靠猜，猜错的表现和猜对**长得一模一样**。
+ * 实测 0 = `OTHER_WORKOUT`（其他运动）。
+ *
+ * ⚠️ 一张表同时供**按名查**和**按编号查**两种用法 —— 两份表必然漂移，
+ *    这个项目因为「同一件事两处实现」吃过亏。
+ */
+const EXERCISE_TYPES: [number, string, string][] = [
+  [0, 'OTHER_WORKOUT', '其他运动'],
+  [2, 'BADMINTON', '羽毛球'],
+  [4, 'BASEBALL', '棒球'],
+  [5, 'BASKETBALL', '篮球'],
+  [8, 'BIKING', '骑行'],
+  [9, 'BIKING_STATIONARY', '室内骑行'],
+  [10, 'BOOT_CAMP', '训练营'],
+  [11, 'BOXING', '拳击'],
+  [13, 'CALISTHENICS', '徒手健身'],
+  [14, 'CRICKET', '板球'],
+  [16, 'DANCING', '跳舞'],
+  [25, 'ELLIPTICAL', '椭圆机'],
+  [26, 'EXERCISE_CLASS', '团课'],
+  [27, 'FENCING', '击剑'],
+  [28, 'FOOTBALL_AMERICAN', '美式足球'],
+  [29, 'FOOTBALL_AUSTRALIAN', '澳式足球'],
+  [31, 'FRISBEE_DISC', '飞盘'],
+  [32, 'GOLF', '高尔夫'],
+  [33, 'GUIDED_BREATHING', '呼吸训练'],
+  [34, 'GYMNASTICS', '体操'],
+  [35, 'HANDBALL', '手球'],
+  [36, 'HIGH_INTENSITY_INTERVAL_TRAINING', 'HIIT'],
+  [37, 'HIKING', '徒步'],
+  [38, 'ICE_HOCKEY', '冰球'],
+  [39, 'ICE_SKATING', '滑冰'],
+  [44, 'MARTIAL_ARTS', '武术'],
+  [46, 'PADDLING', '划桨'],
+  [47, 'PARAGLIDING', '滑翔伞'],
+  [48, 'PILATES', '普拉提'],
+  [50, 'RACQUETBALL', '壁球'],
+  [51, 'ROCK_CLIMBING', '攀岩'],
+  [52, 'ROLLER_HOCKEY', '轮滑球'],
+  [53, 'ROWING', '划船'],
+  [54, 'ROWING_MACHINE', '划船机'],
+  [55, 'RUGBY', '橄榄球'],
+  [56, 'RUNNING', '跑步'],
+  [57, 'RUNNING_TREADMILL', '跑步机'],
+  [58, 'SAILING', '帆船'],
+  [59, 'SCUBA_DIVING', '潜水'],
+  [60, 'SKATING', '轮滑'],
+  [61, 'SKIING', '滑雪'],
+  [62, 'SNOWBOARDING', '单板滑雪'],
+  [63, 'SNOWSHOEING', '雪地徒步'],
+  [64, 'SOCCER', '足球'],
+  [65, 'SOFTBALL', '垒球'],
+  [66, 'SQUASH', '壁球'],
+  [68, 'STAIR_CLIMBING', '爬楼'],
+  [69, 'STAIR_CLIMBING_MACHINE', '爬楼机'],
+  [70, 'STRENGTH_TRAINING', '力量训练'],
+  [71, 'STRETCHING', '拉伸'],
+  [72, 'SURFING', '冲浪'],
+  [73, 'SWIMMING_OPEN_WATER', '公开水域游泳'],
+  [74, 'SWIMMING_POOL', '游泳'],
+  [75, 'TABLE_TENNIS', '乒乓球'],
+  [76, 'TENNIS', '网球'],
+  [78, 'VOLLEYBALL', '排球'],
+  [79, 'WALKING', '走路'],
+  [80, 'WATER_POLO', '水球'],
+  [81, 'WEIGHTLIFTING', '举重'],
+  [82, 'WHEELCHAIR', '轮椅'],
+  [83, 'YOGA', '瑜伽'],
+];
 
-export const typeLabel = (t: string): string => TYPE_CN[t] ?? t;
+const BY_NAME = new Map(EXERCISE_TYPES.map(([, name, cn]) => [name, cn]));
+const BY_NUM = new Map(EXERCISE_TYPES.map(([num, , cn]) => [num, cn]));
+
+/**
+ * ⚠️ 三种输入都要能处理，因为三种都真实出现过：
+ *   · 已知名（`BIKING`）—— 手机端映射过的 12 个
+ *   · `TYPE_<n>` —— 手机端没映射的，字符串里带着编号
+ *   · 其它未知字符串 —— 原样显示
+ *
+ * ⚠️ 全都映射不到时**显示原样**，不写「未知」：一个编号还能去查，
+ *    「未知」是死路（这条注释在手机端也有一份，两边一致）。
+ */
+export const typeLabel = (name: string, num?: number): string => {
+  const direct = BY_NAME.get(name);
+  if (direct) return direct;
+  const m = /^TYPE_(\d+)$/.exec(name);
+  const n = m ? Number(m[1]) : num;
+  if (n !== undefined && BY_NUM.has(n)) return BY_NUM.get(n) as string;
+  if (n !== undefined) return `其他运动 #${n}`;
+  return name;
+};
