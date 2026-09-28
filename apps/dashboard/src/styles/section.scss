@@ -255,6 +255,21 @@ $gutter: t.$space-3;
   // `flex: 1` child (the poster grid) has nothing to claim.
   flex: 1;
   min-height: 0;
+
+  // ⚠️⚠️ 内容比面板高时**必须在面板内滚动**，绝不能画到外面去。
+  //
+  // 这里原来没有 `overflow`，于是所有超出的内容都直接**涂在下一屏上面**。
+  // 2026-09-28 实测 CHEALTH：第 2 屏（运动）内容 2868px 而面板只有 844px，
+  // 多出来的 2024px 全部压在后面的屏上 —— 整页读不了。
+  //
+  // ⚠️ 而**所有断言都是绿的**：`.card__label` 数到 36 个、零控制台错误、
+  //    `innerText` 顺序也对（它不管视觉布局）。这个项目的头号教训又应验了一次 ——
+  //    「断言全绿什么都说明不了」，只有亲眼看图才发现。
+  //
+  // ⚠️ 对内容本来就装得下的面板，这一条是**空操作** —— 所以是加在整个
+  //    `.section__body` 上，而不是只给 CHEALTH 打补丁。下一个把内容写长的
+  //    页面不该再踩一次。
+  overflow-y: auto;
   // ⚠️ `justify-content: center` HERE, on the body — not on the panel.
   //
   // The panel must stay `flex-start` so a tall child (the poster grid) can fill
@@ -266,7 +281,12 @@ $gutter: t.$space-3;
   // ⚠️ `auto` margins do the centring, not `justify-content`, because a
   // `flex: 1` grandchild needs to be able to stretch past it. `justify-content`
   // would also centre the grid, which is the thing that must fill.
-  justify-content: center;
+  //
+  // ⚠️⚠️ 但是 `safe` 不能省，这是加了 `overflow-y: auto` 之后才出现的坑：
+  //    **居中 + 溢出 = 顶部的第一项被推到可视区之外，而且滚不回来。**
+  //    规范里叫 data loss，浏览器按 `center` 算的时候是真丢。
+  //    `safe center` 在装得下时居中、装不下时退化成 `flex-start`。
+  justify-content: safe center;
   // ⚠️ Reserved for the margin title. The panel already reserves the rail, but
   // the title sits INSIDE that band and the stat grid ran underneath it — the
   // second column of numbers collided with the vertical "COOF".
