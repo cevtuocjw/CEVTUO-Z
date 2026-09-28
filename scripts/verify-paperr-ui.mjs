@@ -22,9 +22,76 @@
 
 import { chromium } from 'playwright';
 import { mkdir } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+// ⚠️ The app's own opener, so the fixture below is read exactly the way the
+// page reads it. A second implementation here could disagree with the page and
+// the test would still pass.
+import { openSealed } from '../apps/dashboard/src/platform/health-crypto.ts';
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:8096/z';
 const OUT = process.argv[3] ?? '/tmp/paperr-ui';
+
+/**
+ * The health passphrase, so the CHEALTH page can be driven in its UNLOCKED
+ * state. It lives in `services/ingest/.env.server-backup` on this machine.
+ *
+ * ⚠️ Absent ⇒ the unlocked checks are SKIPPED, and they say so in their detail
+ * line. Silently passing would make a missing secret look like a page that
+ * works — the same shape as every other silent failure in this project.
+ */
+const PASS = (() => {
+  try {
+    const key = 'CEVTUO_HEALTH_PASSPHRASE=';
+    const p = new URL('../services/ingest/.env.server-backup', import.meta.url);
+    const line = readFileSync(p, 'utf8').split('\n').find((l) => l.startsWith(key));
+    return line ? line.slice(key.length).trim() : '';
+  } catch {
+    return '';
+  }
+})();
+
+/**
+ * The date the CHEALTH page's stall verdict will actually be measured against
+ * — read out of the same sealed index the page fetches.
+ *
+ * ⚠️⚠️ Why this is read rather than written down as a constant.
+ *
+ * The stall rule is `pushDay − dataDay ≥ 2`, and **both** of those come off the
+ * wire: `lastPushAt` from the heartbeat, `to` from the decrypted index. The
+ * check below stubs only the heartbeat. So as long as the local index fixture
+ * sat on the stalled data (2026-09-24) the assertion passed — and the moment
+ * the phone's sync was fixed and the fixture was refreshed from the CDN, it
+ * went red across all three viewports with a message about a working page.
+ *
+ * ⚠️ That is not a flake, it is the check measuring the wrong thing: "today's
+ * data happens to be stalled" rather than "the rule works". Deriving the stub
+ * from whatever the page is really about to read means both branches are
+ * forced no matter what the live data says — which is what the comment further
+ * down always claimed this block did.
+ */
+const DATA_DAY = await (async () => {
+  if (!PASS) return null;
+  try {
+    const res = await fetch(`${BASE}/data/chealth/index.json`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const idx = JSON.parse(openSealed(await res.text(), PASS));
+    return typeof idx.to === 'string' && idx.to ? idx.to : null;
+  } catch {
+    return null;
+  }
+})();
+
+/**
+ * `YYYY-MM-DD` shifted by whole days.
+ *
+ * ⚠️ Parsed as UTC on purpose. The page parses these as `+08:00`, and mixing
+ * the two shifts the answer by a day near midnight — which would show up as
+ * this check disagreeing with itself depending on the hour it runs.
+ */
+const shiftDay = (iso, days) => {
+  const t = Date.parse(`${iso}T00:00:00Z`) + days * 86_400_000;
+  return new Date(t).toISOString().slice(0, 10);
+};
 
 const results = [];
 const check = (name, ok, detail = '') => {
@@ -109,18 +176,71 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
   // one along, and every page load 404'd in silence. The only thing that
   // noticed was the generic "Failed to load resource: 404" below — which is
   // why that message now names the URL.
+  //
+  // ⚠️⚠️ And it is asserted against the PAGE'S OWN REQUEST — not a URL typed
+  // out here a fifth time.
+  //
+  // Until 2026-09-28 this block called `page.evaluate` and fetched a hardcoded
+  // `http://120.77.27.128:8789/…`. Two things were wrong with that, and the
+  // second is the serious one:
+  //
+  //   1. The host already lived in four places in `data.ts`; this was a fifth.
+  //   2. It never checked that the PAGE calls the endpoint. It proved "some
+  //      host answers", which is a different claim from "the panel on screen
+  //      gets its number". The endpoint could have been dropped from the page
+  //      entirely and this would have stayed green.
+  //
+  // ⚠️ What that would have cost on 2026-09-28: the four URLs moved to
+  // `https://api.cevtuogrnd.com:8443` (an HTTPS page fetching plain HTTP is
+  // killed by mixed-content blocking before CORS is consulted). This block
+  // would have gone on cheerfully testing an address the page no longer used —
+  // both sides green, nothing covered, which is the exact shape this file
+  // exists to catch.
+  //
+  // ⚠️ The reload is load-bearing: the heartbeat is fetched on mount, which
+  // happens during the `goto` at the top of this function — before a listener
+  // attached down here could see it. (Same reason the cache check above
+  // reloads.)
+  //
+  // ⚠️ `requestfailed` is captured separately from `response`, because
+  // mixed-content is not a bad STATUS — the request never produces one. Its
+  // absence-of-response is why the page would show a dash and no error.
   {
-    const hb = await page.evaluate(async () => {
-      try {
-        const r = await fetch('http://120.77.27.128:8789/api/paperr/heartbeat.json');
-        return { ok: r.ok, status: r.status, body: r.ok ? await r.json() : null };
-      } catch (e) {
-        return { ok: false, err: String(e).slice(0, 100) };
-      }
-    });
-    check('the sync heartbeat endpoint answers', hb.ok, JSON.stringify(hb).slice(0, 160));
+    const seen = [];
+    const failed = [];
+    const match = (u) => u.includes('/api/paperr/heartbeat.json');
+    const onResp = async (r) => {
+      if (!match(r.url())) return;
+      let body = null;
+      try { body = await r.json(); } catch { /* 空/坏响应体由下面的断言报，不在这里炸 */ }
+      seen.push({ url: r.url(), status: r.status(), body });
+    };
+    const onFail = (r) => {
+      if (match(r.url())) failed.push(`${r.failure()?.errorText ?? '?'} ${r.url().slice(0, 90)}`);
+    };
+    page.on('response', onResp);
+    page.on('requestfailed', onFail);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.pr-row', { timeout: 20000 });
+    await page.waitForTimeout(1500);
+    page.off('response', onResp);
+    page.off('requestfailed', onFail);
+
+    const hit = seen[0];
+    check('the page itself asks the heartbeat endpoint', !!hit || failed.length > 0,
+          hit ? hit.url.slice(0, 110) : (failed[0] ?? 'no request observed at all'));
+    // ⚠️ Names the failure text, so a mixed-content regression says so out loud
+    // instead of reporting an unexplained missing request.
+    check('the heartbeat request is not blocked before it is sent',
+          failed.length === 0, failed[0] ?? '');
+    check('the heartbeat endpoint answers 200', hit?.status === 200, `status=${hit?.status ?? '—'}`);
     check('the heartbeat carries a push time',
-          !!(hb.body && 'lastPushAt' in hb.body), JSON.stringify(hb.body).slice(0, 120));
+          !!(hit?.body && 'lastPushAt' in hit.body), JSON.stringify(hit?.body ?? null).slice(0, 120));
+    // ⚠️ The regression this whole change was about. Plain HTTP here means the
+    // heartbeats die silently the moment the site is served over HTTPS.
+    check('the heartbeat is fetched over HTTPS, not plain HTTP',
+          !!hit && hit.url.startsWith('https://'), hit?.url.slice(0, 110) ?? '—');
   }
 
   // ── No brand may invent a number ──────────────────────────
@@ -148,7 +268,7 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
       if (!p) return null;
       return [...p.querySelectorAll('.stats__value')].map((e) => e.textContent?.trim());
     });
-    check('CHEALTH shows no invented figures', !!chealth && chealth.every((v) => v === '—'),
+    check('CHEALTH 未解锁时不显示任何数字', !!chealth && chealth.every((v) => v === '—'),
           JSON.stringify(chealth));
     check('the live brands are still allowed real numbers', fabricated.length > 0 || values.length === 0,
           values.join(','));
@@ -156,13 +276,122 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
     // ⚠️ And the CHEALTH PAGE, not just its panel on the index. The same
     // invented 8,412 / 7h12 lived in both files, and fixing the one visible from
     // the index would have left the other one reachable by URL.
+    //
+    // ⚠️⚠️ The rule changed on 2026-09-24 and BOTH halves of the change matter.
+    //
+    // It used to read "no digits anywhere on the page", which was the right
+    // expression of "no invented figures" while there was no source. There is
+    // one now: the page fetches an AES-GCM-sealed index from the public CDN and
+    // shows real readings once the passphrase is entered. A blanket ban on
+    // digits would now fail on a page that is working.
+    //
+    // ⚠️ So the ban is scoped to the LOCKED state — and a second assertion was
+    // added beside it, because the first one alone has a hole it cannot see:
+    // **a crashed page also shows no digits.** "Nothing wrong is displayed" and
+    // "the right thing is displayed" are different claims, and only the pair
+    // distinguishes a correctly locked page from a white screen.
     await page.goto(`${BASE}/#/pages/chealth/index`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.stats__value', { timeout: 20000 });
+    await page.waitForSelector('.card__label', { timeout: 20000 });
     await page.waitForTimeout(600);
     const chealthPage = await page.locator('.stats__value').allInnerTexts();
-    check('the CHEALTH page invents nothing either',
+    check('CHEALTH 页面未解锁时也不显示数字',
           chealthPage.filter((v) => /\d/.test(v)).length === 0, JSON.stringify(chealthPage));
 
+    const gate = await page.locator('text=需要口令').count();
+    check('未解锁时显示的是口令闸，不是白屏（白屏也没有数字，这条才分得开）', gate > 0, `gate=${gate}`);
+    const cryptoErr = await page.locator('text=读不到健康数据').count();
+    check('未解锁时不应报错 —— 没有口令是正常状态，不是故障', cryptoErr === 0, `err=${cryptoErr}`);
+
+    // ⚠️ 加密索引必须真的是密文。线上那份若是明文，页面上看不出区别，
+    //    但数据已经泄露了 —— 所以这条查文件本身，不查页面。
+    const sealedRes = await page.evaluate(async () => {
+      const r = await fetch('data/chealth/index.json');
+      if (!r.ok) return { status: r.status };
+      const t = await r.text();
+      // ⚠️ `hasCt` is tested against the WHOLE text, not the preview. The
+      // first version looked for `"ct"` inside a 120-character head — but the
+      // envelope puts `ct` after `v`/`kdf`/`iter`/`salt`/`iv`, so it fell
+      // outside the window and the assertion failed on a file that was
+      // perfectly sealed. A test that reports a failure it cannot distinguish
+      // from a real one is worse than no test.
+      return {
+        status: r.status,
+        head: t.slice(0, 120).replace(/\s+/g, ' '),
+        hasPlain: /"steps"|"date"|"restingHr"|2026-\d\d-/.test(t),
+        hasCt: /"ct"\s*:/.test(t),
+        bytes: t.length,
+      };
+    });
+    check('已发布的健康索引是密文，不含任何明文片段',
+          sealedRes.status === 404 || (sealedRes.hasPlain === false && sealedRes.hasCt === true),
+          JSON.stringify(sealedRes).slice(0, 220));
+
+    await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.pr-row', { timeout: 20000 });
+    await page.waitForTimeout(600);
+  }
+
+  // ── CHEALTH：手机在推、数据没动 —— 要判决，不是两个时间戳 ──
+  //
+  // ⚠️ Written for what was measured on 2026-09-28: `lastPushAt` was five
+  // minutes old — the phone pushing every 15 minutes, exactly on schedule —
+  // while `to` had not moved off 2026-09-24 for four days. The page printed
+  // both stamps inside one sentence and drew no conclusion from them. A reader
+  // is not going to notice a four-day gap between two timestamps by eye.
+  //
+  // ⚠️⚠️ The heartbeat is STUBBED, and that is the whole point of the check.
+  //
+  // The real one comes from the Aliyun box and says whatever it says today. An
+  // assertion against it would pass or fail with the weather — and, worse, it
+  // would go permanently GREEN on the day someone finally fixes the stall,
+  // which is exactly when a regression would slip through. Here both branches
+  // are forced, so the assertion means "the rule works", not "today happens to
+  // be broken".
+  //
+  // ⚠️⚠️ The stub is DERIVED from the data date the page is about to read, not
+  // written down as `2026-09-28`. Hardcoding it is what made this check pass on
+  // the day the data happened to be stalled and fail on the day it was fixed —
+  // see `DATA_DAY` above. Both branches are forced either way; what changed is
+  // that they are forced by the rule rather than by the calendar.
+  //
+  // ⚠️ And the second case is load-bearing for the first: with the stub removed
+  // entirely the live heartbeat decides, and a live heartbeat that agrees with
+  // the data produces exactly case two's expected result — so case one alone
+  // cannot tell a working stub from no stub at all. Case two can.
+  if (!PASS || !DATA_DAY) {
+    check(
+      'CHEALTH 解锁态检查（缺口令或读不到本地索引，已跳过）',
+      false,
+      PASS ? `解不开 ${BASE}/data/chealth/index.json` : 'services/ingest/.env.server-backup 里没有口令',
+    );
+  } else {
+    for (const [offset, want] of [
+      [4, true], // 手机一直在推，数据却停在 4 天前 ⇒ 必须警告
+      [0, false], // 当天就推过 ⇒ 不许警告
+    ]) {
+      const pushDay = shiftDay(DATA_DAY, offset);
+      const route = '**/api/chealth/heartbeat.json';
+      await page.route(route, (r) =>
+        r.fulfill({ json: { lastPushAt: `${pushDay}T10:58+08:00`, dayCount: 30, to: DATA_DAY } }),
+      );
+      await page.goto(`${BASE}/#/pages/chealth/index?k=${PASS}`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.card__label', { timeout: 20000 });
+      await page.waitForTimeout(1200);
+      const warned = (await page.locator('.chc__stale').allInnerTexts()).some((t) =>
+        /手机一直在推/.test(t),
+      );
+      check(
+        `心跳落后数据 ${offset} 天 → ${want ? '必须' : '不得'}警告`,
+        warned === want,
+        `数据 ${DATA_DAY} / 上报 ${pushDay} warned=${warned}`,
+      );
+      await page.unroute(route);
+    }
+    // ⚠️ Back to CAPPERR before leaving. Everything below — the shelf, the
+    // charts, the filters — assumes this page is on screen, and the block
+    // above navigated away to CHEALTH. Without this the very next check
+    // reported `shelf rendered — rows=0`, which reads as a broken shelf and is
+    // really just a browser parked on another route.
     await page.goto(`${BASE}/#/pages/paperr/index`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.pr-row', { timeout: 20000 });
     await page.waitForTimeout(600);

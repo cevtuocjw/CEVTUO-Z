@@ -100,6 +100,30 @@ else
   echo "  ⚠️ 取不到线上 index.json —— 用本地副本。如果服务器刚发布过，这次发布会把它冲掉。" >&2
 fi
 
+# ── ⚠️⚠️ `data/chealth/` 有同样的问题，而且更严重：不是覆盖，是**抹掉** ──
+#
+# 那个文件由阿里云的 ingest 加密后发布，Mac 上**根本没有** `data/chealth/`
+# 目录（它在 .gitignore 里，从来不在工作树里）。
+#
+# ⚠️ 而这个脚本是「新建一个舞台目录 → 拷进去 → force-push」，所以**舞台上没有
+#    的东西在 gh-pages 上就不存在了**。也就是说：跑一次 deploy-pages，线上那份
+#    健康索引会被静默删除 —— 手机再推一次才会回来。
+#
+# ⚠️ 这比 paperr 那次（被旧版本覆盖）更坏：覆盖留下的是旧数据，删除留下的是
+#    404，而页面读不到会显示「没有数据」—— 一个看起来完全正常的空状态。
+#
+# 所以同样处理：线上那份赢。密文信封本身是合法 JSON，所以校验方式和 paperr 一样。
+CHEALTH_LIVE="http://apps.cevtuogrnd.com/CEVTUO-Z/data/chealth/index.json"
+mkdir -p "$STAGE/data/chealth"
+if curl -fsS --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
+   && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/chealth/index.json.tmp','utf8'))" 2>/dev/null; then
+  mv "$STAGE/data/chealth/index.json.tmp" "$STAGE/data/chealth/index.json"
+  echo "  ▸ 保留线上已发布的 chealth/index.json（服务器拥有它，本脚本不覆盖也不删除）"
+else
+  rm -f "$STAGE/data/chealth/index.json.tmp"
+  echo "  ⚠️ 取不到线上 chealth/index.json —— 这一版会把它从线上删掉，手机上推一次即可恢复。" >&2
+fi
+
 # ⚠️ The device's raw export is server-only, per the ingest README. `cp -R data`
 # has been putting it on the public site, where it sat as a stale duplicate of
 # a file nothing reads.
