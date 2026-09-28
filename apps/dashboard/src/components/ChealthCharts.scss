@@ -592,6 +592,92 @@ $chart-h: 108px;
 //    三星健康那边标签永远是单行 —— 长了就换短词，不是折行。
 .chc__mlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+// ── 未解锁时的输入框 ───────────────────────────────────────
+//
+// ⚠️ 2026-09-28 之前这里**没有输入框**：页面只告诉读者「在地址后面加 ?k=口令」，
+//    也就是要求他在手机上手改地址栏。读者的原话是「完全没有数据和展示」。
+//
+// ⚠️ 一个需要输入却连输入框都没有的页面，读者只会认为它坏了。
+// ⚠️⚠️ 必须写成 `.card.chc__unlock`（**两个类**），不能只写 `.chc__unlock`。
+//
+//    原因和上面 `.card.chc__stack` 那段一模一样，而我**又犯了一次**：
+//    `.card` 是单类选择器，`.chc__unlock` 也是单类，特异性相同，
+//    胜负由样式表引入顺序决定 —— 而 demo.scss 在后，`.card` 的
+//    `flex-direction: row` 一直赢。
+//
+//    ⚠️ 症状：输入框外壳被挤成 **30px 宽**，里面真正能打字的 `<input>`
+//       只剩 **4×22px** —— 小到看不见也点不到。**真实用户在手机上打不了字。**
+//       实测（Playwright 读真实布局，不是估的）：
+//           taro-input-core.chc__unlock-input   30 x 44
+//           input.weui-input                     4 x 22
+//       ⚠️ 而它在页面上看起来只是「一个细长的框」，不像坏了。
+.card.chc__unlock {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.chc__unlock-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.chc__unlock-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font-size: 15px;          // ⚠️ 别小于 16px 太多 —— iOS 上会在聚焦时自动放大页面
+  color: var(--text-primary);
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+}
+
+// ⚠️⚠️ Taro 把真正的 `<input>` 放在外壳**里面**，类名是 `weui-input`，
+//    而它**默认按内容宽**算 —— 空值时就是几个像素。
+//    必须显式撑满，否则外壳再宽也没用：打字的地方仍然是那个 4px 的点。
+.chc__unlock-input .weui-input {
+  width: 100%;
+  height: 22px;
+  font-size: inherit;
+  line-height: 22px;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+.chc__unlock-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  // ⚠️ 用那个电光蓝 —— 全页「能点」的东西是同一个颜色。
+  background: var(--blue, #1d3cff);
+  cursor: pointer;
+}
+
+.chc__unlock-btn--busy {
+  opacity: 0.6;
+}
+
+// ⚠️ 失败了要**说出来**，不能只是「没反应」。
+//    读者按了「解锁」而页面没变化，会以为是按钮坏了，不会以为是口令错了。
+.chc__unlock-err {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--warn, #d08a20);
+}
+
 /**
  * ⚠️ 正文里的强调。
  *

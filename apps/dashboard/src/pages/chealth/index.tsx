@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { Text, View } from '@tarojs/components';
+import { Input, Text, View } from '@tarojs/components';
 
 import { BarRow, HeartChart, Legend, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
@@ -27,7 +27,7 @@ import {
 } from '../../platform/data';
 // ⚠️ 口令读取抽到了 platform/health-pass.ts —— 主页索引卡也要用它，而且必须
 //    读**同一个键**，否则在 CHEALTH 页输过口令之后主页仍然显示「—」且不报错。
-import { readPass } from '../../platform/health-pass';
+import { readPass, savePass } from '../../platform/health-pass';
 
 import '../../styles/demo.scss';
 
@@ -86,6 +86,47 @@ export default function Chealth() {
   const [err, setErr] = useState<string | null>(null);
 
   const [pass, setPass] = useState<string>(() => readPass());
+
+  /**
+   * ⚠️⚠️ 这一整块（typed / busy / unlockErr / submit）是 2026-09-28 补的，
+   *    因为**在这一天之前，这一页没有地方可以输入口令**。
+   *
+   * 未解锁时它只显示一段说明：「在地址后面加 ?k=你的口令」——
+   * 也就是要求读者**手改地址栏**。在手机上这基本等于没有入口。
+   * 读者当天的话是「我在网站上看到的完全没有数据和展示」：他打开站点，
+   * CHEALTH 那格写着「未解锁」，而没有任何地方能把它解开。
+   *
+   * ⚠️ 一个需要输入却只有输入框的页面是半成品；**一个需要输入却连输入框
+   *    都没有的页面，读者只会认为它坏了。**
+   */
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [unlockErr, setUnlockErr] = useState<string | null>(null);
+
+  /**
+   * ⚠️ 先**验证再记住** —— 顺序不能反。
+   *
+   * 记住一个错的口令比不记住更糟：下次打开时页面不会说「口令不对」，
+   * 而是直接渲染成一个**没有数据的 CHEALTH 页**，看起来像管道断了。
+   * 读者会去查手机、查服务器，不会想到问题在自己设备的 localStorage 里。
+   */
+  const submitPass = async () => {
+    const v = typed.trim();
+    if (!v || busy) return;
+    setBusy(true);
+    setUnlockErr(null);
+    try {
+      await fetchChealthIndex(v);
+      savePass(v);
+      setPass(v);
+    } catch {
+      // ⚠️ AES-GCM 解不开只有两种可能：口令错，或者文件没取到。
+      //    两者都写出来，不替读者猜是哪一个。
+      setUnlockErr('解不开。口令不对，或者索引没取到。');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (!pass) return undefined;
@@ -205,17 +246,65 @@ export default function Chealth() {
       <Wallpaper />
       <TopBar title="CHEALTH" backTo={homePanelUrl('chealth')} />
 
-      {!pass ? (
-        <Section index={0} title="需要口令" lede="健康数据是加密发布在公开 CDN 上的，需要口令才能解开。" compact>
-          <View className="card">
-            <Text className="card__label">健康索引在 gh-pages 上是 AES-GCM 密文，公开可下载但不可读。</Text>
+      {/*
+        ⚠️⚠️ 2026-09-28：这一屏原来**没有输入框**。
+
+        它只显示一段说明：「在地址后面加 ?k=你的口令」—— 也就是要求读者
+        **手改地址栏**。在手机上这基本等于没有入口。读者当天的话是
+        「我在网站上看到的完全没有数据和展示」：他打开站点，CHEALTH 写着
+        「未解锁」，而没有任何地方能把它解开。
+
+        ⚠️ 一个需要输入却连输入框都没有的页面，读者只会认为它坏了。
+
+        ⚠️ 条件也从「没有口令」扩到「没有口令**或口令解不开**」。
+           存着一个错的口令时，原来会渲染成一个**没有数据的 CHEALTH 页** ——
+           看起来像管道断了，读者会去查手机、查服务器，不会想到问题在
+           自己设备的 localStorage 里。现在它把输入框还回来。
+      */}
+      {!pass || err ? (
+        <Section
+          index={0}
+          title="需要口令"
+          lede="健康数据在公开 CDN 上是 AES-GCM 密文，要口令才能解开。"
+          compact
+        >
+          <View className="card chc__unlock">
             <Text className="card__label">
-              在地址后面加 ?k=你的口令 一次即可记住；口令放在 URL 的 # 之后，浏览器不会把它发给任何服务器。
+              口令只留在这台设备的浏览器里，不发往任何服务器。
             </Text>
+            <View className="chc__unlock-row">
+              <Input
+                className="chc__unlock-input"
+                password
+                value={typed}
+                placeholder="输入口令"
+                confirmType="done"
+                onInput={(e) => setTyped(String((e.detail as { value?: string }).value ?? ''))}
+                onConfirm={submitPass}
+              />
+              <View
+                className={`chc__unlock-btn${busy ? ' chc__unlock-btn--busy' : ''}`}
+                onClick={submitPass}
+              >
+                <Text>{busy ? '解开中…' : '解锁'}</Text>
+              </View>
+            </View>
+            {unlockErr || err ? (
+              <Text className="chc__unlock-err">
+                ⚠️ {unlockErr ?? '存着的口令已经解不开了，换一个。'}
+              </Text>
+            ) : null}
           </View>
         </Section>
       ) : null}
 
+      {/*
+        ⚠️ 没解开就**不要**渲染这六屏。
+        它们会全部渲染成空壳（没有数字、没有曲线），跟在一张「需要口令」的
+        卡片后面 —— 那正是「完全没有数据和展示」的观感来源：
+        读者看到的是六屏空白，而不是一句「还没解锁」。
+      */}
+      {pass && !err ? (
       <PageStack count={6}>
         <Section
           index={0}
@@ -822,6 +911,7 @@ export default function Chealth() {
           ))}
         </Section>
       </PageStack>
+      ) : null}
 
       {err ? (
         <View className="card">

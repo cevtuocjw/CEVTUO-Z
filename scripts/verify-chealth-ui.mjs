@@ -219,6 +219,62 @@ const real = errors.filter(
 );
 check('没有页面错误', real.length === 0, real[0] ?? '干净');
 
+// ── 未解锁那一屏：必须真的能打字 ─────────────────────────────
+//
+// ⚠️⚠️ 这一组防的是一个**截图上完全看不出来**的错：输入框外壳在、样式也对，
+//    但里面真正能打字的 `<input>` 只有几个像素宽。
+//
+//    实测（2026-09-28，修复前）：
+//        taro-input-core.chc__unlock-input   30 x 44
+//        input.weui-input                     4 x 22
+//    ⇒ 手机上点不到也打不了字。而截图里它只是「一个细长的框」——
+//      看起来像设计，不像坏了。
+//
+//    ⚠️ 原因是**特异性平手**：`.card` 和 `.chc__unlock` 都是单类选择器，
+//       胜负由样式表引入顺序决定，而 demo.scss 在后 —— `.card` 的
+//       `flex-direction: row` 一直赢。
+//       这个项目在 `.chc__stack` 上**已经踩过一次**，这是第二次。
+//
+// ⚠️ 用一个**全新 context**（不带口令）—— 主 context 是解锁态的，
+//    看不到这一屏。而这一屏恰恰是读者第一次打开时唯一看到的东西。
+const anon = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  colorScheme: 'dark',
+  isMobile: true,
+  hasTouch: true,
+});
+const anonPage = await anon.newPage();
+await anonPage.goto(`${BASE}/#/pages/chealth/index`, { waitUntil: 'networkidle' });
+await anonPage.waitForTimeout(2500);
+const lock = await anonPage.evaluate(() => {
+  const shell = document.querySelector('.chc__unlock-input');
+  const inner = shell ? shell.querySelector('input') : null;
+  const r = (el) => (el ? el.getBoundingClientRect() : { width: 0, height: 0 });
+  return {
+    hasShell: !!shell,
+    shellW: Math.round(r(shell).width),
+    innerW: Math.round(r(inner).width),
+    innerH: Math.round(r(inner).height),
+    sections: document.querySelectorAll('.section').length,
+    tiles: document.querySelectorAll('.chc__tile').length,
+  };
+});
+await anon.close();
+
+check('未解锁时有输入框', lock.hasShell, `外壳 ${lock.shellW}px 宽`);
+check(
+  '真正能打字的 <input> 足够大',
+  lock.innerW >= 80 && lock.innerH >= 16,
+  `内层 input ${lock.innerW}×${lock.innerH}px` +
+    (lock.innerW < 80 ? '  ← 小于 80px，手机上是点不到的' : ''),
+);
+check(
+  '未解锁时不渲染那六屏空数据',
+  lock.sections === 1 && lock.tiles === 0,
+  `${lock.sections} 屏 / ${lock.tiles} 个马赛克块（应该是 1 屏 / 0 块）` +
+    (lock.sections > 1 ? '  ← 读者会看到一屏「需要口令」后面跟着六屏空白' : ''),
+);
+
 await browser.close();
 console.log(`\n${pass}/${pass + fail} 通过\n`);
 process.exit(fail === 0 ? 0 : 1);

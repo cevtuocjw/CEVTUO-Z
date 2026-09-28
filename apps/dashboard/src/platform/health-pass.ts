@@ -41,3 +41,25 @@ export function readPass(): string {
     return '';
   }
 }
+
+/**
+ * 记住口令。
+ *
+ * ⚠️⚠️ **只在确认它能解开索引之后才调用。**
+ *
+ * 记住一个错的口令比不记住更糟：下次打开页面，它不会提示「口令不对」，
+ * 而是直接渲染成一个**没有数据的 CHEALTH 页** —— 看起来像管道断了，
+ * 实际只是存了一串没用的字符。读者会去查手机、查服务器，不会想到
+ * 问题在自己这台设备的 localStorage 里。
+ *
+ * ⇒ 所以调用点在页面里，而且是 `await fetchChealthIndex(v)` 成功之后。
+ *    这个文件只管存取，不管判断。
+ */
+export function savePass(v: string): void {
+  try {
+    window.localStorage.setItem(PASS_KEY, v);
+  } catch {
+    // ⚠️ 隐私模式下 localStorage 会抛。这一轮口令照样能用（在内存里），
+    //    只是不会被记住 —— 不该因此让整个页面失败。
+  }
+}
