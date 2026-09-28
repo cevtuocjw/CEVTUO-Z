@@ -1,7 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Text, View } from '@tarojs/components';
 
 import { BarRow, HeartChart, Legend, SeriesChart, Spark } from '../../components/ChealthCharts';
+import { Icon, typeIcon } from '../../components/ChealthIcons';
+import {
+  hrZones,
+  personalBests,
+  powerStats,
+  restingHrCompare,
+  stepStreak,
+  typeBreakdown,
+  typeLabel,
+  weekCompare,
+} from '../../platform/health-analysis';
 import { PageHero, PageStack, Section } from '../../components/Section';
 import { TopBar } from '../../components/TopBar';
 import { homePanelUrl } from '../../platform/panels';
@@ -66,28 +77,19 @@ import '../../styles/demo.scss';
  */
 const PASS_KEY = 'cevtuo.chealth.pass';
 
-/**
- * ⚠️ Health Connect's exercise types are machine names (`BIKING`,
- * `BIKING_STATIONARY`). Unknown numbers arrive as `TYPE_<n>` and are shown
- * as-is rather than as "未知" — a number is something a reader can look up,
- * "unknown" is a dead end.
+/*
+ * ⚠️ 这里原来有一个 `sessionLabel()`，把运动类型映射成「🚴 骑行」这样的 emoji
+ *    字符串。已删除，改用 `platform/health-analysis.ts` 的 `typeLabel()` +
+ *    `ChealthIcons` 的内联 SVG。
+ *
+ * 两条理由，都会复发：
+ *   · **emoji 长什么样取决于机器上装了什么字体**，而且它是彩色的，
+ *     和页面这套黑白排版不是同一种语言。项目里已经因为 Unicode 符号
+ *     （`▦ ≋ ▤`）在不同设备上显示不一致踩过一次。
+ *   · 那份映射表是**局部**的，只覆盖 11 个类型；`typeLabel()` 覆盖 20 多个，
+ *     而且未知类型会**原样显示机器名**（`TYPE_0`）而不是「未知」——
+ *     一个编号还能去查，「未知」是死路。
  */
-function sessionLabel(type: string): string {
-  const map: Record<string, string> = {
-    BIKING: '🚴 骑行',
-    BIKING_STATIONARY: '🚴 室内骑行',
-    RUNNING: '🏃 跑步',
-    RUNNING_TREADMILL: '🏃 跑步机',
-    HIKING: '🥾 徒步',
-    SWIMMING_POOL: '🏊 游泳',
-    STRENGTH_TRAINING: '🏋️ 力量训练',
-    YOGA: '🧘 瑜伽',
-    ELLIPTICAL: '椭圆机',
-    ROWING_MACHINE: '🚣 划船机',
-    STAIR_CLIMBING_MACHINE: '爬楼机',
-  };
-  return map[type] ?? type;
-}
 
 function readPass(): string {
   try {
@@ -178,6 +180,40 @@ export default function Chealth() {
     return Math.round((b - a) / 86_400_000);
   }, [beat, index]);
 
+  // ── 分析 ────────────────────────────────────────────────────
+  //
+  // ⚠️ 全部从索引里**已经有**的数据算出来，不额外取数、不额外存储 ——
+  //    所以这些分析没有增加任何采集负担，只是把已有的数读出了更多意思。
+  //
+  // ⚠️ 心率区间和功率分析是**以前算不出来**的：它们要用过程序列
+  //    （`hrSeries` / `powerSeries`），而那三组序列 2026-09-28 才打通。
+  //    在那之前，页面只有一个平均值，画不出也分不出区间。
+  const sessions = useMemo(() => index?.sessions ?? [], [index]);
+
+  /** 心率区间的基准 = 最近 30 天**实际观测到**的最高心率。见 `hrZones` 的注释。 */
+  const refMaxHr = useMemo(
+    () => Math.max(0, ...sessions.map((s) => s.hrMax ?? 0), ...days.map((d) => d.hrMax ?? 0)),
+    [sessions, days],
+  );
+  const zones = useMemo(() => (refMaxHr > 0 ? hrZones(sessions, refMaxHr) : []), [sessions, refMaxHr]);
+  const zoneMinutes = useMemo(() => zones.reduce((a, z) => a + z.minutes, 0), [zones]);
+
+  const week = useMemo(() => (index?.to ? weekCompare(days, index.to) : []), [days, index]);
+  const rhr = useMemo(() => (index?.to ? restingHrCompare(days, index.to) : null), [days, index]);
+  const bests = useMemo(() => personalBests(sessions, days), [sessions, days]);
+  const streak = useMemo(() => (index?.to ? stepStreak(days, index.to) : 0), [days, index]);
+  const kinds = useMemo(() => typeBreakdown(sessions), [sessions]);
+
+  /** 有功率序列的场次 —— 只有它们谈得上功率分析。 */
+  const powered = useMemo(
+    () =>
+      sessions
+        .map((s) => ({ s, p: powerStats(s.powerSeries, s.powerAvg, s.powerMax) }))
+        .filter((x): x is { s: ChealthSession; p: NonNullable<ReturnType<typeof powerStats>> } => x.p !== null)
+        .filter((x) => x.p.np > 0),
+    [sessions],
+  );
+
   return (
     <View className="page">
       <Wallpaper />
@@ -194,7 +230,7 @@ export default function Chealth() {
         </Section>
       ) : null}
 
-      <PageStack count={5}>
+      <PageStack count={6}>
         <Section
           index={0}
           title="CHEALTH"
@@ -262,9 +298,12 @@ export default function Chealth() {
           ) : (
             index.sessions.map((sess: ChealthSession) => (
               <View className="card chc__stack" key={sess.start}>
-                <Text className="card__label">
-                  {sessionLabel(sess.type)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
-                </Text>
+                <View className="chc__sesshead">
+                  <Icon name={typeIcon(sess.type)} className="chc__ico" />
+                  <Text className="card__label">
+                    {typeLabel(sess.type)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
+                  </Text>
+                </View>
                 <View className="chc__legend">
                   {sess.distanceM !== undefined ? (
                     <Text className="chc__key">距离 <Text className="chc__num">{(sess.distanceM / 1000).toFixed(2)} km</Text></Text>
@@ -518,6 +557,178 @@ export default function Chealth() {
               </Text>
             ) : null}
           </View>
+        </Section>
+        <Section
+          index={5}
+          title="分析"
+          lede="全部从上面那份索引里算出来 —— 不额外采集、不额外存储。心率区间和功率分析以前算不出来，它们要用过程序列。"
+        >
+          {zoneMinutes > 0 ? (
+            <View className="card chc__stack">
+              <Text className="card__label">
+                <Icon name="heart" className="chc__ico" />
+                心率区间 · 最近 30 天共 {Math.round(zoneMinutes)} 分钟
+              </Text>
+              <View className="chc__zones">
+                {zones.map((z) => {
+                  const pct = zoneMinutes > 0 ? (z.minutes / zoneMinutes) * 100 : 0;
+                  return (
+                    <View className="chc__zone" key={z.key}>
+                      <Text className="chc__zone-label">{z.label}</Text>
+                      {/* ⚠️ 宽度只来自这一个数 —— 不写死像素。这个项目吃过亏：
+                          柱状图曾用 88/84/76/72 四个手写数字，眼睛会把「高度差」
+                          读成「数据差」。 */}
+                      <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
+                        <i />
+                      </View>
+                      <Text className="chc__zone-min">{Math.round(z.minutes)} 分</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              <Text className="card__label">
+                基准最高心率 {refMaxHr} —— 取的是**最近 30 天实测到的最高值**，不是 220−年龄。
+                代价是它偏低（没尽全力就到不了真最大值），所以这个划分整体偏严。
+              </Text>
+            </View>
+          ) : null}
+
+          {week.length ? (
+            <View className="card chc__stack">
+              <Text className="card__label">
+                <Icon name="signal" className="chc__ico" />
+                最近 7 天 vs 再往前 7 天
+              </Text>
+              <View className="chc__grid">
+                {week.map((w) => {
+                  const d = w.deltaPct;
+                  const cls = d === null || Math.abs(d) < 3 ? 'chc__flat' : d > 0 ? 'chc__up' : 'chc__down';
+                  const ico = d === null || Math.abs(d) < 3 ? 'flat' : d > 0 ? 'up' : 'down';
+                  return (
+                    <View className="chc__cell" key={w.label}>
+                      <Text>{w.label}</Text>
+                      <Text className="chc__cell-v">
+                        {w.cur.toLocaleString('en-US')}
+                        {w.unit}
+                      </Text>
+                      <Text className={cls}>
+                        <Icon name={ico} />
+                        {d === null ? '' : `${d > 0 ? '+' : ''}${d}%`}
+                      </Text>
+                    </View>
+                  );
+                })}
+                {/* ⚠️ 静息心率**单独一行**，因为它是「越低越好」的指标 ——
+                    混在上面用同一套箭头方向会上反。 */}
+                {rhr ? (
+                  <View className="chc__cell">
+                    <Text>{rhr.label}</Text>
+                    <Text className="chc__cell-v">{rhr.cur} {rhr.unit}</Text>
+                    <Text
+                      className={
+                        rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3
+                          ? 'chc__flat'
+                          : rhr.deltaPct < 0
+                            ? 'chc__up'
+                            : 'chc__down'
+                      }
+                    >
+                      <Icon name={rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3 ? 'flat' : rhr.deltaPct < 0 ? 'down' : 'up'} />
+                      {rhr.deltaPct === null ? '' : `${rhr.deltaPct > 0 ? '+' : ''}${rhr.deltaPct}%`}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text className="card__label">
+                ⚠️ 「—」是**上周没有可比数据**，不是上周为零。两者用一个百分比表示会得到一个
+                看起来很确定、实际没有依据的数。静息心率是**越低越好**，箭头按那个方向画。
+              </Text>
+            </View>
+          ) : null}
+
+          {bests.length ? (
+            <View className="card chc__stack">
+              <Text className="card__label">
+                <Icon name="trophy" className="chc__ico" />
+                个人记录 · 最近 30 天
+              </Text>
+              <View className="chc__grid">
+                {bests.map((b) => (
+                  <View className="chc__cell" key={b.label}>
+                    <Icon name={b.icon as never} className="chc__ico" />
+                    <Text>{b.label}</Text>
+                    <Text className="chc__cell-v">{b.value}</Text>
+                    <Text className="chc__flat">{b.when}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {streak > 0 ? (
+            <View className="card chc__stack">
+              <Text className="card__label">
+                <Icon name="steps" className="chc__ico" />
+                连续达标 {streak} 天（每天 ≥ 8,000 步）
+              </Text>
+              <Text className="card__label">
+                ⚠️ 从最新一天往回数，**缺数据的日子算断**，不算跳过 —— 那天可能确实没走，
+                也可能手机没同步，我们不知道，所以不替它猜。
+              </Text>
+            </View>
+          ) : null}
+
+          {kinds.length ? (
+            <View className="card chc__stack">
+              <Text className="card__label">
+                <Icon name="clock" className="chc__ico" />
+                运动类型分布 · 最近 30 天
+              </Text>
+              <View className="chc__zones">
+                {kinds.map((k) => {
+                  const total = kinds.reduce((a, x) => a + x.minutes, 0);
+                  const pct = total > 0 ? (k.minutes / total) * 100 : 0;
+                  return (
+                    <View className="chc__zone" key={k.type}>
+                      <Icon name={typeIcon(k.type)} className="chc__ico" />
+                      <Text className="chc__zone-label">{typeLabel(k.type)}</Text>
+                      <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
+                        <i />
+                      </View>
+                      <Text className="chc__zone-min">{k.count} 次</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+
+          {powered.map(({ s, p }) => (
+            <View className="card chc__stack" key={`pw-${s.start}`}>
+              <View className="chc__sesshead">
+                <Icon name="power" className="chc__ico" />
+                <Text className="card__label">
+                  功率分析 · {typeLabel(s.type)} {s.start.slice(5, 16).replace('T', ' ')}
+                </Text>
+              </View>
+              <View className="chc__grid">
+                <View className="chc__cell"><Text>平均</Text><Text className="chc__cell-v">{p.avg} W</Text></View>
+                <View className="chc__cell"><Text>峰值</Text><Text className="chc__cell-v">{p.max} W</Text></View>
+                {p.np > 0 ? (
+                  <View className="chc__cell"><Text>标准化 NP</Text><Text className="chc__cell-v">{p.np} W</Text></View>
+                ) : null}
+                {p.best20 !== null ? (
+                  <View className="chc__cell"><Text>最佳 20 分钟</Text><Text className="chc__cell-v">{p.best20} W</Text></View>
+                ) : null}
+              </View>
+              <Text className="card__label">
+                ⚠️ NP 是给「间歇骑比匀速骑累得多」这件事用的：30 秒滚动平均后取四次方平均再开四次方。
+                **但我们没有 30 秒数据** —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP **偏低**。
+                ⚠️ 不算 IF / TSS：那两个都要 FTP，而 FTP 得专门测。拿「最佳 20 分钟 × 0.95」估一个再算 TSS，
+                会得到一个看起来很专业、其实是我们编的数字。
+              </Text>
+            </View>
+          ))}
         </Section>
       </PageStack>
 

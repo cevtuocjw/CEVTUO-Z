@@ -128,3 +128,99 @@ $chart-h: 108px;
     width: 100%;
   }
 }
+
+// ── 图标 ───────────────────────────────────────────────────
+// ⚠️ 尺寸走 `1em`（在 Icons.tsx 里），所以这里只管颜色和基线。
+//    不写死 px —— 换个字号图标就不跟着变了。
+.chc__ico {
+  flex: none;
+  color: var(--chart-1, #111);
+  // ⚠️ inline SVG 默认按基线对齐，和文字并排时会**往下沉**半个字。
+  //    `vertical-align: middle` 是让图标和文字视觉居中的那一条。
+  vertical-align: -0.14em;
+  margin-right: 5px;
+}
+
+// 会话卡片的标题行：图标 + 文字
+.chc__sesshead {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  // ⚠️ `min-width: 0` + 允许换行 —— 类型名加时间戳在 390px 屏上会很长。
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+// ── 分析区块 ───────────────────────────────────────────────
+.chc__zones {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.chc__zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.chc__zone-label {
+  flex: none;
+  width: 3.6em;
+  opacity: 0.75;
+}
+
+// ⚠️ 条的长度来自**唯一一个变量**（--pct），不是每个条各写一个宽度。
+//    这个项目吃过亏：柱状图曾经 88/84/76/72 四个写死的数字，
+//    眼睛会把「高度差」读成「数据差」，而它们只是四段随手写的 CSS。
+.chc__zone-bar {
+  flex: 1;
+  height: 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  overflow: hidden;
+
+  > i {
+    display: block;
+    height: 100%;
+    width: calc(var(--pct, 0) * 1%);
+    background: var(--chart-1, #111);
+    border-radius: 4px;
+  }
+}
+
+.chc__zone-min {
+  flex: none;
+  width: 3.2em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.chc__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  width: 100%;
+}
+
+.chc__cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12.5px;
+}
+
+.chc__cell-v {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+// 涨跌：颜色**和箭头方向一起**用，绝不只靠颜色 —— 色盲读者也要能读。
+.chc__up { color: var(--chart-4, #1a7f4b); }
+.chc__down { color: var(--chart-6, #b3261e); }
+.chc__flat { opacity: 0.55; }
