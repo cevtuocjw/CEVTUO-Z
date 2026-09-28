@@ -214,6 +214,19 @@ export default function Chealth() {
     [sessions],
   );
 
+  // ⚠️ 运动类型筛选（读者 2026-09-28 点名要的：「要可以筛选器形跑步这些还是全部」）。
+  //    `ALL` 是默认值；只列出**这个窗口里真的出现过**的类型，不铺一长串空分类。
+  const [kind, setKind] = useState<string>('ALL');
+  const shown = useMemo(
+    () => (kind === 'ALL' ? sessions : sessions.filter((s) => s.type === kind)),
+    [sessions, kind],
+  );
+
+  // ⚠️ 展开哪一条运动。默认**全收起** —— 每条运动有四条曲线，全展开时这一屏
+  //    实测 2868px（面板只有 844px），要滚很久才看得到第二条。
+  //    三星健康的列表也是先给摘要、点开才给细节。
+  const [open, setOpen] = useState<string | null>(null);
+
   return (
     <View className="page">
       <Wallpaper />
@@ -296,13 +309,40 @@ export default function Chealth() {
               </Text>
             </View>
           ) : (
-            index.sessions.map((sess: ChealthSession) => (
+            <>
+              {/* 筛选器：全部 / 各类运动。只列出这个窗口里真的出现过的类型。 */}
+              <View className="chc__chips">
+                {[{ k: 'ALL', label: '全部' }, ...kinds.map((x) => ({ k: x.type, label: typeLabel(x.type) }))].map((c) => (
+                  <View
+                    key={c.k}
+                    className={`chc__chip${kind === c.k ? ' chc__chip--on' : ''}`}
+                    onClick={() => setKind(c.k)}
+                  >
+                    {c.k === 'ALL' ? <Icon name="signal" /> : <Icon name={typeIcon(c.k)} />}
+                    <Text>{c.label}</Text>
+                    <Text className="chc__chip-n">
+                      {c.k === 'ALL' ? sessions.length : kinds.find((x) => x.type === c.k)?.count ?? 0}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {shown.length === 0 ? (
+                <View className="card chc__stack">
+                  <Text className="card__label">这个筛选下没有记录。</Text>
+                </View>
+              ) : null}
+
+              {shown.map((sess: ChealthSession) => {
+                const isOpen = open === sess.start;
+                return (
               <View className="card chc__stack" key={sess.start}>
-                <View className="chc__sesshead">
+                <View className="chc__fold" onClick={() => setOpen(isOpen ? null : sess.start)}>
                   <Icon name={typeIcon(sess.type)} className="chc__ico" />
                   <Text className="card__label">
                     {typeLabel(sess.type, sess.exerciseType)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
                   </Text>
+                  <Icon name="chev" className={`chc__fold-mark${isOpen ? ' chc__fold-mark--open' : ''}`} />
                 </View>
                 <View className="chc__legend">
                   {sess.distanceM !== undefined ? (
@@ -327,6 +367,9 @@ export default function Chealth() {
                     <Text className="chc__key">活动消耗 <Text className="chc__num">{sess.activeCalories}</Text> kcal</Text>
                   ) : null}
                 </View>
+                {/* ⚠️ 细节**默认收起**：四条曲线加起来比面板还高。点标题展开。 */}
+                {isOpen ? (
+                  <>
                 {/*
                   ⚠️⚠️ THE HEART-RATE CURVE — the reader asked for this by name.
                   An average cannot be drawn, so the phone sends the series.
@@ -387,8 +430,12 @@ export default function Chealth() {
                   {sess.powerAvg === undefined ? '（这次没有功率/踏频数据）' : ''}
                   {sess.hrSource ? ` · 心率取自 ${sess.hrSource.split('.').pop()}` : ''}
                 </Text>
+                  </>
+                ) : null}
               </View>
-            ))
+                );
+              })}
+            </>
           )}
         </Section>
 
@@ -399,12 +446,12 @@ export default function Chealth() {
         >
           <View className="card chc__stack">
             <Text className="card__label">步数 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.steps} today={today} />
+            <BarRow days={recent} pick={(d) => d.steps} today={today} unit=" 步" />
           </View>
 
           <View className="card chc__stack">
             <Text className="card__label">睡眠 · 最近 14 天（小时）</Text>
-            <BarRow days={recent} pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)} today={today} />
+            <BarRow days={recent} pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)} today={today} unit=" 小时" />
             {/* ⚠️ Said rather than silently tolerated. Sessions can overlap —
                 the watch and the phone both write, and a session crossing
                 midnight lands in two days — so a single day can exceed 24h.
@@ -446,11 +493,11 @@ export default function Chealth() {
           </View>
           <View className="card chc__stack">
             <Text className="card__label">总消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.calories} today={today} />
+            <BarRow days={recent} pick={(d) => d.calories} today={today} unit=" kcal" />
           </View>
           <View className="card chc__stack">
             <Text className="card__label">活动消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.activeCalories} today={today} />
+            <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" />
           </View>
         </Section>
 

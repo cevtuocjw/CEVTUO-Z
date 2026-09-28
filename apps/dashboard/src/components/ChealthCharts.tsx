@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Text, View } from '@tarojs/components';
 
 import type { ChealthDay } from '../platform/data';
@@ -28,29 +29,54 @@ export function BarRow({
   days,
   pick,
   today,
+  unit = '',
 }: {
   days: ChealthDay[];
   pick: (d: ChealthDay) => number | undefined;
   today: string;
+  /** 单位后缀，只用在选中的那根柱子的数值气泡上。 */
+  unit?: string;
 }) {
   const vals = days.map(pick);
   const max = Math.max(1, ...vals.map((v) => v ?? 0));
+
+  // ⚠️⚠️ 点柱子**必须有反馈**。三星健康那种图表是「点一根柱子，它亮起来、
+  //    上面出现那天的数值」—— 这是读者 2026-09-28 明确要求的，
+  //    原话是「点击没有任何反馈，也没有标记出来」。
+  //
+  // ⚠️ 默认选中**最后一天**（= 数据里的今天），不是「什么都不选」。
+  //    空选中态下一个数都不显示，看起来像图表没数据。
+  const [sel, setSel] = useState<number>(Math.max(0, days.length - 1));
+  const cur = days[sel];
+  const curV = cur ? pick(cur) : undefined;
+
   return (
     <View className="chc__rows">
+      {/* 数值气泡：跟着选中的那根柱子。没有这一行，点击就只是「变了个颜色」，
+          读者还是不知道那根柱子是多少。 */}
+      <View className="chc__readout">
+        <Text className="chc__readout-date">{cur?.date.slice(5) ?? ''}</Text>
+        <Text className="chc__readout-v">
+          {n(curV)}
+          {unit ? <Text className="chc__readout-u">{unit}</Text> : null}
+        </Text>
+      </View>
       <View className="chc__plot">
-        {days.map((d) => {
+        {days.map((d, i) => {
           const v = pick(d);
           const empty = v === undefined || v === null;
           const h = empty ? 0 : Math.max(2, Math.round(((v as number) / max) * 100));
+          const isSel = i === sel;
           return (
             <View
               key={d.date}
-              className={`chc__bar${empty ? ' chc__bar--empty' : ''}${d.date === today ? ' chc__bar--today' : ''}`}
+              className={`chc__bar${empty ? ' chc__bar--empty' : ''}${d.date === today ? ' chc__bar--today' : ''}${isSel ? ' chc__bar--sel' : ''}`}
               // ⚠️ `height` on the bar, not on the plot. The plot owns the
               // $chart-h baseline so every chart's zero line is the same line;
               // a percentage height inside an auto-height parent is a
               // coincidence, not a layout.
               style={{ height: `${h}%` }}
+              onClick={() => setSel(i)}
             />
           );
         })}

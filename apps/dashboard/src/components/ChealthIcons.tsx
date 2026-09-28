@@ -16,7 +16,7 @@
 type Name =
   | 'steps' | 'heart' | 'flame' | 'moon' | 'route' | 'bolt' | 'clock'
   | 'power' | 'cadence' | 'bike' | 'run' | 'gym' | 'swim' | 'walk'
-  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark';
+  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark' | 'chev';
 
 const S = { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none' } as const;
 const stroke = {
@@ -149,6 +149,9 @@ function Body({ name }: { name: Name }) {
       );
     case 'spark':
       return <path d="M12 2.5 13.9 9l6.6 2-6.6 2-1.9 6.5L10.1 13 3.5 11l6.6-2z" {...stroke} />;
+    // 展开/收起。⚠️ 用 SVG 而不是 `▾` 字符 —— 那个字形取决于装的字体。
+    case 'chev':
+      return <path d="M6 9.5 12 15.5l6-6" {...stroke} />;
     default:
       return null;
   }

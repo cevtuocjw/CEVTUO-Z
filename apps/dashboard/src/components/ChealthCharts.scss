@@ -224,3 +224,109 @@ $chart-h: 108px;
 .chc__up { color: var(--chart-4, #1a7f4b); }
 .chc__down { color: var(--chart-6, #b3261e); }
 .chc__flat { opacity: 0.55; }
+
+// ── 三星健康那套配色 ────────────────────────────────────────
+// ⚠️ 每个指标一个色，**全局只在这里定义一次**。散在各处写颜色必然漂移，
+//    而且改主题时找不全。
+// ⚠️ 色值是照着三星健康的语感挑的（步数绿、心率红、睡眠紫、消耗橙、
+//    距离蓝），不是随便取的 —— 读者对「哪个颜色是哪个指标」是有预期的。
+.chc { --m-steps: #3ecf8e; --m-heart: #ff5a72; --m-sleep: #8b7cf6; --m-kcal: #ff9f43; --m-dist: #4aa3ff; }
+
+// ── 柱状图的数值气泡 ───────────────────────────────────────
+.chc__readout {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-bottom: 5px;
+  min-height: 1.9em;   // ⚠️ 固定高度，切换选中时下面的图不会跳
+}
+
+.chc__readout-date {
+  font-size: 11.5px;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.chc__readout-v {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.4px;
+}
+
+.chc__readout-u {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.55;
+  margin-left: 3px;
+}
+
+// ⚠️ 选中的那根柱子要**同时**做三件事：变实色、变宽不变高、加一点外发光。
+//    只变颜色的话，在一排同色柱子里几乎看不出来（实测：选中的和没选中的
+//    都是深灰，肉眼分不出）。
+.chc__bar { cursor: pointer; transition: background 140ms ease-out, transform 140ms ease-out; }
+.chc__bar--sel { transform: scaleX(1.35); }
+
+// ── 运动类型筛选器 ─────────────────────────────────────────
+.chc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.chc__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  transition: background 140ms ease-out, border-color 140ms ease-out;
+
+  // ⚠️ 选中态**不能只靠颜色** —— 加粗边框 + 实底，色盲读者也分得出。
+  &--on {
+    background: color-mix(in srgb, currentColor 18%, transparent);
+    border-color: color-mix(in srgb, currentColor 55%, transparent);
+    font-weight: 650;
+  }
+}
+
+.chc__chip-n {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+  font-size: 11.5px;
+}
+
+// ── 可展开的运动卡片 ───────────────────────────────────────
+// ⚠️ 折叠时也要**看起来能点** —— 加一个 chevron。否则读者不知道那里有东西。
+.chc__fold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.chc__fold-mark {
+  margin-left: auto;
+  opacity: 0.45;
+  transition: transform 180ms ease-out;
+  &--open { transform: rotate(180deg); }
+}
+
+// ⚠️ 会话标题在 390px 屏上会折成两行，而且「50 分钟」的「钟」经常被单独甩到
+//    第二行（实测截图里就是这样）。缩一点字号 + 收紧行高，让它整条放得下。
+//    ⚠️ 不改 `.card__label` 本身 —— 别的页面靠它。
+.chc__fold .card__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
