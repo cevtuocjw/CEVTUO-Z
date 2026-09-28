@@ -7,9 +7,13 @@
 
 ## 一句话现状
 
-**手机端的自动同步刚刚修好并验证通过**（09-28 12:29，后台推 16,502 字节、HTTP 202 committed、0 次读取失败）。
+**手机端的自动同步修好并验证通过**（09-28 12:29，后台推 16,502 字节、HTTP 202 committed、0 次读取失败）。
 **阿里云的 HTTPS 已经打通**（`https://api.cevtuogrnd.com:8443`，实测 200）。
-**网站还没开 HTTPS** —— 因为开了会静默杀死两个心跳，前置条件还差两处代码。
+**网站 HTTPS 也已开通并实测**（09-28 下午：`https_enforced: true`，HTTP 全部 301 跳转，
+三个站点 HTTPS 均 200；两个心跳从真实 HTTPS 页面拿到 200，无混合内容）。
+
+⚠️⚠️ **开通 HTTPS 时踩到了一次真实的站点中断（约 20 分钟）** —— 根因是
+gh-pages 里一个躺了六天的 `CNAME` 文件在抢域名。**动手前先读下面「域名归属」一节。**
 
 ```
 Galaxy Watch8 ─┐
@@ -40,12 +44,14 @@ MyWhoosh→Strava ┘            │
   bun run services/ingest/verify-chealth.ts        # 76 条
   bun scripts/verify-cnsr-ui.mjs                   # 122 条，需先起本地服务
   bun scripts/verify-coof-ui.mjs                   # 97 条，同上
-  bun scripts/verify-paperr-ui.mjs                 # 159 条，同上
+  bun scripts/verify-paperr-ui.mjs                 # 168 条，同上
+  bun scripts/verify-https-live.mjs                # 9 条，打线上真实域名
 
 我这轮想让你做：
   [在这里写你要做的事]
 
-⚠️ 未提交的东西很多（见「未提交清单」），先看清楚再动手。
+⚠️ 工作树已清空（2026-09-28）。但**推 main 之前先 `git fetch`** ——
+   远端有定时 Actions 在写 `sync: coof data` 提交。
 ```
 
 ---
@@ -125,9 +131,32 @@ https://api.cevtuogrnd.com:8443/health              → 200
 
 ---
 
+## ⚠️⚠️ 域名归属 —— 照着旧版做会搞坏站点（2026-09-28 实际发生过）
+
+**旧版这一节写的是「去 GitHub Settings → Pages 存自定义域名」。那个仓库指错了。**
+
+| 事实 | |
+|---|---|
+| `apps.cevtuogrnd.com` 归谁 | **`cevtuocjw.github.io`（用户站）**，就是根路径上那个 CEVTUOGRND 落地页 |
+| `CEVTUO-Z` 是什么 | 只是挂在它下面的**项目路径** `/CEVTUO-Z/` |
+| `CEVTUO-Z/pages` 报 `cname: null` | **正常**，不是「域名没存进设置」 |
+
+**为什么不能给 CEVTUO-Z 设域名**：一个项目站一旦声明域名，GitHub 就把它从
+`/CEVTUO-Z/` **搬到根路径** ⇒ 所有旧链接 404、落地页被顶掉、两个仓库为同一域名打架
+（后设置的报 `Invalid cname: already taken by another repository in your account`）。
+
+⚠️⚠️ **这个冲突不会自己暴露**：只要用户站那边也持有同一域名，两边能共存、站点
+看起来完全正常。**只有当有人按 GitHub 文档「移除再重新添加自定义域名」去触发
+HTTPS 签发时才会炸出来 —— 而那一刻站点已经断了。**
+
+**恢复顺序**（必须先释放再认领）：删 gh-pages 的 `CNAME` →
+`PUT CEVTUO-Z/pages {cname:null}` → 再 `PUT cevtuocjw.github.io/pages {cname:"apps.cevtuogrnd.com"}`。
+
+---
+
 ## 下一步（按顺序）
 
-### ① 开网站 HTTPS 之前的两处改动 —— **不做就等于白开**
+### ① 开网站 HTTPS 之前的两处改动 —— ✅ 已完成并实测
 
 实测（Playwright）：HTTPS 页面 fetch `http://120.77.27.128:8789/…` 会
 `requestfailed: mixed-content`，Chrome 直接拦。而 `fetchPaperrHeartbeat` /
@@ -141,20 +170,33 @@ https://api.cevtuogrnd.com:8443/health              → 200
 
 ⚠️ 改完**必须在真实 HTTPS 上下文里验**。本地 `127.0.0.1` 是安全上下文，**这个坑已经骗过一次**。
 
-### ② 然后才开 GitHub Pages 的 HTTPS
+### ② 开 GitHub Pages 的 HTTPS —— ✅ 已完成
 
 ```
-GitHub → Settings → Pages → Custom domain 存一次 apps.cevtuogrnd.com
-→ 等证书（分钟到几小时）→ 再勾 Enforce HTTPS
+https_enforced: true     http://  →  301  https://
+证书实测 subject = apps.cevtuogrnd.com
+https://apps.cevtuogrnd.com/{,CEVTUO-Z/,CEVTUO-RWP/}  全部 200
 ```
 
-现状：`https_enforced: false`，**证书从来没签过**，API 报 `cname: null`
-（但 `site/CNAME` 和线上 CNAME 文件都在）⇒ 猜测自定义域名压根没存进 Pages 设置。
-DNS 和 CAA 都没问题（apex 的 CAA 明确允许 letsencrypt）。
+⚠️ **旧版这一节的两条判断都是错的，别再照着推理：**
 
-### ③ 提交
+| 旧版说 | 实际 |
+|---|---|
+| 「证书从来没签过」 | GitHub 一直拿 **`*.github.io` 兜底证书**（SAN 里没有该域名）⇒ 浏览器报 `ERR_TLS_CERT_ALTNAME_INVALID`。**是「签错」不是「没签」** |
+| 「缺 GitHub 的 TXT 校验记录」 | **官方文档明确：域名校验不是 HTTPS 的前提**（只在域名被占用时才要）。`pending_domain_unverified_at` 和 `protected_domain_state` 都是 `null` |
 
-见「未提交清单」。
+**真根因就是上面那个 CNAME 冲突。** 清除后按官方文档做「移除再重新添加自定义域名」，
+**一次成功**（`https_certificate.state = "approved"`）。
+
+⭐ 两个操作要点：
+- 「**移除再重新添加**」才是触发器；`PUT` **同一个值**回去是**空操作**。
+- 判断证书**不要用 macOS 自带的 curl**（LibreSSL 3.3.6，打 8443 直接
+  `Connection reset by peer`）。用 `node:tls` 看 `getPeerCertificate()` 或用 `bun` 的 fetch。
+
+### ③ 提交 —— ✅ 已完成
+
+6 个提交已推送到 `main`（`70b8c44`）。⚠️ **推之前先 `git fetch`** —— 远端有定时
+Actions 在写 `sync: coof data` 提交，直接 push 会被拒。见「未提交清单」。
 
 ---
 
@@ -179,6 +221,14 @@ DNS 和 CAA 都没问题（apex 的 CAA 明确允许 letsencrypt）。
   然后奇怪为什么新代码没生效。**看到「没生效」先确认构建真的跑了。**
 - ⚠️ **`rg --glob '*.scss'` 静默匹配 0 个文件**时，我据此误报「`chc__stale` 没定义」。
   它其实在 `ChealthComponents.scss:77`。**rg 返回空 ≠ 不存在，先换一种查法。**
+- ⚠️⚠️ **判断 HTTPS / 证书不要用 macOS 自带的 curl。** 它是 **LibreSSL 3.3.6**，
+  打 `api.cevtuogrnd.com:8443` 时握手阶段直接 `Connection reset by peer`（**exit 35**），
+  而服务器**完全正常**。Chrome 和 bun 都没问题。
+  ⭐ **改用 `node:tls` 取 `getPeerCertificate()`，或用 `bun` 的 fetch。**
+- ⚠️⭐ **`ERR_TLS_CERT_ALTNAME_INVALID` 说明证书存在但名字不对，不是「没有证书」。**
+  这两者症状完全不同 —— 我一度把前者读成后者，差点往「证书没签发过」的方向查。
+- ⚠️ **`gh api "...?ref=gh-pages"` 在 zsh 里 `?` 会被当通配符**，不加引号整条命令失败
+  （报 `no matches found`）。**URL 里带 `?` 一律加引号。**
 
 ### 测试方法本身会骗人
 
@@ -224,7 +274,8 @@ DNS 和 CAA 都没问题（apex 的 CAA 明确允许 letsencrypt）。
 | `bun run services/ingest/verify-chealth.ts` | **76** | 滑窗累积、0 不是缺失、密文不含明文、保留期不按墙上时钟 |
 | `bun scripts/verify-cnsr-ui.mjs` | **122** | 「N 天」= 树里日数、图片上限有说明、裸链接、热力图 |
 | `bun scripts/verify-coof-ui.mjs` | **97** | 年轮弹窗、波浪图、海报网格 |
-| `bun scripts/verify-paperr-ui.mjs` | **159** | 书架、图表、**CHEALTH 停摆判决（打桩正反两例）** |
+| `bun scripts/verify-paperr-ui.mjs` | **168** | 书架、图表、CHEALTH 停摆判决（**夹具从索引的 `to` 推导**） |
+| `bun scripts/verify-https-live.mjs` | **9** | **真实 HTTPS 域名**：页面自己发出的心跳请求拿到 200 且是 https |
 
 ### 本地起服务
 
@@ -273,27 +324,34 @@ bash scripts/chealth-phone-setup.sh status
 
 ⚠️ 宿主机有代理 ⇒ **脚本里的 curl 必须加 `--noproxy '*'`**（阿里云 API 走 `NO_PROXY=aliyuncs.com`）。
 
+⚠️⚠️ **上面那两条 `curl https://…:8443/…` 在本机永远失败** —— macOS 自带 curl 是
+LibreSSL 3.3.6，握手中就被 reset。**别把它读成「服务器坏了」**。改用：
+
+```bash
+bun -e "console.log(await (await fetch('https://api.cevtuogrnd.com:8443/api/chealth/heartbeat.json')).text())"
+```
+
 ---
 
-## ⚠️ 未提交清单（2026-09-28）
+## ✅ 未提交清单 —— 已清空（2026-09-28）
 
-`CEVTUO-Z` 工作树很脏，跨了好几轮的工作：
+工作树干净，6 个提交已推送到 `main`（`70b8c44`）：
+CHEALTH 密文链路 / CNSR 两处修复 / 验证脚本重写 / 部署脚本去 CNAME /
+线上 HTTPS 实测脚本 / 合并远端自动提交。
 
-```
-M  apps/dashboard/src/pages/chealth/index.tsx      ← 停摆判决 + 两处改动
-M  apps/dashboard/src/pages/cnsr/index.tsx         ← imgLabel
-M  scripts/cnsr-extract.mjs                        ← days / imagesSeen / 日志
-M  scripts/verify-cnsr-ui.mjs                      ← +3 断言
-M  scripts/verify-paperr-ui.mjs                    ← +CHEALTH 停摆断言
-M  services/ingest/src/server.ts                   ← 8443 TLS 转发器
-M  data/cnsr/*.json  +  data/cnsr/img/*            ← 重爬（3 删 5 增）
-?? services/ingest/src/chealth.ts, verify-chealth.ts, docs/CHEALTH-交接.md …
-?? apps/dashboard/src/platform/health-crypto.ts, components/ChealthCharts.*
-```
+⚠️⚠️ **推 `main` 之前先 `git fetch`**：远端有**定时 Actions 在写**
+`sync: coof data …` 提交，直接 push 会被拒。
 
-⚠️⚠️ **`~/cevtuo-health`（手机 app 源码）不是 git 仓库。** 这次改的
-`SyncWorker.kt`（3 天窗口）和 `AndroidManifest.xml`（后台权限）**没有任何版本控制**。
-**建议尽快 `git init` 并提交一次** —— 现在这两个文件一旦丢了，重建要靠记忆。
+⚠️⚠️ **那些自动提交可能是用旧提取器生成的。** 2026-09-28 实测：远端
+`data/cnsr/techai.json` 的 `counts.days = 7`（旧 bug），本地是 `5`（修复版）。
+- 但比对 `generatedAt` 和两边最新笔记日期后确认**两边数据一样新**，
+  远端只是晚 53 分钟重跑一遍却带着 bug ⇒ **留本地的**。
+- 合并用 `git merge origin/main`（不用 rebase，`ours` 语义更直观），
+  冲突只在 `data/cnsr/*.json`，`git checkout --ours data/cnsr` 解决。
+
+⭐ **`~/cevtuo-health`（手机 app 源码）已 `git init` 并首次提交**（11 文件）。
+在此之前它一直是**裸目录** —— 修自动同步时改的 `SyncWorker.kt` 和
+`AndroidManifest.xml` 没有任何备份。⚠️ **它没有远端仓库**，要单独备份。
 
 ---
 
