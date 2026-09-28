@@ -440,6 +440,35 @@ $gutter: t.$space-3;
   color: var(--text-primary);
 }
 
+// ⚠️⚠️ 档位：字符数越多字号越小。阈值按真机量到的 em 宽度反推 ——
+//    实测数据和每档的溢出像素写在 Section.tsx 的 `statSize` 注释里。
+//
+//    约束是：`.stats__item` 在 390px 视口上**固定 118px 宽且不裁剪溢出**，
+//    而 `.stats__value` 默认 62.4px。**固定宽度 + 不收缩的字号 = 数字压数字。**
+//
+//    ⚠️ 每一档都按**最宽的数码字形**（≈0.64em/字符）留余量：这个字体用的是
+//       比例数字 —— "1215" 比 "9686" 窄 20% —— 按平均宽度算会在长值上翻车。
+//
+//    ⚠️ 这里**故意不加 `overflow: hidden` 兜底**：那会把数字裁掉一半，
+//       而「少了一位数的数字」比「两个数字叠在一起」更难发现。
+//       真正的兜底是一条断言（见 scripts/verify-home-stats.mjs），
+//       它量的是 scrollWidth 有没有超出格子 —— 而不是让渲染去掩盖。
+.stats__value--t3 {
+  font-size: clamp(36px, 13vw, 74px);
+}
+
+.stats__value--t4 {
+  font-size: clamp(30px, 11vw, 62px);
+}
+
+.stats__value--t5 {
+  font-size: clamp(24px, 9vw, 52px);
+}
+
+.stats__value--t6 {
+  font-size: clamp(20px, 7.2vw, 44px);
+}
+
 .stats__label {
   margin-top: t.$space-2;
   font-size: t.$font-micro;

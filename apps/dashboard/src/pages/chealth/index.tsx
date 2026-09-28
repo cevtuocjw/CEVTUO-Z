@@ -25,6 +25,9 @@ import {
   type ChealthHeartbeat,
   type ChealthIndex,
 } from '../../platform/data';
+// ⚠️ 口令读取抽到了 platform/health-pass.ts —— 主页索引卡也要用它，而且必须
+//    读**同一个键**，否则在 CHEALTH 页输过口令之后主页仍然显示「—」且不报错。
+import { readPass } from '../../platform/health-pass';
 
 import '../../styles/demo.scss';
 
@@ -63,20 +66,6 @@ import '../../styles/demo.scss';
  *    temperature and weight had ZERO records in 30 days. A missing metric is
  *    drawn as absent and said to be absent, never as a bar of height zero.
  */
-/**
- * Where the passphrase comes from.
- *
- * ⚠️ Order matters. `location.hash` first, because a URL that carries
- * `#/pages/chealth/index?k=...` never sends the fragment to any server — it is
- * stripped by the browser before the request — so a bookmarked link can simply
- * work without the key ever touching a log. Then localStorage, so it is typed
- * once per device rather than once per visit.
- *
- * ⚠️ Absent is a normal state, not an error. The page renders a prompt, and
- * the sealed file stays sealed.
- */
-const PASS_KEY = 'cevtuo.chealth.pass';
-
 /*
  * ⚠️ 这里原来有一个 `sessionLabel()`，把运动类型映射成「🚴 骑行」这样的 emoji
  *    字符串。已删除，改用 `platform/health-analysis.ts` 的 `typeLabel()` +
@@ -90,22 +79,6 @@ const PASS_KEY = 'cevtuo.chealth.pass';
  *     而且未知类型会**原样显示机器名**（`TYPE_0`）而不是「未知」——
  *     一个编号还能去查，「未知」是死路。
  */
-
-function readPass(): string {
-  try {
-    const m = /[?&]k=([^&]+)/.exec(window.location.hash);
-    if (m?.[1]) {
-      const v = decodeURIComponent(m[1]);
-      window.localStorage.setItem(PASS_KEY, v);
-      return v;
-    }
-    return window.localStorage.getItem(PASS_KEY) ?? '';
-  } catch {
-    // ⚠️ The mini-program build has no `window`. There the passphrase has to
-    // come from a prompt — but it must not throw on the way to saying so.
-    return '';
-  }
-}
 
 export default function Chealth() {
   const [index, setIndex] = useState<ChealthIndex | null>(null);

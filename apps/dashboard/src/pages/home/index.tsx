@@ -19,6 +19,7 @@ import { CnsrStrips } from '../../components/CnsrStrips';
 import { MonthCalendar, WeekdayBars } from '../../components/PaperrCharts';
 import {
   assetUrl,
+  fetchChealthIndex,
   fetchCoofIndex,
   fetchPaperrIndex,
   fetchPaperrHeartbeat,
@@ -26,11 +27,15 @@ import {
   formatDayMonth,
   formatReadingTime,
   formatUpdatedAt,
+  type ChealthIndex,
   type CoofTitle,
   type PaperrHeartbeat,
   type PaperrIndex,
   type SyncMeta,
 } from '../../platform/data';
+// ⚠️ 和 CHEALTH 页读**同一个键**。见 platform/health-pass.ts 的注释：
+//    各写一份 ⇒ 在 CHEALTH 页输过口令之后，主页仍然显示「—」且不报错。
+import { readPass } from '../../platform/health-pass';
 
 import '../../styles/demo.scss';
 import './index.scss';
@@ -105,7 +110,11 @@ const PANELS: BrandPanel[] = [
     // database and the statistics `book` table's counter is not populated here.
     // A lede is a promise about what is behind the door; this one described a
     // room that does not exist.
-    lede: 'Kindle 阅读 · 今天、本周、本月的节奏，从设备同步',
+    // ⚠️ 2026-09-28 读者改的文案。原文是「Kindle 阅读 · 今天、本周、本月的节奏，
+    //    从设备同步」—— 用了具体型号名，而这条链路早就不只 Kindle 了
+    //    （KOReader 跑在什么设备上都一样），所以改成按角色称呼。
+    //     ⚠️ 读者原话里写的是 `deivce`，是 `device` 的笔误，按正确拼写收的。
+    lede: "CEVTUO's e-reader device 阅读记录",
     // ⚠️ Placeholders. Replaced at render time by the live counts, like COOF's.
     stats: [
       { value: '—', label: '累计阅读', note: '' },
@@ -117,21 +126,23 @@ const PANELS: BrandPanel[] = [
     key: 'chealth',
     title: 'CHEALTH',
     lede: '健康数据。步数、心率与睡眠，不进入公开仓库，走鉴权接口。',
-    // ⚠️ `—`, like the other three. These were "8,412" and "7h12" — invented
-    // numbers, formatted exactly like the live ones beside them on the same
-    // screen. A reader glancing at the index sees six figures; two of them were
-    // made up, and nothing on the page said which.
+    // ⚠️ 这两格是**没解锁时**的样子；解锁后会被下面的渲染处换成实时数字。
     //
-    // ⚠️ And "尚未接入" on the card below is not enough to undo that: it is a
-    // small label on a control, while 8,412 is set at stat size. The rule this
-    // file already states for COOF applies here — a placeholder beside a live
-    // number is how a page starts lying — and a placeholder that looks like
-    // data is worse than a dash.
+    // ⚠️ 它们原来是写死的 "8,412" 和 "7h12" —— 编造的数字，而且和同屏那些
+    //    真数字格式完全一样。读者扫一眼索引看到六个数，其中两个是编的，
+    //    而页面上没有任何东西说明是哪两个。
+    //    ⚠️ 卡片上那个「尚未接入」不足以抵消它：那是一个控件上的小标签，
+    //    而 8,412 是正文字号。**长得像数据的占位符比一个横杠更糟。**
+    //
+    // ⚠️⚠️ 2026-09-28 才真的接上。原来这里是 `route: null` —— 门一直存在
+    //    （`#/pages/chealth/index` 能开，`verify-https-live.mjs` 一直在驱动它），
+    //    只是索引页没接线，于是显示「尚未接入」、点了弹 toast。
+    //    **一扇能开的门被标成不存在，是索引页最不该犯的错。**
     stats: [
-      { value: '—', label: '今日步数', note: '' },
-      { value: '—', label: '昨夜睡眠', note: '' },
+      { value: '—', label: '步数', note: '未解锁' },
+      { value: '—', label: '睡眠', note: '未解锁' },
     ],
-    route: null,
+    route: '/pages/chealth/index',
   },
 ];
 
@@ -170,6 +181,9 @@ export default function Home() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [syncMeta, setSyncMeta] = useState<SyncMeta | null>(null);
   const [heartbeat, setHeartbeat] = useState<PaperrHeartbeat | null>(null);
+  // ⚠️ CHEALTH 的索引是**加密的**，所以这里必须先有口令才谈得上数据。
+  //    没有口令不是错误 —— 那是「这台设备还没解锁过」，见渲染处。
+  const [chealth, setChealth] = useState<ChealthIndex | null>(null);
   useEffect(() => {
     let alive = true;
     fetchCoofIndex('COOF2026')
@@ -193,6 +207,20 @@ export default function Home() {
     fetchPaperrHeartbeat().then((h) => {
       if (alive) setHeartbeat(h);
     });
+
+    // ⚠️ 口令从 platform/health-pass.ts 读 —— 和 CHEALTH 页**同一个键**。
+    //    各写一份的结果是：在 CHEALTH 页输过口令之后，主页这两格仍然是「—」，
+    //    而且没有任何报错。看起来像「主页还没接」，其实是读错了键。
+    const pass = readPass();
+    if (pass) {
+      fetchChealthIndex(pass)
+        .then((d) => alive && setChealth(d))
+        // ⚠️ 口令错、或从来没解锁过，都会落到这里。索引页的职责是**提供四扇门**，
+        //    不是报告管道故障 —— 失败就保持占位符，和另外三个品牌一致。
+        //    ⚠️ 而 CHEALTH 页那边**不能**这样：那里「口令错」和「没有数据」
+        //    必须分得开，否则读者会以为管道坏了，而不是自己打错了。
+        .catch(() => {});
+    }
 
     fetchSyncMeta()
       .then((m) => {
@@ -265,9 +293,34 @@ export default function Home() {
       .join(' · ');
   }, [heartbeat]);
 
+  /**
+   * CHEALTH 那两格：**数据里最后一天**的步数和睡眠。
+   *
+   * ⚠️ 锚在数据自己的最后一天，不是浏览器的今天 —— 和上面 CAPPERR 同一个理由。
+   *    手机一天没推，按「今天」算就会得到一格空白，而那看起来像「坏了」，
+   *    实际只是「今天那次同步还没到」。
+   *
+   * ⚠️⚠️ 所以标签写「步数 / 睡眠」，**不写「今日 / 昨夜」**。
+   *    数据落后三天时「今日步数」就是在撒谎 —— 而且撒得和真数字一模一样，
+   *    这正是本文件 COOF 那段注释在骂的事。日期放进 note，让读者自己判断新旧，
+   *    而不是由页面替他假设一个。
+   */
+  const chealthDay = useMemo(() => {
+    const days = chealth?.days ?? [];
+    return days.length ? days[days.length - 1]! : null;
+  }, [chealth]);
+
+  /** ⚠️ 有实时数字却**没有时间戳**的面板，和一个同步已经死了一周的面板长得一模一样。 */
+  const chealthLine = useMemo(() => {
+    if (!chealth) return null;
+    const t = formatUpdatedAt(chealth.updatedAt);
+    return t ? `更新于 ${t}` : null;
+  }, [chealth]);
+
   const open = (route: string | null, title: string) => {
-    // ⚠️ The other three brands have no page content yet. Rather than navigate
-    // into a blank route — which reads as a crash — say so and stay put.
+    // ⚠️ 2026-09-28 起四个品牌**都有** route 了，正常情况走不到这个分支。
+    //    留着它是因为 `route` 的类型仍然是 `string | null`，而「未接线」必须
+    //    表现为一句说明 —— 跳进一个空白路由看起来就是崩溃。
     if (!route) {
       Taro.showToast({ title: `${title} 尚未接入`, icon: 'none' });
       return;
@@ -309,7 +362,26 @@ export default function Home() {
                         note: `数据到 ${formatDayMonth(paperrWindow.latest)}`,
                       },
                     ]
-                  : p.stats
+                  : p.key === 'chealth' && chealthDay
+                    ? [
+                        {
+                          value: chealthDay.steps !== undefined ? `${chealthDay.steps}` : '—',
+                          label: '步数',
+                          note: formatDayMonth(chealthDay.date),
+                        },
+                        {
+                          // ⚠️ 复用「阅读时长」那个格式化器 —— 它本质就是「秒 → 小时」，
+                          //    名字里有 reading 而已。再写一个「秒 → 睡眠时长」就会有两份
+                          //    实现，而这两份迟早会不一致（CAPPERR 的字数统计就是 127 对 109）。
+                          value:
+                            chealthDay.sleepSeconds !== undefined
+                              ? formatReadingTime(chealthDay.sleepSeconds)
+                              : '—',
+                          label: '睡眠',
+                          note: formatDayMonth(chealthDay.date),
+                        },
+                      ]
+                    : p.stats
             }
             // ⚠️ Both brands carry a freshness line now. A panel with live
             // numbers and no timestamp cannot be told from one whose sync died
@@ -319,7 +391,9 @@ export default function Home() {
                 ? `更新于 ${updatedAt}`
                 : p.key === 'paperr' && paperrSync
                   ? paperrSync
-                  : null
+                  : p.key === 'chealth' && chealthLine
+                    ? chealthLine
+                    : null
             }
             // The last panel gets no chevron: there is nothing below it, and a
             // cue there promises content that does not exist.

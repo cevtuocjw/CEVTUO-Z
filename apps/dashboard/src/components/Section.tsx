@@ -26,6 +26,41 @@ export interface Stat {
   note?: string;
 }
 
+/**
+ * 数字的档位由**字符数**决定 —— 阈值不是拍脑袋，是按真机量到的宽度反推的。
+ *
+ * ⚠️⚠️ 起因（2026-09-28）：主页 CHEALTH 那两格接上真数据之后，
+ *    `9686` 压在 `5.78h` 上，两个数字叠在一起。
+ *
+ * 量出来的事实（390px 视口，Playwright 读真实布局，不是估的）：
+ *
+ *     .stats__item   宽 118px
+ *     .stats__value  字号 62.4px（= clamp(48px, 16vw, 92px) 在 390px 上的结果）
+ *
+ *     "7"     118px ✓        "1215"  133px ✗ 溢出 15
+ *     "37m"   133px ✗        "15.7h" 159px ✗ 溢出 41
+ *     "9686"  159px ✗        "5.78h" 171px ✗ 溢出 53
+ *
+ * ⚠️ 也就是说**凡是 3 个字符以上的值都在溢出** —— COOF 和 CAPPERR 一直如此，
+ *    只是它们最长的那个值恰好排在最后一格，溢出部分落进了右边的空白里。
+ *    CHEALTH 是第一个「长值在左、右边还有一格」的组合，所以第一个炸。
+ *
+ * ⚠️⚠️ 而它藏了这么久，是因为在此之前四格全是「—」：**一个占位符比真数据短，
+ *    于是它替真数据挡了一整类版式 bug。** 这是「占位符必须长得像占位符」
+ *    那条规矩的反面 —— 占位符还必须是**最坏情况**的形状。
+ *
+ * ⚠️ CSS 做不到「字号随自己的内容长度变」，所以只能在渲染时按字符数分档。
+ *    分档而不是测量后回写：测量要等 layout、读完 DOM 再改字号，会闪一下。
+ */
+function statSize(value: string): string {
+  const n = value.length;
+  if (n <= 2) return '';
+  if (n === 3) return ' stats__value--t3';
+  if (n === 4) return ' stats__value--t4';
+  if (n === 5) return ' stats__value--t5';
+  return ' stats__value--t6';
+}
+
 export interface SectionProps {
   /** Zero-based position, rendered as "01", "02" in the margin. */
   index: number;
@@ -173,7 +208,7 @@ export function Section({
     <View className={statsClass}>
       {stats.map((s) => (
         <View className="stats__item" key={s.label}>
-          <Text className="stats__value">{s.value}</Text>
+          <Text className={`stats__value${statSize(s.value)}`}>{s.value}</Text>
           <Text className="stats__label">{s.label}</Text>
           {s.note ? <Text className="stats__note">{s.note}</Text> : null}
         </View>
