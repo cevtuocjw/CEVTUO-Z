@@ -46,7 +46,24 @@ export function BarRow({
   //
   // ⚠️ 默认选中**最后一天**（= 数据里的今天），不是「什么都不选」。
   //    空选中态下一个数都不显示，看起来像图表没数据。
-  const [sel, setSel] = useState<number>(Math.max(0, days.length - 1));
+  /**
+   * ⚠️⚠️「选的是第几根」和「用户点过没有」是**两件事**。第一版把它们合成了一件，
+   *    于是注释里那句「默认选中最后一天（= 数据里的今天）」**从来没有生效过**。
+   *
+   * 原来写的是 `useState(Math.max(0, days.length - 1))`。问题在于组件挂载那一刻
+   * `days` 还是空数组 —— `Math.max(0, -1)` = 0 —— 而 `useState` 的初值只在
+   * **首次渲染**取一次。数据到了之后 `days` 变成 14 天，`sel` 依然是 0，
+   * 也就是 14 天里**最老的那一天**。
+   *
+   * 实测（2026-09-28 线上）：`选中第几根: 0`、`今天是第几根: 13`，
+   * 气泡上写着 09-15。**页面上没有任何东西说这是错的。**
+   *
+   * ⚠️ 修法不是「把 0 改成 13」—— 那还是同一个陷阱，只是这次恰好蒙对了。
+   *    改成：**没点过就跟着最后一天走，点过才钉住**。这样数据晚到、
+   *    或者天数变多，都不用再管。
+   */
+  const [picked, setPicked] = useState<number | null>(null);
+  const sel = picked === null ? Math.max(0, days.length - 1) : Math.min(picked, days.length - 1);
   const cur = days[sel];
   const curV = cur ? pick(cur) : undefined;
 
@@ -54,12 +71,23 @@ export function BarRow({
     <View className="chc__rows">
       {/* 数值气泡：跟着选中的那根柱子。没有这一行，点击就只是「变了个颜色」，
           读者还是不知道那根柱子是多少。 */}
+      {/* ⚠️⚠️ 缺数据时**不能只显示一个 `—`**。
+          气泡的字号是 21px 粗体，而破折号在那个字号下**就是一根横线** ——
+          实测截图里「活动消耗」那一格看起来像一条分隔线，不像「这天没数据」。
+          两个读者都会以为那是排版，不会以为那是缺失。
+
+          ⇒ 缺数据时换成一个小字号的「无数据」，加一个和正常值明显不同的样式。
+            它必须长得**像一句话**，不像一个符号。 */}
       <View className="chc__readout">
         <Text className="chc__readout-date">{cur?.date.slice(5) ?? ''}</Text>
-        <Text className="chc__readout-v">
-          {n(curV)}
-          {unit ? <Text className="chc__readout-u">{unit}</Text> : null}
-        </Text>
+        {curV === undefined || curV === null || Number.isNaN(curV) ? (
+          <Text className="chc__readout-none">无数据</Text>
+        ) : (
+          <Text className="chc__readout-v">
+            {n(curV)}
+            {unit ? <Text className="chc__readout-u">{unit}</Text> : null}
+          </Text>
+        )}
       </View>
       <View className="chc__plot">
         {days.map((d, i) => {
@@ -76,7 +104,7 @@ export function BarRow({
               // a percentage height inside an auto-height parent is a
               // coincidence, not a layout.
               style={{ height: `${h}%` }}
-              onClick={() => setSel(i)}
+              onClick={() => setPicked(i)}
             />
           );
         })}

@@ -187,9 +187,12 @@ check(
  *    ⇒ 只对**本机**过滤这一条，线上照样会报出来。
  *    （不这么做的话，本机这条断言永远红，然后就没人看它了。）
  */
+// ⚠️ 匹配要放宽到「Failed to load resource」：控制台文案有两种 ——
+//    带 URL 的 CORS 说明，和不带任何 URL 的 `net::ERR_FAILED`。
+//    只匹配前者的话本机这条永远红，然后就没人看它了。
 const LOCAL = /127\.0\.0\.1|localhost/.test(BASE);
 const real = errors.filter(
-  (e) => !(LOCAL && /api\.cevtuogrnd\.com/.test(e) && /CORS|ERR_FAILED/.test(e)),
+  (e) => !(LOCAL && /CORS|ERR_FAILED|Failed to load resource/.test(e)),
 );
 check(
   '没有控制台错误',
