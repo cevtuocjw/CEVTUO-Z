@@ -1,0 +1,155 @@
+// ── 底部弹出面板 + 主屏图标格 ────────────────────────────────
+//
+// 读者 2026-09-28：「把 10 屏尽量处理进 3 屏，可以通过弹窗的形式来归并，
+// 但是要尽量展示多的是在外边的是图标，而文字尽量缩减和折叠，大小也减小」。
+//
+// ⚠️ 这套东西的意义不是「好看」，是把**翻页成本**换成**点击成本**：
+//    十个话题摊成十屏时，读者每看一遍要翻十次，而其中八屏他每次都不看。
+//    收成三个主屏 + 图标格之后，一眼能看到十个入口，想看哪个点哪个。
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 300;              // ⚠️ 在顶栏之下（顶栏 999），但压住面板栈
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  // ⚠️ 蒙层要能挡点击（否则点空白会落到下面的面板上）—— 但不能纯黑，
+  //    读者要能看见自己是从哪一屏点开的。
+  background: color-mix(in srgb, #000 46%, transparent);
+  animation: sheet-in 180ms ease-out;
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sheet__panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-height: 86vh;          // ⚠️ 留一截主屏在视野里 —— 全屏面板和「跳走了」没区别
+  padding: 10px 16px calc(var(--safe-bottom, 0px) + 18px);
+  border-radius: 22px 22px 0 0;
+  // ⚠️ 用不透明底，不用毛玻璃：玻璃底在深色壁纸上会让小字失去对比度，
+  //    而这里恰恰是要读密度很高的表。
+  background: var(--surface, #16181d);
+  border-top: 1px solid color-mix(in srgb, #fff 10%, transparent);
+  animation: sheet-up 220ms cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(14px); }
+  to { transform: translateY(0); }
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 12px;
+}
+
+// ⚠️ 顶部那道小横条 = 「这是可以往下拖走的」。三星、iOS 都这么标，
+//    而它比一个「关闭」按钮省地方。
+.sheet__head::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  margin-left: -18px;
+  top: 8px;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, #fff 22%, transparent);
+}
+
+.sheet__title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+.sheet__close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  cursor: pointer;
+  transform: rotate(0deg);
+}
+
+.sheet__body {
+  box-sizing: border-box;
+  // ⚠️ `min-height: 0` 是必须的：flex 子元素默认 `min-height: auto`，
+  //    在列方向里会被内容撑破，`max-height` 就形同虚设。
+  min-height: 0;
+  flex: 1;
+}
+
+// ── 主屏上的图标格 ──────────────────────────────────────────
+//
+// ⚠️ 三列而不是四列。四列在 390px 上每格只有约 88px，
+//    图标加两个字就撑满了，标签只能缩到 9px —— 而 9px 的中文没法读。
+.igrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.igrid__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 12px 6px 10px;
+  border-radius: 16px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+  cursor: pointer;
+}
+
+// ⚠️ 图标装在一个**实色圆底**里 —— 和 hero 马赛克上那套 `chc__badge` 同源。
+//    这是三星最有辨识度的一处：一眼认出「这是心率」靠的是那个圆的颜色，
+//    不是旁边的字。
+.igrid__ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 18px;           // ⚠️ 图标走 1em，所以这里就是图标大小
+  color: #fff;
+  background: var(--m, #6b7280);
+}
+
+.igrid__v {
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.igrid__l {
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-secondary);
+}
