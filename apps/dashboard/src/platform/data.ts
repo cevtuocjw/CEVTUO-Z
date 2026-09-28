@@ -14,6 +14,7 @@
 // App-local copy of the shared path contract — see ./paths.ts for why it is
 // not imported, and ./paths.contract.ts for the guard that keeps them in sync.
 import { DATA_PATHS } from './paths';
+import { openSealed } from './health-crypto';
 
 // ⚠️ `import type` is load-bearing: it is erased at compile time, so zod's
 // ~60KB runtime never reaches the bundle. Only the inferred TYPES come across.
@@ -237,6 +238,204 @@ export const fetchPaperrIndex = (): Promise<PaperrIndex> =>
   getJson<PaperrIndex>(DATA_PATHS.paperrIndex, { cache: 'no-store' });
 
 /**
+ * CHEALTH — Samsung Health / Galaxy Watch, via Health Connect on the phone.
+ *
+ * ⚠️ `cache: 'no-store'` for the same measured reason as the reading index.
+ * GitHub Pages serves these at `max-age=600`, and this file is rewritten by the
+ * phone's 15-minute worker — so a cached copy would routinely be ten minutes
+ * behind a freshness line sitting right next to it.
+ */
+export interface ChealthOrigin {
+  count: number;
+  lastAt: string;
+}
+
+/**
+ * ⚠️ One exercise session. Walking is filtered OUT before it reaches here —
+ * see `buildHealthIndex`. When this list is populated, everything in it is
+ * something the reader asked to see.
+ */
+export interface ChealthSession {
+  start: string;
+  minutes: number;
+  /** `BIKING`, `RUNNING`, … Machine name. */
+  type: string;
+  exerciseType: number;
+  title?: string;
+  source: string;
+  distanceM?: number;
+  activeCalories?: number;
+  hrAvg?: number;
+  hrMax?: number;
+  /** ⚠️ Cycling metrics, present only on a ride and only if it came through a
+   *  bridge that carried them (Samsung Health does; Strava does not). */
+  powerAvg?: number;
+  powerMax?: number;
+  speedMaxMps?: number;
+  cadenceAvg?: number;
+  /** ⚠️ Which app measured the HR — the watch and MyWhoosh disagree, and the
+   *  phone deliberately does not average them. */
+  hrSource?: string;
+  /** ⚠️ `[minutesSinceStart, bpm]`, ≤120 points, peak force-included. */
+  hrSeries?: [number, number][];
+  /** ⚠️ Every app that recorded part of this session — a ride is routinely two
+   *  records merged into one. */
+  sources?: string[];
+}
+
+export interface ChealthDay {
+  date: string;
+  steps?: number;
+  stepSources?: Record<string, number>;
+  distanceM?: number;
+  stepsCadenceAvg?: number;
+  speedAvgMps?: number;
+  speedMaxMps?: number;
+  calories?: number;
+  activeCalories?: number;
+  floors?: number;
+  sleepSeconds?: number;
+  hrAvg?: number;
+  hrMax?: number;
+  restingHr?: number;
+  hrvMs?: number;
+  spo2Pct?: number;
+  respRate?: number;
+  weightKg?: number;
+  exerciseCount?: number;
+}
+
+export interface ChealthIndex {
+  schemaVersion: number;
+  updatedAt: string;
+  device: string;
+  appVersion: string | null;
+  from: string | null;
+  to: string | null;
+  dayCount: number;
+  days: ChealthDay[];
+  /** ⚠️ Non-walking only, already deduplicated and overlap-merged on the phone. */
+  sessions: ChealthSession[];
+  /** ⚠️ `false` means "not detected", never "definitely not riding" — it is
+   *  `false` whenever the usage-access permission is missing. Render accordingly. */
+  ridingNow: boolean;
+  origins: Record<string, ChealthOrigin>;
+  totals: {
+    stepsToday: number | null;
+    steps7d: number;
+    steps30d: number;
+    calories7d: number;
+    /**
+     * ⚠️ Shown beside `calories7d`, never merged into it. `calories7d` includes
+     * basal metabolic rate (~1662/day, constant, even on days with no data), so
+     * on its own it is a flat line that reads as a broken sensor.
+     */
+    activeCalories7d: number;
+    distance7dKm: number;
+    sleep7dHours: number;
+    restingHr7d: number | null;
+    hrv7d: number | null;
+    spo2_7d: number | null;
+    weightKgLatest: number | null;
+  };
+}
+
+/**
+ * ⚠️⚠️ NOT WIRED, ON PURPOSE. Read this before connecting it.
+ *
+ * The obvious implementation is `getJson(DATA_PATHS.chealthIndex)` against
+ * `gh-pages`, matching how the other three brands work. That is what was tried
+ * on 2026-09-24, and `paths.contract.ts` refused to compile — which is the
+ * guard doing its job. `packages/schema/src/paths.ts` has always declared this
+ * path as `api/chealth/index.json`, i.e. behind the service, not the CDN.
+ *
+ * ⚠️ The reason is concrete and recorded in the page's own history: GitHub
+ * Pages is world-readable even for a private repository, so step counts, heart
+ * rate and sleep for one identifiable person would be readable by anyone with
+ * the URL. That is a decision with an owner, and it is not a side effect a
+ * pipeline gets to make on the way past.
+ *
+ * ⚠️ Which leaves the real design question, and it has no free answer: an
+ * authenticated fetch from a browser bundle needs the credential IN the bundle,
+ * and the bundle is plain JavaScript. The options are (a) publish, accepted
+ * knowingly, (b) a token in the bundle, which is a lock with the key taped to
+ * it, or (c) serve the page itself behind Basic auth like the admin screen.
+ */
+/**
+ * ⚠️ Fetched from the PUBLIC CDN, because the file there is ciphertext. The
+ * plaintext never touches a network this code controls.
+ */
+export async function fetchChealthIndex(passphrase: string): Promise<ChealthIndex> {
+  // ⚠️⚠️ `cache: 'no-store'` —— 而且这条是**补的**，2026-09-24 踩了同一个坑第二次。
+  //
+  // 第一版写的是 `fetch(url + '?t=' + Date.now())`，一个「破除缓存」的查询串。
+  // **GitHub Pages 的 CDN 忽略查询串** —— 这一点在 paperr 那边早就量过并写进了
+  // `fetchPaperrIndex` 的注释，而我没有把它带过来。结果：页面一直读着十分钟前的
+  // 旧索引，运动明细那一块显示「最近 30 天没有非走路的运动记录」——
+  // 一个**看起来完全正常的空状态**，而服务器上三条骑行好好躺着。
+  //
+  // 教训不是「记得加 no-store」，是**同一个项目里已经付过学费的结论要跟着新代码走**。
+  const res = await fetch(DATA_PATHS.chealthSealed, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`读不到加密索引 HTTP ${res.status}`);
+  // ⚠️ openSealed 现在是**同步**的（纯 JS，不用 WebCrypto）——
+  //    见 health-crypto.ts 顶部那段：站点没有 HTTPS，crypto.subtle 是 undefined。
+  const plain = openSealed(await res.text(), passphrase);
+  return JSON.parse(plain) as ChealthIndex;
+}
+
+export interface ChealthHeartbeat {
+  /** When the phone last reached the ingest server — not when data changed. */
+  lastPushAt: string | null;
+  dayCount: number;
+  to: string | null;
+}
+
+/**
+ * ⚠️⚠️ HTTPS, and on port 8443 — the host in one place on purpose.
+ *
+ * These were `http://120.77.27.128:8789` until 2026-09-28. That address still
+ * answers, and it is still what the phone and the Kindle POST to, so it is
+ * tempting to leave alone. It cannot be: an HTTPS page fetching a plain-HTTP
+ * subresource is killed by **mixed-content blocking**, which happens in the
+ * browser before CORS is ever consulted.
+ *
+ * Measured with Playwright on 2026-09-28, driving a real HTTPS page:
+ *
+ *     fetch('http://120.77.27.128:8789/…')  →  requestfailed: mixed-content
+ *
+ * ⚠️ And that failure is INVISIBLE here. Both `fetchChealthHeartbeat` and
+ * `fetchPaperrHeartbeat` catch everything and return `null` — deliberately, so
+ * that a diagnostic being down cannot break a page — so the symptom would have
+ * been one dash mark, no console error the reader would ever see, and a
+ * deployment that looks correct. Enabling HTTPS on the site without moving
+ * these two lines first would have silently deleted both heartbeats.
+ *
+ * ⚠️ 8443 and not 443: Aliyun only serves 80/443 for domains that carry an ICP
+ * filing, and `api.cevtuogrnd.com` has none yet. The certificate is valid on
+ * any port. This moves to 443 the day the filing lands.
+ *
+ * ⚠️ The host lives in one constant because it drifted across four separate
+ * literals once already — including a fifth copy inside
+ * `scripts/verify-paperr-ui.mjs`, which is why that suite asserts against the
+ * page's own network traffic rather than a URL typed out again.
+ */
+export const INGEST_ORIGIN = 'https://api.cevtuogrnd.com:8443';
+
+export const CHEALTH_HEARTBEAT_URL = `${INGEST_ORIGIN}/api/chealth/heartbeat.json`;
+
+/** ⚠️ Never throws. A page that breaks because a diagnostic is unreachable is
+ *  worse than one that shows a dash — same rule as the reading heartbeat. */
+export async function fetchChealthHeartbeat(): Promise<ChealthHeartbeat | null> {
+  try {
+    const res = await fetch(CHEALTH_HEARTBEAT_URL);
+    if (!res.ok) return null;
+    return (await res.json()) as ChealthHeartbeat;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * When the Kindle last reached the ingest server.
  *
  * ⚠️ This is the ONLY thing on the page that comes from the Aliyun box rather
@@ -255,7 +454,8 @@ export interface PaperrHeartbeat {
   books: number;
 }
 
-export const PARRER_HEARTBEAT_URL = 'http://120.77.27.128:8789/api/paperr/heartbeat.json';
+// ⚠️ Same host as the health one above, and for the same mixed-content reason.
+export const PARRER_HEARTBEAT_URL = `${INGEST_ORIGIN}/api/paperr/heartbeat.json`;
 
 export async function fetchPaperrHeartbeat(): Promise<PaperrHeartbeat | null> {
   try {

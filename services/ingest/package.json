@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@cevtuo/schema": "workspace:*",
-    "@cevtuo/pipeline-core": "workspace:*"
+    "@cevtuo/pipeline-core": "workspace:*",
+    "zod": "^3.24.1"
   }
 }

@@ -27,6 +27,8 @@
       "dependencies": {
         "@babel/runtime": "^7.24.4",
         "@cevtuo/schema": "workspace:*",
+        "@noble/ciphers": "^2.4.0",
+        "@noble/hashes": "^2.4.0",
         "@tarojs/components": "4.0.9",
         "@tarojs/helper": "4.0.9",
         "@tarojs/plugin-framework-react": "4.0.9",
@@ -86,6 +88,7 @@
       "dependencies": {
         "@cevtuo/pipeline-core": "workspace:*",
         "@cevtuo/schema": "workspace:*",
+        "zod": "^3.24.1",
       },
     },
     "services/sync-trigger": {
@@ -497,6 +500,10 @@
     "@leichtgewicht/ip-codec": ["@leichtgewicht/ip-codec@2.0.5", "", {}, "sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw=="],
 
     "@napi-rs/triples": ["@napi-rs/triples@1.2.0", "", {}, "sha512-HAPjR3bnCsdXBsATpDIP5WCrw0JcACwhhrwIAQhiR46n+jm+a2F8kBsfseAuWtSyQ+H3Yebt2k43B5dy+04yMA=="],
+
+    "@noble/ciphers": ["@noble/ciphers@2.4.0", "", {}, "sha512-AnjFn0Jv92laAkvMrghlFZq4qQCIN/4DxFV/eooqtC2YTjB7kBeLMS2T9KJX4Dn+ZVXLOwK0lSgqDtx9gvxtiw=="],
+
+    "@noble/hashes": ["@noble/hashes@2.4.0", "", {}, "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 

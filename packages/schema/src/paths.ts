@@ -47,6 +47,32 @@ export const DATA_PATHS = {
 
   paperrIndex: 'data/paperr/index.json',
   paperrHeatmap: 'data/paperr/heatmap.json',
+
+  /**
+   * ⚠️⚠️ This one MOVED CATEGORIES, and the move is the interesting part.
+   *
+   * It used to live in `PRIVATE_PATHS` as `chealthIndex: 'api/chealth/index.json'`
+   * — meaning "served by the Worker behind a bearer token, never by Pages". The
+   * name was aspirational; there was never such a route.
+   *
+   * On 2026-09-24 the phone-side ingest published an UNENCRYPTED
+   * `data/chealth/index.json` to `gh-pages`, and since the repository is public
+   * that was one person's steps, heart rate, sleep and blood oxygen at a
+   * world-readable URL. `paths.contract.ts` refused to compile the page that
+   * would have read it, which is the only reason it lasted an hour.
+   *
+   * ⚠️ The fix was not to move it back behind the Worker. That box has no
+   * HTTPS — binding a domain in Shenzhen needs an ICP filing the account holder
+   * must submit in person — so a password there would travel in the clear
+   * alongside the data it protects. github.io, for all its publicity, is HTTPS.
+   *
+   * So the payload changed instead of the transport: the server seals the index
+   * with AES-GCM and publishes ciphertext. It is now genuinely a public file
+   * the app fetches — hence `DATA_PATHS`, not `PRIVATE_PATHS` — and genuinely
+   * unreadable without the passphrase, which is a third category this file did
+   * not previously have.
+   */
+  chealthSealed: 'data/chealth/index.json',
 } as const;
 
 /**
@@ -76,7 +102,6 @@ export const LOCAL_PATHS = {
 
 /** Authenticated payloads — served by the Worker, never by Pages. */
 export const PRIVATE_PATHS = {
-  chealthIndex: 'api/chealth/index.json',
   syncStatus: 'api/status',
   syncTrigger: 'api/sync',
 } as const;

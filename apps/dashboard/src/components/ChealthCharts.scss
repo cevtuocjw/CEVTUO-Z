@@ -1,0 +1,130 @@
+// ── Chealth charts ────────────────────────────────────────────
+//
+// ⚠️ In components/, not in pages/chealth/index.scss, and that is not a style
+// preference. This project already lost a day to the other arrangement: the
+// CAPPERR chart rules lived in the page's stylesheet, the HOME page rendered
+// the same charts without importing it, and the bars silently degraded into a
+// column of text and the calendar into a list of numbers. Zero errors, zero
+// warnings, one wrong page.
+//
+// Any rule here is reachable from more than one page. That is the test.
+
+$chart-h: 108px;
+
+.chc {
+  &__rows { display: flex; flex-direction: column; gap: 14px; }
+
+  // ⚠️ Bars share ONE height variable. Four charts with four hardcoded heights
+  // (88/84/76/72) made the eye read the height difference as a data difference.
+  &__plot {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: $chart-h;
+  }
+
+  &__bar {
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: 3px 3px 0 0;
+    background: var(--chart-3);
+    // ⚠️ A floor, so a zero day is a visible stub rather than nothing. "No
+    // bar" and "no day" look identical otherwise.
+    min-height: 2px;
+
+    &--empty { background: var(--chart-empty, rgba(128, 128, 128, 0.18)); }
+    &--today { background: var(--chart-1); }
+  }
+
+  &__axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    opacity: 0.55;
+  }
+
+  &__spark { width: 100%; height: 48px; display: block; }
+
+  // ⚠️ Native <svg>: `style` must be an OBJECT. A string here is React #62 and
+  // takes the whole page white — the same mistake as the reading charts.
+  &__line { fill: none; stroke: var(--chart-2); stroke-width: 2; }
+  &__area { fill: var(--chart-2); opacity: 0.14; stroke: none; }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  &__key { display: inline-flex; align-items: center; gap: 6px; }
+  &__dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  &__src {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    th { text-align: left; font-weight: 500; opacity: 0.55; padding: 4px 8px 4px 0; }
+    td { padding: 5px 8px 5px 0; vertical-align: top; }
+    td:last-child, th:last-child { text-align: right; padding-right: 0; }
+  }
+
+  // ⚠️ Stale sources are marked, not merely listed. A source that stopped
+  // 21 hours ago and one that wrote a minute ago look the same in a table
+  // otherwise — and telling them apart is the entire reason the table exists.
+  &__stale { color: var(--warn, #d08a20); font-weight: 500; }
+  &__fresh { opacity: 0.6; }
+
+  &__partial {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    opacity: 0.6;
+    margin-left: 6px;
+    vertical-align: 2px;
+  }
+
+  // ⚠️ session 卡片里的数字用一种和标签不同的字重 —— 一行里塞七八个
+  // 「平均功率 273 W」的时候，读者要靠这个才扫得出来哪个是数。
+  // ⚠️ 必须留在 .chc 块**里面**：追加到文件末尾会变成根级样式，
+  //    `&__num` 无处展开，sass 直接编译失败（实测）。
+  &__num { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  // ⚠️⚠️ `.card` 是 `flex-direction: row`（为「标签—数值」成对设计的），
+  //    而运动卡片里有五六个子元素 —— 标签、图例、心率曲线、来源 ——
+  //    于是它们被并排挤成四列，字竖着排，图缩成一条缝。
+  //
+  //    实测：`.card` 宽 358px，里面的 `.chc__legend` 被压到 109px。
+  //    ⚠️ 不要改 `.card` 本身 —— 别的页面靠它的横排布局，改了会波及别处。
+
+  // ⚠️ 峰值那个点。它是心率图上唯一真正要看的东西，
+  //    而平滑过的线恰恰会把它藏起来。
+  &__peak { fill: var(--chart-1); stroke: var(--bg, #111); stroke-width: 1.5; }
+}
+
+// ⚠️⚠️ 必须写在 `.chc { }` **外面**。
+//
+// 放在里面写 `&.card#{&}__stack` 会编译成 `.chc.card.chc__stack` ——
+// 要求元素同时带三个类，而实际上只有 `card` 和 `chc__stack`，
+// 于是规则**一条都不生效**，而 sass 不会报任何错。
+//
+// ⚠️ 为什么用两个类（`.card.chc__stack`）而不是一个：`.card` 是单类选择器，
+// 同样单类的 `.chc__stack` 和它特异性相同，胜负由**样式表引入顺序**决定 ——
+// 而 demo.scss 在后，所以 `.card` 的 `flex-direction: row` 一直赢。
+// 两个类稳定压过它，且不依赖引入顺序。
+.card.chc__stack {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 6px;
+
+  // ⚠️ flex 子元素默认 `min-width: auto`，在列方向里会被内容撑破或压扁。
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}

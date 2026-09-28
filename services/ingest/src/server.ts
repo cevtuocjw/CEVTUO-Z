@@ -17,6 +17,7 @@
  * The real control is the cloud provider's security group: expose ONE port.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { scrubError } from '@cevtuo/pipeline-core';
@@ -29,14 +30,42 @@ import {
   isAdminAuthorized,
   renderAdminPage,
 } from './core';
-import { publisherFromEnv } from './publish';
-import { fsStore } from './store';
+import {
+  HealthRawSchema,
+  buildSealedIndexFromStore,
+  handleHealthIngest,
+  type HealthEnv,
+} from './chealth';
+import { healthPublisherFromEnv, publisherFromEnv } from './publish';
+import { fsHealthStore, fsStore } from './store';
 
 const env = envFrom(process.env);
 const REPO_ROOT = process.env.CEVTUO_REPO_DIR ? resolve(process.env.CEVTUO_REPO_DIR) : defaultRepoRoot();
 const store = fsStore(REPO_ROOT);
 const converter = repoConverter(REPO_ROOT);
 const publisher = publisherFromEnv(REPO_ROOT);
+const healthPublisher = healthPublisherFromEnv(REPO_ROOT);
+const healthStore = fsHealthStore(REPO_ROOT);
+
+/**
+ * ⚠️ A SEPARATE token from `CEVTUO_DEVICE_TOKEN`, and it is allowed to be
+ * absent so the CAPPERR deployment keeps working untouched.
+ *
+ * Both devices are equally readable (plain Lua on a USB partition; an APK that
+ * anyone can unzip). What separation buys is blast radius, not secrecy: a leaked
+ * Kindle token cannot invent a step count, and a leaked health token cannot
+ * rewrite the library.
+ */
+const healthToken = process.env.CEVTUO_HEALTH_TOKEN || '';
+/**
+ * ⚠️ Absent means nothing is published — never means publish in the clear.
+ * The published file is the reader's step count, heart rate and sleep at a
+ * public URL until this is set.
+ */
+const healthPassphrase = process.env.CEVTUO_HEALTH_PASSPHRASE || null;
+const healthEnv: HealthEnv | null = healthToken
+  ? { healthToken, maxBytes: Number(process.env.CEVTUO_HEALTH_MAX_BYTES ?? 512 * 1024) }
+  : null;
 
 const PORT = Number(process.env.CEVTUO_PORT ?? 8789);
 const BIND = process.env.CEVTUO_BIND ?? '0.0.0.0';
@@ -53,19 +82,36 @@ const ALLOWED_ORIGINS = new Set(
   (
     process.env.CEVTUO_ALLOWED_ORIGINS ??
     [
-      // ⚠️ `http://`, not `https://`.
+      // ⚠️ BOTH schemes, and dropping either one breaks a real state of the
+      // world. `Origin` is matched as an exact string, so `http://…` and
+      // `https://…` are two different entries — not a prefix pair.
       //
-      // The site is served over plain HTTP: `apps.cevtuogrnd.com` is a GitHub
-      // Pages custom domain whose certificate could not be issued (the Pages
-      // settings say "Enforce HTTPS — Unavailable for your site because your
-      // domain is not properly configured"). A browser at that site sends
-      // `Origin: http://apps.cevtuogrnd.com`, and an https entry here matches
-      // NOTHING — the fetch is refused by CORS and the 在读 panel silently shows
-      // its lock, on a deployment that is working perfectly.
+      // `apps.cevtuogrnd.com` is a GitHub Pages custom domain. Until
+      // 2026-09-28 it had never had a certificate issued at all (the Pages
+      // settings read "Enforce HTTPS — Unavailable for your site because your
+      // domain is not properly configured"), so the site could only be loaded
+      // over plain HTTP and that was the only Origin it ever sent.
+      //
+      // ⚠️ The transition is the reason both are here, and it is not a tidy
+      // one: Pages serves HTTP and HTTPS *simultaneously* after the certificate
+      // is issued, and only starts redirecting once "Enforce HTTPS" is ticked
+      // in the settings — two separate switches, minutes to hours apart. A
+      // reader who loaded the site in between sends the http Origin. Remove
+      // that entry and the 在读 panel shows its lock, silently, on a deployment
+      // that is working perfectly.
+      //
+      // ⚠️ The https entry is the load-bearing one going forward: an HTTPS page
+      // fetching `http://120.77.27.128:8789` is killed by mixed-content
+      // blocking before CORS is ever consulted (measured, see the TLS block at
+      // the bottom of this file), which is why the two heartbeat URLs in
+      // `apps/dashboard/src/platform/data.ts` moved to `https://…:8443` in the
+      // same change. Allowlisting https here without moving those would have
+      // changed nothing at all.
       //
       // ⚠️ `z.cevtuogrnd.com` used to be listed here. It has no DNS record at
       // all, so it could never have matched anything.
       'http://apps.cevtuogrnd.com',
+      'https://apps.cevtuogrnd.com',
       'https://cevtuocjw.github.io',
       'http://cevtuocjw.github.io',
       // ⚠️ The local verification port. `scripts/verify-paperr-ui.mjs` serves a
@@ -233,6 +279,89 @@ const server = Bun.serve({
       );
     }
 
+    // ── The phone ──────────────────────────────────────────────
+    //
+    // ⚠️ 202 Accepted on a real change, 200 on `unchanged` — same contract as
+    // `/api/paperr`, and for the same reason: the device pushes every 15
+    // minutes, so "I heard you" and "the numbers moved" have to be different
+    // answers or the operator learns to ignore both.
+    if (url.pathname === '/api/chealth') {
+      if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+      if (!healthEnv) return json({ error: 'CEVTUO_HEALTH_TOKEN 未设置，健康接口关闭' }, 503);
+
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || server.requestIP(req)?.address
+        || 'unknown';
+      if (buckets.size > 1000) for (const [k, b] of buckets) if (now >= b.resetAt) buckets.delete(k);
+      if (rateLimited(ip, now)) return json({ error: 'too many requests' }, 429);
+
+      let rawBody: string;
+      try {
+        rawBody = await req.text();
+      } catch {
+        return json({ error: 'body too large' }, 413);
+      }
+
+      try {
+        const { status, body } = await handleHealthIngest(
+          healthEnv, healthStore, req.headers.get('authorization'), rawBody,
+        );
+
+        let message = body.message;
+        if (status === 202) {
+          // ⚠️ The index is written from the MERGED store, never from the
+          // request body. The request is a 30-day window; the index is the
+          // accumulated series. Writing the window would make the site quietly
+          // forget everything older every time the phone synced — the exact
+          // failure this module exists to prevent, reintroduced one layer up.
+          const sealed = await buildSealedIndexFromStore(healthStore, healthPassphrase);
+          const indexText = 'sealed' in sealed ? sealed.sealed : null;
+          if (!indexText) {
+            message = `${message}；未发布（${'skipped' in sealed ? sealed.skipped : '无数据'}）`;
+          } else {
+            await healthStore.writeIndex(indexText);
+            if (healthPublisher) {
+              const pub = await healthPublisher.publish();
+              // ⚠️ Logged on success too. Without that line there is no way to
+              // tell "published and found nothing to do" from "never ran".
+              if (!pub.ok) {
+                message = `${message}；但发布到网站失败：${pub.error}`;
+                console.error(`[publish:health] ${pub.error}`);
+              } else {
+                console.log(`[publish:health] ${pub.changed ? '已更新网站' : '网站已是最新'}`);
+              }
+            }
+          }
+        }
+
+        // ⚠️ Outcome only. The body is 30 days of the reader's heart rate.
+        console.log(`[chealth] ${ip} ${status} ${body.status} ${message}`);
+        return json({ ...body, message }, status);
+      } catch (e) {
+        const msg = scrubError(e).message;
+        console.error(`[chealth] ${ip} 500 ${msg}`);
+        return json({ error: msg }, 500);
+      }
+    }
+
+    // ── Health heartbeat (public, no auth) ─────────────────────
+    // ⚠️ Public for the same reason as the reading one: the page uses it to
+    // answer "is the phone still reporting?", and a diagnostic behind a
+    // password is only readable by someone who already knows the answer.
+    if (url.pathname === '/api/chealth/heartbeat.json') {
+      const beat = await healthStore.readHeartbeat();
+      const mergedText = await healthStore.readMerged();
+      let dayCount = 0; let to: string | null = null;
+      try {
+        const m = mergedText ? HealthRawSchema.safeParse(JSON.parse(mergedText)) : null;
+        if (m?.success) {
+          dayCount = m.data.days.length;
+          to = m.data.days[m.data.days.length - 1]?.date ?? null;
+        }
+      } catch { /* heartbeat must not 500 over a corrupt store */ }
+      return json({ lastPushAt: beat, dayCount, to }, 200);
+    }
+
     // ── Admin surface (browser, Basic auth) ────────────────────
     if (url.pathname === '/' || url.pathname === '/api/status' || url.pathname === '/api/rebuild') {
       if (!isAdminAuthorized(env, req.headers.get('authorization'))) {
@@ -279,6 +408,68 @@ const server = Bun.serve({
     return json({ error: 'not found' }, 404);
   },
 });
+
+/**
+ * Optional TLS listener — a thin terminator in front of the HTTP one.
+ *
+ * ⚠️⚠️ Why this exists at all: the site is served over plain HTTP from GitHub
+ * Pages, and the moment it moves to HTTPS the browser blocks every request to
+ * this box. Measured with Playwright on 2026-09-28:
+ *
+ *     fetch('http://120.77.27.128:8789/...')  →  requestfailed: mixed-content
+ *     "Mixed Content: ... has been blocked"
+ *
+ * ⚠️ And both heartbeats are written to swallow exactly that failure, so the
+ * symptom would have been two dash marks and no error anywhere.
+ *
+ * ⚠️ Why a FORWARDER rather than `tls:` on the server above. The phone and the
+ * Kindle POST plain HTTP to 8789 and must keep working; moving that listener to
+ * TLS would break every deployed client in the field. This way 8789 is
+ * untouched and 8443 speaks TLS to the same handler.
+ *
+ * ⚠️ Why 8443 and not 443. Aliyun only serves 80/443 for domains that carry an
+ * ICP filing. `api.cevtuogrnd.com` has none yet, so 443 is not ours to use;
+ * the certificate itself is fine on any port (it was issued over DNS-01, which
+ * never touches the host). 443 is where this moves once the filing lands —
+ * and that step is what the WeChat mini program actually needs.
+ *
+ * ⚠️ Degrades to nothing if the certs are absent. The service must never fail
+ * to start because a certificate is missing — that would take the reading sync
+ * down with it.
+ */
+const TLS_PORT = Number(process.env.CEVTUO_TLS_PORT ?? 8443);
+const TLS_CERT = process.env.CEVTUO_TLS_CERT ?? '/opt/cevtuo-ingest/certs/fullchain.pem';
+const TLS_KEY = process.env.CEVTUO_TLS_KEY ?? '/opt/cevtuo-ingest/certs/privkey.pem';
+
+if (existsSync(TLS_CERT) && existsSync(TLS_KEY)) {
+  try {
+    const tlsServer = Bun.serve({
+      port: TLS_PORT,
+      hostname: BIND,
+      tls: { cert: readFileSync(TLS_CERT), key: readFileSync(TLS_KEY) },
+      fetch: (req) => {
+        // Forward to the loopback HTTP listener. `origin` is carried through
+        // untouched, so the CORS decision above stays the single source of
+        // truth about who may read this.
+        const u = new URL(req.url);
+        u.protocol = 'http:';
+        u.host = `127.0.0.1:${PORT}`;
+        return fetch(u, {
+          method: req.method,
+          headers: req.headers,
+          body: req.body,
+          redirect: 'manual',
+        });
+      },
+    });
+    console.log(`[ingest] 监听 https://${BIND}:${tlsServer.port}（转发到 :${PORT}）`);
+  } catch (e) {
+    // ⚠️ Loud, but not fatal — same rule as the certs being absent.
+    console.log(`[ingest] ⚠️ TLS 监听未启动：${e instanceof Error ? e.message : String(e)}`);
+  }
+} else {
+  console.log(`[ingest] 未找到证书（${TLS_CERT}），只跑 HTTP`);
+}
 
 console.log(`[ingest] 监听 http://${BIND}:${server.port}`);
 console.log(`[ingest] 数据目录 ${REPO_ROOT}/data/paperr/`);

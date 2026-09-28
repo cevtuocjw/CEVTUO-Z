@@ -164,3 +164,28 @@ export function publisherFromEnv(repoRoot: string): ReturnType<typeof githubPubl
     api: process.env.CEVTUO_GITHUB_API || undefined,
   });
 }
+
+/**
+ * The same publisher, pointed at the health index.
+ *
+ * ⚠️ A separate instance with a separate `localPath` on purpose. The publish
+ * step compares the local file against the remote blob byte-for-byte, so two
+ * data sets sharing one publisher would mean the second one never publishes
+ * unless it happens to equal the first.
+ *
+ * ⚠️⚠️ The GitHub token can write BOTH paths, and that is unavoidable — the
+ * permission is per-repository, not per-file, whatever the README claimed. What
+ * keeps them apart is that each publisher is constructed with one literal path
+ * and never takes one from a request.
+ */
+export function healthPublisherFromEnv(repoRoot: string): ReturnType<typeof githubPublisher> | null {
+  const token = process.env.CEVTUO_GITHUB_TOKEN || null;
+  return githubPublisher({
+    token,
+    repo: process.env.CEVTUO_GITHUB_REPO || 'cevtuocjw/CEVTUO-Z',
+    branch: process.env.CEVTUO_GITHUB_BRANCH || 'gh-pages',
+    path: 'data/chealth/index.json',
+    localPath: `${repoRoot}/data/chealth/index.json`,
+    api: process.env.CEVTUO_GITHUB_API || undefined,
+  });
+}

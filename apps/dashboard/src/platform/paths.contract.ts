@@ -31,11 +31,22 @@ type _NotesPerPageInSync = Assert<
 >;
 
 /**
- * Chealth must stay OUT of the app's copy. If this ever stops being `never`,
- * someone has added a private path to the public bundle.
+ * ⚠️ ONLY the sealed health path may appear in the app's copy.
+ *
+ * This assertion used to be `Extract<..., never>` — no `chealth*` key at all —
+ * on the premise that a `data/` path is world-readable and health data must
+ * therefore never be published. **The premise held; the payload changed.** The
+ * ingest now seals the index with AES-GCM before publishing, so what is at that
+ * URL is ciphertext.
+ *
+ * ⚠️ Narrowed, not removed, and the distinction is load-bearing. It still fails
+ * for any OTHER health path, so a second, plaintext one cannot be added by
+ * accident — which is exactly the mistake this guard was written to catch, and
+ * exactly the mistake it DID catch on 2026-09-24 when an unencrypted
+ * `data/chealth/index.json` was briefly live.
  */
-type _ChealthStaysOut = Assert<
-  Exact<Extract<keyof typeof Local.DATA_PATHS, `c${string}health${string}`>, never>
+type _HealthPathsAreSealedOnly = Assert<
+  Exact<Extract<keyof typeof Local.DATA_PATHS, `c${string}health${string}`>, 'chealthSealed'>
 >;
 
-export type { _DataPathsInSync, _BrandInSync, _NotesPerPageInSync, _ChealthStaysOut };
+export type { _DataPathsInSync, _BrandInSync, _NotesPerPageInSync, _HealthPathsAreSealedOnly };

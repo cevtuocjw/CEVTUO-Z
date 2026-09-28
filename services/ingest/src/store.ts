@@ -16,6 +16,12 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+import {
+  HEALTH_HEARTBEAT_PATH,
+  HEALTH_INDEX_PATH,
+  HEALTH_RAW_PATH,
+  type HealthStore,
+} from './chealth';
 import { HEARTBEAT_PATH, RAW_PATH, type Store } from './core';
 import { defaultRepoRoot } from './converter';
 
@@ -46,5 +52,50 @@ export function fsStore(repoRoot: string = defaultRepoRoot()): Store {
     writeRaw: (t) => write(paths.raw, t),
     readHeartbeat: () => read(paths.heartbeat),
     writeHeartbeat: (t) => write(paths.heartbeat, t),
+  };
+}
+
+/**
+ * The health store.
+ *
+ * ⚠️⚠️ Four files where reading needs two, and the extra one is the whole
+ * design. `raw` is the phone's verbatim last payload — a 30-day sliding window.
+ * `merged` is the ACCUMULATING series. They are not interchangeable: the raw
+ * window is what the phone just said, the merged file is everything the server
+ * has ever been told. Publishing or serving the raw one would mean the site
+ * shows 30 days forever. See the header of `chealth.ts`.
+ */
+export function fsHealthStore(repoRoot: string = defaultRepoRoot()): HealthStore {
+  const paths = {
+    raw: join(repoRoot, HEALTH_RAW_PATH),
+    merged: join(repoRoot, HEALTH_RAW_PATH.replace('raw-health.json', 'merged-health.json')),
+    heartbeat: join(repoRoot, HEALTH_HEARTBEAT_PATH),
+    index: join(repoRoot, HEALTH_INDEX_PATH),
+  };
+
+  const read = async (p: string): Promise<string | null> => {
+    try {
+      return await readFile(p, 'utf8');
+    } catch {
+      // ⚠️ Same reasoning as above: only ENOENT is expected, and conflating it
+      // with a permission error is the difference between "no data yet" and
+      // "this deployment cannot see its own data".
+      return null;
+    }
+  };
+
+  const write = async (p: string, text: string): Promise<void> => {
+    await mkdir(dirname(p), { recursive: true });
+    await writeFile(p, text, 'utf8');
+  };
+
+  return {
+    readRaw: () => read(paths.raw),
+    writeRaw: (t) => write(paths.raw, t),
+    readMerged: () => read(paths.merged),
+    writeMerged: (t) => write(paths.merged, t),
+    readHeartbeat: () => read(paths.heartbeat),
+    writeHeartbeat: (t) => write(paths.heartbeat, t),
+    writeIndex: (t) => write(paths.index, t),
   };
 }

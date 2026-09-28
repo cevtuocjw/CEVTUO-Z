@@ -16,9 +16,18 @@
  * the two ever drift. That is a compile-time guarantee rather than a comment
  * asking people to remember.
  *
- * ⚠️ Deliberately absent: Chealth. It is NOT served from the static site —
- * GitHub Pages is world-readable even for a private repo, so health data lives
- * behind the authenticated service. Adding it here would publish it.
+ * ⚠️⚠️ Chealth is deliberately absent, AND THE GUARD IS STILL ON.
+ *
+ * `paths.contract.ts` asserts at typecheck time that no `chealth*` key exists
+ * here, so a future change cannot quietly publish health data by adding one
+ * line. That assertion is correct and was left in place.
+ *
+ * ⚠️ What it caught, on 2026-09-24: the phone-side ingest publishes
+ * `data/chealth/index.json` to `gh-pages`, and the repo is public — so step
+ * counts, heart rate, sleep and blood oxygen for one identifiable person were
+ * readable by anyone with the URL. The guard is what turned that from a
+ * silent design drift into a build failure. Whether health data should be
+ * public is the reader's call, not a side effect of wiring up a pipeline.
  */
 
 export const BRAND = {
@@ -54,6 +63,23 @@ export const DATA_PATHS = {
 
   paperrIndex: 'data/paperr/index.json',
   paperrHeatmap: 'data/paperr/heatmap.json',
+
+  /**
+   * ⚠️ The health index — CIPHERTEXT at a public URL, and that is the whole
+   * reason it is allowed here at all.
+   *
+   * The guard in `paths.contract.ts` used to forbid any `chealth*` key
+   * outright, on the premise that anything at a `data/` path is world-readable
+   * and the health payload therefore must not go there. The premise is still
+   * true. What changed is the payload: the server seals the index with
+   * AES-GCM before publishing (see `buildSealedIndexFromStore`), so what sits
+   * at this path is noise without the passphrase.
+   *
+   * ⚠️ The guard was NOT deleted, it was narrowed — it now permits exactly this
+   * one key and still rejects any other, so a second, unsealed health path
+   * cannot be added without someone editing that assertion on purpose.
+   */
+  chealthSealed: 'data/chealth/index.json',
 } as const;
 
 /** Where re-hosted Notion posters live. Notion's own S3 URLs expire in ~1h. */
