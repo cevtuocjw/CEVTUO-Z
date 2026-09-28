@@ -317,17 +317,45 @@ function canonical(day: HealthDay): string {
 }
 
 /**
- * ⚠️ Sessions merge by `start`, incoming wins — the same rule as days, and for
- * the same reason: a session that is still in progress (or whose watch data
- * arrived late) gets richer over time, and the stored version must not freeze
- * it at whatever the first push saw.
+ * ⚠️⚠️ 会话**不是**按键合并的 —— 这一点 2026-09-28 才改对，而它藏了很久。
+ *
+ * 原来写的是「按 `start` 合并，incoming 覆盖同键的」，和 `mergeDays` 同一套。
+ * 那对 days 是对的（一天一个键，重读同一天就是覆盖），**对会话是错的**：
+ * 按键合并**只能新增和覆盖，永远删不掉**。
+ *
+ *   手机端：09-23 那次骑行在 Health Connect 里是两条 —— 18:44 的 healthsync
+ *           和 18:45 的 fitness（类型名还不同，一个叫「骑行」一个叫
+ *           「室内骑行」）。`SyncWorker` 按**时间重叠**把它们合并成一条，
+ *           于是上报的 `sessions` 里只剩 18:44。
+ *   服务端：18:45 那个键**再也没有人来覆盖它**，那条 fitness 会话就永远留着。
+ *
+ * 症状就是页面上同一场骑行两行。而「排除 Google Fit」+ 全量回填之后**它还在**
+ * —— 因为回填改的是手机端，服务端这道并集把旧记录钉死了。查到这里才明白
+ * 不是回填没用。
+ *
+ * ⚠️ 正确语义：`incoming` 是**整段窗口的完整列表**，不是增量 ——
+ *    手机端 `collectSessions` 每次读的都是 `DAYS = 30` 的全天窗
+ *    （`today.minusDays(DAYS - 1)` 到 `now`），和日期循环那个只重读
+ *    `REFRESH_DAYS` 的增量完全不是一回事。所以窗口内以它为准。
+ *
+ * ⚠️ 代价说清楚：手机端的窗口是 30 天，而保留期是 31 天。整表替换之后，
+ *    最老那一天如果已经滚出手机窗口，会**早一天**消失。它在
+ *    `pruneOld` 里本来就活不过第二天，所以不值得为它把逻辑写复杂。
+ *
+ * ⚠️⚠️ `undefined` 和 `[]` **必须分开**，否则这个改动会变成删数据：
+ *    手机端读会话失败时会走 catch 分支。原样发空数组的话，「这一轮没读到」
+ *    会和「窗口内真的一场运动都没有」长得一模一样 —— 而这两者一个该保留旧值、
+ *    一个该清空。**会撒谎的读数比会切一下的读数更糟。**
+ *    这个项目在 CAPPERR 的 `handleRebuild` 上已经付过一次学费：那里返回 202
+ *    被判成 200，于是**操作者收到成功回执、数据一个字没动**。
+ *    所以：`undefined` ⇒ 原样返回；数组（哪怕是空的）⇒ 窗口内以它为准。
  */
 export function mergeSessions(
   stored: HealthSession[],
-  incoming: HealthSession[],
+  incoming: HealthSession[] | undefined,
 ): HealthSession[] {
+  if (incoming === undefined) return stored;
   const byStart = new Map<string, HealthSession>();
-  for (const s of stored) byStart.set(s.start, s);
   for (const s of incoming) byStart.set(s.start, s);
   return [...byStart.values()].sort((a, b) => (a.start < b.start ? 1 : a.start > b.start ? -1 : 0));
 }
@@ -760,7 +788,9 @@ export async function handleHealthIngest(
   //
   //    这类「回执是成功、数据没动」的错，和 CAPPERR 那次
   //    `handleRebuild` 返回 202 而被判成 200 是同一个形状。
-  const sessionsMerged = mergeSessions(storedSessions, payload.sessions ?? []);
+  // ⚠️ 传 `payload.sessions` 本身，**不要** `?? []` —— 见 mergeSessions 的注释：
+  //    在这一层把 undefined 折成空数组，就再也分不出「没读到」和「真的没有」了。
+  const sessionsMerged = mergeSessions(storedSessions, payload.sessions);
 
   // ⚠️ 保留期在**合并之后**执行，所以刚收到的那一天永远不会被它自己删掉。
   const pruned = pruneOld(days, sessionsMerged);
