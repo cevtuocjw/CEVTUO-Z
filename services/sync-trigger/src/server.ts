@@ -24,12 +24,17 @@ const BIND = process.env.CEVTUO_BIND ?? '127.0.0.1';
  * because this endpoint spends real Actions minutes.
  */
 const ALLOWED_ORIGINS = new Set(
-  // ⚠️ `http://apps.cevtuogrnd.com` — see the long note in
-  // services/ingest/src/server.ts. The site is served over plain HTTP because no
-  // certificate could be issued for the custom domain, and `z.cevtuogrnd.com`
-  // has no DNS record at all.
+  // ⚠️ Both schemes, and see the long note in services/ingest/src/server.ts.
+  // The https entry is the load-bearing one since 2026-09-28 (the certificate
+  // was issued and the site 301s http to https); the http entry stays because
+  // Pages only stops serving plain HTTP once "Enforce HTTPS" is ticked, and a
+  // reader loaded in between still sends an http Origin.
+  //
+  // ⚠️ Note this service binds 127.0.0.1 only, so no browser at that Origin can
+  // actually reach it today. Left correct anyway — a stale allowlist is exactly
+  // the thing that gets copied into the next service.
   (process.env.CEVTUO_ALLOWED_ORIGINS ??
-    'http://apps.cevtuogrnd.com,https://cevtuocjw.github.io,http://cevtuocjw.github.io,http://localhost:10086')
+    'http://apps.cevtuogrnd.com,https://apps.cevtuogrnd.com,https://cevtuocjw.github.io,http://cevtuocjw.github.io,http://localhost:10086')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),

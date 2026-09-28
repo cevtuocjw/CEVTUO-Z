@@ -28,9 +28,11 @@ export default {
     const env: Env = envFrom(raw as unknown as Record<string, string | undefined>);
 
     const cors = {
-      // ⚠️ http, for the same reason as the server adapter — no certificate
-      // could be issued for this custom domain.
-      'Access-Control-Allow-Origin': 'http://apps.cevtuogrnd.com',
+      // ⚠️ https since 2026-09-28 — the certificate was issued (the blocker was
+      // a CNAME conflict in the CEVTUO-Z repo, not the domain configuration) and
+      // the site now 301s every http request to https. Echoing an http Origin
+      // back would no longer match what the browser sends.
+      'Access-Control-Allow-Origin': 'https://apps.cevtuogrnd.com',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Authorization, Content-Type',
       Vary: 'Origin',

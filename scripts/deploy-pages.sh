@@ -90,7 +90,11 @@ cp -R data "$STAGE"/data
 #
 # So: the live index wins. Fetch what is actually published and use that. The
 # local file is only a fallback for a first-ever deploy or an offline machine.
-PAPERR_LIVE="http://apps.cevtuogrnd.com/CEVTUO-Z/data/paperr/index.json"
+# ⚠️⚠️ `https://`, NOT `http://`. 站点 2026-09-28 开了 Enforce HTTPS，
+# 明文地址全部 301。而 `curl -fsS` **不带 `-L`** ⇒ 301 的响应体是空的 ⇒
+# 下面的 JSON 校验失败 ⇒ 守卫**静默失效**，本地副本把服务器发布的那份冲掉。
+# 这个坑真实发生过（见下面 chealth 那段造成的删除）。
+PAPERR_LIVE="https://apps.cevtuogrnd.com/CEVTUO-Z/data/paperr/index.json"
 if curl -fsS --noproxy '*' -m 20 "$PAPERR_LIVE" -o "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/paperr/index.json.tmp','utf8'))" 2>/dev/null; then
   mv "$STAGE/data/paperr/index.json.tmp" "$STAGE/data/paperr/index.json"
@@ -113,7 +117,19 @@ fi
 #    404，而页面读不到会显示「没有数据」—— 一个看起来完全正常的空状态。
 #
 # 所以同样处理：线上那份赢。密文信封本身是合法 JSON，所以校验方式和 paperr 一样。
-CHEALTH_LIVE="http://apps.cevtuogrnd.com/CEVTUO-Z/data/chealth/index.json"
+# ⚠️⚠️ 同样必须是 `https://`，理由见上面 paperr 那段。
+#
+# ⚠️⚠️⚠️ 而且这一段**取不到就必须中止发布**，不能只是警告。
+#
+# 原来写的是「警告一句然后继续」，2026-09-28 实测后果：站点的 http 地址被
+# Enforce HTTPS 301 掉之后守卫失效，于是**这一版真的把 lines 里的
+# `data/chealth/index.json` 从 gh-pages 上删掉了** —— 页面读不到会显示
+# 「没有数据」，一个看起来完全正常的空状态，而数据其实好端端躺在阿里云上。
+#
+# paperr 那段可以退回本地副本（最坏是旧数据）；这一段退回不了，因为
+# **Mac 上根本没有 `data/chealth/` 目录**。所以「拿不到线上的」等于
+# 「这次发布会删掉它」——那是不可接受的副作用，宁可不发布。
+CHEALTH_LIVE="https://apps.cevtuogrnd.com/CEVTUO-Z/data/chealth/index.json"
 mkdir -p "$STAGE/data/chealth"
 if curl -fsS --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/chealth/index.json.tmp','utf8'))" 2>/dev/null; then
@@ -121,7 +137,13 @@ if curl -fsS --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.j
   echo "  ▸ 保留线上已发布的 chealth/index.json（服务器拥有它，本脚本不覆盖也不删除）"
 else
   rm -f "$STAGE/data/chealth/index.json.tmp"
-  echo "  ⚠️ 取不到线上 chealth/index.json —— 这一版会把它从线上删掉，手机上推一次即可恢复。" >&2
+  {
+    echo "✗ 取不到线上 chealth/index.json，**中止发布**。"
+    echo "  继续下去会把这份健康索引从 gh-pages 上删掉，而 Mac 上没有它的副本。"
+    echo "  先确认:$CHEALTH_LIVE 能取到且是合法 JSON 信封。"
+    echo "  （服务器上的权威副本:/opt/cevtuo-ingest/data/chealth/index.json）"
+  } >&2
+  exit 1
 fi
 
 # ⚠️ The device's raw export is server-only, per the ingest README. `cp -R data`

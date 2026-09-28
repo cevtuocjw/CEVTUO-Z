@@ -36,18 +36,24 @@ import type {
 /**
  * Deployed origin — the mini-program's request base and the last-resort fallback.
  *
- * ⚠️ `http://`, not `https://`, and that is not an oversight. `apps.cevtuogrnd.com`
- * is a GitHub Pages custom domain for which no certificate could be issued: the
- * Pages settings read "Enforce HTTPS — Unavailable for your site because your
- * domain is not properly configured". The HTTPS URL does not serve this site at
- * all, so a fallback pointing at it fails for every caller that reaches it.
+ * ⚠️ `https://` as of 2026-09-28. It was `http://` before that, on the stated
+ * grounds that `apps.cevtuogrnd.com` had no certificate and "the HTTPS URL does
+ * not serve this site at all".
+ *
+ * **That premise is gone.** The certificate was issued that day — the blocker
+ * turned out to be a CNAME file in this repo's gh-pages competing with the user
+ * site for the same domain, not the domain being misconfigured — and the site
+ * now 301s every http request to https. Left at `http://`, this fallback would
+ * send a request to a plain-HTTP URL from a page that is itself https, which the
+ * browser kills as mixed content before it reaches the network.
  *
  * ⚠️ `z.cevtuogrnd.com` was the name in the project docs. It has no DNS record.
  *
- * ⚠️ WeChat requires HTTPS request domains, so the mini-program still has no
- * valid origin — but pointing the fallback at a URL that 404s helped nobody.
+ * ⚠️ The mini-program still cannot use this: WeChat requires an ICP-filed
+ * request domain, and Pages never is. But https is a precondition for that
+ * anyway, so this is the value to have in place rather than `http://`.
  */
-const PROD_ORIGIN = 'http://apps.cevtuogrnd.com';
+const PROD_ORIGIN = 'https://apps.cevtuogrnd.com';
 
 /**
  * Data origin.
