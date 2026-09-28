@@ -89,9 +89,27 @@ jobs:
             exit 0
           fi
 
+          # ⚠️⚠️ 标题里的品牌名必须从**实际改动的路径**推出来，不能写死。
+          #
+          # 这里原本是 `"sync: coof data …"`。它看起来像「标签写死了」，
+          # 其实更麻烦：`sync.ts` 里 `RUN_CNSR = SOURCE === 'coof'` ——
+          # 跑一次 `--source coof` **会连 CNSR 一起同步**（这是刻意的：
+          # 四个源在一个 run 里齐发会撞 Notion 的 429）。所以那些提交里
+          # **真的有两件事**，而标题只报了一件。
+          # 2026-09-28 排查时我因此追错了方向：一条 `sync: coof data` 的提交，
+          # `--stat` 里改的**全是 `data/cnsr/*`**。
+          #
+          # ⚠️ 改成 `$SOURCE` 解决不了 —— 那照样是 `coof`。只能从改动本身推。
+          #
+          # ⚠️ `data/sync-meta.json` 不会匹配下面的 sed（`data/` 之后没有第二个
+          # 斜杠），这正是想要的：它是元数据，不是品牌。只在它变了时兜底成 `data`。
+          BRANDS=$(git diff --cached --name-only \
+            | sed -n 's#^data/\([^/]*\)/.*#\1#p' | sort -u | paste -sd+ -)
+          [ -n "$BRANDS" ] || BRANDS="data"
+
           # 统计这次真正动了什么，便于在 Actions 摘要里看清
           SUMMARY=$(git diff --cached --stat | tail -1)
-          git commit -m "sync: coof data $(date -u +%Y-%m-%dT%H:%MZ)
+          git commit -m "sync: $BRANDS data $(date -u +%Y-%m-%dT%H:%MZ)
 
           $SUMMARY
 
