@@ -19,6 +19,9 @@ import { readFileSync } from 'node:fs';
 
 const BASE = (process.argv[2] ?? 'http://127.0.0.1:8125/z').replace(/\/$/, '');
 const OUT = process.argv[3] ?? '/tmp/chealth';
+// ⚠️ 宽度可传：桌面端（≥900px）这一页有专门的布局，只看 390px 是看不到的。
+const W = Number(process.argv[4] ?? 390);
+const H = Number(process.argv[5] ?? 844);
 const PASS = (() => {
   try {
     const key = 'CEVTUO_HEALTH_PASSPHRASE=';
@@ -31,7 +34,7 @@ const PASS = (() => {
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 const ctx = await browser.newContext({
-  viewport: { width: 390, height: 844 },
+  viewport: { width: W, height: H },
   deviceScaleFactor: 2,
   colorScheme: 'dark',
   isMobile: true,
