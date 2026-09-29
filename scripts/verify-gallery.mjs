@@ -309,24 +309,35 @@ try {
    *      或者「写了 keyframes 但名字对不上」都会**静默通过** ——
    *      而这两种坏法在截图上一模一样（都是一张静止的玻璃）。
    */
-  const glassA = await page.evaluate(
-    () => getComputedStyle(document.querySelector('.cevtuo-glass')).transform
-  );
+  // ⚠️⚠️ 元素不在时要**报失败，不能崩**。
+  //    第一版这里直接 `getComputedStyle(document.querySelector('.cevtuo-glass'))`，
+  //    而线上当时还是旧构建（没有玻璃层）⇒ 整个脚本抛异常退出，
+  //    **后面所有断言一条都没跑**，最后一行输出是
+  //    `parameter 1 is not of type 'Element'`。
+  //    ⇒ 崩溃会把「一条断言失败」伪装成「验证器坏了」，而这两件事的处理方式
+  //      完全不同：前者去看产品代码，后者去看测试代码。**别让它们长得一样。**
+  const readGlass = () =>
+    page.evaluate(() => {
+      const el = document.querySelector('.cevtuo-glass');
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return { transform: cs.transform, anim: cs.animationName, blend: cs.mixBlendMode };
+    });
+  const glassA = await readGlass();
   await page.waitForTimeout(1800);
-  const glassB = await page.evaluate(
-    () => getComputedStyle(document.querySelector('.cevtuo-glass')).transform
-  );
-  check('L 玻璃层在流动（transform 随时间变）', glassA !== glassB, `${glassA.slice(0, 26)} → ${glassB.slice(0, 26)}`);
+  const glassB = await readGlass();
+  check('L 玻璃层存在', !!glassA, glassA ? '' : '页面上没有 .cevtuo-glass（线上还是旧构建？）');
   check(
-    'L 玻璃层有动画名（不是静态的）',
-    (await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).animationName)) !== 'none',
-    await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).animationName)
+    'L 玻璃层在流动（transform 随时间变）',
+    !!glassA && !!glassB && glassA.transform !== glassB.transform,
+    glassA ? `${glassA.transform.slice(0, 26)} → ${glassB.transform.slice(0, 26)}` : ''
   );
+  check('L 玻璃层有动画名（不是静态的）', !!glassA && glassA.anim !== 'none', glassA ? glassA.anim : '');
   // ⚠️ 玻璃是**内容**（照片得透过来），不是装饰 —— 它必须一直在，和画框一样。
   check(
     'L 玻璃层的混合模式是 soft-light（调照片，不是盖白）',
-    (await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).mixBlendMode)) === 'soft-light',
-    ''
+    !!glassA && glassA.blend === 'soft-light',
+    glassA ? glassA.blend : ''
   );
 
   // ── I：reduced-motion ───────────────────────────────────────
@@ -361,13 +372,15 @@ try {
   // ⚠️ 流动**停**、玻璃**在** —— 要关的是「动」，不是「看得见的东西」。
   const rmGlass = await rm.evaluate(() => {
     const el = document.querySelector('.cevtuo-glass');
+    // ⚠️ 同上：不在就返回 null，让断言去红，别在这里抛。
+    if (!el) return null;
     const cs = getComputedStyle(el);
     return { anim: cs.animationName, blend: cs.mixBlendMode };
   });
   check(
     'I reduced-motion：玻璃的流动停掉，但玻璃层还在',
-    rmGlass.anim === 'none' && rmGlass.blend === 'soft-light',
-    `animation-name=${rmGlass.anim} mix-blend=${rmGlass.blend}`
+    !!rmGlass && rmGlass.anim === 'none' && rmGlass.blend === 'soft-light',
+    rmGlass ? `animation-name=${rmGlass.anim} mix-blend=${rmGlass.blend}` : '(没有玻璃层)'
   );
   await rmCtx.close();
 } finally {
