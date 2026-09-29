@@ -48,14 +48,35 @@ function check(name, ok, detail) {
   console.log(`${ok ? '✓' : '✗'} ${name}${detail ? `  ${detail}` : ''}`);
 }
 
-/** 等到画框挂上、且里面那张图有尺寸为止。 */
-async function waitFrame(page) {
+/**
+ * 等到画框挂上、里面那张图有尺寸、**而且是这一页应该有的那张**。
+ *
+ * ⚠️⚠️ 最后那个条件不是多余的，它是这个验证器**唯一栽过的那次**：
+ *
+ *   一开始只等「有一枚画框 + 里面的图加载完了」。本地全绿，线上 4 条 D 失败
+ *   （内页画框跑到右边）。**线上其实是对的** —— 探针读出来 coof 是 `gal--left`。
+ *
+ *   原因是 Taro 换页时**旧页面的那枚画框还挂在 DOM 上**，于是上面两个条件
+ *   在旧元素上立刻满足，读到的就是上一页的 `gal--right`。
+ *   而同一时刻背景已经是对的 —— 因为 `applyBackground` 挂在 `hashchange` 上，
+ *   是**事件发生时**才算的，不依赖 React 重渲染。
+ *   ⇒ **同一个页面上，一个查得早、一个查得晚，于是「背景换了画框没换」。**
+ *     这条症状会把人引向「代码有 bug」，而代码是对的。
+ *
+ * ⚠️ 所以等待条件必须包含「等到的是**新的那一个**」，加时间只是碰运气 ——
+ *    而碰运气的断言在慢机器上会随机变红，那比没有断言更糟。
+ */
+async function waitFrame(page, file) {
   await page.waitForSelector('.gal', { timeout: 15000 });
   await page.waitForFunction(
-    () => {
-      const img = document.querySelector('.gal__photo');
-      return img && img.complete && img.naturalWidth > 0;
+    (want) => {
+      const frames = document.querySelectorAll('.gal');
+      const el = frames[frames.length - 1];
+      const img = el && el.querySelector('.gal__photo');
+      const src = img && (img.getAttribute('src') || '');
+      return !!img && img.complete && img.naturalWidth > 0 && src.includes(want);
     },
+    `/gallery/${file}.jpg`,
     { timeout: 15000 }
   );
 }
@@ -85,23 +106,29 @@ try {
   // ── A–D：逐页检查 ───────────────────────────────────────────
   for (const [key, file] of Object.entries(EXPECT)) {
     await page.goto(`${BASE}/#/pages/${key}/index`, { waitUntil: 'domcontentloaded' });
-    await waitFrame(page);
+    await waitFrame(page, file);
 
-    const info = await page.evaluate(() => {
-      const frames = document.querySelectorAll('.gal');
-      const img = document.querySelector('.gal__photo');
+    const info = await page.evaluate((want) => {
+      const frames = [...document.querySelectorAll('.gal')];
+      // ⚠️ 取**装着这一页那张图**的那一枚，不是 `[0]` —— 换页时旧的那枚
+      //    可能还在 DOM 里（见 `waitFrame` 上面那段）。
+      const el =
+        frames.find((f) => {
+          const i = f.querySelector('.gal__photo');
+          return i && (i.getAttribute('src') || '').includes(want);
+        }) || frames[0];
+      const img = el ? el.querySelector('.gal__photo') : null;
       const wall = document.querySelector('.cevtuo-wallpaper');
       const bg = wall ? getComputedStyle(wall).backgroundImage : '';
       return {
         count: frames.length,
-        cls: frames[0] ? frames[0].className : '',
+        cls: el ? el.className : '',
         src: img ? img.currentSrc || img.src : '',
         natural: img ? img.naturalWidth : 0,
         draggable: img ? img.draggable : null,
         bg,
-        sides: getComputedStyle(frames[0]).left !== 'auto' ? 'left' : 'right',
       };
-    });
+    }, `/gallery/${file}.jpg`);
 
     check(`A ${key} 有且只有一枚画框`, info.count === 1, `count=${info.count} cls="${info.cls}"`);
     check(`B ${key} 画框里的图真的渲染了`, info.natural > 0, `naturalWidth=${info.natural}`);
@@ -121,7 +148,7 @@ try {
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrame(page);
+  await waitFrame(page, EXPECT.home);
   // ⚠️ 等过渡走完再读，否则读到的是上一段过渡的中间值。
   await page.waitForTimeout(700);
 
