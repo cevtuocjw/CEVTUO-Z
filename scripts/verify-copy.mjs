@@ -126,14 +126,90 @@ for (const [name, route] of ROUTES) {
       return found;
     }, SMELLS.map((s) => ({ re: s.re.source, why: s.why })));
 
+    /**
+     * ⚠️⚠️ 弹窗**不在**上面那次扫描的范围里，必须单独走一遍。
+     *
+     *    `Sheet` 在 `open === false` 时 `return null` —— **没点开的弹窗，
+     *    它的文字根本不在 DOM 里**，`document.body` 的 TreeWalker 自然走不到。
+     *    上面那圈「逐屏滚一遍」也救不了：滚的是面板栈，弹窗不在栈里。
+     *
+     *    ⚠️ 2026-09-29 的实例：达标弹窗里写了
+     *      `分母是**这个月有记录的天数**`，四个星号原样渲染给读者看，
+     *      而**这条断言当时是绿的**。那正是 `73b8a6a` 修过的那一类错，
+     *      只是这次它落在了新加的弹窗里 —— 覆盖不到的地方，错误会重新长出来。
+     *
+     *    ⚠️ 判据仍然是「**页面自己渲染出来的文字**」，不是源码里 grep 一遍：
+     *      源码里 `**` 到处都是（注释、正则、模板），只有渲染出来才算泄漏。
+     */
+    const sheetHits = [];
+    const entries = await page.evaluate(() => document.querySelectorAll('.igrid__cell').length);
+    for (let i = 0; i < entries; i += 1) {
+      const opened = await page.evaluate((idx) => {
+        const c = [...document.querySelectorAll('.igrid__cell')][idx];
+        if (!c) return false;
+        c.click();
+        return true;
+      }, i);
+      if (!opened) continue;
+      await page.waitForTimeout(420);
+      const r = await page.evaluate((smells) => {
+        const body = document.querySelector('.sheet__body');
+        const title = (document.querySelector('.sheet__title') || {}).textContent || '';
+        if (!body) return { found: [], title };
+        const found = [];
+        const walk = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+        let n;
+        while ((n = walk.nextNode())) {
+          const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+          if (!t) continue;
+          for (const s of smells) {
+            if (new RegExp(s.re).test(t)) {
+              found.push({ why: s.why, text: t.slice(0, 100) });
+              break;
+            }
+          }
+        }
+        return { found, title };
+      }, SMELLS.map((s) => ({ re: s.re.source, why: s.why })));
+      for (const f of r.found) sheetHits.push({ ...f, text: `［弹窗「${r.title}」］${f.text}` });
+      // 点蒙层关掉 —— 走读者真会走的路径
+      await page.evaluate(() => {
+        const el = document.querySelector('.sheet');
+        if (el) el.click();
+      });
+      await page.waitForTimeout(250);
+    }
+
+    /**
+     * ⚠️⚠️ 防「**空扫描**」。
+     *
+     *    本地跑的时候 `bun run app:build:h5` 会**清掉 `dist/data` 软链**
+     *    （项目里早有记录）。没挂上的话，CHEALTH 页取不到密文索引 ⇒
+     *    退回「需要口令」那一屏 ⇒ **六个弹窗一个都不存在** ⇒
+     *    `sheetHits` 永远是空的 ⇒ **断言照样是绿的**。
+     *
+     *    ⚠️ 这个坑**当场就咬了一次**：我做完负向对照去跑，它报「1 屏，干净」，
+     *      看起来像「bug 修好了」，其实是根本没能解锁 ——
+     *      一条**因为没跑到而通过**的断言，比没有断言更危险。
+     */
+    if (name === 'chealth' && PASS) {
+      check(
+        'chealth：真的解锁了（弹窗扫描不是空跑）',
+        entries === 6,
+        `${panels} 屏 / ${entries} 个图标入口` +
+          (entries !== 6 ? '  ← 页面退回了「需要口令」？先看 dist/data 挂上没有' : ''),
+      );
+    }
+
+    const all = [...hits, ...sheetHits];
     check(
       `${name}：没有内部表示泄漏到界面`,
-      hits.length === 0 && errs.length === 0,
-      hits.length
-        ? `${hits.length} 处，例如「${hits[0].text}」← ${hits[0].why}`
+      all.length === 0 && errs.length === 0,
+      all.length
+        ? `${all.length} 处，例如「${all[0].text}」← ${all[0].why}`
         : errs.length
           ? `页面报错 ${errs[0]}`
-          : `${panels} 屏，干净`,
+          : `${panels} 屏${entries ? ` + ${entries} 个弹窗` : ''}，干净`,
     );
   } catch (e) {
     check(`${name}：能打开`, false, String(e).slice(0, 120));

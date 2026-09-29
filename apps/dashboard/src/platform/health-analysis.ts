@@ -21,7 +21,31 @@ export interface HrZone {
   /** 区间下界（含），相对于基准最高心率的百分比。 */
   fromPct: number;
   minutes: number;
+  /** 这个区间在曲线上的颜色。 */
+  color: string;
 }
+
+/**
+ * 心率区间的边界与配色 —— **全程序只定义这一次**。
+ *
+ * ⚠️⚠️ 两处要用它：`hrZones` 拿它算每个区间待了多少分钟，
+ *    心率曲线拿它给线上色（三星运动详情那屏的心率线就是**按区间变色**的：
+ *    灰→蓝→绿→黄→红）。
+ *
+ * ⚠️ 各写一份必然漂移 —— 这个项目已经因为「同一件事两处定义」吃过两次亏
+ *    （字数统计算出 127 和 109；柱状图色值曾有两份定义）。
+ *    所以这里导出的是**边界**，两处都从它派生。
+ *
+ * ⚠️ 颜色是照三星截图取的语感：低区间冷、高区间暖，**不要用色相环上相邻的
+ *    颜色**——相邻色在一条细线上分不出来。
+ */
+export const HR_BANDS: { key: string; label: string; fromPct: number; color: string }[] = [
+  { key: 'z1', label: '恢复', fromPct: 0, color: '#8b93a7' },
+  { key: 'z2', label: '燃脂', fromPct: 0.6, color: '#4aa3ff' },
+  { key: 'z3', label: '有氧', fromPct: 0.7, color: '#3ecf8e' },
+  { key: 'z4', label: '阈值', fromPct: 0.8, color: '#ffb020' },
+  { key: 'z5', label: '最大', fromPct: 0.9, color: '#ff5a72' },
+];
 
 /**
  * ⚠️ 心率区间的百分比是相对**基准最高心率**算的，而基准从哪来必须说清楚。
@@ -34,13 +58,7 @@ export interface HrZone {
  *    页面必须把基准值写出来，否则读者会以为这是标准区间。
  */
 export function hrZones(sessions: ChealthSession[], refMax: number): HrZone[] {
-  const bands: { key: string; label: string; fromPct: number }[] = [
-    { key: 'z1', label: '恢复', fromPct: 0 },
-    { key: 'z2', label: '燃脂', fromPct: 0.6 },
-    { key: 'z3', label: '有氧', fromPct: 0.7 },
-    { key: 'z4', label: '阈值', fromPct: 0.8 },
-    { key: 'z5', label: '最大', fromPct: 0.9 },
-  ];
+  const bands = HR_BANDS;
   const out = bands.map((b) => ({ ...b, minutes: 0 }));
   if (refMax <= 0) return out;
 

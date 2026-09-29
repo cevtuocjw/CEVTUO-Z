@@ -287,10 +287,17 @@ $chart-h: 108px;
 //    ⚠️ 判断方法（不要再靠猜）：在浏览器里取
 //      `getComputedStyle(document.querySelector('.chc__rows')).getPropertyValue('--m-steps')`
 //      —— 返回值是空字符串就是没挂上。类型检查、构建、截图**都不会告诉你**。
+//    ⚠️⚠️ 2026-09-29 第四次踩这个坑：达标日历上的圆点全是**白的**。
+//      日历在**弹窗里**，而弹窗里的卡片带的是 `.chc__card` ——
+//      这个类不在下面这个列表里，于是行内的 `--m: var(--m-steps)` 指向一个
+//      空的 `--m-steps`，`var(--m, currentColor)` 退回 `currentColor`（白）。
+//      ⚠️ 而**断言当时是绿的**：我只查了圆点的 class 名（`--hit` / `--some`），
+//        没查它的**颜色**。加作用域的时候要顺手加一条查颜色的断言。
 .chc,
 .chc__mosaic,
 .chc__rows,
 .chc__zones,
+.chc__card,
 // ⚠️ 2026-09-28 晚加的：主屏图标格也要按指标上色（心率红、步数绿…）。
 //    不在这里列出来的话，`IconGrid` 行内的 `--m: var(--m-heart)` 指向一个
 //    **空的** `--m-heart`，六个圆底全部退成同一个灰 ——
@@ -1012,4 +1019,160 @@ $chart-h: 108px;
 //        （报 `1 种：rgb(107, 114, 128)` —— 正是那六处兜底灰）
 //      · `.chc__mlabel { color: inherit }`         → 「马赛克的标签…」FAIL（报 2 种）
 //    ⚠️ 三条都是「页面看起来完全正常」的那一类，所以只能靠量出来的数抓。
+
+// ── 心率曲线的区间图例 ──────────────────────────────────────
+// ⚠️ 没有它，线上那五种颜色只是「花」—— 读者不知道黄比绿更吃力。
+.chc__bands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 7px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.chc__band {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chc__band-dot {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+// ── 达标日历 ────────────────────────────────────────────────
+//
+// ⚠️ 三种状态各自**形状**不同，不是只差颜色：
+//    达标 = 实心圆；有记录没达标 = 空心圆 + 底部按进度的填充；
+//    没记录 = 一圈很淡的描边。
+//    ⚠️ 只靠深浅区分的话，色弱读者和暗屏下都分不出「没达标」和「没记录」，
+//      而这两件事的差别是「他那天没走」和「我们那天不知道」。
+.chc__cal {
+  width: 100%;
+}
+
+.chc__cal-head,
+.chc__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.chc__cal-head {
+  margin-bottom: 5px;
+}
+
+.chc__cal-w {
+  font-size: 10.5px;
+  text-align: center;
+  opacity: 0.5;
+}
+
+.chc__cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.chc__cal-dot {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 26px;
+  // ⚠️ 正圆靠 `aspect-ratio`，不是写死高度 —— 格宽随屏宽变，写死高度会变椭圆。
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+
+  // 有记录但没达标：底部按进度填充。**进度是量的**，不是「一档灰」——
+  // 「走了 7,800 步」和「走了 800 步」都没达标，但那是两件很不一样的事。
+  &--some::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(var(--p, 0) * 1%);
+    background: color-mix(in srgb, var(--m, currentColor) 55%, transparent);
+  }
+
+  &--hit {
+    background: var(--m, currentColor);
+    border-color: transparent;
+  }
+}
+
+.chc__cal-d {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── 运动页的天/周/月 分段控件（三星那个胶囊）──────────────────
+.chc__seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.chc__seg-i {
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 160ms ease-out, color 160ms ease-out;
+
+  // ⚠️ 选中态靠**实底 + 提亮**，不是只换颜色 —— 三星那个胶囊就是实底的。
+  &--on {
+    background: color-mix(in srgb, currentColor 16%, transparent);
+    color: var(--text-primary);
+    font-weight: 650;
+  }
+}
+
+// ── 运动页的大字总时长（三星：3:44:40）────────────────────────
+.chc__big {
+  display: block;
+  font-family: var(--font-display, inherit);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1.4px;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── 按天分组的日期头 ────────────────────────────────────────
+// ⚠️ 左边日期、右边那天的合计 —— 和三星运动列表一模一样。
+.chc__gh {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.chc__gh-v {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 

@@ -236,6 +236,15 @@ export function SeriesChart({
   name,
   unit = '',
   peakNote = '',
+  // ⚠️⚠️ 这个 `bands` 单独说一句：第一版只加进了**类型**，忘了加进**解构**。
+  //    类型检查是报错的（`Cannot find name 'bands'`），但 **webpack 照样构建成功**
+  //    —— 它只剥类型、不做检查。于是跑的是一个引用未声明标识符的组件：
+  //    点开运动弹窗直接 ReferenceError，曲线一条都画不出来。
+  //
+  //    ⚠️ 同一个错误这一轮我犯了**两次**（`BarRow` 的 `target` 也是）。
+  //      ⇒ 加可选 prop 要改**两处**：类型签名和解构列表。
+  //      ⇒ 而且「构建成功」在这里什么都证明不了 —— 是验证器抓出来的。
+  bands,
 }: {
   series: [number, number][];
   /** 曲线名，用于「数据不足」那句 —— 四个指标共用这一个组件。 */
@@ -244,6 +253,13 @@ export function SeriesChart({
   unit?: string;
   /** 说明这条线是**曲线**的极值、不等于上面那个原始峰值。 */
   peakNote?: string;
+  /**
+   * 按值分段的配色。给了就把线画成一段一段的彩色线，不给就是单色。
+   *
+   * ⚠️ 只有心率那张用 —— 功率/踏频/速度没有「区间」这个概念，
+   *    给它们套一套颜色等于编了一个不存在的分级。
+   */
+  bands?: { from: number; color: string; label: string }[];
 }) {
   if (!series || series.length < 2) return <Text className="chc__axis">{name}数据不足</Text>;
 
@@ -271,9 +287,61 @@ export function SeriesChart({
       {/* ⚠️ `style` 是对象，不是字符串 —— 原生 <svg> 上写字符串是 React #62，整页白屏。 */}
       <svg viewBox={`0 0 ${W} ${H}`} className="chc__spark" preserveAspectRatio="none">
         <path d={area} className="chc__area" />
-        <path d={d} className="chc__line" />
+        {bands?.length ? (
+          // ⚠️ 逐段画 `<line>`，不是把一条 path 拆开 —— 一段一色没法用单条 path 表达
+          //    （`stroke` 是整条路径的属性）。≤120 个点，最多 119 段，开销可以忽略。
+          //
+          // ⚠️ 取**两端的中点值**判定颜色，不是两端各自判 —— 各判会得到一条
+          //    「半段灰半段红」的线，在图上看起来像数据抖动，其实是判定方式造成的。
+          pts.slice(0, -1).map((p, i) => {
+            const nx = pts[i + 1];
+            if (!nx) return null;
+            const mid = (p[1] + nx[1]) / 2;
+            let c = bands[0]?.color ?? '';
+            for (const b of bands) if (mid >= b.from) c = b.color;
+            return (
+              <line
+                key={`${p[0]}-${i}`}
+                x1={x(p[0])}
+                y1={y(p[1])}
+                x2={x(nx[0])}
+                y2={y(nx[1])}
+                stroke={c}
+                strokeWidth={2}
+                strokeLinecap="round"
+              />
+            );
+          })
+        ) : (
+          <path d={d} className="chc__line" />
+        )}
         <circle cx={x(peak[0])} cy={y(peak[1])} r={2.5} className="chc__peak" />
       </svg>
+      {/* 区间图例 —— 没有它，线上那五种颜色只是「花」，读者不知道黄比绿更吃力。 */}
+      {bands?.length ? (
+        <View className="chc__bands">
+          {bands.map((b) => (
+            <View className="chc__band" key={b.label}>
+              <View className="chc__band-dot" style={{ background: b.color }} />
+              <Text>{b.label}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {/*
+        ⚠️⚠️ 逐段上色 —— 三星运动详情那屏的心率线是**按区间变色**的
+        （灰 → 蓝 → 绿 → 黄 → 红），一眼就能看出哪几分钟进了阈值区。
+        一根单色的线做不到这件事：它只能告诉你「心率是多少」，
+        说不出「这一段有多吃力」，而后者才是训练时真正要看的。
+
+        ⚠️ 用 `bands` 而不是在组件里写死区间表 —— 边界值只有
+        `health-analysis.ts` 的 `HR_BANDS` 一份定义（`hrZones` 也用那一份）。
+      */}
+      {/*
+        ⚠️ 四张图共用 SeriesChart；只有心率那张传 `bands`，
+        功率/踏频/速度仍然是单色 —— 那三个没有「区间」的概念，
+        给它们硬套一套颜色就是在编一个不存在的分级。
+      */}
       {/*
         ⚠️⚠️ 「曲线最低/最高」**不是**卡片上那个「心率 143 均 / 182 峰」。
         曲线是**逐分钟平均**之后的序列，聚合会削峰 —— 实测这条骑行原始峰值
@@ -301,12 +369,109 @@ export function SeriesChart({
  *    四份实现必然漂移（这个项目因为「同一件事两处实现」吃过亏：字数统计算法
  *    一篇文章数出 127 和 109）。
  */
-export function HeartChart({ series }: { series: [number, number][] }) {
+export function HeartChart({
+  series,
+  refMax,
+  bands,
+}: {
+  series: [number, number][];
+  /** 基准最高心率 —— 区间是按它的百分比切的。 */
+  refMax?: number;
+  /** `HR_BANDS`（`platform/health-analysis.ts`）—— 边界只有那一份定义。 */
+  bands?: { fromPct: number; color: string; label: string }[];
+}) {
+  // ⚠️ 百分比 → 绝对 bpm 的换算**在这里做一次**。`SeriesChart` 只认绝对值
+  //    （它对功率/踏频一视同仁），把心率的概念塞进去就是让一个通用组件
+  //    知道某一种数据的单位。
+  const abs =
+    refMax && refMax > 0 && bands?.length
+      ? bands.map((b) => ({ from: b.fromPct * refMax, color: b.color, label: b.label }))
+      : undefined;
+  return <SeriesChart series={series} name="心率曲线" peakNote="（原始峰值见上）" bands={abs} />;
+}
+
+/**
+ * 达标日历 —— 一个月里每天一个小格。
+ *
+ * ⚠️ 读者给的三星截图里，「每日活动量」那屏的顶上一张就是**按天的达标格**
+ *    （三星画的是心形环），旁边写着「目标已实现 27/29 天」。
+ *    这是三星最有辨识度的一屏，而它要的数据我们**全都有**：
+ *    每天的步数 + 一个目标值。
+ *
+ * ⚠️⚠️ **三种状态必须一眼分得开**：达标（实心）、有数据但没达标（淡）、
+ *    没有记录（只有一圈描边）。
+ *
+ *    把「没记录」画成「没达标」就是**替读者编了一个事实** ——
+ *    那一天他可能走了两万步，只是手机没同步。这个项目已经栽过好几次
+ *    （占位符冒充真数据、缺数据画成 0），所以「不知道」必须有它自己的样子。
+ *
+ * ⚠️ 月份从 `to`（**数据自己的最后一天**）来，不是从浏览器的今天来 ——
+ *    和这一页别的窗口一致。数据落后三天时，按浏览器算会得到一张近乎全空的月历。
+ */
+export function GoalCalendar({
+  days,
+  month,
+  goal,
+}: {
+  days: ChealthDay[];
+  /** `YYYY-MM`。 */
+  month: string;
+  goal: number;
+}) {
+  const [y, m] = month.split('-').map(Number);
+  if (!y || !m) return null;
+
+  // ⚠️ 用 `Date.UTC(带参数)` 做日历算术 —— 它是对一个**给定的**年月求值，
+  //    确定且可复现。这一页禁止的是「用 `new Date()` 无参取今天」
+  //    （那会随读者所在的时区和时刻变），不是禁止一切日期计算。
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const lead = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+  const byDate = new Map(days.map((d) => [d.date.slice(0, 10), d]));
+
+  const cells: (number | null)[] = [
+    ...Array.from({ length: lead }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
   return (
-    <SeriesChart
-      series={series}
-      name="心率曲线"
-      peakNote="（原始峰值见上）"
-    />
+    <View className="chc__cal">
+      <View className="chc__cal-head">
+        {['日', '一', '二', '三', '四', '五', '六'].map((w) => (
+          <Text className="chc__cal-w" key={w}>{w}</Text>
+        ))}
+      </View>
+      <View className="chc__cal-grid">
+        {cells.map((d, i) => {
+          if (d === null) return <View className="chc__cal-cell" key={`blank-${i}`} />;
+          const key = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const steps = byDate.get(key)?.steps;
+          const has = typeof steps === 'number';
+          const hit = has && (steps as number) >= goal;
+          return (
+            <View className="chc__cal-cell" key={key}>
+              {/*
+                ⚠️ 有记录但没达标时，把**进度**画出来（`--p` 是填充比例），
+                不是简单的一档灰 —— 「走了 7,800 步」和「走了 800 步」
+                都是「没达标」，但它们是两件很不一样的事。
+                ⚠️ JSX 的**属性列表里不能写 `//` 注释**（会编译不过），
+                注释要放在元素外面，或者写成 JSX 的注释块。
+                ⚠️⚠️ 而且**注释里不能出现 `星号斜杠`** —— 那会提前把注释关掉，
+                剩下的半句变成裸文本，报的是「Unexpected token」，
+                和真正的原因隔了好几行。我这一轮为此多跑了一轮 typecheck。
+              */}
+              <View
+                className={`chc__cal-dot${hit ? ' chc__cal-dot--hit' : has ? ' chc__cal-dot--some' : ''}`}
+                style={
+                  has && !hit
+                    ? ({ ['--p']: String(Math.min(100, Math.round(((steps as number) / goal) * 100))) } as CSSProperties)
+                    : undefined
+                }
+              />
+              <Text className="chc__cal-d">{d}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
   );
 }

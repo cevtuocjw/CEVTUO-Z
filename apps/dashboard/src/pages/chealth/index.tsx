@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Input, Text, View } from '@tarojs/components';
 
-import { BarRow, HeartChart, SeriesChart, Spark } from '../../components/ChealthCharts';
+import { BarRow, GoalCalendar, HeartChart, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
 import {
+  HR_BANDS,
   hrZones,
   personalBests,
   powerStats,
@@ -53,6 +54,47 @@ const STEP_GOAL = 8000;
 function hm(hours: number): string {
   const total = Math.round(hours * 60);
   return `${Math.floor(total / 60)}h${String(total % 60).padStart(2, '0')}m`;
+}
+
+/**
+ * 分钟 → 「3:44:40」。
+ *
+ * ⚠️ 三星运动页那个大字总时长就是这个格式，而它**不是**随便挑的：
+ *    同一个数写成「224 分钟」要多做一次心算，写成「3.7 小时」会把秒抹掉，
+ *    而运动时长恰恰是少数几个「秒有意义」的指标。
+ */
+function hms(minutes: number): string {
+  const s = Math.round(minutes * 60);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${Math.floor(s / 3600)}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
+}
+
+/**
+ * `YYYY-MM-DD` 加减天数。
+ *
+ * ⚠️ 用 **UTC** 做算术。用本地时区的话，读者在 UTC-5 打开页面时
+ *    「最后一天往回数 7 天」会少算一天 —— 而窗口是所有统计的分母，
+ *    差一天不会报错，只会让每个汇总数都轻微不同。
+ */
+function shiftDate(date: string, delta: number): string {
+  const t = Date.parse(`${date}T00:00:00Z`);
+  if (!Number.isFinite(t)) return date;
+  return new Date(t + delta * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** 运动页那个分段控件的三档，以及各档往回数几天。 */
+const SPANS = [
+  { k: 'day', label: '天', days: 1 },
+  { k: 'week', label: '周', days: 7 },
+  { k: 'month', label: '月', days: 30 },
+] as const;
+type SpanKey = (typeof SPANS)[number]['k'];
+
+const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六'];
+function weekdayOf(date: string): string {
+  const t = Date.parse(`${date}T00:00:00Z`);
+  if (!Number.isFinite(t)) return '';
+  return WEEKDAY[new Date(t).getUTCDay()] ?? '';
 }
 
 /**
@@ -297,10 +339,105 @@ export default function Chealth() {
   // ⚠️ 运动类型筛选（读者 2026-09-28 点名要的：「要可以筛选器形跑步这些还是全部」）。
   //    `ALL` 是默认值；只列出**这个窗口里真的出现过**的类型，不铺一长串空分类。
   const [kind, setKind] = useState<string>('ALL');
-  const shown = useMemo(
-    () => (kind === 'ALL' ? sessions : sessions.filter((s) => s.type === kind)),
-    [sessions, kind],
+
+  /**
+   * 运动页的 天 / 周 / 月（三星那一屏顶上就是一个三段胶囊）。
+   *
+   * ⚠️ 默认**周**，不是天。三星默认天，是因为它一天常有好几场运动；
+   *    我们 31 天只有 8 场 —— 默认天的话，大多数时候点进来是一屏「没有记录」。
+   *    **默认值该按这份数据的密度挑，不是照抄别人的默认值。**
+   */
+  const [span, setSpan] = useState<SpanKey>('week');
+  const spanDef = SPANS.find((s) => s.k === span) ?? SPANS[1];
+
+  /**
+   * ⚠️ 窗口的右端是 `index.to`（**数据自己的最后一天**），不是浏览器的今天 ——
+   *    和这一页所有别的窗口一致。按浏览器算的话，数据落后三天时
+   *    「最近 7 天」里有三天是空的，看起来像运动记录丢了。
+   */
+  const dataTo = index?.to ?? '';
+  const spanFrom = dataTo ? shiftDate(dataTo, -(spanDef.days - 1)) : '';
+
+  const inSpan = useMemo(
+    () =>
+      spanFrom
+        ? sessions.filter((s) => {
+            const d = s.start.slice(0, 10);
+            return d >= spanFrom && d <= dataTo;
+          })
+        : [],
+    [sessions, spanFrom, dataTo],
   );
+
+  const shown = useMemo(
+    () => (kind === 'ALL' ? inSpan : inSpan.filter((s) => s.type === kind)),
+    [inSpan, kind],
+  );
+
+  const spanSum = useMemo(
+    () => ({
+      minutes: inSpan.reduce((a, s) => a + s.minutes, 0),
+      kcal: inSpan.reduce((a, s) => a + (s.activeCalories ?? 0), 0),
+      km: inSpan.reduce((a, s) => a + (s.distanceM ?? 0), 0) / 1000,
+    }),
+    [inSpan],
+  );
+
+  /**
+   * 每天的运动分钟数 —— 喂给「每天的运动时长」那张柱状图。
+   * ⚠️ 全天窗扫描，**不受类型筛选器影响** —— 那张图的标题写的是「全部类型」。
+   */
+  const minutesByDate = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of sessions) {
+      const d = s.start.slice(0, 10);
+      m.set(d, (m.get(d) ?? 0) + s.minutes);
+    }
+    return m;
+  }, [sessions]);
+
+  /** 窗口内的**自然日**（不是有运动的那几天）—— 柱状图的横轴，没运动的那天也在。 */
+  const spanDaysList = useMemo(
+    () => (spanFrom ? days.filter((d) => d.date.slice(0, 10) >= spanFrom && d.date.slice(0, 10) <= dataTo) : []),
+    [days, spanFrom, dataTo],
+  );
+
+  /**
+   * 按天分组 —— 三星运动列表就是这个形状：一个日期头（左边日期、
+   * 右边那天的合计），下面挂那天的几场。
+   */
+  const grouped = useMemo(() => {
+    const m = new Map<string, ChealthSession[]>();
+    for (const s of shown) {
+      const d = s.start.slice(0, 10);
+      const arr = m.get(d) ?? [];
+      arr.push(s);
+      m.set(d, arr);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [shown]);
+
+  /**
+   * 本月的达标情况 —— 读者给的三星截图里那张「目标已实现 27/29 天」。
+   *
+   * ⚠️⚠️ 分母是**有记录的天数**，不是「这个月过了几天」。
+   *    三星用的是后者，但那个数会把「手机没同步的那几天」算成「没达标」——
+   *    也就是**把「我们不知道」记成了「他没做到」**。
+   *    所以这里分成两个数说清楚：`tracked` 天有记录，其中 `hit` 天达标。
+   */
+  const monthStats = useMemo(() => {
+    const month = dataTo.slice(0, 7);
+    const md = days.filter((d) => d.date.slice(0, 7) === month);
+    const tracked = md.filter((d) => typeof d.steps === 'number');
+    return {
+      month,
+      tracked: tracked.length,
+      hit: tracked.filter((d) => (d.steps as number) >= STEP_GOAL).length,
+      steps: tracked.reduce((a, d) => a + (d.steps as number), 0),
+      km: md.reduce((a, d) => a + (d.distanceM ?? 0), 0) / 1000,
+      kcal: md.reduce((a, d) => a + (d.calories ?? 0), 0),
+    };
+  }, [days, dataTo]);
 
   /**
    * ⚠️⚠️ **一个** `sheet` 字符串，不是六个 boolean。
@@ -587,7 +724,7 @@ export default function Chealth() {
                   {
                     key: 'streak',
                     icon: 'trophy',
-                    label: '连续达标',
+                    label: '达标',
                     tone: 'steps',
                     value: streak > 0 ? `${streak} 天` : undefined,
                   },
@@ -600,7 +737,7 @@ export default function Chealth() {
             <Section
               index={1}
               title="运动"
-              lede="只显示走路以外的活动。走路照样在采集，只是按你的要求不上页面。点一条看过程曲线。"
+              lede="天 / 周 / 月 三段，和三星那一屏一样。点一条看过程曲线。"
             >
               {!index?.sessions?.length ? (
                 <View className="card chc__card">
@@ -618,6 +755,62 @@ export default function Chealth() {
                 </View>
               ) : (
                 <>
+                  {/* 天 / 周 / 月 —— 三星运动页顶上那个三段胶囊。 */}
+                  <View className="chc__seg">
+                    {SPANS.map((s) => (
+                      <View
+                        className={`chc__seg-i${span === s.k ? ' chc__seg-i--on' : ''}`}
+                        key={s.k}
+                        onClick={() => setSpan(s.k)}
+                      >
+                        {s.label}
+                      </View>
+                    ))}
+                  </View>
+
+                  {/*
+                    ⚠️ 大字总时长 + 三个小计 —— 照三星那张「3:44:40 / 10 次 /
+                    1,328 千卡」做的。它的价值在于**把一整段时间压成一个数**，
+                    而列表本身只能一场一场地读。
+                  */}
+                  <View className="card chc__card">
+                    <Text className="chc__note">最近 {spanDef.days} 天（到 {dataTo}）</Text>
+                    <Text className="chc__big">{hms(spanSum.minutes)}</Text>
+                    <View className="chc__keys">
+                      <Text className="chc__key">训练 <Text className="chc__num">{inSpan.length}</Text> 次</Text>
+                      <Text className="chc__key">
+                        消耗 <Text className="chc__num">{Math.round(spanSum.kcal).toLocaleString('en-US')}</Text> 千卡
+                      </Text>
+                      {spanSum.km > 0 ? (
+                        <Text className="chc__key">
+                          距离 <Text className="chc__num">{spanSum.km.toFixed(2)}</Text> 千米
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+
+                  {/*
+                    ⚠️ 只在周/月显示。天那一档的窗口只有一天，画出来就是一根柱子 ——
+                    一张只有一个数据点的柱状图不承载任何信息，只是占地方。
+                  */}
+                  {span !== 'day' && spanDaysList.length > 1 ? (
+                    <View className="card chc__card">
+                      <Text className="chc__card-t">每天的运动时长（全部类型）</Text>
+                      {/*
+                        ⚠️ `pick` 返回 `undefined`（那天没运动）和返回 0 是两回事：
+                        前者画成灰的「无柱」，后者是「零分钟」。这里没有运动的日子
+                        是真的没有记录，走 undefined。
+                      */}
+                      <BarRow
+                        days={spanDaysList}
+                        pick={(d) => minutesByDate.get(d.date.slice(0, 10))}
+                        today={today}
+                        unit=" 分钟"
+                        tone="dist"
+                      />
+                    </View>
+                  ) : null}
+
                   {/* 筛选器：全部 / 各类运动。只列出这个窗口里真的出现过的类型。 */}
                   <View className="chc__chips">
                     {[{ k: 'ALL', label: '全部' }, ...kinds.map((x) => ({ k: x.type, label: typeLabel(x.type) }))].map((c) => (
@@ -647,7 +840,21 @@ export default function Chealth() {
                     实测这一屏内容 2868px 而面板只有 844px，要滚 2000px 才看得到
                     第二条运动。三星健康的列表也是先给摘要、点开才给细节。
                   */}
-                  {shown.map((sess: ChealthSession) => (
+                  {grouped.map(([date, list]) => (
+                    <View key={date}>
+                      {/*
+                        ⚠️ 日期头：左边日期，右边**那天的合计** —— 三星运动列表就是
+                        这个形状。合计很重要：读者看的是「那天练了多少」，
+                        而不是「那天有哪几场」；没有合计他就得自己加。
+                      */}
+                      <View className="chc__gh">
+                        <Text>{date.slice(5)} 周{weekdayOf(date)}</Text>
+                        <Text className="chc__gh-v">
+                          {hms(list.reduce((a, s) => a + s.minutes, 0))} ·{' '}
+                          {Math.round(list.reduce((a, s) => a + (s.activeCalories ?? 0), 0))} 千卡
+                        </Text>
+                      </View>
+                      {list.map((sess: ChealthSession) => (
                     <View
                       className="card chc__card chc__sess"
                       key={sess.start}
@@ -703,6 +910,8 @@ export default function Chealth() {
                           </Text>
                         ) : null}
                       </View>
+                    </View>
+                      ))}
                     </View>
                   ))}
                 </>
@@ -1066,11 +1275,62 @@ export default function Chealth() {
             )}
           </Sheet>
 
-          <Sheet open={sheet === 'streak'} title="连续达标" onClose={closeSheet}>
+          {/*
+            ⚠️ 这一屏原来只有一句「连续 N 天」。现在补成三星那张「每日活动量」的样子：
+            一个达标日历 + 本月汇总 + 连续天数。
+            ⚠️ 三块的数据**全都有**（每天的步数 + 一个目标值），所以没有编造。
+          */}
+          <Sheet open={sheet === 'streak'} title="达标" onClose={closeSheet}>
+            <View className="card chc__card" style={{ ['--m' as string]: 'var(--m-steps)' } as CSSProperties}>
+              {/*
+                ⚠️⚠️ 分母是**有记录的天数**，不是「这个月过了几天」。
+                三星用的是后者 —— 但那个数会把「手机没同步的那几天」记成「没达标」，
+                也就是**把「我们不知道」算成「他没做到」**。
+                这个项目已经栽过好几次（缺数据画成 0、占位符冒充真数据）。
+              */}
+              <Text className="chc__card-t">
+                <Icon name="trophy" className="chc__ico" />
+                目标已实现 {monthStats.hit}/{monthStats.tracked} 天
+              </Text>
+              {/*
+                ⚠️⚠️ 这里第一版写的是 `分母是**这个月有记录的天数**` ——
+                Markdown 的粗体标记**原样渲染**，读者看到的是四个星号。
+
+                ⚠️ 这是**复发**：commit `73b8a6a` 专门修过同一件事，当时全站 5 处
+                都在这一页。所以这不是「又犯了个小错」，是**同一类错没有防住** ——
+                规矩是「别在 JSX 里写 Markdown」，而我写新文案时没想起它。
+                ⇒ 强调一律用嵌套 `<Text className="chc__em">`。
+              */}
+              <Text className="chc__note">
+                {monthStats.month} · 每天 {STEP_GOAL.toLocaleString('en-US')} 步算达标。
+                分母是<Text className="chc__em">这个月有记录的天数</Text>，不是「过了几天」——
+                没同步的那几天我们不知道他走没走，不替他算成没做到。
+              </Text>
+              <GoalCalendar days={days} month={monthStats.month} goal={STEP_GOAL} />
+              <View className="chc__keys">
+                <Text className="chc__key">
+                  本月步数 <Text className="chc__num">{monthStats.steps.toLocaleString('en-US')}</Text>
+                </Text>
+                {monthStats.km > 0 ? (
+                  <Text className="chc__key">
+                    距离 <Text className="chc__num">{monthStats.km.toFixed(1)}</Text> 千米
+                  </Text>
+                ) : null}
+                {monthStats.kcal > 0 ? (
+                  <Text className="chc__key">
+                    总消耗 <Text className="chc__num">{Math.round(monthStats.kcal).toLocaleString('en-US')}</Text> 千卡
+                  </Text>
+                ) : null}
+              </View>
+              <Text className="chc__note">
+                ⚠️ 总消耗含基础代谢（躺着也在烧），所以它比「活动消耗」大得多。
+              </Text>
+            </View>
+
             <View className="card chc__card">
               <Text className="chc__card-t">
                 <Icon name="steps" className="chc__ico" />
-                连续 {streak} 天（每天 ≥ {STEP_GOAL.toLocaleString('en-US')} 步）
+                连续 {streak} 天
               </Text>
               <Text className="chc__note">
                 ⚠️ 从最新一天往回数，
@@ -1168,7 +1428,12 @@ export default function Chealth() {
                 {openSess.hrSeries && openSess.hrSeries.length > 1 ? (
                   <View className="card chc__card">
                     <Text className="chc__card-t">心率曲线</Text>
-                    <HeartChart series={openSess.hrSeries} />
+                    {/*
+                      ⚠️ 传 `refMax` + `HR_BANDS` ⇒ 曲线**按区间变色**（三星运动详情
+                      那屏就是这样：灰→蓝→绿→黄→红）。区间边界和 `hrZones`
+                      算时长用的是同一份定义，不是抄来的第二份。
+                    */}
+                    <HeartChart series={openSess.hrSeries} refMax={refMaxHr} bands={HR_BANDS} />
                   </View>
                 ) : null}
 

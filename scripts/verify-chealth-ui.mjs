@@ -484,6 +484,139 @@ if (sessOpened === 'clicked') {
   check('点运动卡片能开出场次弹窗', false, '页面上没有 .chc__sess（最近 30 天没有运动？）');
 }
 
+// ══════════════════════════════════════════════════════════════
+// 2026-09-29 第二轮：运动页 天/周/月、达标日历、心率曲线区间着色。
+// ══════════════════════════════════════════════════════════════
+
+// ── 运动屏：三段胶囊真的在驱动窗口 ────────────────────────────
+//
+// ⚠️ 这条测的是「**切换真的换了数据**」，不是「高亮会动」。
+//    一个只改高亮、不改窗口的分段控件看起来完全正常 ——
+//    读者点了「月」，标题写着月，数字还是周的那一份。
+const barsOf = () => page.evaluate(() => document.querySelectorAll('.chc__rows .chc__bar').length);
+await page.evaluate(() => {
+  const s = document.querySelector('.stack');
+  if (s) s.scrollTop = s.clientHeight;
+});
+await page.waitForTimeout(800);
+
+const seg = await page.evaluate(() => ({
+  items: [...document.querySelectorAll('.chc__seg-i')].map((e) => e.textContent.trim()),
+  on: [...document.querySelectorAll('.chc__seg-i--on')].map((e) => e.textContent.trim()),
+  groups: document.querySelectorAll('.chc__gh').length,
+  big: (document.querySelector('.chc__big') || {}).textContent || '',
+}));
+check('运动屏有 天/周/月 三段', seg.items.join('') === '天周月', seg.items.join(' / '));
+check('有且只有一档被选中', seg.on.length === 1, `选中「${seg.on[0] ?? '无'}」`);
+check('有按天分组的日期头', seg.groups > 0, `${seg.groups} 个日期头`);
+
+const barsWeek = await barsOf();
+await page.evaluate(() => {
+  const it = [...document.querySelectorAll('.chc__seg-i')].find((e) => e.textContent.trim() === '月');
+  if (it) it.click();
+});
+await page.waitForTimeout(700);
+const afterMonth = await page.evaluate(() => ({
+  on: [...document.querySelectorAll('.chc__seg-i--on')].map((e) => e.textContent.trim())[0] ?? '',
+  big: (document.querySelector('.chc__big') || {}).textContent || '',
+}));
+const barsMonth = await barsOf();
+
+check('切到「月」高亮跟着走', afterMonth.on === '月', `选中「${afterMonth.on}」`);
+check(
+  '切档**真的换了窗口**（不是只换高亮）',
+  barsMonth > barsWeek && afterMonth.big !== '',
+  `柱状图 ${barsWeek} → ${barsMonth} 根；总时长 周=${seg.big} 月=${afterMonth.big}`,
+);
+
+// ── 达标日历：三种状态必须都在 ────────────────────────────────
+//
+// ⚠️⚠️ 这条防的是**把「没记录」画成「没达标」**。
+//    那等于替读者编了一个事实：他那天可能走了两万步，只是手机没同步。
+//    日历上如果没有「没记录」这个独立状态，两条断言里 `none` 会是 0。
+await page.evaluate(() => {
+  const s = document.querySelector('.stack');
+  if (s) s.scrollTop = 0;
+});
+await page.waitForTimeout(600);
+await page.evaluate(() => {
+  const c = [...document.querySelectorAll('.igrid__cell')][3];
+  if (c) c.click();
+});
+await page.waitForTimeout(700);
+const cal = await page.evaluate(() => {
+  const dots = [...document.querySelectorAll('.chc__cal-dot')];
+  const has = (d, k) => d.className.includes(k);
+  const hitDot = dots.find((d) => has(d, '--hit'));
+  return {
+    n: dots.length,
+    hit: dots.filter((d) => has(d, '--hit')).length,
+    some: dots.filter((d) => has(d, '--some')).length,
+    none: dots.filter((d) => !has(d, '--hit') && !has(d, '--some')).length,
+    // ⚠️⚠️ 颜色，不只是 class 名 —— 这一条是**补的**。
+    //    第一次跑的时候圆点全是白的：日历在弹窗里，卡片带的是 `.chc__card`，
+    //    而这个类不在 `ChealthCharts.scss` 那组 `--m-*` token 的作用域列表里，
+    //    于是 `var(--m, currentColor)` 退回了白色。
+    //    ⚠️ 只查 class 名的话，一条**看起来完全正常**的白日历会全绿放行 ——
+    //      这正是「幽灵类」第四次咬人的方式。
+    hitBg: hitDot ? getComputedStyle(hitDot).backgroundColor : '',
+    track: getComputedStyle(document.querySelector('.chc__cal') ?? document.body).getPropertyValue('--m-steps').trim(),
+  };
+});
+check('达标弹窗里有日历', cal.n >= 28, `${cal.n} 格`);
+check(
+  '日历里「达标 / 有进度 / 没记录」三种状态都在',
+  cal.hit > 0 && cal.some > 0 && cal.none > 0,
+  `达标 ${cal.hit} · 有进度 ${cal.some} · 没记录 ${cal.none}`,
+);
+// ⚠️ 达标那格必须是**步数的绿**（#3ecf8e = rgb(62, 207, 142)），不是白、不是灰。
+//    这条和上面那条的区别就是「幽灵类」的全部教训：class 名对了，
+//    颜色可以完全是错的，而页面看起来照样像个日历。
+check(
+  '日历上「达标」那格用的是步数的颜色（不是兜底白）',
+  cal.hitBg === 'rgb(62, 207, 142)' && cal.track === '#3ecf8e',
+  `${cal.hitBg} / --m-steps=${cal.track || '(空 —— 幽灵类又来了)'}`,
+);
+
+await page.evaluate(() => {
+  const el = document.querySelector('.sheet');
+  if (el) el.click();
+});
+await page.waitForTimeout(400);
+
+// ── 心率曲线按区间着色 ────────────────────────────────────────
+//
+// ⚠️ 这条防的是 `bands` 那条路径静默失效 —— 退回单色之后曲线**照样画得出来**，
+//    只是变成一条普通的线，看起来完全正常。
+//    ⚠️ 而第一次跑它的时候它**是红的**：`bands` 只加进了类型、没加进解构，
+//      运行时报 `Cannot find name` 的等价物（引用未声明的标识符），
+//      弹窗直接炸 —— **而 webpack 构建是全绿的**。
+await page.evaluate(() => {
+  const s = document.querySelector('.stack');
+  if (s) s.scrollTop = s.clientHeight;
+});
+await page.waitForTimeout(700);
+await page.evaluate(() => {
+  const c = document.querySelector('.chc__sess');
+  if (c) c.click();
+});
+await page.waitForTimeout(800);
+const hr = await page.evaluate(() => {
+  const lines = [...document.querySelectorAll('.sheet__body line')];
+  return {
+    segs: lines.length,
+    colors: [...new Set(lines.map((l) => l.getAttribute('stroke')))],
+    legend: document.querySelectorAll('.chc__band').length,
+  };
+});
+check('心率曲线是逐段上色的（≥2 种颜色）', hr.colors.length >= 2, `${hr.segs} 段 / ${hr.colors.length} 色：${hr.colors.join(' ')}`);
+check('曲线下面有区间图例', hr.legend === 5, `${hr.legend} 个（应该有 5 个区间）`);
+await page.evaluate(() => {
+  const el = document.querySelector('.sheet');
+  if (el) el.click();
+});
+await page.waitForTimeout(300);
+
 await browser.close();
 console.log(`\n${pass}/${pass + fail} 通过\n`);
 process.exit(fail === 0 ? 0 : 1);
