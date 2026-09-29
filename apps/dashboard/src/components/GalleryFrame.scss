@@ -1,0 +1,153 @@
+// ── 画框 ───────────────────────────────────────────────────────
+//
+// 三层叠出来的「挂在墙上的画」：外框 / 卡纸 / 照片。见 GalleryFrame.tsx 抬头。
+//
+// ⚠️⚠️ 尺寸全部走**两个变量**（`--gal-w` / `--gal-h`），不要写死 ——
+//    读者要的是「长宽可以调整，到时候可以自适应我们的其他那些图片」。
+//    自适应靠 `aspect-ratio`：照片按框的比例 `object-fit: cover` 填满，
+//    所以换成横的、竖的、方的照片都不会变形，只会裁。
+.gal {
+  --gal-w: 168px;
+  --gal-h: 210px;
+  // ⚠️ 倾斜和高光位置由 JS 写（指针跟随），这里给初值 ——
+  //    没有初值的自定义属性在 `transform` 里会让整条声明失效。
+  --tx: 0deg;
+  --ty: 0deg;
+  --mx: 50%;
+  --my: 50%;
+
+  position: fixed;
+  // ⚠️ 竖屏手机上它压在内容上，所以**必须让开正文**：
+  //    顶部留出顶栏，垂直居中。
+  top: 50%;
+  z-index: 8; // 在壁纸之上、卡片之下（卡片是 10+）
+  width: var(--gal-w);
+  height: var(--gal-h);
+  pointer-events: auto;
+  // ⚠️ `transform-style: preserve-3d` + 透视 —— 少了它，`rotateX/Y`
+  //    是**平面斜切**，看起来像图片被拉扯，而不是「朝你这边倒过来」。
+  transform: perspective(900px) translateY(-50%) rotateX(var(--tx)) rotateY(var(--ty));
+  transform-origin: center;
+  transition: transform 520ms cubic-bezier(0.34, 1.56, 0.5, 1);
+  will-change: transform;
+}
+
+.gal--right {
+  right: max(18px, env(safe-area-inset-right, 0px));
+}
+
+.gal--left {
+  left: max(18px, env(safe-area-inset-left, 0px));
+}
+
+// ⚠️ 按下时**只缩一点点**（0.975）—— 缩多了像按钮，像「点下去」而不是
+//    「按在一张画上」。倾斜由 JS 按手指位置给，这里不动它。
+.gal--press {
+  transition-duration: 140ms;
+}
+
+.gal--press .gal__frame {
+  transform: scale(0.975);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.30);
+}
+
+.gal__frame {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  // ① 外框：有厚度的一圈。用渐变而不是纯色 —— 纯色的边看起来是「描边」，
+  //    渐变（上亮下暗）才读成「一条有截面的木条/金属条」。
+  padding: 7px;
+  border-radius: 3px;
+  background: linear-gradient(160deg, #4a4640 0%, #2b2823 46%, #1b1917 100%);
+  box-shadow:
+    // 外投影：画框离墙的那点距离
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    0 2px 6px rgba(0, 0, 0, 0.28),
+    // 内投影：框内侧压住卡纸的那道边
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+    inset 0 1px 2px rgba(255, 255, 255, 0.16);
+  transition:
+    transform 520ms cubic-bezier(0.34, 1.56, 0.5, 1),
+    box-shadow 240ms ease-out;
+}
+
+.gal__mat {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  // ② 卡纸：米白的一圈。**它是「画框」和「描边的图片」之间唯一的区别** ——
+  //    去掉它，照片边上就只剩一道深色线，在深色壁纸上糊成一团。
+  padding: 9px;
+  background: linear-gradient(170deg, #f3efe7 0%, #e6e0d5 100%);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.gal__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  // ⚠️ `cover` 不是 `contain`：读者要的是「自适应我们的其他那些图片」——
+  //    换一张横的进来，`contain` 会在框里留两条白边（像没装满的画框），
+  //    `cover` 只裁不缩，任何比例都填满。
+  object-fit: cover;
+  // ⚠️ 照片压暗一点点：它和壁纸是同一张图，不压的话「画框里的图」和
+  //    「背景」看起来是同一层，读不出「这是挂在墙上的另一件东西」。
+  filter: saturate(1.04) contrast(1.02) brightness(0.97);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+// ③ 玻璃面的高光：一道跟着指针走的斜光。
+// ⚠️ 用 `--mx/--my` 定位而不是动画循环 —— 见 GalleryFrame.tsx 里那段注释：
+//    每帧 setState 会掉帧，而掉帧正是「廉价感」的来源。
+.gal__sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 26%,
+    rgba(255, 255, 255, 0) 58%
+  );
+  transition: background 120ms linear;
+}
+
+// ⚠️ 窄屏：画框缩小，并且**靠边**（正文本来就窄，压在中间就读不了）。
+//    ⚠️ 仍然留着 —— 读者说的是「每个页面必须有一张图」，
+//      所以不是「手机上藏起来」。
+@media (max-width: 700px) {
+  .gal {
+    --gal-w: 104px;
+    --gal-h: 132px;
+    opacity: 0.92;
+  }
+
+  .gal__frame {
+    padding: 5px;
+  }
+
+  .gal__mat {
+    padding: 6px;
+  }
+}
+
+// ⚠️ 无障碍：`prefers-reduced-motion` 下**不做倾斜和回弹**，
+//    但按下/松开的状态照样变（和这一页其它动画同一条规矩）。
+@media (prefers-reduced-motion: reduce) {
+  .gal,
+  .gal__frame {
+    transition-duration: 0ms;
+  }
+
+  .gal {
+    transform: translateY(-50%);
+  }
+}

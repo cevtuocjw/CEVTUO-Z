@@ -1399,10 +1399,34 @@ $chart-h: 74px;
 //    ⚠️ 写死宽度就会溢出，而溢出只是叠在别的元素上 —— 看不出来。
 .chc__gauges {
   display: flex;
+  // ⚠️ 从两个仪表盘变成**四个**（步数/睡眠/活动时间/活动消耗，见那一屏的注释）——
+  //    390px 的屏幕上四个并排每个只有 ~90px，而 Gauge 自己是 132px，
+  //    直接并排会挤成一团。⇒ 换行成 2×2。
+  flex-wrap: wrap;
   justify-content: space-around;
   align-items: flex-start;
   gap: 8px;
   width: 100%;
+}
+
+/**
+ * ⚠️⚠️ 两列 2×2，不是一行四个。
+ *
+ *    ⚠️ 写成两层 `.chc__gauges .chc__gaugebox`（0,2,0）**不是洁癖**：
+ *      原来那条 `.chc__gaugebox { flex-direction: column }` 定义在**本文件更后面**
+ *      （`.chc__gauges` 之后），同特异性下**它赢** ——
+ *      而 `flex-wrap: wrap` 因此完全不起作用，四个仪表盘挤在一行里，
+ *      每格 ~90px，下面那几行说明文字互相压住（截图里
+ *      「11/24 天 ≥ 90 分钟」压在「9/21 晚 ≥ 7h」上面）。
+ *      **这是这一轮第三次同一个坑**（`.home-paperr` 的媒体查询顺序、
+ *      `.home-chealth__rings` 的 margin、现在这一条）。
+ *    ⇒ 规矩再写一遍：**同特异性就别赌顺序，抬一层。**
+ *
+ *    ⚠️ 两列用 `calc(50% - gap)` 而不是 `flex: 1`：用 `flex: 1` 时第二行只有
+ *      两个仪表盘会被拉宽，四格的直径就不一样了。
+ */
+.chc__gauges .chc__gaugebox {
+  flex: 0 0 calc(50% - 8px);
 }
 
 .chc__gaugebox {

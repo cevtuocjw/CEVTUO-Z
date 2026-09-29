@@ -325,7 +325,10 @@ export default function Chealth() {
    *    以为「今天烧了 1,953」是自己动出来的。⚠️ 而这个项目抬头第 2 条
    *    记的正是这个数：没活动的日子也恒在 1,662，像一个坏掉的传感器。
    */
-  const kcalTotalToday = typeof lastDay?.calories === 'number' ? lastDay.calories : null;
+  // ⚠️ 这里原来是 `kcalTotalToday`（取**最后一天**的 `calories`）。2026-09-29 删掉，
+  //    换成下面的 `lastCalDay`（取**最近一条真有记录的那天**）——
+  //    因为三星是延迟写 `TotalCaloriesBurnedRecord` 的：当天 HC 里一条都没有，
+  //    而昨天那条好端端躺着。取最后一天 ⇒ 永远「未采集」。
 
   /**
    * ⚠️ 活动时间 —— 手机端派生的字段，**历史数据没有**。
@@ -529,6 +532,52 @@ export default function Chealth() {
    *    没同步的那几晚我们不知道他睡了多久，不能算成没睡够。
    *    （和 `monthStats` 同一个规矩。）
    */
+  /**
+   * ⚠️ 读者 2026-09-29：「能展示的内容能展示出来什么吗得分」。
+   *
+   *    我们能诚实算的得分**就这四个** —— 步数、睡眠、活动时间、活动消耗 ——
+   *    因为每一个的分母都是**我们自己定的目标**（`platform/chealth-goals.ts`）。
+   *    ⚠️ 三星那种 0–100 的「能量得分」我们**没有、也不编**（它是专有算法，
+   *      掺了睡眠阶段、心率变异性、血氧、呼吸…）。
+   *      这张卡的诚实之处全在「分母写清楚」那一行。
+   *
+   * ⚠️ 分母和步数那条一致：**有记录的天/晚**，不是「这个月过了几天」。
+   * ⚠️ `activeMinutes` 是 2026-09-29 才开始上报的字段，历史天没有 ⇒
+   *    它的分母会明显小于步数那个。所以每一格下面都写「N/M」——
+   *    不写的话，两个百分比会被当成同一段时间的比例。
+   */
+  const activeMinStats = useMemo(() => {
+    const month = dataTo.slice(0, 7);
+    const md = days.filter((d) => d.date.slice(0, 7) === month && typeof d.activeMinutes === 'number');
+    return { tracked: md.length, hit: md.filter((d) => (d.activeMinutes as number) >= ACTIVE_MIN_GOAL).length };
+  }, [days, dataTo]);
+
+  const activeKcalStats = useMemo(() => {
+    const month = dataTo.slice(0, 7);
+    const md = days.filter((d) => d.date.slice(0, 7) === month && typeof d.activeCalories === 'number');
+    return { tracked: md.length, hit: md.filter((d) => (d.activeCalories as number) >= ACTIVE_KCAL_GOAL).length };
+  }, [days, dataTo]);
+
+  /**
+   * ⚠️⚠️ 总消耗取**最近一条真的有记录的那天**，不是「最后一天」。
+   *
+   *    和「最近一晚」的睡眠是同一个做法（见 `chealthSleepDay`）。
+   *    实测 2026-09-29：Health Connect 里当天**一条
+   *    `TotalCaloriesBurnedRecord` 都没有**（三星是延迟写入的），
+   *    而昨天那条 1,943 好好躺着。直接取最后一天 ⇒ 永远显示「未采集」，
+   *    读者看到的是「这一项坏了」，实际是「今天那次还没到」。
+   *
+   *    ⚠️ 所以**日期必须一起显示** —— 不显示的话，「1,943 千卡」
+   *      会被读成今天的。
+   */
+  const lastCalDay = useMemo(() => {
+    for (let i = days.length - 1; i >= 0; i -= 1) {
+      const d = days[i];
+      if (d && typeof d.calories === 'number' && d.calories > 0) return d;
+    }
+    return null;
+  }, [days]);
+
   const sleepStats = useMemo(() => {
     const withData = days.filter((d) => typeof d.sleepSeconds === 'number' && d.sleepSeconds > 0);
     return {
@@ -755,9 +804,11 @@ export default function Chealth() {
                     总消耗 <Text className="chc__em">含基础代谢</Text>
                   </Text>
                   <Text className="chc__totalmark-v">
-                    {kcalTotalToday === null
+                    {lastCalDay === null
                       ? '未采集'
-                      : `${Math.round(kcalTotalToday).toLocaleString('en-US')} 千卡`}
+                      : // ⚠️ 日期跟着数字一起给 —— 这是**最近一条有记录的那天**，
+                        //    不是今天。只给数字会被读成今天的（见 `lastCalDay` 那段）。
+                        `${Math.round(lastCalDay.calories as number).toLocaleString('en-US')} 千卡 · ${lastCalDay.date.slice(5)}`}
                   </Text>
                 </View>
                 {/* ⚠️ 强调一律用 `<Text className="chc__em">`，**不要写 Markdown 星号** ——
@@ -1514,6 +1565,35 @@ export default function Chealth() {
                   />
                   <Text className="chc__gaugecap">
                     {sleepStats.hit}/{sleepStats.tracked} 晚 ≥ {SLEEP_GOAL_H}h
+                  </Text>
+                </View>
+                {/*
+                  ⚠️ 后两个得分是 2026-09-29 补的（读者：「能展示的内容能展示出来
+                  什么吗得分」）。分母和上面两个同源：有记录的天数 + 自己定的目标。
+                  ⚠️ 它们的 `tracked` 明显小于步数那个 —— `activeMinutes` 是
+                  9-29 才开始的字段。所以下面那行「N/M 天」不是装饰，是这一格
+                  有没有意义的前提。
+                */}
+                <View className="chc__gaugebox">
+                  <Gauge
+                    pct={activeMinStats.tracked > 0 ? activeMinStats.hit / activeMinStats.tracked : 0}
+                    value={`${activeMinStats.tracked > 0 ? Math.round((activeMinStats.hit / activeMinStats.tracked) * 100) : 0}%`}
+                    label="活动时间达标率"
+                    color="var(--m-dist)"
+                  />
+                  <Text className="chc__gaugecap">
+                    {activeMinStats.hit}/{activeMinStats.tracked} 天 ≥ {ACTIVE_MIN_GOAL} 分钟
+                  </Text>
+                </View>
+                <View className="chc__gaugebox">
+                  <Gauge
+                    pct={activeKcalStats.tracked > 0 ? activeKcalStats.hit / activeKcalStats.tracked : 0}
+                    value={`${activeKcalStats.tracked > 0 ? Math.round((activeKcalStats.hit / activeKcalStats.tracked) * 100) : 0}%`}
+                    label="活动消耗达标率"
+                    color="var(--m-kcal)"
+                  />
+                  <Text className="chc__gaugecap">
+                    {activeKcalStats.hit}/{activeKcalStats.tracked} 天 ≥ {ACTIVE_KCAL_GOAL} 千卡
                   </Text>
                 </View>
               </View>

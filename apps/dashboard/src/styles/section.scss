@@ -104,8 +104,16 @@ $gutter: t.$space-3;
   // phone) and 48px vertically on empty space below the content.
   padding-bottom: calc(var(--safe-bottom) + #{t.$space-5});
   padding-left: t.$space-4;
-  // Room for the rail, which overlays the content.
-  padding-right: 34px;
+  // ⚠️ 给导轨让位的宽度。读者 2026-09-29：「窄屏下标题离那个翻页组件有点远，
+  //    导致内容部分占据的有点窄……给出更宽一点给内容上，全网站都是」。
+  //
+  //    原来 34px 是**按最坏情况**留的（导轨 32px 命中区 + 12px 右边距 = 44px，
+  //    再减掉一点）。但导轨的**视觉**只有 10px 宽，命中区那 32px 是透明的 ——
+  //    真正会被压到的只有那 10px。
+  //    ⇒ 收到 24px，同时把导轨**往边缘挪**（`right: 8px`，见 `.rail` 那段）。
+  //      两者一起，内容多出 10px，而标题到水滴的间距仍然是 6px 左右。
+  //    ⚠️ 这两个数是**成对**的：只改这里会把水滴压到内容上。
+  padding-right: 24px;
 
   @include b.medium-up {
     padding-left: t.$space-6;
@@ -717,7 +725,10 @@ $gutter: t.$space-3;
 // the rail is the only thing that tells the user the page is paged at all.
 .rail {
   position: fixed;
-  right: t.$space-3;
+  // ⚠️ 往边缘挪（12px → 8px）—— 和 `.section` 的 `padding-right: 24px` 是
+  //    **成对**的一条：内容多让出的那 10px 宽，正是从这两个数里挤出来的。
+  //    只改一边会把水滴压到内容上，或者让内容白白窄着。
+  right: 8px;
   top: 50%;
   z-index: 120;
   display: flex;
@@ -746,35 +757,118 @@ $gutter: t.$space-3;
   background-color: transparent;
 }
 
+/**
+ * ⚠️⚠️ 读者 2026-09-29：「这个正方形长方形的翻页修改一下它的外观要动画效果更现代，
+ *    要玻璃效果，不要做成圆形，可以做成那种黏糊的椭圆形，水滴一样的感觉之类的，
+ *    总之要更加现代，关注动画效果，现在正方形不好看」。
+ *
+ *    原来是**正方形**（`border-radius: var(--radius-tile)` + 实色描边）——
+ *    读起来像「索引格子」，不像「可以点的地方」。
+ *
+ *    ⇒ 现在是**玻璃水滴**：不规则的椭圆（`border-radius` 四个角各不相同 ——
+ *      正圆是「bullet」，全等的椭圆是「胶囊」，只有**四个角不一样**才读得出
+ *      「黏糊的一滴」）、半透明白渐变、上缘内高光、外投影。
+ *      ⚠️ 这四样和 `glass-disc` 那套是同一个道理，但这里**不能复用它**：
+ *        那一套是彩色的指标圆盘，而导轨浮在壁纸上、
+ *        不属于任何一个指标（用 `--m-*` 会把「颜色=指标」那套语义弄脏）。
+ *
+ *    ⚠️ 动画是这一条的重点，不是顺带：`cubic-bezier(0.34, 1.56, 0.5, 1)`
+ *      是**回弹**曲线（超过 1 再回来）—— 水滴拉伸时该有那一下弹性，
+ *      `ease-out` 只会「长大」，像被画上去的。
+ */
 .rail__dot-mark {
   display: flex;
   flex-direction: row;
   // ⚠️ Up from 6px. At 6px on a 2x phone screen the marks were a hairline that
   // disappeared over the photo; they are the only affordance saying the page is
   // paged at all, so they have to be findable at a glance.
-  width: 9px;
-  height: 9px;
-  // ⚠️ Square, matching the rest of the system. A dot is round; this system is
-  // not, and these read as index marks rather than bullets.
-  border-radius: var(--radius-tile);
-  border-width: 1px;
-  border-style: solid;
-  border-width: 2px;
-  border-color: var(--text-primary);
-  // ⚠️ A translucent fill, not transparent. An outline-only mark vanishes
-  // wherever the photo happens to be mid-grey — the same value as the border.
-  background-color: var(--text-halo-strong);
-  transition-property: background-color, border-color, height;
-  transition-duration: 200ms;
-  transition-timing-function: ease-out;
+  width: 10px;
+  height: 10px;
+  // ⚠️ 四个角**故意不一样** —— 全等就退化成椭圆/正圆了，那样读不出「黏」。
+  border-radius: 52% 48% 50% 50% / 58% 58% 42% 42%;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  // ⚠️ 半透明白渐变 + 下缘压暗：只给透明的底会糊在浅色壁纸上，
+  //    只给白色会像一块贴纸。两者叠加才有「厚度」。
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.38) 0%,
+    rgba(255, 255, 255, 0.12) 46%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  -webkit-backdrop-filter: blur(6px) saturate(1.2);
+  backdrop-filter: blur(6px) saturate(1.2);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.62),
+    0 2px 6px rgba(0, 0, 0, 0.22);
+  // ⚠️ 四个属性都要过渡：只写 height 的话，从方块变水滴那一下是**跳变**的，
+  //    而「跳变」正是这一条要消灭的东西。
+  transition-property: width, height, border-radius, background, box-shadow, border-color;
+  transition-duration: 420ms, 420ms, 420ms, 300ms, 300ms, 300ms;
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.5, 1), cubic-bezier(0.34, 1.56, 0.5, 1),
+    cubic-bezier(0.34, 1.56, 0.5, 1), ease-out, ease-out, ease-out;
 }
 
-// The current panel's mark fills and elongates — the standard paged-scroll
-// idiom, and the only state change needed on a 6px mark to be legible.
+/**
+ * 当前那一屏：水滴**拉长成一条**（标准的分页语言），而且更亮、带一圈晕。
+ *
+ * ⚠️ 拉长时把圆角比例也换掉（`50% / 42% 42% 58% 58%`）—— 上圆下略尖，
+ *    才像**一滴水被拉起来**；沿用原来那组四角不等的比例，拉长之后是歪的。
+ */
 .rail__dot--on .rail__dot-mark {
-  height: 24px;
-  border-color: var(--text-primary);
-  background-color: var(--text-primary);
+  width: 14px;
+  height: 26px;
+  border-radius: 50% / 42% 42% 58% 58%;
+  border-color: rgba(255, 255, 255, 0.7);
+  // ⚠️ **不做成纯白**：第一版是 0.96→0.72 的白，截图里读成「一枚实心白胶囊」，
+  //    不是玻璃 —— 玻璃的判据是**能看见底下**。这里降到 0.82→0.42，
+  //    靠上面那道内高光把「厚度」补回来。
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.42) 62%,
+    rgba(255, 255, 255, 0.30) 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 6px rgba(255, 255, 255, 0.22),
+    0 2px 10px rgba(0, 0, 0, 0.26),
+    0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/**
+ * ⚠️⚠️ 弹窗打开时**把导轨藏起来**。
+ *
+ *    读者 2026-09-29：「会被旁边的 3 个页面翻滚那个正方形长方形的翻页给
+ *    刺穿遮挡」。
+ *
+ *    成因不是层级（弹窗 300 > 导轨 120），是**透明度**：弹窗面板是玻璃的，
+ *    导轨压在下面却**透得过来**，而它固定垂直居中 —— 弹窗内容高度正好在
+ *    470px 左右时，那三滴水就落在关闭按钮那一块上。
+ *
+ *    ⇒ 藏起来比调层级对：导轨的职责是「翻这一页的屏」，而弹窗是铺满视口的
+ *      浮层 —— 这时候它既没用，又是个视觉噪音。
+ *
+ *    ⚠️ 用 `:has()`（WebKit 15.4+ / Chromium 105+ 都支持；这个站是 H5，
+ *      没有小程序端）。**不支持时它只是不生效**，而关闭按钮那边已经加了
+ *      不透明的底（见 Sheet.scss），所以最坏情况仍然可读 —— 两条一起才稳。
+ */
+.page:has(.sheet) .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rail {
+  transition: opacity 220ms ease-out;
+}
+
+// ⚠️ 无障碍契约：`prefers-reduced-motion` 下**状态照样变、只是不走过去**
+//    （和这一页其它动画同一条规矩：不是「跳过动画变成没变化」）。
+//    ⚠️ 这里说的是**动画**，过渡（transition）要单独关 —— 第二版只关了
+//      `animation`，而这一条用的是 transition，等于没关。
+@media (prefers-reduced-motion: reduce) {
+  .rail__dot-mark {
+    transition-duration: 0ms;
+  }
 }
 
 // ── Persistent top bar ───────────────────────────────────────

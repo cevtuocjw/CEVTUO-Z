@@ -15,6 +15,10 @@ import { useEffect, useRef } from 'react';
 import { View } from '@tarojs/components';
 
 import { applyBackground } from '../platform/background';
+// ⚠️ 画框和壁纸**是一对**：读者要的是「每个页面必须有一张图，而且都有画框」。
+//    放在这里而不是每个页面各写一次 —— 五个品牌页 + 主页各写一遍的结果，
+//    是有人加新页面时忘了加画框，而页面看起来**完全正常**（只是少了一件东西）。
+import { GalleryFrame } from './GalleryFrame';
 
 export function Wallpaper() {
   const ref = useRef<HTMLElement | null>(null);
@@ -28,5 +32,10 @@ export function Wallpaper() {
     return applyBackground(ref.current as unknown as HTMLElement | null);
   }, []);
 
-  return <View className="cevtuo-wallpaper" ref={ref as never} />;
+  return (
+    <>
+      <View className="cevtuo-wallpaper" ref={ref as never} />
+      <GalleryFrame />
+    </>
+  );
 }

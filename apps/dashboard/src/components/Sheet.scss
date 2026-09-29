@@ -113,18 +113,40 @@
 //         才圆的。哪天有人只改其中一个，它立刻变成圆角方块，
 //         而「圆角方块」看起来也像一个设计选择，没人会当成 bug。
 //         ⇒ 显式写 `aspect-ratio: 1`，让「是圆的」这件事不依赖两个数相等。
+/**
+ * ⚠️⚠️ 读者 2026-09-29：「数据来源弹窗的关闭那个正方形里面的 X 过小总之有问题，
+ *    另外会被旁边的 3 个页面翻滚那个正方形长方形的翻页给刺穿遮挡」。
+ *
+ *    两件事，成因完全不同：
+ *
+ *    ① **X 太小**：32px 的圆配 15px 的字号，叉只占圆的 47%。
+ *       ⇒ 圆放到 36px、叉 18px（56%）—— 手指的目标和眼睛的目标一起变大。
+ *
+ *    ② **被导轨「刺穿」**：导轨（`.rail`）的 z-index 是 120、弹窗是 300，
+ *       所以它**压在弹窗下面** —— 可弹窗面板是**玻璃**的（半透明 + 模糊），
+ *       于是水滴**透过面板看得见**，正好落在关闭按钮那一块上。
+ *       ⚠️ 这不是层级问题，是**透明度**问题：调 z-index 一点用都没有。
+ *       ⇒ 给关闭按钮一个**近乎不透明**的底（`--text-halo-strong` 本来就
+ *         是「压在照片上的那层底」，随主题变深浅）—— 它就不再是玻璃，
+ *         而是一枚实心按键，底下的东西透不过来。
+ *       ⚠️ 只加在**按钮**上，不加在整个面板上：面板该是玻璃，
+ *         否则「弹窗是一层浮在页面上的玻璃」这个设计就没了。
+ */
 .sheet__close {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 32px;
+  width: 36px;
   aspect-ratio: 1;
   border-radius: 50%;
-  font-size: 15px;          // 图标走 1em ⇒ 15×15 的叉
-  color: var(--text-secondary);
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-size: 18px;          // 图标走 1em ⇒ 18×18 的叉
+  color: var(--text-primary);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.06)),
+    color-mix(in srgb, var(--text-halo-strong) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
   cursor: pointer;
   // ⚠️ 叉比 V 更「满」，同样的字号看起来更大 —— 收 0.5px 让它在圆里不顶边。
   line-height: 1;

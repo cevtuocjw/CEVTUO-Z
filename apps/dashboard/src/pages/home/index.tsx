@@ -368,6 +368,21 @@ export default function Home() {
    * 主页那格的七日点条 —— 和 CHEALTH 内页 `scoreDays` **同一个口径**
    * （每天步数 ÷ `STEP_GOAL`，没步数的那天是 `null` 不是 0）。
    */
+  /**
+   * ⚠️ 总消耗取**最近一条真有记录的那天**，不是最后一天 —— 和 CHEALTH 内页
+   * 那条 `lastCalDay` 同一个做法、同一个理由（三星延迟写
+   * `TotalCaloriesBurnedRecord`，当天往往还没有）。
+   * ⚠️ 日期必须跟着数字显示。
+   */
+  const homeLastCal = useMemo(() => {
+    const days = chealth?.days ?? [];
+    for (let i = days.length - 1; i >= 0; i -= 1) {
+      const d = days[i];
+      if (d && typeof d.calories === 'number' && d.calories > 0) return d;
+    }
+    return null;
+  }, [chealth]);
+
   const homeScoreDays = useMemo(() => {
     const days = (chealth?.days ?? []).slice(-7);
     return days.map((d, i) => ({
@@ -543,9 +558,14 @@ export default function Home() {
                       ⚠️ 没采集到就写「未采集」，**不写 0**。 */}
                   <Text className="chc__gaugecap">
                     总消耗 含基础代谢{' '}
-                    {typeof chealthDay?.calories === 'number'
-                      ? `${Math.round(chealthDay.calories).toLocaleString('en-US')} 千卡`
-                      : '未采集'}
+                    {homeLastCal ? (
+                      <>
+                        {Math.round(homeLastCal.calories as number).toLocaleString('en-US')} 千卡 ·{' '}
+                        {homeLastCal.date.slice(5)}
+                      </>
+                    ) : (
+                      '未采集'
+                    )}
                   </Text>
                 </View>
                 <View className="chc__tile chc__tile--narrow home-chealth__sleep">

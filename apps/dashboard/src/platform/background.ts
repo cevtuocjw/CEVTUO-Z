@@ -53,14 +53,20 @@ const DARK_SCRIM =
 const LIGHT_SCRIM =
   'linear-gradient(to bottom, rgba(246,243,240,0.80) 0%, rgba(242,240,238,0.74) 46%, rgba(238,237,236,0.88) 100%)';
 
-/** Route segment → background file, all under `static/`. */
-const BACKGROUNDS: Record<string, string> = {
-  home: 'static/home.jpg',
-  coof: 'static/coof.jpg',
-  cnsr: 'static/cnsr.jpg',
-  paperr: 'static/paperr.jpg',
-  chealth: 'static/chealth.jpg',
-};
+/**
+ * ⚠️ 这张「页面 → 背景图」的表**搬到 `platform/gallery.ts` 了**
+ *    （读者 2026-09-29：「用这些图片把网站上的所有图片背景都换掉」，
+ *      并且每页的那张图同时要出现在一枚画框里）。
+ *
+ *    ⇒ 一个页面一张图，**只在一个地方定义**（`GALLERY`）——
+ *      背景和画框各自查一次。两处各写一份的结果不是「差不多」，
+ *      是背景换了画框没换，而两边单独看都正常。
+ *
+ *    ⚠️ 老的五张背景图（`static/home.jpg` 等）**没有删**，留在库里当备用：
+ *      想换回某一张，把 `gallery.ts` 里那张的路径指过去就行。
+ *      （它们是 900px 左右的老图，画质比新的画廊低一档。）
+ */
+import { GALLERY, galleryFile } from './gallery';
 
 const DEFAULT_PAGE = 'home';
 
@@ -76,7 +82,11 @@ export function currentPage(): string {
   if (typeof location === 'undefined') return DEFAULT_PAGE;
   const m = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
   const key = m?.[1];
-  return key && BACKGROUNDS[key] ? key : DEFAULT_PAGE;
+  // ⚠️ 判据从「在不在 BACKGROUNDS 里」改成「在不在 GALLERY 里」——
+  //    那张表搬走了（见上面那段）。**仍然要判**：不判的话任何
+  //    `/pages/<什么>/index` 都会被当成一个已知页面，于是画框和背景
+  //    都拿到兜底图，而 `gallerySide` 也会按「内页」处理。
+  return key && GALLERY[key] ? key : DEFAULT_PAGE;
 }
 
 /**
@@ -93,21 +103,34 @@ export function currentPage(): string {
  * nothing after it moves between routes — taking the directory of it is stable
  * for the lifetime of the document.
  */
-export function backgroundUrl(): string {
-  // ⚠️ `?? DEFAULT` alone does not satisfy the compiler here — the index
-  // signature is optional, so the fallback can itself be undefined. `noUncheckedIndexedAccess`
-  // is on in tsconfig.base.json and every lookup from a Record needs an explicit
-  // default rather than a type assertion.
-  const file = BACKGROUNDS[currentPage()] ?? BACKGROUNDS[DEFAULT_PAGE] ?? 'static/home.jpg';
+/**
+ * ⚠️ 把仓库里的相对路径（`static/...`）变成**绝对 URL**。
+ *
+ *    抽出来是因为**画框**也要用同一套解析（`GalleryFrame` 的 `<img src>`）——
+ *    两处各写一遍的结果是其中一个在子目录部署下 404，而另一个正常。
+ *    ⚠️ 上面这段注释记着三次失败：相对 URL 会按**样式表**的目录解析。
+ *      所以「谁去解析」这件事只能有一个答案，就是这里。
+ */
+export function assetUrl(rel: string): string {
   // ⚠️ No `location` in the mini program, and no DOM to apply this to either —
   // unreachable there, but returning a bare relative path beats throwing.
-  if (typeof location === 'undefined') return file;
+  if (typeof location === 'undefined') return rel;
 
   const path = location.pathname || '/';
   // `#/pages/x/index` never reaches pathname (it is the hash), so this is the
   // mount directory: '/' at a root deploy, '/z/' or '/CEVTUO-Z/' otherwise.
   const base = path.slice(0, path.lastIndexOf('/') + 1);
-  return `${location.origin}${base}${file}`;
+  return `${location.origin}${base}${rel}`;
+}
+
+export function backgroundUrl(): string {
+  // ⚠️⚠️ 背景**改从画廊取**（读者 2026-09-29：「用这些图片把网站上的所有图片
+  //    背景都换掉」）。五种页面都在 `GALLERY` 里，所以这一句就是「换背景」的
+  //    全部 —— 换图只改 `platform/gallery.ts` 一处。
+  //    ⚠️ `galleryFile` 自己带兜底（任何没配的页面拿到 `GALLERY_FALLBACK`），
+  //      所以这里不需要再兜一层。
+  const file = galleryFile(currentPage());
+  return assetUrl(file);
 }
 
 /**
