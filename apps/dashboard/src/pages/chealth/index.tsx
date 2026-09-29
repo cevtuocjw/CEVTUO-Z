@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Input, Text, View } from '@tarojs/components';
 
-import { BarRow, Gauge, GoalCalendar, HeartChart, Rings, SeriesChart, Spark } from '../../components/ChealthCharts';
+import {
+  BarRow,
+  Gauge,
+  GoalCalendar,
+  HeartChart,
+  Rings,
+  // ⚠️ 三星「能量得分」右边那排七日点条（读者 2026-09-29 点名要的形状）。
+  ScoreBars,
+  SeriesChart,
+  Spark,
+} from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
 import {
   HR_BANDS,
@@ -239,6 +249,25 @@ export default function Chealth() {
   //    那个 `+08:00` 是给机器看的，读者要的是「几点更新的」。
   //    ⚠️ 而且主页同一格用的是 `formatUpdatedAt` —— 同一个字段两种显示，
   //      迟早会一处改了另一处没改（这个项目已经吃过两次）。
+  /**
+   * 七日点条用的数据 —— **最后 7 个自然日**，每天一个 0–1 的进度。
+   *
+   * ⚠️ 分母是 `STEP_GOAL`（和这一页那三个环、柱状图的目标线**同一个定义**）——
+   *    各写一个 9,000 迟早漂移。
+   * ⚠️ 没有步数的那天传 `null`（画成空轨道），**不是 0**。
+   *    这个项目反复栽在「把不知道画成零」上：空轨道和「走了 0 步」必须不一样。
+   */
+  const scoreDays = useMemo(() => {
+    const last7 = days.slice(-7);
+    return last7.map((d, i) => ({
+      key: d.date,
+      // 「09」→「9」：三星那一排也是不补零的（23 24 25…29）
+      label: d.date.slice(8).replace(/^0/, ''),
+      score: typeof d.steps === 'number' ? Math.min(1, d.steps / STEP_GOAL) : null,
+      now: i === last7.length - 1,
+    }));
+  }, [days]);
+
   const stamp = formatUpdatedAt(index?.updatedAt);
   const freshness = stamp ? `数据更新 ${stamp}` : null;
 
@@ -1488,6 +1517,30 @@ export default function Chealth() {
                   </Text>
                 </View>
               </View>
+
+              {/*
+                ⚠️ 读者 2026-09-29：「学习三星把能量得分和睡眠得分的那两个部分的
+                柱状图和弧形图……很好看，要想办法用上，而且要模仿的完全一样」。
+
+                ⇒ 弧形图就是他上面看到的这两个 `Gauge`（240° + 末端圆点，本来就
+                  是照三星那个形状做的）；**柱状图**是这里新加的七日点条
+                  （三星「能量得分」右边那一排竖圆条 + 彩点）。
+
+                ⚠️⚠️ 但分数**不是**三星的分数 —— 那个 0–100 是它自己的专有算法
+                  （睡眠阶段、心率变异性、血氧、呼吸…），我们**没有、也不编**。
+                  这里画的是**我们量得到的那件事**：每天走到目标的比例。
+                  所以下面那行小字必须写清「这根条是什么」，否则读者会把它
+                  当成三星那个分数，然后对不上。
+              */}
+              {scoreDays.some((d) => d.score !== null) ? (
+                <View className="card chc__card">
+                  <Text className="chc__card-t">最近 7 天的步数进度</Text>
+                  <View className="chc__sbars-wrap" style={{ ['--m' as string]: 'var(--m-steps)' } as CSSProperties}>
+                    <ScoreBars days={scoreDays} />
+                  </View>
+                  <Text className="chc__gaugecap">点的高度 = 当天步数 ÷ 目标 {STEP_GOAL.toLocaleString('en-US')} 步</Text>
+                </View>
+              ) : null}
               {/*
                 ⚠️⚠️ 这里第一版写的是 `分母是**这个月有记录的天数**` ——
                 Markdown 的粗体标记**原样渲染**，读者看到的是四个星号。

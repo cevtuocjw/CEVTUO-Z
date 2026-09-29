@@ -1148,6 +1148,75 @@ $chart-h: 74px;
   fill: none;
 }
 
+// ── 七日点条（三星「能量得分」那个形状）───────────────────────────
+//
+// ⚠️ 形状是照手机上的三星健康截的：七根竖圆条当轨道，每根上一颗彩点。
+// ⚠️ 颜色**一行的点全用同一个色**（`--m`，由调用点给）—— 三星是按好/坏分
+//    绿/黄/红，而这一页 `--m-*` 那套颜色的含义是「哪个指标」，
+//    拿它表示好坏会让那套语义失效。见组件里那段注释。
+// ⚠️ 外面这层只做一件事：挂 `--m`（那一行的点用哪个指标色）。
+//    点位条自己不知道自己是「步数」还是「睡眠」—— 那是调用点的事。
+.chc__sbars-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 2px 0 6px;
+}
+
+.chc__sbars {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chc__sbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.chc__sbar-track {
+  position: relative;
+  width: 11px;
+  height: 64px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.chc__sbar-dot {
+  position: absolute;
+  left: 50%;
+  // ⚠️ 位置只来自 `--p` 这一个 0–1 的数：`(轨道高 − 点直径) × p`。
+  //    写死像素就会让「位置差」被读成「数据差」—— 这个项目在柱状图上
+  //    吃过一次（88/84/76/72 四个手写高度）。
+  bottom: calc((100% - 9px) * var(--p, 0));
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--m, currentColor);
+}
+
+// ⚠️ 「今天」这根：点加一圈光环 + 日期染成指标色。
+//    三星在那一栏也是唯一一个不是灰色的日期。
+.chc__sbar-dot--now {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--m, currentColor) 38%, transparent);
+}
+
+.chc__sbar-l {
+  font-size: 10.5px;
+  line-height: 1;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.chc__sbar-l--now {
+  color: var(--m, currentColor);
+  font-weight: 700;
+}
+
 .chc__rings {
   display: flex;
   align-items: center;

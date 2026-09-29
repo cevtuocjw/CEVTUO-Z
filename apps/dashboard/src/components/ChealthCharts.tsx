@@ -678,6 +678,55 @@ const GAUGE_ARC = 'M 20.16 83 A 46 46 0 1 1 99.84 83';
  * ⚠️ 动画只碰 `stroke-dashoffset`，不碰 dasharray 的长度 ——
  *    「画进去」是偏移在变，不是长度在变。
  */
+/**
+ * 三星「能量得分」那张卡右边的**七日点条**。
+ *
+ * ⚠️ 读者 2026-09-29：「学习三星把能量得分和睡眠得分的那两个部分的柱状图和
+ *    弧形图……很好看，要想办法用上，而且要模仿的完全一样」。
+ *    参照是当场从手机上的三星健康截的（`/tmp/sh-home2.png`）。
+ *
+ * 形状（照着截图）：七根**竖圆条**当轨道，每根上一颗**彩点**表示那天的分数，
+ * 下面一行日期，**今天那根**的点加一圈光环、日期用指标色。
+ *
+ * ⚠️⚠️ 两条不能照抄的地方，都不是审美问题：
+ *
+ *   ① **分数不是三星的分数。** 三星那个 0–100 是它自己的专有算法
+ *      （掺了睡眠阶段、心率变异性、血氧、呼吸…），我们**没有、也不编**。
+ *      这里传进来的 `score` 是**我们量得到的东西**折算的 0–1
+ *      （步数达标、活动时长达标…），调用点必须写清它是什么。
+ *   ② **颜色不按好/坏分档。** 三星用绿/黄/红表示「良好/注意」——
+ *      那是它的档位定义。我们的 `--m-*` 那套颜色的含义是**「哪个指标」**
+ *      （黄绿=步数、紫=睡眠…），拿它去表示好坏会让那套语义失效。
+ *      ⇒ 一行的点全用**这个指标自己的色**，今天那根加光环。
+ *
+ * ⚠️ 位置只来自 `--p` 一个数（和柱状图同一条规矩：不写死像素，
+ *    否则眼睛会把「位置差」读成「数据差」）。
+ */
+export function ScoreBars({
+  days,
+}: {
+  days: { key: string; label: string; score: number | null; now?: boolean }[];
+}) {
+  return (
+    <View className="chc__sbars">
+      {days.map((d) => (
+        <View className="chc__sbar" key={d.key}>
+          {/* 轨道 —— 很淡的同色，让「还差多少」看得见 */}
+          <View className="chc__sbar-track">
+            {d.score === null ? null : (
+              <View
+                className={`chc__sbar-dot${d.now ? ' chc__sbar-dot--now' : ''}`}
+                style={{ ['--p' as string]: String(Math.max(0, Math.min(1, d.score))) } as React.CSSProperties}
+              />
+            )}
+          </View>
+          <Text className={`chc__sbar-l${d.now ? ' chc__sbar-l--now' : ''}`}>{d.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function Gauge({
   pct,
   value,

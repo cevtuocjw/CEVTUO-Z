@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Image, ScrollView, Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
@@ -24,7 +24,7 @@ import { MonthCalendar, WeekdayBars } from '../../components/PaperrCharts';
 //      `.chc__*`（含 `.chc__tile`）全带过来 —— **不要在 home 的 scss 里重写一份**。
 //      这个项目为「属于组件的样式住在页面里」付过学费：CAPPERR 的图表 CSS 曾经
 //      住在页面里，主页没 import，于是柱状图退化成一列文字，而 0 报错。
-import { Rings } from '../../components/ChealthCharts';
+import { Rings, ScoreBars } from '../../components/ChealthCharts';
 import { Icon } from '../../components/ChealthIcons';
 import { ACTIVE_KCAL_GOAL, ACTIVE_MIN_GOAL, STEP_GOAL } from '../../platform/chealth-goals';
 import {
@@ -360,6 +360,20 @@ export default function Home() {
    * ⚠️ 分母来自 `platform/chealth-goals` —— 和内页同一个定义。各写一份的结果
    *    不是「差不多」，是**主页写 9,000、内页写 10,000**，而两边看起来都对。
    */
+  /**
+   * 主页那格的七日点条 —— 和 CHEALTH 内页 `scoreDays` **同一个口径**
+   * （每天步数 ÷ `STEP_GOAL`，没步数的那天是 `null` 不是 0）。
+   */
+  const homeScoreDays = useMemo(() => {
+    const days = (chealth?.days ?? []).slice(-7);
+    return days.map((d, i) => ({
+      key: d.date,
+      label: d.date.slice(8).replace(/^0/, ''),
+      score: typeof d.steps === 'number' ? Math.min(1, d.steps / STEP_GOAL) : null,
+      now: i === days.length - 1,
+    }));
+  }, [chealth]);
+
   const chealthRings = useMemo(() => {
     if (!chealthDay) return null;
     const steps = typeof chealthDay.steps === 'number' ? chealthDay.steps : null;
@@ -490,14 +504,45 @@ export default function Home() {
                 ⚠️ 睡眠取 `chealthSleepDay` 而**不是** `chealthDay` —— 每天上午手表
                    那一晚的睡眠还没过桥，取末日会显示成 `—`，看起来像睡眠断了。
                    （内页那块「最近一晚」的砖早就是这么做的。） */}
+            {/*
+              ⚠️ 七日点条 —— 和 CHEALTH 内页那个是**同一个组件、同一个口径**
+                （读者 2026-09-29：「能量得分睡眠得分……如果做成了也放到主页的
+                CHEALTH 那里」）。
+
+              ⚠️ 单独一张全宽卡，**不塞进上面那行**：.home-chealth 在宽屏是
+                「环 + 睡眠砖」两列，再加第三块会把环挤到放不下读数
+                （实测过：92 + 14 + 135 > 228 时读数列会被压成 39px）。
+            */}
+            {p.key === 'chealth' && homeScoreDays.some((d) => d.score !== null) ? (
+              <View className="card chc__card home-chealth__score">
+                <Text className="chc__card-t">最近 7 天的步数进度</Text>
+                <View className="chc__sbars-wrap" style={{ ['--m' as string]: 'var(--m-steps)' } as CSSProperties}>
+                  <ScoreBars days={homeScoreDays} />
+                </View>
+                <Text className="chc__gaugecap">
+                  点的高度 = 当天步数 ÷ 目标 {STEP_GOAL.toLocaleString('en-US')} 步
+                </Text>
+              </View>
+            ) : null}
+
             {p.key === 'chealth' && chealthRings ? (
               <View className="home-chealth">
                 {/* ⚠️ `card` 这个全局类**不能漏** —— 底面、圆角、内边距都由它给，
                     `.chc__card` 只加 CHEALTH 自己的那点差异。第一版只写了
                     `chc__card`，于是环和三行读数直接浮在壁纸上，而下面那块砖
-                    有底面 —— 两块看着不像同一张卡上的东西。 */}
+                    有底面 —— 两块不像同一张卡上的东西。 */}
                 <View className="card chc__card home-chealth__rings">
                   <Rings items={chealthRings} />
+                  {/* ⚠️ 读者 2026-09-29：「总消耗……如果做成了也放到主页的
+                      CHEALTH 那里」。和内页那张环卡上的一行**同一个口径**
+                      （含基础代谢），所以两个页面不会各说各的。
+                      ⚠️ 没采集到就写「未采集」，**不写 0**。 */}
+                  <Text className="chc__gaugecap">
+                    总消耗 含基础代谢{' '}
+                    {typeof chealthDay?.calories === 'number'
+                      ? `${Math.round(chealthDay.calories).toLocaleString('en-US')} 千卡`
+                      : '未采集'}
+                  </Text>
                 </View>
                 <View className="chc__tile chc__tile--narrow home-chealth__sleep">
                   <View className="chc__mhead">
