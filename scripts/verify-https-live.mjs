@@ -90,11 +90,29 @@ if (!PASS) {
         'services/ingest/.env.server-backup 里没有 CEVTUO_HEALTH_PASSPHRASE');
 } else {
   await page.goto(`${BASE}/#/pages/chealth/index?k=${PASS}`, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('.card__label', { timeout: 30000 });
+  // ⚠️⚠️ 这里原来是 `waitForSelector('.card__label')` —— 一个**代理指标**。
+  //
+  //    它想知道的是「密文索引解开、页面渲染出数据了」，而它测的是
+  //    「页面上有一个 `.card__label`」。2026-09-29 把 CHEALTH 从十屏收成
+  //    三屏 + 弹窗时，卡片标题换成了 `.chc__card-t`、说明换成 `.chc__note`，
+  //    **这个类几乎从页面上消失了** —— 于是探针 30 秒超时，整轮中止，
+  //    而**它后面那两条心跳断言一次都没跑**。
+  //
+  //    ⚠️ 代理指标的危险不是它会失败，是它失败时**说的是另一件事**：
+  //      超时看起来像「站点挂了」，而实际是「页面改了版式」。
+  //      这个项目里同一个形状已经出现过多次（`index.html` 里 grep 页面字符串
+  //      永远是 0，因为 Taro 拆了懒加载 chunk）。
+  //
+  //    ⇒ 改成**直接测它声称的那件事**：有一块砖上的读数不是 `—`。
+  //      `—` 正是「索引还没到 / 没解开」时页面上的样子，
+  //      所以「不是 `—`」才等价于「密文解开了」。
+  await page.waitForSelector('.chc__tile-v', { timeout: 30000 });
   await page.waitForTimeout(2500);
+  const tileTexts = await page.locator('.chc__tile-v').allInnerTexts();
+  const real = tileTexts.filter((t) => t.trim() && !t.trim().startsWith('—'));
   check('CHEALTH 页面渲染出来了（密文索引解开了）',
-        (await page.locator('.card__label').count()) > 0,
-        `cards=${await page.locator('.card__label').count()}`);
+        tileTexts.length > 0 && real.length > 0,
+        `砖=${tileTexts.length} 有真数据的=${real.length} 首个=${JSON.stringify(tileTexts[0] ?? '')}`);
 }
 
 // ── 两个心跳 ──────────────────────────────────────────────────

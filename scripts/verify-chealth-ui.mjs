@@ -269,11 +269,220 @@ check(
     (lock.innerW < 80 ? '  ← 小于 80px，手机上是点不到的' : ''),
 );
 check(
-  '未解锁时不渲染那六屏空数据',
+  '未解锁时不渲染那三屏空数据',
   lock.sections === 1 && lock.tiles === 0,
   `${lock.sections} 屏 / ${lock.tiles} 个马赛克块（应该是 1 屏 / 0 块）` +
-    (lock.sections > 1 ? '  ← 读者会看到一屏「需要口令」后面跟着六屏空白' : ''),
+    (lock.sections > 1 ? '  ← 读者会看到一屏「需要口令」后面跟着三屏空白' : ''),
 );
+
+// ══════════════════════════════════════════════════════════════
+// 2026-09-29：十屏收成三屏 + 七个弹窗 + 三星视觉。
+//
+// ⚠️⚠️ 上面那 12 条**一条都没覆盖这一轮的东西** —— 弹窗、目标线、达标进度、
+//    六个图标入口、卡片圆角，全在断言的盲区里。
+//    这正是这个项目反复栽的那个坑：**「断言全绿」和「这一版是对的」是两件事**，
+//    绿色的部分没变，不代表新加的部分没坏。
+//
+// ⚠️ 加断言守两条规矩：
+//   · 测**页面自己算出来的东西**（计算样式、真实几何），不是测 DOM 里有没有那个字符串
+//   · 每条都要有会失败的对照 —— 下面这些我逐条把 bug 放回去验过（见文件末尾注释）
+// ══════════════════════════════════════════════════════════════
+
+await page.evaluate(() => {
+  const s = document.querySelector('.stack');
+  if (s) s.scrollTop = 0;
+});
+await page.waitForTimeout(700);
+
+// ── 十屏收成了三屏 ────────────────────────────────────────────
+const shape = await page.evaluate(() => ({
+  sections: document.querySelectorAll('.section').length,
+  dots: document.querySelectorAll('.rail__dot').length,
+  entries: document.querySelectorAll('.igrid__cell').length,
+}));
+check('主屏收成了 3 屏', shape.sections === 3, `${shape.sections} 屏`);
+// ⚠️ 导轨的方块数和屏数必须**同时**对。它们曾经不一致 ——
+//    因为「正在骑 MyWhoosh」那个徽标是 `<PageStack>` 的兄弟节点，它就是第 11 屏，
+//    而 `count` 还写着 10。
+check('导轨方块数和屏数一致', shape.dots === 3, `${shape.dots} 个`);
+check('图标格有 6 个入口', shape.entries === 6, `${shape.entries} 个`);
+
+/**
+ * ⚠️⚠️ 六个图标的颜色**互不相同**，而且不能是兜底灰。
+ *
+ * 这条防的是**幽灵类**：`--m-*` 那组 token 挂在 `.chc`（一个没有任何元素带的类）
+ * 和少数几个真实容器上。`.igrid` 一旦不在那个列表里，行内的
+ * `--m: var(--m-heart)` 就指向一个**空的** `--m-heart`，六个圆底全退成 `#6b7280`。
+ * ⚠️ 而 DOM、类型检查、构建、截图**都不会说一个字**。
+ * 这个坑在 `.chc__mosaic`（`--blue`）和 `.chc__rows`（`--m`）上已经咬过两次。
+ */
+const icoColors = await page.evaluate(() =>
+  [...document.querySelectorAll('.igrid__ico')].map((e) => getComputedStyle(e).backgroundColor),
+);
+check(
+  '六个图标的颜色互不相同（不是兜底灰）',
+  icoColors.length === 6 &&
+    new Set(icoColors).size === 6 &&
+    !icoColors.includes('rgb(107, 114, 128)'),
+  `${new Set(icoColors).size} 种：${icoColors.join(' ')}`,
+);
+
+/**
+ * ⚠️ 马赛克的标签要**各是各的指标色** —— 这条是照真机截图抄的
+ *    （三星「每日活动量」那屏：步数=绿 / 活动时间=青 / 活动卡路里=紫）。
+ *    删掉 `.chc__mlabel { color: var(--m) }` 之后四块会继承同一个颜色，
+ *    这条立刻变红。**蓝色实底那块故意是白的**，所以判据是「至少 3 种」不是「4 种」。
+ */
+const mlabel = await page.evaluate(() =>
+  [...document.querySelectorAll('.chc__mlabel')].map((e) => getComputedStyle(e).color),
+);
+check(
+  '马赛克的标签用各自指标的颜色',
+  new Set(mlabel).size >= 3,
+  `${new Set(mlabel).size} 种：${mlabel.join(' ')}`,
+);
+
+// ── 目标线与达标进度 ──────────────────────────────────────────
+//
+// ⚠️⚠️ 「目标线在绘图区**里面**」这条防的是一个很安静的错：
+//    `.chc__target` 是 `position: absolute; bottom: N%`，包含块是
+//    `.chc__plot`（我给它加了 `position: relative`）。少了那一句，
+//    包含块会一路上溯到卡片 —— 虚线于是画到标题上面去。
+//    ⚠️ **而它看起来仍然是一条水平虚线，不像坏了。**
+const target = await page.evaluate(() => {
+  const t = document.querySelector('.chc__target');
+  const p = t ? t.closest('.chc__plot') : null;
+  if (!t || !p) return null;
+  const tr = t.getBoundingClientRect();
+  const pr = p.getBoundingClientRect();
+  return {
+    plotPos: getComputedStyle(p).position,
+    inside: tr.bottom > pr.top - 1 && tr.bottom < pr.bottom + 1,
+    fromBottom: Math.round(pr.bottom - tr.bottom),
+    plotH: Math.round(pr.height),
+  };
+});
+check('步数图上有目标线', target !== null,
+  target ? `距图底 ${target.fromBottom}px / 图高 ${target.plotH}px` : '找不到 .chc__target');
+check(
+  '目标线定位在绘图区里（不是相对卡片）',
+  Boolean(target) && target.plotPos === 'relative' && target.inside,
+  target ? `position=${target.plotPos} 在区内=${target.inside}` : '—',
+);
+
+const goal = await page.evaluate(() => {
+  const g = document.querySelector('.chc__tile-goal');
+  const tile = g ? g.closest('.chc__tile') : null;
+  const fill = document.querySelector('.chc__goal-fill');
+  const track = fill ? fill.parentElement : null;
+  return {
+    hasRule: Boolean(tile && tile.querySelector('.chc__tile-rule')),
+    text: g ? g.textContent.trim() : '',
+    // ⚠️ 条的长度必须来自**那一个**比例，不能是写死的宽度 ——
+    //    这个项目吃过亏：柱状图曾用 88/84/76/72 四个手写数字，
+    //    眼睛会把「长度差」读成「数据差」。
+    fillPct:
+      fill && track
+        ? Math.round((fill.getBoundingClientRect().width / track.getBoundingClientRect().width) * 100)
+        : -1,
+  };
+});
+check(
+  '今天那块砖有发丝线和 `/目标`（照真机截图）',
+  goal.hasRule && /^\/\s*[\d,]+/.test(goal.text),
+  `"${goal.text}" 发丝线=${goal.hasRule}`,
+);
+check('达标进度条的长度来自真实比例', goal.fillPct >= 1 && goal.fillPct <= 100, `${goal.fillPct}%`);
+
+// ── 三星那套卡片 ──────────────────────────────────────────────
+const card = await page.evaluate(() => {
+  const c = document.querySelector('.chc__card');
+  const bar = document.querySelector('.chc__bar');
+  return {
+    radius: c ? parseFloat(getComputedStyle(c).borderRadius) || 0 : -1,
+    shadow: c ? getComputedStyle(c).boxShadow : '',
+    barRadius: bar ? parseFloat(getComputedStyle(bar).borderTopLeftRadius) || 0 : -1,
+  };
+});
+// ⚠️ 全站的 `.card` 是 `border-radius: 0` + 只有一条上边线（「印刷目录」那套）。
+//    读者 2026-09-28 的原话是「完全 CSS 看起来不像三星的 APP 那个界面」。
+//    这条防的是它哪天退回 0 —— 而退回之后页面**仍然完全正常**，只是不像三星了。
+check('CHEALTH 的卡片是圆角（不是全站的 0）', card.radius >= 16, `${card.radius}px`);
+check('卡片有描边（彩色壁纸上边界不糊）', card.shadow.includes('inset'), card.shadow.slice(0, 70));
+check('柱子是胶囊形（不是 3px 直角）', card.barRadius >= 8, `${card.barRadius}px`);
+
+// ── 七个弹窗 ──────────────────────────────────────────────────
+//
+// ⚠️⚠️ 「铺满视口」这条防的是 `.sheet` 的 `position: fixed` **静默失效**。
+//    `fixed` 的包含块是最近一个带 transform / filter / backdrop-filter /
+//    contain / will-change 的祖先 —— 只要有人给 `.stack` 或 `.section`
+//    加上其中任意一条，弹窗就会改成相对那一屏定位，**跑进面板里面去**。
+//    ⚠️ 它看起来仍然是一个「有蒙层、有标题、有内容」的面板，不像坏了；
+//      而「跑进面板里」真正的问题是它会被那个面板的滚动裁掉。
+const SHEETS = ['zones', 'week', 'power', 'streak', 'kinds', 'sources'];
+const sheetBad = [];
+for (let i = 0; i < SHEETS.length; i += 1) {
+  await page.evaluate((idx) => {
+    const cells = [...document.querySelectorAll('.igrid__cell')];
+    if (cells[idx]) cells[idx].click();
+  }, i);
+  await page.waitForTimeout(450);
+  const r = await page.evaluate(() => {
+    const s = document.querySelector('.sheet');
+    const p = document.querySelector('.sheet__panel');
+    if (!s || !p) return { open: false };
+    const sr = s.getBoundingClientRect();
+    const pr = p.getBoundingClientRect();
+    return {
+      open: true,
+      covers: Math.abs(sr.width - innerWidth) < 2 && Math.abs(sr.top) < 2,
+      panelInView: pr.bottom <= innerHeight + 2 && pr.top >= -2,
+      empty: !p.textContent.trim(),
+    };
+  });
+  if (!r.open) sheetBad.push(`${SHEETS[i]}:没打开`);
+  else if (!r.covers) sheetBad.push(`${SHEETS[i]}:没铺满视口（fixed 失效？）`);
+  else if (!r.panelInView) sheetBad.push(`${SHEETS[i]}:面板跑到视口外`);
+  else if (r.empty) sheetBad.push(`${SHEETS[i]}:是空的`);
+  // 关掉 —— 点蒙层，走读者真会走的路径
+  await page.evaluate(() => {
+    const s = document.querySelector('.sheet');
+    if (s) s.click();
+  });
+  await page.waitForTimeout(300);
+  if (await page.evaluate(() => Boolean(document.querySelector('.sheet')))) {
+    sheetBad.push(`${SHEETS[i]}:关不掉`);
+  }
+}
+check(
+  '六个图标入口都能开出铺满视口的弹窗、且关得掉',
+  sheetBad.length === 0,
+  sheetBad[0] ?? `${SHEETS.length} 个全部通过`,
+);
+
+// ⚠️ 单场运动是**另一个**触发点（点列表卡片，不是点图标格），单独走一遍。
+const sessOpened = await page.evaluate(() => {
+  const c = document.querySelector('.chc__sess');
+  if (!c) return 'no-card';
+  c.click();
+  return 'clicked';
+});
+if (sessOpened === 'clicked') {
+  await page.waitForTimeout(600);
+  const s = await page.evaluate(() => {
+    const p = document.querySelector('.sheet__panel');
+    const curves = document.querySelectorAll('.sheet__body .chc__spark').length;
+    return { title: (document.querySelector('.sheet__title') || {}).textContent || '', curves };
+  });
+  check('点运动卡片能开出场次弹窗', s.title.length > 0, `标题「${s.title}」曲线 ${s.curves} 条`);
+  await page.evaluate(() => {
+    const el = document.querySelector('.sheet');
+    if (el) el.click();
+  });
+  await page.waitForTimeout(300);
+} else {
+  check('点运动卡片能开出场次弹窗', false, '页面上没有 .chc__sess（最近 30 天没有运动？）');
+}
 
 await browser.close();
 console.log(`\n${pass}/${pass + fail} 通过\n`);

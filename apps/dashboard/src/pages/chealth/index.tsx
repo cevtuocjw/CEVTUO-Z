@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Input, Text, View } from '@tarojs/components';
 
-import { BarRow, HeartChart, Legend, SeriesChart, Spark } from '../../components/ChealthCharts';
+import { BarRow, HeartChart, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
 import {
   hrZones,
@@ -14,6 +14,7 @@ import {
   weekCompare,
 } from '../../platform/health-analysis';
 import { PageHero, PageStack, Section } from '../../components/Section';
+import { IconGrid, Sheet } from '../../components/Sheet';
 import { TopBar } from '../../components/TopBar';
 import { homePanelUrl } from '../../platform/panels';
 import { Wallpaper } from '../../components/Wallpaper';
@@ -30,6 +31,29 @@ import {
 import { readPass, savePass } from '../../platform/health-pass';
 
 import '../../styles/demo.scss';
+
+/**
+ * ⚠️ 步数目标，**只在这里定义一次**。
+ *
+ * 它同时出现在三个地方：柱状图上那条虚线、「今天」那块砖的达标进度、
+ * 以及 `stepStreak` 数连续达标天数。三处各写一个 8000 就一定会漂移 ——
+ * 而这个项目已经因为「同一件事两处定义」吃过两次亏（字数统计算出 127 和 109）。
+ *
+ * ⚠️ 所以这里不只是「抽个常量」，而是**显式传给 `stepStreak`**：
+ *    让它用默认参数就等于又留了一份定义。
+ */
+const STEP_GOAL = 8000;
+
+/**
+ * 小时 → 「7h32m」。
+ *
+ * ⚠️ 三星健康展示睡眠用的是**时长**，不是「7.53 小时」。后者读者要在脑子里
+ *    做一次乘法才知道是 7 点半，而睡眠是这一页上唯一一个「小数没意义」的指标。
+ */
+function hm(hours: number): string {
+  const total = Math.round(hours * 60);
+  return `${Math.floor(total / 60)}h${String(total % 60).padStart(2, '0')}m`;
+}
 
 /**
  * CHEALTH — Samsung Health, via Health Connect on the phone.
@@ -67,19 +91,31 @@ import '../../styles/demo.scss';
  *    drawn as absent and said to be absent, never as a bar of height zero.
  */
 /*
- * ⚠️ 这里原来有一个 `sessionLabel()`，把运动类型映射成「🚴 骑行」这样的 emoji
- *    字符串。已删除，改用 `platform/health-analysis.ts` 的 `typeLabel()` +
- *    `ChealthIcons` 的内联 SVG。
+ * ⚠️⚠️ 2026-09-28 晚：这一页从**十屏**收成了**三屏 + 六个弹窗**。
  *
- * 两条理由，都会复发：
- *   · **emoji 长什么样取决于机器上装了什么字体**，而且它是彩色的，
- *     和页面这套黑白排版不是同一种语言。项目里已经因为 Unicode 符号
- *     （`▦ ≋ ▤`）在不同设备上显示不一致踩过一次。
- *   · 那份映射表是**局部**的，只覆盖 11 个类型；`typeLabel()` 覆盖 20 多个，
- *     而且未知类型会**原样显示机器名**（`TYPE_0`）而不是「未知」——
- *     一个编号还能去查，「未知」是死路。
+ * 读者的原话是「把 10 屏尽量处理进 3 屏，可以通过弹窗的形式来归并，
+ * 但是要尽量展示多的是在外边的是图标，而文字尽量缩减和折叠，大小也减小」。
+ *
+ * 为什么不是「再拆几屏」：十屏摊开之后，读者每看一遍要翻十次，而其中八屏
+ * 他每次都不看；侧边进度条变成十个小方块，密集到分不出「我在第几屏」；
+ * 每一屏都自带一段 lede 和一堆说明文字，**翻页的成本被文字吃掉了**。
+ *
+ * ⇒ 主屏只留一眼要看的（今天怎么样 / 动了什么 / 趋势什么样），
+ *   细节（心率、周对比、功率、连续达标、类型分布、数据来源）点图标再展开。
+ *
+ * ⚠️⚠️ 接线方式：**把 `<Section>` 的开闭标签整个换成 `<Sheet>`**，
+ *    children 一个字节都不动。
+ *
+ *    上一轮我试过写脚本跨 300 行搬 JSX，typecheck 报了 9 处语法错误
+ *    （打开的 `<Sheet ...>` 没被正确闭合），只能整体回退。
+ *    ⚠️ 搬 JSX 是**结构**操作，而脚本擅长的是**文本**操作 —— 两者在这里不等价。
+ *
+ * ⚠️ 弹窗**全部渲染在 `</PageStack>` 外面**，不是留在原来的位置。
+ *    `.sheet` 是 `position: fixed`，而 `fixed` 的包含块是**最近一个带
+ *    transform / filter / backdrop-filter / contain 的祖先**。留在栈里就得
+ *    赌 `.stack` 和 `.section` 上没有这些属性 —— 赌赢一次，下次有人给某个
+ *    容器加一句 `will-change` 就静默失效（弹窗跑到某一屏里面去）。
  */
-
 export default function Chealth() {
   const [index, setIndex] = useState<ChealthIndex | null>(null);
   const [beat, setBeat] = useState<ChealthHeartbeat | null>(null);
@@ -167,6 +203,36 @@ export default function Chealth() {
   const partial = t !== undefined && t.stepsToday !== null && median !== null && t.stepsToday < median * 0.5;
 
   /**
+   * ⚠️⚠️ 睡眠显示的是**最近一晚**，不是「7 天累计」。
+   *
+   *    原来 hero 上那块写着「37.7h」，标签是「睡眠」。**37.7 小时不是任何人
+   *    理解睡眠的方式** —— 那是七天的和，而读者脑子里问的是「我昨晚睡了多久」。
+   *    三星健康展示的也是昨夜（或每晚均值），不是一段时间的总和。
+   *
+   * ⚠️ 取**最后一条真的有记录的那天**，不是 `days[days.length-1]`。
+   *    最新一天可能还没同步到睡眠（手机早上推的时候手表那条还没过桥），
+   *    直接取末日会显示成「—」，看起来像睡眠数据断了。
+   *
+   * ⚠️ 日期也一起返回：把它印在页面上，读者才知道「最近一晚」是哪一晚。
+   *    不印的话，一个停在三周前的管道会显示成「昨晚睡了 7 小时」。
+   */
+  const lastSleep = useMemo(() => {
+    for (let i = days.length - 1; i >= 0; i -= 1) {
+      const d = days[i];
+      if (d && typeof d.sleepSeconds === 'number' && d.sleepSeconds > 0) {
+        return { date: d.date, hours: d.sleepSeconds / 3600 };
+      }
+    }
+    return null;
+  }, [days]);
+
+  /** 每晚均值 —— 和「最近一晚」并排，两者回答的是不同的问题。 */
+  const avgSleep = useMemo(() => {
+    const v = recent.map((d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)).filter((x): x is number => typeof x === 'number');
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  }, [recent]);
+
+  /**
    * How far behind the phone's own pushes the DATA is, in days.
    *
    * ⚠️⚠️ This is the verdict the two stamps above were missing, and it is the
@@ -215,7 +281,7 @@ export default function Chealth() {
   const week = useMemo(() => (index?.to ? weekCompare(days, index.to) : []), [days, index]);
   const rhr = useMemo(() => (index?.to ? restingHrCompare(days, index.to) : null), [days, index]);
   const bests = useMemo(() => personalBests(sessions, days), [sessions, days]);
-  const streak = useMemo(() => (index?.to ? stepStreak(days, index.to) : 0), [days, index]);
+  const streak = useMemo(() => (index?.to ? stepStreak(days, index.to, STEP_GOAL) : 0), [days, index]);
   const kinds = useMemo(() => typeBreakdown(sessions), [sessions]);
 
   /** 有功率序列的场次 —— 只有它们谈得上功率分析。 */
@@ -236,10 +302,23 @@ export default function Chealth() {
     [sessions, kind],
   );
 
-  // ⚠️ 展开哪一条运动。默认**全收起** —— 每条运动有四条曲线，全展开时这一屏
-  //    实测 2868px（面板只有 844px），要滚很久才看得到第二条。
-  //    三星健康的列表也是先给摘要、点开才给细节。
-  const [open, setOpen] = useState<string | null>(null);
+  /**
+   * ⚠️⚠️ **一个** `sheet` 字符串，不是六个 boolean。
+   *
+   * 「同时开着心率区间和功率两个弹窗」是一个**用不了的状态** ——
+   * 六个 boolean 能表示它，而它不该能被表示出来。用不了的状态一旦可表示，
+   * 迟早会有人表示出来，然后读者看到两层蒙层叠在一起。
+   *
+   * ⚠️ 单场运动单独一个 `openSess`：它多带一个「哪一场」的载荷，
+   *    而那个载荷不是弹窗的名字。`sheet === 'session'` 时它一定有值。
+   */
+  const [sheet, setSheet] = useState<string | null>(null);
+  const [openSess, setOpenSess] = useState<ChealthSession | null>(null);
+  const openSheet = (k: string) => setSheet(k);
+  const closeSheet = () => {
+    setSheet(null);
+    setOpenSess(null);
+  };
 
   return (
     <View className="page">
@@ -299,199 +378,797 @@ export default function Chealth() {
       ) : null}
 
       {/*
-        ⚠️ 没解开就**不要**渲染这六屏。
+        ⚠️ 没解开就**不要**渲染这三屏。
         它们会全部渲染成空壳（没有数字、没有曲线），跟在一张「需要口令」的
         卡片后面 —— 那正是「完全没有数据和展示」的观感来源：
-        读者看到的是六屏空白，而不是一句「还没解锁」。
+        读者看到的是几屏空白，而不是一句「还没解锁」。
       */}
       {pass && !err ? (
-      <PageStack count={10}>
-        <Section
-          index={0}
-          title="CHEALTH"
-          hero={<PageHero brand="CHEALTH" />}
-          compact
-          lede="三星健康 → Health Connect → 手机上的 CEVTUO Health → 阿里云 → 这里。每 15 分钟一次，中间没有电脑。"
-        >
+        <>
           {/*
-            ⚠️ 这里原来用 `stats={[...]}`，出来是**等分的 2×2 四宫格**。
-            读者 2026-09-28 明确说「不要完全对得太齐」，并给了 Depo Studio 那套
-            参考：**块与块大小不等**，而且有一个强烈的蓝色。
-
-            ⚠️ 但不等大小是**为了表达层级**，不是为了花：
-            今日步数最大（块最宽、字最大、蓝色实底），其余按重要性递减。
-            四个块都做成不一样大就变成噪音了。
+            ⚠️ `count` 必须和真实的 Section 数量一致，而且**中间不能再夹别的东西**。
+            这里原来把「正在 MyWhoosh 骑车」那个徽标作为兄弟节点直接放在
+            `<PageStack>` 里面 —— 于是它变成了一屏。面板栈按
+            `scrollTop / clientHeight` 算「我在第几屏」，多一个变高的兄弟节点
+            就让**所有**面板和进度条对不上；而 `count={10}` 还写着 10。
+            ⇒ 徽标挪进了第 0 屏里面。
           */}
-          <View className="chc__mosaic">
-            {/*
-              ⚠️ 每块的结构是「**彩色圆底图标 + 标签**」在上、大数字在下 —— 这是
-              三星健康最有辨识度的一处排法，读者点名要「图标尽量一样」。
-              原来只有一行文字标签，没有任何图形，所以整页读起来像表格。
-            */}
-            <View className="chc__tile chc__tile--wide chc__tile--blue">
-              <View className="chc__mhead">
-                <View className="chc__badge chc__badge--steps">
-                  <Icon name="steps" />
-                </View>
-                <Text className="chc__mlabel">今日步数</Text>
-              </View>
-              <Text className="chc__tile-v">
-                {t?.stepsToday !== null && t?.stepsToday !== undefined
-                  ? Math.round(t.stepsToday).toLocaleString('en-US') : '—'}
-                <Text className="chc__tile-u">步</Text>
-              </Text>
-              {/* ⚠️ 「截至现在」必须说出来。不说的话，早上读到 3,123
-                  而中位数接近 22,000，看起来像塌了。 */}
-              <Text className="chc__tile-note">{partial ? '截至现在 · 今天还没过完' : '至今'}</Text>
-            </View>
-
-            <View className="chc__tile chc__tile--narrow">
-              <View className="chc__mhead">
-                <View className="chc__badge chc__badge--sleep">
-                  <Icon name="moon" />
-                </View>
-                <Text className="chc__mlabel">睡眠</Text>
-              </View>
-              <Text className="chc__tile-v">
-                {t?.sleep7dHours ?? '—'}
-                <Text className="chc__tile-u">h</Text>
-              </Text>
-            </View>
-
-            <View className="chc__tile chc__tile--half">
-              <View className="chc__mhead">
-                <View className="chc__badge chc__badge--kcal">
-                  <Icon name="flame" />
-                </View>
-                <Text className="chc__mlabel">活动消耗</Text>
-              </View>
-              <Text className="chc__tile-v">
-                {t?.activeCalories7d !== undefined ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—'}
-                <Text className="chc__tile-u">kcal</Text>
-              </Text>
-            </View>
-
-            <View className="chc__tile chc__tile--half">
-              <View className="chc__mhead">
-                <View className="chc__badge chc__badge--dist">
-                  <Icon name="route" />
-                </View>
-                <Text className="chc__mlabel">距离</Text>
-              </View>
-              <Text className="chc__tile-v">
-                {t?.distance7dKm ?? '—'}
-                <Text className="chc__tile-u">km</Text>
-              </Text>
-            </View>
-          </View>
-          {/* ⚠️ 「7 天」从标签里挪到这里**统一说一次**。放在每个块里会把窄块
-              的标签挤成三行（实测：「7 天睡眠」折成「7/天/睡眠」）。 */}
-          <Text className="chc__tile-note" style={{ marginTop: 7 }}>
-            睡眠 · 活动消耗 · 距离 都是最近 7 天；步数是今天
-          </Text>
-        </Section>
-
-        {/*
-          ⚠️「正在骑 MyWhoosh」——这个徽标**只在 true 时出现**，false 时什么都不显示。
-          因为 `ridingNow: false` 的真实含义是「没检测到」，不是「确定没在骑」
-          （用户没给「使用情况访问」权限时它永远是 false）。显示成「未骑行」就是
-          把一个不知道的事说成一个知道的事 —— 这个项目已经栽过好几次。
-        */}
-        {index?.ridingNow ? (
-          <View className="card chc__stack">
-            <Text className="card__label">🚴 正在 MyWhoosh 上骑车</Text>
-          </View>
-        ) : null}
-
-        <Section
-          index={1}
-          title="运动"
-          lede="只显示走路以外的活动。走路照样在采集，只是按你的要求不上页面。"
-        >
-          {!index?.sessions?.length ? (
-            <View className="card chc__stack">
-              <Text className="card__label">最近 30 天没有非走路的运动记录。</Text>
+          <PageStack count={3}>
+            <Section
+              index={0}
+              title="今天"
+              hero={<PageHero brand="CHEALTH" />}
+              compact
+              // ⚠️ 读者要「文字尽量缩减」。这一段原来三行，占了小半屏，
+              //    而它说的是一件**装完就不用再想**的事。完整链路挪进了
+              //    「数据来源」弹窗 —— 那里才是读者真的要查它的时候。
+              lede="手表 → 三星健康 → 手机 → 阿里云 → 这里，每 15 分钟一次。"
+            >
               {/*
-                ⚠️ 说明为什么可能是空的，而不是让它看起来像坏了。
-                MyWhoosh 不支持 Health Connect，它必须先经 Strava 或三星健康过桥，
-                而 Health Sync 的后台同步**确实会漏掉整天**（实测 09-23 那次骑行
-                是手动「对特定日期重新同步」才捞回来的）。
+                ⚠️「正在骑 MyWhoosh」——这个徽标**只在 true 时出现**，false 时什么都不显示。
+                因为 `ridingNow: false` 的真实含义是「没检测到」，不是「确定没在骑」
+                （用户没给「使用情况访问」权限时它永远是 false）。显示成「未骑行」就是
+                把一个不知道的事说成一个知道的事 —— 这个项目已经栽过好几次。
               */}
-              <Text className="card__label">
-                提示：MyWhoosh 不支持 Health Connect，骑行要先过桥（三星健康 → Health Sync，或 Strava）。
-                如果刚骑完这里没有，在 Health Sync 里用「对特定日期重新同步」把那天捞一次。
-              </Text>
-            </View>
-          ) : (
-            <>
-              {/* 筛选器：全部 / 各类运动。只列出这个窗口里真的出现过的类型。 */}
-              <View className="chc__chips">
-                {[{ k: 'ALL', label: '全部' }, ...kinds.map((x) => ({ k: x.type, label: typeLabel(x.type) }))].map((c) => (
-                  <View
-                    key={c.k}
-                    className={`chc__chip${kind === c.k ? ' chc__chip--on' : ''}`}
-                    onClick={() => setKind(c.k)}
-                  >
-                    {c.k === 'ALL' ? <Icon name="signal" /> : <Icon name={typeIcon(c.k)} />}
-                    <Text>{c.label}</Text>
-                    <Text className="chc__chip-n">
-                      {c.k === 'ALL' ? sessions.length : kinds.find((x) => x.type === c.k)?.count ?? 0}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {shown.length === 0 ? (
-                <View className="card chc__stack">
-                  <Text className="card__label">这个筛选下没有记录。</Text>
+              {index?.ridingNow ? (
+                <View className="card chc__card chc__riding">
+                  <View className="chc__badge chc__badge--dist"><Icon name="bike" /></View>
+                  <Text className="chc__riding-t">正在 MyWhoosh 上骑车</Text>
                 </View>
               ) : null}
 
-              {shown.map((sess: ChealthSession) => {
-                const isOpen = open === sess.start;
-                return (
-              <View className="card chc__stack" key={sess.start}>
-                <View className="chc__fold" onClick={() => setOpen(isOpen ? null : sess.start)}>
-                  <Icon name={typeIcon(sess.type)} className="chc__ico" />
-                  <Text className="card__label">
-                    {typeLabel(sess.type, sess.exerciseType)} · {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
+              {/*
+                ⚠️ 这里原来用 `stats={[...]}`，出来是**等分的 2×2 四宫格**。
+                读者 2026-09-28 明确说「不要完全对得太齐」，并给了 Depo Studio 那套
+                参考：**块与块大小不等**，而且有一个强烈的蓝色。
+
+                ⚠️ 但不等大小是**为了表达层级**，不是为了花：
+                今日步数最大（块最宽、字最大、蓝色实底），其余按重要性递减。
+                四个块都做成不一样大就变成噪音了。
+              */}
+              <View className="chc__mosaic">
+                {/*
+                  ⚠️ 每块的结构是「**彩色圆底图标 + 标签**」在上、大数字在下 —— 这是
+                  三星健康最有辨识度的一处排法，读者点名要「图标尽量一样」。
+                  原来只有一行文字标签，没有任何图形，所以整页读起来像表格。
+                */}
+                <View
+                  className="chc__tile chc__tile--wide chc__tile--blue"
+                  // ⚠️ `--m` 挂在**整块砖**上，不是挂在圆底图标上 —— 标签的颜色
+                  //    从它取（`.chc__mlabel { color: var(--m) }`），而标签是
+                  //    圆底的**兄弟节点**，挂在圆底上它取不到。
+                  style={{ ['--m' as string]: 'var(--m-steps)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--steps">
+                      <Icon name="steps" />
+                    </View>
+                    <Text className="chc__mlabel">今日步数</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {t?.stepsToday !== null && t?.stepsToday !== undefined
+                      ? Math.round(t.stepsToday).toLocaleString('en-US') : '—'}
+                    <Text className="chc__tile-u">步</Text>
                   </Text>
-                  <Icon name="chev" className={`chc__fold-mark${isOpen ? ' chc__fold-mark--open' : ''}`} />
+                  {/*
+                    ⚠️⚠️ 达标进度条 —— 三星那一半辨识度就在这里。
+                    原来只有一个裸数字「3,163」，读者要自己去想「这算多还是少」。
+                    有了分母（目标 8,000）和一个可见的进度，同一个数字立刻有意义。
+
+                    ⚠️ 条的长度只来自**这一个** ratio，不写死像素 ——
+                       这个项目吃过亏：柱状图曾用 88/84/76/72 四个手写数字，
+                       眼睛会把「长度差」读成「数据差」。
+                  */}
+                  {t?.stepsToday !== null && t?.stepsToday !== undefined ? (
+                    <>
+                      {/*
+                        ⚠️⚠️ 发丝线 + `/ 8,000 步` 是**照真机截图抄的**。
+                        三星「每日活动量」那块砖上是「大数字 / 一条线 / 分母」，
+                        分母写作 `/9,000` —— 斜杠在任何语言里都读作「分母是这个」，
+                        比「目标 8,000 步」省两个字，而砖里最缺的就是宽度。
+                      */}
+                      <View className="chc__tile-rule" />
+                      <Text className="chc__tile-goal">
+                        / {STEP_GOAL.toLocaleString('en-US')} 步 · {Math.round((t.stepsToday / STEP_GOAL) * 100)}%
+                      </Text>
+                      {/*
+                        ⚠️ 进度条留在 `/目标` 下面。真机那块砖只有分母没有条，
+                        但读者（和交接文档）明确要「达标进度」——
+                        分母说的是「目标是多少」，条说的是「走到了几成」，
+                        两者不重复。条做细，不抢数字。
+                      */}
+                      <View className="chc__goal">
+                        <View className="chc__goal-track">
+                          <View
+                            className="chc__goal-fill"
+                            style={{ width: `${Math.min(100, Math.round((t.stepsToday / STEP_GOAL) * 100))}%` }}
+                          />
+                        </View>
+                      </View>
+                    </>
+                  ) : null}
+                  {/* ⚠️ 「截至现在」必须说出来。不说的话，早上读到 3,123
+                      而中位数接近 22,000，看起来像塌了。 */}
+                  <Text className="chc__tile-note">{partial ? '截至现在 · 今天还没过完' : '至今'}</Text>
                 </View>
-                <View className="chc__legend">
-                  {sess.distanceM !== undefined ? (
-                    <Text className="chc__key">距离 <Text className="chc__num">{(sess.distanceM / 1000).toFixed(2)} km</Text></Text>
-                  ) : null}
-                  {sess.powerAvg !== undefined ? (
-                    <Text className="chc__key">平均功率 <Text className="chc__num">{sess.powerAvg} W</Text></Text>
-                  ) : null}
-                  {sess.powerMax !== undefined ? (
-                    <Text className="chc__key">峰值功率 <Text className="chc__num">{sess.powerMax} W</Text></Text>
-                  ) : null}
-                  {sess.cadenceAvg !== undefined ? (
-                    <Text className="chc__key">踏频 <Text className="chc__num">{sess.cadenceAvg} rpm</Text></Text>
-                  ) : null}
-                  {sess.speedMaxMps !== undefined ? (
-                    <Text className="chc__key">最高速度 <Text className="chc__num">{(sess.speedMaxMps * 3.6).toFixed(1)} km/h</Text></Text>
-                  ) : null}
-                  {sess.hrAvg !== undefined ? (
-                    <Text className="chc__key">心率 <Text className="chc__num">{sess.hrAvg}</Text> 均 / <Text className="chc__num">{sess.hrMax ?? '—'}</Text> 峰</Text>
-                  ) : null}
-                  {sess.activeCalories !== undefined ? (
-                    <Text className="chc__key">活动消耗 <Text className="chc__num">{sess.activeCalories}</Text> kcal</Text>
-                  ) : null}
+
+                <View
+                  className="chc__tile chc__tile--narrow"
+                  style={{ ['--m' as string]: 'var(--m-sleep)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--sleep">
+                      <Icon name="moon" />
+                    </View>
+                    <Text className="chc__mlabel">最近一晚</Text>
+                  </View>
+                  {/*
+                    ⚠️ 这块砖只有 53px 可用宽 —— 四块里最窄的一块。
+                    「7h32m」要 3.2em（约 63px），**放不下**；而放不下的后果是
+                    验证器会报 `scrollWidth > clientWidth`，也就是字被切掉。
+
+                    ⇒ 砖上给**看得清的那个数**（7.5h，和旁边 kcal / km 一样
+                      走「数值 + 小号单位」），精确到分钟的那个写在下面的说明里。
+                      这不是把一个数写两遍 —— 是两块大小不同的地方各取所需。
+                  */}
+                  <Text className="chc__tile-v">
+                    {lastSleep ? lastSleep.hours.toFixed(1) : '—'}
+                    {lastSleep ? <Text className="chc__tile-u">h</Text> : null}
+                  </Text>
                 </View>
-                {/* ⚠️ 细节**默认收起**：四条曲线加起来比面板还高。点标题展开。 */}
-                {isOpen ? (
-                  <>
+
+                <View
+                  className="chc__tile chc__tile--half"
+                  style={{ ['--m' as string]: 'var(--m-kcal)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--kcal">
+                      <Icon name="flame" />
+                    </View>
+                    <Text className="chc__mlabel">活动消耗</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {t?.activeCalories7d !== undefined ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—'}
+                    <Text className="chc__tile-u">kcal</Text>
+                  </Text>
+                </View>
+
+                <View
+                  className="chc__tile chc__tile--half"
+                  style={{ ['--m' as string]: 'var(--m-dist)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--dist">
+                      <Icon name="route" />
+                    </View>
+                    <Text className="chc__mlabel">距离</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {t?.distance7dKm ?? '—'}
+                    <Text className="chc__tile-u">km</Text>
+                  </Text>
+                </View>
+              </View>
+
+              {/*
+                ⚠️ 每块的口径写在一起**说一次**。放在每个块里会把窄块的标签挤成三行
+                （实测：「7 天睡眠」折成「7/天/睡眠」）。
+
+                ⚠️ 睡眠那格现在写的是「最近一晚」+ 日期 + 7 天均值 —— 三个数都在，
+                   因为它们回答三个不同的问题：昨晚睡得怎么样、那是哪一晚、
+                   这一周整体是不是都这样。
+              */}
+              <Text className="chc__tile-note">
+                睡眠取最近一晚（{lastSleep ? `${lastSleep.date.slice(5)}，${hm(lastSleep.hours)}` : '没有记录'}）
+                {avgSleep !== null ? `，14 晚均值 ${hm(avgSleep)}` : ''}。
+                消耗 · 距离 是最近 7 天，步数是今天，目标 {STEP_GOAL.toLocaleString('en-US')} 步。
+              </Text>
+
+              {/*
+                ⚠️ 图标格 = 「外面尽量是图标，文字尽量缩减和折叠」的落点。
+                六个入口一眼全在，想看哪个点哪个 —— 而不是翻六屏。
+              */}
+              <IconGrid
+                onPick={openSheet}
+                items={[
+                  {
+                    key: 'zones',
+                    icon: 'heart',
+                    label: '心率区间',
+                    tone: 'heart',
+                    value: zoneMinutes > 0 ? `${Math.round(zoneMinutes)} 分` : undefined,
+                  },
+                  // ⚠️ **六个都要给 tone**。第一版只给了三个，另外三个走
+                  //    `var(--m, #6b7280)` 的兜底灰 —— 于是网格里三个彩色、
+                  //    三个灰，看起来像「这三个不能用」。
+                  //    三星那边每个入口都是实色圆底，颜色本身就是识别方式。
+                  { key: 'week', icon: 'up', label: '周对比', tone: 'dist' },
+                  { key: 'power', icon: 'power', label: '功率', tone: 'kcal' },
+                  {
+                    key: 'streak',
+                    icon: 'trophy',
+                    label: '连续达标',
+                    tone: 'steps',
+                    value: streak > 0 ? `${streak} 天` : undefined,
+                  },
+                  { key: 'kinds', icon: 'bike', label: '类型分布', tone: 'sleep' },
+                  { key: 'sources', icon: 'watch', label: '数据来源', tone: 'sync' },
+                ]}
+              />
+            </Section>
+
+            <Section
+              index={1}
+              title="运动"
+              lede="只显示走路以外的活动。走路照样在采集，只是按你的要求不上页面。点一条看过程曲线。"
+            >
+              {!index?.sessions?.length ? (
+                <View className="card chc__card">
+                  <Text className="chc__note">最近 30 天没有非走路的运动记录。</Text>
+                  {/*
+                    ⚠️ 说明为什么可能是空的，而不是让它看起来像坏了。
+                    MyWhoosh 不支持 Health Connect，它必须先经 Strava 或三星健康过桥，
+                    而 Health Sync 的后台同步**确实会漏掉整天**（实测 09-23 那次骑行
+                    是手动「对特定日期重新同步」才捞回来的）。
+                  */}
+                  <Text className="chc__note">
+                    提示：MyWhoosh 不支持 Health Connect，骑行要先过桥（三星健康 → Health Sync，或 Strava）。
+                    如果刚骑完这里没有，在 Health Sync 里用「对特定日期重新同步」把那天捞一次。
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {/* 筛选器：全部 / 各类运动。只列出这个窗口里真的出现过的类型。 */}
+                  <View className="chc__chips">
+                    {[{ k: 'ALL', label: '全部' }, ...kinds.map((x) => ({ k: x.type, label: typeLabel(x.type) }))].map((c) => (
+                      <View
+                        key={c.k}
+                        className={`chc__chip${kind === c.k ? ' chc__chip--on' : ''}`}
+                        onClick={() => setKind(c.k)}
+                      >
+                        {c.k === 'ALL' ? <Icon name="signal" /> : <Icon name={typeIcon(c.k)} />}
+                        <Text>{c.label}</Text>
+                        <Text className="chc__chip-n">
+                          {c.k === 'ALL' ? sessions.length : kinds.find((x) => x.type === c.k)?.count ?? 0}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {shown.length === 0 ? (
+                    <View className="card chc__card">
+                      <Text className="chc__note">这个筛选下没有记录。</Text>
+                    </View>
+                  ) : null}
+
+                  {/*
+                    ⚠️⚠️ 卡片是**摘要**，细节在弹窗里。
+                    这里原来一张卡展开就是四条曲线（心率 / 功率 / 踏频 / 速度），
+                    实测这一屏内容 2868px 而面板只有 844px，要滚 2000px 才看得到
+                    第二条运动。三星健康的列表也是先给摘要、点开才给细节。
+                  */}
+                  {shown.map((sess: ChealthSession) => (
+                    <View
+                      className="card chc__card chc__sess"
+                      key={sess.start}
+                      onClick={() => {
+                        setOpenSess(sess);
+                        setSheet('session');
+                      }}
+                    >
+                      <View className="chc__srow">
+                        <View className="chc__badge chc__badge--plain">
+                          <Icon name={typeIcon(sess.type)} />
+                        </View>
+                        {/*
+                          ⚠️ 标题和副标题**分成两行**，各自 `min-width: 0`。
+                          原来它们和图标、chevron 挤在一个 flex 行里，而标题是
+                          「骑行 · 09-23 18:44 · 50 分钟」这么长一串 —— 390px 上
+                          最后的「钟」被单独甩到第二行，读者看到的是「50 分/钟」，
+                          而类型图标跟着一起错位。
+                        */}
+                        <View className="chc__smain">
+                          <Text className="chc__st">{typeLabel(sess.type, sess.exerciseType)}</Text>
+                          <Text className="chc__ss">
+                            {sess.start.slice(5, 16).replace('T', ' ')} · {sess.minutes} 分钟
+                          </Text>
+                        </View>
+                        <Icon name="chev" className="chc__sgo" />
+                      </View>
+                      {/* 关键数：一行，能折行。全部细节在弹窗里。 */}
+                      <View className="chc__keys">
+                        {sess.distanceM !== undefined ? (
+                          <Text className="chc__key">
+                            距离 <Text className="chc__num">{(sess.distanceM / 1000).toFixed(2)}</Text> km
+                          </Text>
+                        ) : null}
+                        {sess.hrAvg !== undefined ? (
+                          <Text className="chc__key">
+                            心率 <Text className="chc__num">{sess.hrAvg}{sess.hrMax !== undefined ? `/${sess.hrMax}` : ''}</Text>
+                          </Text>
+                        ) : null}
+                        {sess.powerAvg !== undefined ? (
+                          <Text className="chc__key">
+                            功率 <Text className="chc__num">{sess.powerAvg}</Text> W
+                          </Text>
+                        ) : null}
+                        {sess.cadenceAvg !== undefined ? (
+                          <Text className="chc__key">
+                            踏频 <Text className="chc__num">{sess.cadenceAvg}</Text> rpm
+                          </Text>
+                        ) : null}
+                        {sess.activeCalories !== undefined ? (
+                          <Text className="chc__key">
+                            消耗 <Text className="chc__num">{sess.activeCalories}</Text> kcal
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+                  ))}
+                </>
+              )}
+            </Section>
+
+            <Section
+              index={2}
+              title="趋势"
+              lede="柱状是每天的总量，最近 14 天。空白的那天是没记录，不是零。点一根柱子看那天的数。"
+              showCue={false}
+            >
+              <View className="card chc__card">
+                <Text className="chc__card-t">步数</Text>
+                {/* ⚠️ 目标线 + 达标进度。三星那一半辨识度来自「9,686 / 目标 10,000」。 */}
+                <BarRow days={recent} pick={(d) => d.steps} today={today} unit=" 步" tone="steps" target={STEP_GOAL} />
+              </View>
+
+              <View className="card chc__card">
+                <Text className="chc__card-t">睡眠</Text>
+                <BarRow
+                  days={recent}
+                  pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)}
+                  today={today}
+                  unit=" 小时"
+                  tone="sleep"
+                />
+                {/* ⚠️ Said rather than silently tolerated. Sessions can overlap —
+                    the watch and the phone both write, and a session crossing
+                    midnight lands in two days — so a single day can exceed 24h.
+                    Measured: 2026-09-08 reported 27.9 hours. */}
+                {recent.some((d) => (d.sleepSeconds ?? 0) > 20 * 3600) ? (
+                  <Text className="chc__note">
+                    ⚠️ 有单日超过 20 小时 —— 睡眠会话在手表和手机之间重叠时会重复计入
+                  </Text>
+                ) : null}
+              </View>
+
+              <View className="card chc__card">
+                <Text className="chc__card-t">活动消耗</Text>
+                <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" tone="kcal" />
+                {/*
+                  ⚠️⚠️ The label is the whole point of this panel.
+                  `calories7d` sums TotalCaloriesBurnedRecord, which includes BMR.
+                  In the first real data set it was 1662 on ELEVEN consecutive
+                  days with no other data at all — a dead-flat line that any
+                  reader would file as a broken sensor, when it is the most
+                  correct number on the page.
+
+                  ⚠️ 总消耗那张图撤了，但**这句话不能跟着撤**：
+                     「活动消耗」和「总消耗」差着一个基础代谢，不写出来，
+                     读者会拿这里的数去对三星健康首页那个大数字，然后对不上。
+                */}
+                <Text className="chc__note">
+                  这是动出来的那部分。总消耗（含基础代谢 —— 静息也在烧，所以没活动的日子也在 1,600 左右）
+                  最近 7 天合计 {t ? Math.round(t.calories7d).toLocaleString('en-US') : '—'} kcal，
+                  <Text className="chc__em">两者相减才是走路跑步花掉的</Text>。
+                </Text>
+              </View>
+            </Section>
+          </PageStack>
+
+          {/* ── 弹窗 ──────────────────────────────────────────────
+              ⚠️ 全部在 `</PageStack>` 外面。见文件开头那段注释。 */}
+
+          {/*
+            ⚠️ 心率区间 + 日均心率 + 体征放在**同一个**弹窗里。
+            它们回答的都是「我的心脏怎么样」，拆成两个入口等于让读者自己
+            去猜「静息心率」该点哪个图标。
+          */}
+          <Sheet open={sheet === 'zones'} title="心率与体征" onClose={closeSheet}>
+            {zoneMinutes > 0 ? (
+              <View className="card chc__card">
+                <Text className="chc__card-t">
+                  <Icon name="heart" className="chc__ico" />
+                  心率区间 · 最近 30 天共 {Math.round(zoneMinutes)} 分钟
+                </Text>
+                <View className="chc__zones">
+                  {zones.map((z) => {
+                    const pct = zoneMinutes > 0 ? (z.minutes / zoneMinutes) * 100 : 0;
+                    return (
+                      <View className="chc__zone" key={z.key}>
+                        <Text className="chc__zone-label">{z.label}</Text>
+                        {/* ⚠️ 宽度只来自这一个数 —— 不写死像素。这个项目吃过亏：
+                            柱状图曾用 88/84/76/72 四个手写数字，眼睛会把「高度差」
+                            读成「数据差」。 */}
+                        <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
+                          <i />
+                        </View>
+                        {/* ⚠️ 「118 分」原来会被折成两行 —— 「分」单独掉下去。
+                            实测原因是这一格只有 3.2em 宽，而「118 分」加上间距比它宽。
+                            字宽不够就该缩字号或加宽，**不该丢一个换行**。 */}
+                        <Text className="chc__zone-min">{Math.round(z.minutes)} 分</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+                {/* ⚠️⚠️ 这里原来是 `取的是**最近 30 天实测到的最高值**` ——
+                    Markdown 的粗体标记**原样渲染**，读者看到的是两个星号。
+
+                    ⚠️ 它在页面上挂了很久没人报，因为星号夹在中文里看着像排版符号，
+                       不像错误 —— 这正是「看起来像那么回事」的错最难被发现的原因。
+
+                    改成嵌套 `<Text>`：强调还在，而且不再依赖一个**永远不会发生**
+                    的解析。⚠️ 别在 JSX 里写 Markdown。 */}
+                <Text className="chc__note">
+                  基准最高心率 {refMaxHr} —— 取的是
+                  <Text className="chc__em">最近 30 天实测到的最高值</Text>
+                  ，不是 220−年龄。代价是它偏低（没尽全力就到不了真最大值），
+                  所以这个划分整体偏严。
+                </Text>
+              </View>
+            ) : null}
+
+            {have('hrAvg') ? (
+              <View className="card chc__card">
+                <Text className="chc__card-t">日均心率 · 最近 14 天</Text>
+                <Spark points={recent.map((d) => d.hrAvg)} />
+              </View>
+            ) : null}
+
+            <View className="card chc__card">
+              <Text className="chc__card-t">各项指标（7 天）</Text>
+              <View className="chc__grid">
+                <View className="chc__cell"><Text>静息心率</Text><Text className="chc__cell-v">{t?.restingHr7d ?? '—'}</Text></View>
+                <View className="chc__cell"><Text>血氧</Text><Text className="chc__cell-v">{t?.spo2_7d ?? '—'}%</Text></View>
+                <View className="chc__cell"><Text>体重</Text><Text className="chc__cell-v">{t?.weightKgLatest ?? '—'} kg</Text></View>
+                <View className="chc__cell"><Text>距离</Text><Text className="chc__cell-v">{t ? `${t.distance7dKm} km` : '—'}</Text></View>
+              </View>
+              <Text className="chc__note">
+                ⚠️ HRV、呼吸率、皮温、体重在最近 30 天里一条记录都没有 —— 是三星健康不往 Health Connect 写，
+                不是这里读漏了。显示成 0 会让它看起来像「测出来是零」。
+              </Text>
+            </View>
+          </Sheet>
+
+          {/*
+            ⚠️ THIS TABLE IS THE MOST USEFUL THING ON THE PAGE, and it exists
+            because of a specific afternoon. Step counts read "latest 06:27" at
+            15:00 and that looked like a dead watch. It was not: the handset
+            sensor was still writing a minute earlier, while Health Sync and
+            Google Fit had both stopped ~21 hours before. Three sources, two
+            dead, one alive — invisible in every total, obvious here.
+          */}
+          <Sheet open={sheet === 'sources'} title="数据来源与同步" onClose={closeSheet}>
+            <View className="card chc__card">
+              <Text className="chc__card-t">谁在写、多久没写了</Text>
+              <table className="chc__src">
+                <thead>
+                  <tr>
+                    <th>来源</th>
+                    <th>条数</th>
+                    <th>最后写入</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(index?.origins ?? {}).map(([pkg, o]) => {
+                    const mins = o.lastAt ? (Date.now() - new Date(o.lastAt).getTime()) / 60000 : NaN;
+                    // ⚠️ Two hours, because the phone's own sensor writes every
+                    // few minutes while a bridged source batches. Anything older
+                    // than that is a stall, not a rhythm.
+                    const stale = Number.isFinite(mins) && mins > 120;
+                    return (
+                      <tr key={pkg}>
+                        <td>{pkg}</td>
+                        <td>{o.count}</td>
+                        <td className={stale ? 'chc__stale' : 'chc__fresh'}>
+                          <Text>
+                            {Number.isFinite(mins)
+                              ? mins < 90 ? `${Math.round(mins)} 分钟前` : `${(mins / 60).toFixed(1)} 小时前`
+                              : '—'}
+                          </Text>
+                          {/*
+                            ⚠️⚠️ ⚠️ 要**独占一行**。
+                            原来它和「21.4 小时前」是同一个文本节点里的相邻字符，
+                            于是窄列里会折行成「21.4 小时/前 ⚠️」或者把 ⚠️ 挤到
+                            第三行去 —— 而 ⚠️ 是这个表**唯一的重点标记**，
+                            它一移位，「哪一行是坏的」就要读者自己去比对。
+                            `<View>` 是块级，直接换行，不依赖折行时机。
+                          */}
+                          {stale ? <View className="chc__stalemark">⚠️ 已停写</View> : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!Object.keys(index?.origins ?? {}).length ? (
+                    <tr><td colSpan={3}>还没有来源信息 —— 手机端 v1.3 起才有</td></tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </View>
+
+            <View className="card chc__card">
+              <Text className="chc__card-t">同步</Text>
+              {/*
+                ⚠️ Both stamps, because they answer different questions.
+                `lastPushAt` ("手机来过了") comes from the ingest over an
+                uncached connection and moves on EVERY push, including one that
+                changed nothing. `updatedAt` ("数字变了") comes from the published
+                file and obeys a 10-minute CDN cache. Showing only the second is
+                how a working sync came to look broken for a week on CAPPERR.
+              */}
+              <View className="chc__grid">
+                <View className="chc__cell">
+                  <Text>手机上报</Text>
+                  <Text className="chc__cell-v">{beat?.lastPushAt ? beat.lastPushAt.slice(5).replace('T', ' ') : '—'}</Text>
+                </View>
+                <View className="chc__cell">
+                  <Text>数据更新</Text>
+                  <Text className="chc__cell-v">{index?.updatedAt ? index.updatedAt.slice(5).replace('T', ' ') : '—'}</Text>
+                </View>
+                <View className="chc__cell">
+                  <Text>累计天数</Text>
+                  <Text className="chc__cell-v">{index?.dayCount ?? 0}</Text>
+                </View>
+                <View className="chc__cell">
+                  <Text>手机端</Text>
+                  <Text className="chc__cell-v">v{index?.appVersion ?? '—'}</Text>
+                </View>
+              </View>
+              <Text className="chc__note">
+                数据区间 {index?.from ?? '—'} → {index?.to ?? '—'}
+              </Text>
+              {/*
+                ⚠️ The verdict, not another stamp. See `stallDays` above for why
+                two timestamps in one sentence are not a warning.
+              */}
+              {stallDays >= 2 ? (
+                <Text className="chc__note chc__stale">
+                  ⚠️ 手机一直在推，数据却没动 —— 最新一天是 {index?.to}，比手机最后一次上报早 {stallDays} 天。
+                  三星健康国行不写 Health Connect，Health Sync 是它唯一的入口，先去手机上确认它还在同步。
+                </Text>
+              ) : null}
+              {!beat ? (
+                <Text className="chc__note">
+                  ⚠️ 读不到上报心跳 —— 阿里云那边可能没响应，数据本身仍是最新发布的那份
+                </Text>
+              ) : null}
+            </View>
+          </Sheet>
+
+          <Sheet open={sheet === 'week'} title="周对比" onClose={closeSheet}>
+            <View className="card chc__card">
+              <Text className="chc__card-t">最近 7 天 vs 再往前 7 天</Text>
+              {week.length ? (
+                <>
+                  <View className="chc__grid">
+                    {week.map((w) => {
+                      const d = w.deltaPct;
+                      const cls = d === null || Math.abs(d) < 3 ? 'chc__flat' : d > 0 ? 'chc__up' : 'chc__down';
+                      const ico = d === null || Math.abs(d) < 3 ? 'flat' : d > 0 ? 'up' : 'down';
+                      return (
+                        <View className="chc__cell" key={w.label}>
+                          <Text>{w.label}</Text>
+                          <Text className="chc__cell-v">
+                            {w.cur.toLocaleString('en-US')}
+                            {w.unit}
+                          </Text>
+                          <Text className={cls}>
+                            <Icon name={ico} />
+                            {d === null ? '' : `${d > 0 ? '+' : ''}${d}%`}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                    {/* ⚠️ 静息心率**单独一行**，因为它是「越低越好」的指标 ——
+                        混在上面用同一套箭头方向会上反。 */}
+                    {rhr ? (
+                      <View className="chc__cell">
+                        <Text>{rhr.label}</Text>
+                        <Text className="chc__cell-v">{rhr.cur} {rhr.unit}</Text>
+                        <Text
+                          className={
+                            rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3
+                              ? 'chc__flat'
+                              : rhr.deltaPct < 0
+                                ? 'chc__up'
+                                : 'chc__down'
+                          }
+                        >
+                          <Icon name={rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3 ? 'flat' : rhr.deltaPct < 0 ? 'down' : 'up'} />
+                          {rhr.deltaPct === null ? '' : `${rhr.deltaPct > 0 ? '+' : ''}${rhr.deltaPct}%`}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  <Text className="chc__note">
+                    箭头按
+                    <Text className="chc__em">「这个指标是变好还是变坏」</Text>
+                    画，不是按数值变大。⚠️「—」是
+                    <Text className="chc__em">上周没有可比数据</Text>
+                    ，不是上周为零 —— 两者用一个百分比表示会得到一个看起来很确定、
+                    实际没有依据的数。静息心率是
+                    <Text className="chc__em">越低越好</Text>
+                    ，箭头按那个方向画。
+                  </Text>
+                </>
+              ) : (
+                <Text className="chc__note">还没有足够两周的数据可以对比。</Text>
+              )}
+            </View>
+          </Sheet>
+
+          <Sheet open={sheet === 'power'} title="功率与个人记录" onClose={closeSheet}>
+            {bests.length ? (
+              <View className="card chc__card">
+                <Text className="chc__card-t">
+                  <Icon name="trophy" className="chc__ico" />
+                  个人记录 · 最近 30 天
+                </Text>
+                <View className="chc__grid">
+                  {bests.map((b) => (
+                    <View className="chc__cell" key={b.label}>
+                      <Icon name={b.icon as never} className="chc__ico" />
+                      <Text>{b.label}</Text>
+                      <Text className="chc__cell-v">{b.value}</Text>
+                      <Text className="chc__flat">{b.when}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
+            {powered.length ? (
+              powered.map(({ s, p }) => (
+                <View className="card chc__card" key={`pw-${s.start}`}>
+                  <View className="chc__sesshead">
+                    <Icon name="power" className="chc__ico" />
+                    <Text className="chc__card-t">
+                      {typeLabel(s.type)} {s.start.slice(5, 16).replace('T', ' ')}
+                    </Text>
+                  </View>
+                  <View className="chc__grid">
+                    <View className="chc__cell"><Text>平均</Text><Text className="chc__cell-v">{p.avg} W</Text></View>
+                    <View className="chc__cell"><Text>峰值</Text><Text className="chc__cell-v">{p.max} W</Text></View>
+                    {p.np > 0 ? (
+                      <View className="chc__cell"><Text>标准化 NP</Text><Text className="chc__cell-v">{p.np} W</Text></View>
+                    ) : null}
+                    {p.best20 !== null ? (
+                      <View className="chc__cell"><Text>最佳 20 分钟</Text><Text className="chc__cell-v">{p.best20} W</Text></View>
+                    ) : null}
+                  </View>
+                  <Text className="chc__note">
+                    ⚠️ NP 是给「间歇骑比匀速骑累得多」这件事用的：30 秒滚动平均后取四次方平均再开四次方。
+                    <Text className="chc__em">但我们没有 30 秒数据</Text>
+                    —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP
+                    <Text className="chc__em">偏低</Text>
+                    。
+                    ⚠️ 不算 IF / TSS：那两个都要 FTP，而 FTP 得专门测。拿「最佳 20 分钟 × 0.95」估一个再算 TSS，
+                    会得到一个看起来很专业、其实是我们编的数字。
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <View className="card chc__card">
+                <Text className="chc__note">
+                  最近 30 天没有带功率的场次。功率来自骑行台 / 码表那一路 ——
+                  三星根本记不了功率和踏频，所以这两项只有骑行台那次才有。
+                </Text>
+              </View>
+            )}
+          </Sheet>
+
+          <Sheet open={sheet === 'streak'} title="连续达标" onClose={closeSheet}>
+            <View className="card chc__card">
+              <Text className="chc__card-t">
+                <Icon name="steps" className="chc__ico" />
+                连续 {streak} 天（每天 ≥ {STEP_GOAL.toLocaleString('en-US')} 步）
+              </Text>
+              <Text className="chc__note">
+                ⚠️ 从最新一天往回数，
+                <Text className="chc__em">缺数据的日子算断</Text>
+                ，不算跳过 —— 那天可能确实没走，也可能手机没同步，
+                我们不知道，所以不替它猜。
+              </Text>
+            </View>
+          </Sheet>
+
+          <Sheet open={sheet === 'kinds'} title="类型分布" onClose={closeSheet}>
+            {kinds.length ? (
+              <View className="card chc__card">
+                <Text className="chc__card-t">
+                  <Icon name="clock" className="chc__ico" />
+                  运动类型分布 · 最近 30 天
+                </Text>
+                <View className="chc__zones">
+                  {kinds.map((k) => {
+                    const total = kinds.reduce((a, x) => a + x.minutes, 0);
+                    const pct = total > 0 ? (k.minutes / total) * 100 : 0;
+                    return (
+                      <View className="chc__zone" key={k.type}>
+                        <Icon name={typeIcon(k.type)} className="chc__ico" />
+                        <Text className="chc__zone-label">{typeLabel(k.type)}</Text>
+                        <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
+                          <i />
+                        </View>
+                        <Text className="chc__zone-min">{Math.round(k.minutes)} 分</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+                <Text className="chc__note">条的长度是这个类型的时长占比，右边是次数。</Text>
+              </View>
+            ) : (
+              <View className="card chc__card">
+                <Text className="chc__note">最近 30 天没有走路以外的活动记录。</Text>
+              </View>
+            )}
+          </Sheet>
+
+          {/*
+            ⚠️ 单场运动的弹窗 —— 四条过程曲线住在这里，不再住在列表卡片里。
+            心率曲线是读者点名要的：**平均值画不出来**，手机端才发的序列。
+          */}
+          <Sheet
+            open={sheet === 'session'}
+            title={
+              openSess
+                ? `${typeLabel(openSess.type, openSess.exerciseType)} · ${openSess.start.slice(5, 16).replace('T', ' ')}`
+                : '运动详情'
+            }
+            onClose={closeSheet}
+          >
+            {openSess ? (
+              <>
+                <View className="card chc__card">
+                  <Text className="chc__card-t">{openSess.minutes} 分钟</Text>
+                  {/*
+                    ⚠️ 全部指标摆出来，**没有的就不写**。写成 0 或者「—」会让
+                    读者以为「测出来是零」，而真相是这个来源根本没有这项。
+                  */}
+                  <View className="chc__keys">
+                    {openSess.distanceM !== undefined ? (
+                      <Text className="chc__key">距离 <Text className="chc__num">{(openSess.distanceM / 1000).toFixed(2)}</Text> km</Text>
+                    ) : null}
+                    {openSess.hrAvg !== undefined ? (
+                      <Text className="chc__key">
+                        心率 <Text className="chc__num">{openSess.hrAvg}</Text> 均 / <Text className="chc__num">{openSess.hrMax ?? '—'}</Text> 峰
+                      </Text>
+                    ) : null}
+                    {openSess.powerAvg !== undefined ? (
+                      <Text className="chc__key">平均功率 <Text className="chc__num">{openSess.powerAvg}</Text> W</Text>
+                    ) : null}
+                    {openSess.powerMax !== undefined ? (
+                      <Text className="chc__key">峰值功率 <Text className="chc__num">{openSess.powerMax}</Text> W</Text>
+                    ) : null}
+                    {openSess.cadenceAvg !== undefined ? (
+                      <Text className="chc__key">踏频 <Text className="chc__num">{openSess.cadenceAvg}</Text> rpm</Text>
+                    ) : null}
+                    {openSess.speedMaxMps !== undefined ? (
+                      <Text className="chc__key">最高速度 <Text className="chc__num">{(openSess.speedMaxMps * 3.6).toFixed(1)}</Text> km/h</Text>
+                    ) : null}
+                    {openSess.activeCalories !== undefined ? (
+                      <Text className="chc__key">活动消耗 <Text className="chc__num">{openSess.activeCalories}</Text> kcal</Text>
+                    ) : null}
+                  </View>
+                </View>
+
                 {/*
                   ⚠️⚠️ THE HEART-RATE CURVE — the reader asked for this by name.
                   An average cannot be drawn, so the phone sends the series.
                 */}
-                {sess.hrSeries && sess.hrSeries.length > 1 ? (
-                  <View>
-                    <Text className="card__label">心率曲线</Text>
-                    <HeartChart series={sess.hrSeries} />
+                {openSess.hrSeries && openSess.hrSeries.length > 1 ? (
+                  <View className="card chc__card">
+                    <Text className="chc__card-t">心率曲线</Text>
+                    <HeartChart series={openSess.hrSeries} />
                   </View>
                 ) : null}
 
@@ -502,17 +1179,17 @@ export default function Chealth() {
                   而这两件事在训练上完全不同。
                   ⚠️ 四张图共用 SeriesChart —— 各写一遍必然漂移。
                 */}
-                {sess.powerSeries && sess.powerSeries.length > 1 ? (
-                  <View>
-                    <Text className="card__label">功率曲线</Text>
-                    <SeriesChart series={sess.powerSeries} name="功率曲线" unit=" W" peakNote="（原始峰值见上）" />
+                {openSess.powerSeries && openSess.powerSeries.length > 1 ? (
+                  <View className="card chc__card">
+                    <Text className="chc__card-t">功率曲线</Text>
+                    <SeriesChart series={openSess.powerSeries} name="功率曲线" unit=" W" peakNote="（原始峰值见上）" />
                   </View>
                 ) : null}
 
-                {sess.cadenceSeries && sess.cadenceSeries.length > 1 ? (
-                  <View>
-                    <Text className="card__label">踏频曲线</Text>
-                    <SeriesChart series={sess.cadenceSeries} name="踏频曲线" unit=" rpm" />
+                {openSess.cadenceSeries && openSess.cadenceSeries.length > 1 ? (
+                  <View className="card chc__card">
+                    <Text className="chc__card-t">踏频曲线</Text>
+                    <SeriesChart series={openSess.cadenceSeries} name="踏频曲线" unit=" rpm" />
                   </View>
                 ) : null}
 
@@ -520,11 +1197,11 @@ export default function Chealth() {
                   ⚠️ 速度存的是 m/s（Health Connect 的单位），**在渲染时换成 km/h** ——
                   页面别的地方、以及读者的常识，用的都是 km/h。换算只在这一处做。
                 */}
-                {sess.speedSeries && sess.speedSeries.length > 1 ? (
-                  <View>
-                    <Text className="card__label">速度曲线</Text>
+                {openSess.speedSeries && openSess.speedSeries.length > 1 ? (
+                  <View className="card chc__card">
+                    <Text className="chc__card-t">速度曲线</Text>
                     <SeriesChart
-                      series={sess.speedSeries.map(([t, v]) => [t, Math.round(v * 36) / 10] as [number, number])}
+                      series={openSess.speedSeries.map(([t2, v]) => [t2, Math.round(v * 36) / 10] as [number, number])}
                       name="速度曲线"
                       unit=" km/h"
                     />
@@ -537,414 +1214,18 @@ export default function Chealth() {
                   手机把它们合成一条。不写出来，读者会困惑为什么一条骑行
                   既有手表的心率又有功率；写出来，这就是一个完整的解释。
                 */}
-                <Text className="card__label">
-                  记录来源 {(sess.sources ?? [sess.source])
-                    .map((x: string) => x.split('.').pop())
-                    .join(' + ')}
-                  {sess.powerAvg === undefined ? '（这次没有功率/踏频数据）' : ''}
-                  {sess.hrSource ? ` · 心率取自 ${sess.hrSource.split('.').pop()}` : ''}
-                </Text>
-                  </>
-                ) : null}
-              </View>
-                );
-              })}
-            </>
-          )}
-        </Section>
-
-        <Section
-          index={2}
-          title="步数与睡眠"
-          lede="柱状是每天的总量，最近 14 天。空白的那天是没记录，不是零。"
-        >
-          <View className="card chc__stack">
-            <Text className="card__label">步数 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.steps} today={today} unit=" 步" tone="steps" />
-          </View>
-
-          <View className="card chc__stack">
-            <Text className="card__label">睡眠 · 最近 14 天（小时）</Text>
-            <BarRow days={recent} pick={(d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)} today={today} unit=" 小时" tone="sleep" />
-            {/* ⚠️ Said rather than silently tolerated. Sessions can overlap —
-                the watch and the phone both write, and a session crossing
-                midnight lands in two days — so a single day can exceed 24h.
-                Measured: 2026-09-08 reported 27.9 hours. */}
-            {recent.some((d) => (d.sleepSeconds ?? 0) > 20 * 3600) ? (
-              <Text className="card__label">
-                ⚠️ 有单日超过 20 小时 —— 睡眠会话在手表和手机之间重叠时会重复计入
-              </Text>
+                <View className="card chc__card">
+                  <Text className="chc__card-t">记录来源</Text>
+                  <Text className="chc__note">
+                    {(openSess.sources ?? [openSess.source]).map((x: string) => x.split('.').pop()).join(' + ')}
+                    {openSess.powerAvg === undefined ? '（这次没有功率/踏频数据）' : ''}
+                    {openSess.hrSource ? ` · 心率取自 ${openSess.hrSource.split('.').pop()}` : ''}
+                  </Text>
+                </View>
+              </>
             ) : null}
-          </View>
-        </Section>
-
-        <Section
-          index={3}
-          title="消耗"
-          lede="两条线分开：基础代谢是躺着也在烧的那部分，活动消耗才是动出来的。"
-        >
-          <View className="card chc__stack">
-            <Text className="card__label">7 天合计</Text>
-            <Text className="card__label">
-              总消耗 {t ? Math.round(t.calories7d).toLocaleString('en-US') : '—'} kcal
-              ｜ 其中活动 {t ? Math.round(t.activeCalories7d).toLocaleString('en-US') : '—'} kcal
-            </Text>
-            {/* ⚠️⚠️ The label is the whole point of this panel.
-                `calories7d` sums TotalCaloriesBurnedRecord, which includes BMR.
-                In the first real data set it was 1662 on ELEVEN consecutive
-                days with no other data at all — a dead-flat line that any
-                reader would file as a broken sensor, when it is the most
-                correct number on the page. */}
-            <Text className="card__label">
-              总消耗含基础代谢（静息也要消耗），所以没活动的日子也在 1600 左右。两者相减才是走路跑步花掉的。
-            </Text>
-            <Legend
-              items={[
-                { label: '总消耗（含基础代谢）', color: 'var(--chart-3)' },
-                { label: '活动消耗', color: 'var(--chart-1)' },
-              ]}
-            />
-          </View>
-          <View className="card chc__stack">
-            <Text className="card__label">总消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.calories} today={today} unit=" kcal" tone="kcal" />
-          </View>
-          <View className="card chc__stack">
-            <Text className="card__label">活动消耗 · 最近 14 天</Text>
-            <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" tone="kcal" />
-          </View>
-        </Section>
-
-        <Section
-          index={4}
-          title="心率与来源"
-          lede="手表测的，经 Health Sync 过桥到 Health Connect，再由手机上报。"
-          showCue={false}
-        >
-          {have('hrAvg') ? (
-            <View className="card chc__stack">
-              <Text className="card__label">日均心率 · 最近 14 天</Text>
-              <Spark points={recent.map((d) => d.hrAvg)} />
-            </View>
-          ) : null}
-
-          <View className="card chc__stack">
-            <Text className="card__label">各项指标（7 天）</Text>
-            <Text className="card__label">
-              静息心率 {t?.restingHr7d ?? '—'} ｜ 血氧 {t?.spo2_7d ?? '—'}% ｜ 体重 {t?.weightKgLatest ?? '—'} kg
-              ｜ 距离 {t ? `${t.distance7dKm} km` : '—'}
-            </Text>
-            <Text className="card__label">
-              ⚠️ HRV、呼吸率、皮温、体重在最近 30 天里一条记录都没有 —— 是三星健康不往 Health Connect 写，
-              不是这里读漏了。显示成 0 会让它看起来像「测出来是零」。
-            </Text>
-          </View>
-
-          {/*
-            ⚠️ THIS TABLE IS THE MOST USEFUL THING ON THE PAGE, and it exists
-            because of a specific afternoon. Step counts read "latest 06:27" at
-            15:00 and that looked like a dead watch. It was not: the handset
-            sensor was still writing a minute earlier, while Health Sync and
-            Google Fit had both stopped ~21 hours before. Three sources, two
-            dead, one alive — invisible in every total, obvious here.
-          */}
-          <View className="card chc__stack">
-            <Text className="card__label">数据来源（谁在写、多久没写了）</Text>
-            <table className="chc__src">
-              <thead>
-                <tr>
-                  <th>来源</th>
-                  <th>条数</th>
-                  <th>最后写入</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(index?.origins ?? {}).map(([pkg, o]) => {
-                  const mins = o.lastAt ? (Date.now() - new Date(o.lastAt).getTime()) / 60000 : NaN;
-                  // ⚠️ Two hours, because the phone's own sensor writes every
-                  // few minutes while a bridged source batches. Anything older
-                  // than that is a stall, not a rhythm.
-                  const stale = Number.isFinite(mins) && mins > 120;
-                  return (
-                    <tr key={pkg}>
-                      <td>{pkg}</td>
-                      <td>{o.count}</td>
-                      <td className={stale ? 'chc__stale' : 'chc__fresh'}>
-                        {Number.isFinite(mins)
-                          ? mins < 90 ? `${Math.round(mins)} 分钟前` : `${(mins / 60).toFixed(1)} 小时前`
-                          : '—'}
-                        {stale ? ' ⚠️' : ''}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!Object.keys(index?.origins ?? {}).length ? (
-                  <tr><td colSpan={3}>还没有来源信息 —— 手机端 v1.3 起才有</td></tr>
-                ) : null}
-              </tbody>
-            </table>
-          </View>
-
-          <View className="card chc__stack">
-            <Text className="card__label">同步</Text>
-            {/*
-              ⚠️ Both stamps, because they answer different questions.
-              `lastPushAt` ("手机来过了") comes from the ingest over an
-              uncached connection and moves on EVERY push, including one that
-              changed nothing. `updatedAt` ("数字变了") comes from the published
-              file and obeys a 10-minute CDN cache. Showing only the second is
-              how a working sync came to look broken for a week on CAPPERR.
-            */}
-            <Text className="card__label">
-              手机上报 {beat?.lastPushAt ? beat.lastPushAt.slice(5).replace('T', ' ') : '—'}
-              ｜ 数据更新 {index?.updatedAt ? index.updatedAt.slice(5).replace('T', ' ') : '—'}
-            </Text>
-            <Text className="card__label">
-              累计 {index?.dayCount ?? 0} 天（{index?.from ?? '—'} → {index?.to ?? '—'}）· 手机端 v{index?.appVersion ?? '—'}
-            </Text>
-            {/*
-              ⚠️ The verdict, not another stamp. See `stallDays` above for why
-              two timestamps in one sentence are not a warning.
-            */}
-            {stallDays >= 2 ? (
-              <Text className="card__label chc__stale">
-                ⚠️ 手机一直在推，数据却没动 —— 最新一天是 {index?.to}，比手机最后一次上报早 {stallDays} 天。
-                三星健康国行不写 Health Connect，Health Sync 是它唯一的入口，先去手机上确认它还在同步。
-              </Text>
-            ) : null}
-            {!beat ? (
-              <Text className="card__label">
-                ⚠️ 读不到上报心跳 —— 阿里云那边可能没响应，数据本身仍是最新发布的那份
-              </Text>
-            ) : null}
-          </View>
-        </Section>
-        <Section
-          index={5}
-          title="分析"
-          lede="全部从上面那份索引里算出来 —— 不额外采集、不额外存储。心率区间和功率分析以前算不出来，它们要用过程序列。"
-        >
-          {zoneMinutes > 0 ? (
-            <View className="card chc__stack">
-              <Text className="card__label">
-                <Icon name="heart" className="chc__ico" />
-                心率区间 · 最近 30 天共 {Math.round(zoneMinutes)} 分钟
-              </Text>
-              <View className="chc__zones">
-                {zones.map((z) => {
-                  const pct = zoneMinutes > 0 ? (z.minutes / zoneMinutes) * 100 : 0;
-                  return (
-                    <View className="chc__zone" key={z.key}>
-                      <Text className="chc__zone-label">{z.label}</Text>
-                      {/* ⚠️ 宽度只来自这一个数 —— 不写死像素。这个项目吃过亏：
-                          柱状图曾用 88/84/76/72 四个手写数字，眼睛会把「高度差」
-                          读成「数据差」。 */}
-                      <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
-                        <i />
-                      </View>
-                      <Text className="chc__zone-min">{Math.round(z.minutes)} 分</Text>
-                    </View>
-                  );
-                })}
-              </View>
-              {/* ⚠️⚠️ 这里原来是 `取的是**最近 30 天实测到的最高值**` ——
-                  Markdown 的粗体标记**原样渲染**，读者看到的是两个星号。
-
-                  ⚠️ 它在页面上挂了很久没人报，因为星号夹在中文里看着像排版符号，
-                     不像错误 —— 这正是「看起来像那么回事」的错最难被发现的原因。
-
-                  改成嵌套 `<Text>`：强调还在，而且不再依赖一个**永远不会发生**的
-                  解析。⚠️ 别在 JSX 里写 Markdown。 */}
-              <Text className="card__label">
-                基准最高心率 {refMaxHr} —— 取的是
-                <Text className="chc__em">最近 30 天实测到的最高值</Text>
-                ，不是 220−年龄。代价是它偏低（没尽全力就到不了真最大值），
-                所以这个划分整体偏严。
-              </Text>
-            </View>
-          ) : null}
-        </Section>
-
-        {/*
-          ⚠️⚠️ 这里原来是**一屏**，实测内容高 2077px 而面板只有 724px ——
-             `要滚 1353`，差不多两屏。
-
-          ⚠️ 在 scroll-snap 的栈里，一屏塞两屏内容手感是坏的：读者要先在面板
-             **内部**滚 1353px，再一甩才到下一屏；而「下滑」那个提示说的是
-             「下面还有一屏」，于是提示和实际行为对不上。
-
-          ⇒ 拆成三屏，每屏一个话题。它在最后一屏，所以**不用给前面的屏重新编号**。
-        */}
-        <Section
-          index={6}
-          title="周对比"
-          lede="最近 7 天 vs 再往前 7 天。箭头按「这个指标是变好还是变坏」画，不是按数值变大 —— 静息心率是越低越好。"
-        >
-          {week.length ? (
-            <View className="card chc__stack">
-              <Text className="card__label">
-                <Icon name="signal" className="chc__ico" />
-                最近 7 天 vs 再往前 7 天
-              </Text>
-              <View className="chc__grid">
-                {week.map((w) => {
-                  const d = w.deltaPct;
-                  const cls = d === null || Math.abs(d) < 3 ? 'chc__flat' : d > 0 ? 'chc__up' : 'chc__down';
-                  const ico = d === null || Math.abs(d) < 3 ? 'flat' : d > 0 ? 'up' : 'down';
-                  return (
-                    <View className="chc__cell" key={w.label}>
-                      <Text>{w.label}</Text>
-                      <Text className="chc__cell-v">
-                        {w.cur.toLocaleString('en-US')}
-                        {w.unit}
-                      </Text>
-                      <Text className={cls}>
-                        <Icon name={ico} />
-                        {d === null ? '' : `${d > 0 ? '+' : ''}${d}%`}
-                      </Text>
-                    </View>
-                  );
-                })}
-                {/* ⚠️ 静息心率**单独一行**，因为它是「越低越好」的指标 ——
-                    混在上面用同一套箭头方向会上反。 */}
-                {rhr ? (
-                  <View className="chc__cell">
-                    <Text>{rhr.label}</Text>
-                    <Text className="chc__cell-v">{rhr.cur} {rhr.unit}</Text>
-                    <Text
-                      className={
-                        rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3
-                          ? 'chc__flat'
-                          : rhr.deltaPct < 0
-                            ? 'chc__up'
-                            : 'chc__down'
-                      }
-                    >
-                      <Icon name={rhr.deltaPct === null || Math.abs(rhr.deltaPct) < 3 ? 'flat' : rhr.deltaPct < 0 ? 'down' : 'up'} />
-                      {rhr.deltaPct === null ? '' : `${rhr.deltaPct > 0 ? '+' : ''}${rhr.deltaPct}%`}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-              <Text className="card__label">
-                ⚠️ 「—」是
-                <Text className="chc__em">上周没有可比数据</Text>
-                ，不是上周为零。两者用一个百分比表示会得到一个看起来很确定、
-                实际没有依据的数。静息心率是
-                <Text className="chc__em">越低越好</Text>
-                ，箭头按那个方向画。
-              </Text>
-            </View>
-          ) : null}
-        </Section>
-
-        <Section
-          index={7}
-          title="功率"
-          lede="功率来自骑行台 / 码表那一路 —— 三星根本记不了功率和踏频，所以这两项只有骑行台那次才有。"
-        >
-          {bests.length ? (
-            <View className="card chc__stack">
-              <Text className="card__label">
-                <Icon name="trophy" className="chc__ico" />
-                个人记录 · 最近 30 天
-              </Text>
-              <View className="chc__grid">
-                {bests.map((b) => (
-                  <View className="chc__cell" key={b.label}>
-                    <Icon name={b.icon as never} className="chc__ico" />
-                    <Text>{b.label}</Text>
-                    <Text className="chc__cell-v">{b.value}</Text>
-                    <Text className="chc__flat">{b.when}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ) : null}
-        </Section>
-
-        <Section
-          index={8}
-          title="连续达标"
-          lede="按每天 8000 步算。缺数据的日子算断，不算跳过 —— 那天可能确实没走，也可能手机没同步。"
-        >
-          {streak > 0 ? (
-            <View className="card chc__stack">
-              <Text className="card__label">
-                <Icon name="steps" className="chc__ico" />
-                连续达标 {streak} 天（每天 ≥ 8,000 步）
-              </Text>
-              <Text className="card__label">
-                ⚠️ 从最新一天往回数，
-                <Text className="chc__em">缺数据的日子算断</Text>
-                ，不算跳过 —— 那天可能确实没走，也可能手机没同步，
-                我们不知道，所以不替它猜。
-              </Text>
-            </View>
-          ) : null}
-        </Section>
-
-        <Section
-          index={9}
-          title="类型分布"
-          lede="最近 30 天里走路以外的活动，按类型合计的时长。"
-        >
-          {kinds.length ? (
-            <View className="card chc__stack">
-              <Text className="card__label">
-                <Icon name="clock" className="chc__ico" />
-                运动类型分布 · 最近 30 天
-              </Text>
-              <View className="chc__zones">
-                {kinds.map((k) => {
-                  const total = kinds.reduce((a, x) => a + x.minutes, 0);
-                  const pct = total > 0 ? (k.minutes / total) * 100 : 0;
-                  return (
-                    <View className="chc__zone" key={k.type}>
-                      <Icon name={typeIcon(k.type)} className="chc__ico" />
-                      <Text className="chc__zone-label">{typeLabel(k.type)}</Text>
-                      <View className="chc__zone-bar" style={{ '--pct': String(Math.max(1, Math.round(pct))) } as CSSProperties}>
-                        <i />
-                      </View>
-                      <Text className="chc__zone-min">{k.count} 次</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
-
-          {powered.map(({ s, p }) => (
-            <View className="card chc__stack" key={`pw-${s.start}`}>
-              <View className="chc__sesshead">
-                <Icon name="power" className="chc__ico" />
-                <Text className="card__label">
-                  功率分析 · {typeLabel(s.type)} {s.start.slice(5, 16).replace('T', ' ')}
-                </Text>
-              </View>
-              <View className="chc__grid">
-                <View className="chc__cell"><Text>平均</Text><Text className="chc__cell-v">{p.avg} W</Text></View>
-                <View className="chc__cell"><Text>峰值</Text><Text className="chc__cell-v">{p.max} W</Text></View>
-                {p.np > 0 ? (
-                  <View className="chc__cell"><Text>标准化 NP</Text><Text className="chc__cell-v">{p.np} W</Text></View>
-                ) : null}
-                {p.best20 !== null ? (
-                  <View className="chc__cell"><Text>最佳 20 分钟</Text><Text className="chc__cell-v">{p.best20} W</Text></View>
-                ) : null}
-              </View>
-              <Text className="card__label">
-                ⚠️ NP 是给「间歇骑比匀速骑累得多」这件事用的：30 秒滚动平均后取四次方平均再开四次方。
-                <Text className="chc__em">但我们没有 30 秒数据</Text>
-                —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP
-                <Text className="chc__em">偏低</Text>
-                。
-                ⚠️ 不算 IF / TSS：那两个都要 FTP，而 FTP 得专门测。拿「最佳 20 分钟 × 0.95」估一个再算 TSS，
-                会得到一个看起来很专业、其实是我们编的数字。
-              </Text>
-            </View>
-          ))}
-        </Section>
-      </PageStack>
+          </Sheet>
+        </>
       ) : null}
 
       {err ? (

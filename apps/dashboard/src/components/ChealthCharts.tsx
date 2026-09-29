@@ -31,6 +31,7 @@ export function BarRow({
   today,
   unit = '',
   tone = 'steps',
+  target,
 }: {
   days: ChealthDay[];
   pick: (d: ChealthDay) => number | undefined;
@@ -49,9 +50,31 @@ export function BarRow({
    *    `--m-*` 那一行定义一次 —— 传色值就一定会有两份定义，然后漂移。
    */
   tone?: 'steps' | 'sleep' | 'kcal' | 'dist' | 'heart';
+  /**
+   * 目标值 —— 画一条虚线和一条达标进度。
+   *
+   * ⚠️⚠️ 三星健康那一半辨识度就在这里：「9,686」是一个数，而
+   *    「9,686 / 目标 10,000 · 97%」才是**信息**。只有一个裸数字时，
+   *    读者要自己去想「这算多还是少」，而那个判断标准只在他脑子里、
+   *    每天都在变。
+   *
+   * ⚠️ 目标必须**参与纵轴刻度**，不能只画一条线。
+   *    不参与的话，当所有柱子都远低于目标时（这是常态 —— 步数目标是 8000，
+   *    而实测中位数接近 22000，但睡眠目标是另一回事），
+   *    目标线会跑到绘图区**外面**去，读者看到的是一条不存在的线。
+   */
+  target?: number;
 }) {
   const vals = days.map(pick);
-  const max = Math.max(1, ...vals.map((v) => v ?? 0));
+  /** 数据的峰值 —— 轴标签上写的还是它，不是刻度上限。 */
+  const peak = Math.max(1, ...vals.map((v) => v ?? 0));
+  /**
+   * ⚠️ 刻度上限和「峰值」是**两个数**，第一版把它们合成一个，于是目标线
+   *    一旦高于峰值就画不出来（`bottom` 超过 100%）。分开之后：
+   *    柱子按 `scale` 定高，标签按 `peak` 说话。
+   */
+  const scale = target !== undefined && target > 0 ? Math.max(peak, target) : peak;
+  const targetPct = target !== undefined && target > 0 ? (target / scale) * 100 : 0;
 
   // ⚠️⚠️ 点柱子**必须有反馈**。三星健康那种图表是「点一根柱子，它亮起来、
   //    上面出现那天的数值」—— 这是读者 2026-09-28 明确要求的，
@@ -106,12 +129,30 @@ export function BarRow({
             {unit ? <Text className="chc__readout-u">{unit}</Text> : null}
           </Text>
         )}
+        {/*
+          ⚠️ 达标进度写在**读数那一行**，不写在图里 —— 画在图里就会和柱子抢
+          位置（读数上方恰好是柱子最矮的地方，但最矮不等于空）。
+          这里它紧贴着下面的虚线和图，读者不用二次寻找。
+        */}
+        {target !== undefined && target > 0 && curV !== undefined && curV !== null && !Number.isNaN(curV) ? (
+          <Text className="chc__readout-goal">
+            <Text className="chc__readout-goal-n">{Math.round((curV / target) * 100)}%</Text>
+            {' '}目标 {n(target)}
+          </Text>
+        ) : null}
       </View>
       <View className="chc__plot">
+        {/*
+          ⚠️ 目标线画在**柱子之前**（DOM 顺序），所以它天然在柱子下面 ——
+          不需要 z-index，也就不需要维护一个 z-index。
+        */}
+        {target !== undefined && target > 0 ? (
+          <View className="chc__target" style={{ bottom: `${targetPct}%` }} />
+        ) : null}
         {days.map((d, i) => {
           const v = pick(d);
           const empty = v === undefined || v === null;
-          const h = empty ? 0 : Math.max(2, Math.round(((v as number) / max) * 100));
+          const h = empty ? 0 : Math.max(2, Math.round(((v as number) / scale) * 100));
           const isSel = i === sel;
           return (
             <View
@@ -129,7 +170,9 @@ export function BarRow({
       </View>
       <View className="chc__axis">
         <Text>{days[0]?.date.slice(5) ?? ''}</Text>
-        <Text>峰值 {n(max)}</Text>
+        {/* ⚠️ 这里是**数据的峰值**，不是刻度上限 —— 有目标线时两者不同，
+            而读者关心的是「这几天最多走了多少」。 */}
+        <Text>峰值 {n(peak)}</Text>
         <Text>{days[days.length - 1]?.date.slice(5) ?? ''}</Text>
       </View>
     </View>

@@ -310,6 +310,29 @@ export default function Home() {
     return days.length ? days[days.length - 1]! : null;
   }, [chealth]);
 
+  /**
+   * ⚠️⚠️ 睡眠要取**最后一条真的有睡眠记录的那天**，不是 `days[days.length-1]`。
+   *
+   *    实测 2026-09-29 上午：最新一天（09-29）已经有步数 7,146，而手表那一晚的
+   *    睡眠还没过桥 —— 于是「睡眠」那一格显示成 `—`。**每天上午它都会这样。**
+   *
+   *    ⚠️ 而 `—` 恰好是版式永远不会出问题的那个输入（见本文件抬头那段：
+   *      「一个占位符比真数据短，就替真数据挡了一整类 bug」）——
+   *      所以它一直没被发现，直到 `verify-home-stats.mjs` 量了它：
+   *      `FAIL CHEALTH 那屏显示了真实数字  — 显示的是 7146 / —`
+   *
+   *    ⚠️ CHEALTH 页上那块「最近一晚」的砖早就是这么做的（`lastSleep`）。
+   *      同一个判断不要有两份实现 —— 这里补上主页这一份。
+   */
+  const chealthSleepDay = useMemo(() => {
+    const days = chealth?.days ?? [];
+    for (let i = days.length - 1; i >= 0; i -= 1) {
+      const d = days[i];
+      if (d && typeof d.sleepSeconds === 'number' && d.sleepSeconds > 0) return d;
+    }
+    return null;
+  }, [chealth]);
+
   /** ⚠️ 有实时数字却**没有时间戳**的面板，和一个同步已经死了一周的面板长得一模一样。 */
   const chealthLine = useMemo(() => {
     if (!chealth) return null;
@@ -373,12 +396,15 @@ export default function Home() {
                           // ⚠️ 复用「阅读时长」那个格式化器 —— 它本质就是「秒 → 小时」，
                           //    名字里有 reading 而已。再写一个「秒 → 睡眠时长」就会有两份
                           //    实现，而这两份迟早会不一致（CAPPERR 的字数统计就是 127 对 109）。
-                          value:
-                            chealthDay.sleepSeconds !== undefined
-                              ? formatReadingTime(chealthDay.sleepSeconds)
-                              : '—',
+                          //
+                          // ⚠️ 取 `chealthSleepDay` 而不是 `chealthDay` —— 见上面那段。
+                          //    note 也跟着走：两格各写自己那天的日期，读者才知道
+                          //    步数是今天的、睡眠是昨天晚上的。**两个日期不一样是对的。**
+                          value: chealthSleepDay
+                            ? formatReadingTime(chealthSleepDay.sleepSeconds ?? 0)
+                            : '—',
                           label: '睡眠',
-                          note: formatDayMonth(chealthDay.date),
+                          note: formatDayMonth(chealthSleepDay?.date ?? chealthDay.date),
                         },
                       ]
                     : p.stats

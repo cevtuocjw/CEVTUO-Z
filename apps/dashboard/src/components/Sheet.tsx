@@ -75,14 +75,31 @@ export function IconGrid({
   items,
   onPick,
 }: {
-  items: { key: string; icon: Parameters<typeof Icon>[0]['name']; label: string; value?: string }[];
+  /**
+   * ⚠️ `tone` 传的是**指标名**，不是色值 —— 和 `BarRow` 同一条规矩。
+   *    色值只在 `ChealthCharts.scss` 的 `--m-*` 那一行定义一次；
+   *    传色值就一定会有两份定义，然后漂移。
+   *    ⚠️ 而且 `--m-*` 那组 token 是**按容器**挂上去的（`.chc` 是个幽灵类，
+   *    匹配不到任何东西），所以 `.igrid` 必须出现在那个选择器列表里，
+   *    否则 `var(--m)` 解析为空、图标全部退成灰色，而 DOM 看起来完全正常。
+   */
+  items: {
+    key: string;
+    icon: Parameters<typeof Icon>[0]['name'];
+    label: string;
+    value?: string;
+    tone?: 'steps' | 'sleep' | 'kcal' | 'dist' | 'heart' | 'sync';
+  }[];
   onPick: (key: string) => void;
 }) {
   return (
     <View className="igrid">
       {items.map((it) => (
         <View className="igrid__cell" key={it.key} onClick={() => onPick(it.key)}>
-          <View className="igrid__ico">
+          <View
+            className="igrid__ico"
+            style={it.tone ? ({ ['--m' as string]: `var(--m-${it.tone})` } as React.CSSProperties) : undefined}
+          >
             <Icon name={it.icon} />
           </View>
           {it.value ? <Text className="igrid__v">{it.value}</Text> : null}

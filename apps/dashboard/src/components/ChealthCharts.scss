@@ -21,12 +21,19 @@ $chart-h: 108px;
     align-items: flex-end;
     gap: 3px;
     height: $chart-h;
+    // ⚠️ 目标线是绝对定位的（`bottom: N%`），它的包含块必须是这里。
+    //    少了这一句，虚线会相对于**卡片**定位，画到标题上面去 ——
+    //    而它看起来仍然是一条水平虚线，不像坏了。
+    position: relative;
   }
 
   &__bar {
     flex: 1 1 0;
     min-width: 0;
-    border-radius: 3px 3px 0 0;
+    // ⚠️ 全圆角，不是 3px。真机截图里三星的柱子是**胶囊形**的 ——
+    //    顶是全圆的，看起来像一根竖着的药丸。3px 的圆角在 18px 宽的柱子上
+    //    几乎看不出来，而那个「圆」正是这套图表的形状语言。
+    border-radius: 999px 999px 0 0;
     // ⚠️⚠️ 每张图用**自己那个指标的颜色**（`--m`，由 BarRow 的 `tone` 传进来）。
     //    原来四张图共用 `--chart-3` 一个灰 —— 四张图长得一模一样，
     //    颜色不承载任何信息。三星那边扫一眼颜色就知道在看哪个指标。
@@ -180,9 +187,21 @@ $chart-h: 108px;
   font-size: 12.5px;
 }
 
+// ⚠️⚠️ `nowrap` 是**必须**的，不是保险。
+//
+//    「极高强度」是 4 个字，12.5px 下要 50px，而原来这一格只有 3.6em = 45px
+//    ⇒ 它折成两行，行高变化把整排条子的基线都推歪了。
+//    「118 分」同理：3.2em = 40px 装不下「118 分」+ 间隙，
+//    **「分」被单独折到第二行** —— 而 390px 上读者第一眼看到的是「118」
+//    后面跟着一个孤零零的「分」，不像坏了，像一个排版选择。
+//
+//    ⚠️ 字装不下就加宽或缩字号，**不该丢一个换行**。
 .chc__zone-label {
   flex: none;
-  width: 3.6em;
+  width: 4.6em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 0.75;
 }
 
@@ -200,14 +219,20 @@ $chart-h: 108px;
     display: block;
     height: 100%;
     width: calc(var(--pct, 0) * 1%);
-    background: var(--chart-1, #111);
+    // ⚠️ 走 `--m`（这个指标自己的颜色），不是写死的 `--chart-1`。
+    //    心率区间的条子该是红的、各运动类型的条子该各是各的色 ——
+    //    全白的话这张图只能靠读标签才分得清哪条是哪条，
+    //    而三星那边**颜色是先于文字到达眼睛的**。
+    background: var(--m, var(--chart-1, #111));
     border-radius: 4px;
   }
 }
 
 .chc__zone-min {
   flex: none;
-  width: 3.2em;
+  // ⚠️ 4.4em 装得下「118 分」再加一点余量。见上面 `.chc__zone-label` 那段。
+  width: 4.4em;
+  white-space: nowrap;
   text-align: right;
   font-variant-numeric: tabular-nums;
   opacity: 0.8;
@@ -265,7 +290,16 @@ $chart-h: 108px;
 .chc,
 .chc__mosaic,
 .chc__rows,
-.chc__zones { --m-steps: #3ecf8e; --m-heart: #ff5a72; --m-sleep: #8b7cf6; --m-kcal: #ff9f43; --m-dist: #4aa3ff; }
+.chc__zones,
+// ⚠️ 2026-09-28 晚加的：主屏图标格也要按指标上色（心率红、步数绿…）。
+//    不在这里列出来的话，`IconGrid` 行内的 `--m: var(--m-heart)` 指向一个
+//    **空的** `--m-heart`，六个圆底全部退成同一个灰 ——
+//    而 DOM、类型检查、构建、截图都不会说一个字。这个坑已经咬了三次。
+//    ⚠️ `--m-sync` 是第六个色。指标只有五个（步数/心率/睡眠/消耗/距离），
+//    而「数据来源」是第六个入口 —— 让它跟别人共用一色就等于说
+//    「它和那个是一回事」，而颜色在这里是**识别方式**。青色的语感和
+//    「同步/数据流」对得上，也不和那五个撞。
+.igrid { --m-steps: #3ecf8e; --m-heart: #ff5a72; --m-sleep: #8b7cf6; --m-kcal: #ff9f43; --m-dist: #4aa3ff; --m-sync: #22b8cf; }
 
 // ── 柱状图的数值气泡 ───────────────────────────────────────
 .chc__readout {
@@ -417,7 +451,14 @@ $chart-h: 108px;
 
   // 4/2 与 3/3 混排 —— 两行不同，眼睛就不会读成表格
   &--wide { grid-column: span 4; min-height: 112px; }
-  &--narrow { grid-column: span 2; min-height: 112px; }
+  // ⚠️⚠️ 窄块必须 `flex-start`，不能跟着 `.chc__tile` 的 `space-between` 走。
+  //
+  //    窄块只有「图标+标签」和「一个数」两样东西，而它的高度被同一行的
+  //    宽块（主角那块，带进度条和说明）**撑到一样高** ——
+  //    `space-between` 于是把那两样推到两端，中间空出一大片，
+  //    「5.8h」孤零零贴在块底，读起来像掉出来的。实测截图里就是这样。
+  //    内容少的时候靠上排，不是靠两端排。
+  &--narrow { grid-column: span 2; min-height: 112px; justify-content: flex-start; }
   &--half { grid-column: span 3; min-height: 84px; }
 
   // ⚠️ 蓝色只给**一个**块。参考图里蓝色是一整块实色，用得少所以重；
@@ -581,11 +622,54 @@ $chart-h: 108px;
   min-width: 0;
 }
 
+// ⚠️⚠️ **标签用这个指标自己的颜色** —— 这是三星健康辨识度最高的一条，
+//    比圆底图标还高。
+//
+//    实测三张真机截图（2026-09-29 读者给的）：「每日活动量」那屏三块砖的标签
+//    分别是 **步数=绿 / 活动时间=青 / 活动卡路里=紫**，而数字是白的。
+//    运动详情那屏更彻底：平均心率=粉、健身卡路里=紫、总持续时间=青、
+//    最高海拔=绿 —— **每一行的标签都染成那个指标的颜色**。
+//
+//    ⇒ 灰色标签下，读者要靠读字才知道在看哪个指标；染了色之后，
+//      「哪块是步数」是**扫一眼**就有的答案。
 .chc__mlabel {
   font-size: 12px;
   line-height: 1.25;
-  opacity: 0.78;
   min-width: 0;
+  color: var(--m, currentColor);
+  opacity: 0.92;
+}
+
+// ⚠️ 但**蓝色实底那一块例外**：它的底是 `--blue`，而步数的绿在蓝上几乎看不见。
+//    三星那边实色卡上的字一律是白的 —— 底已经在替你说话了。
+.chc__tile--blue .chc__mlabel {
+  color: #fff;
+  opacity: 0.95;
+}
+
+// ⚠️ 数字和达标之间的那道**发丝线**。三星那块砖上是「大数字 / 一条线 / 目标」，
+//    线是两者的分界 —— 没有它，「/9,000」看起来像数字的一部分。
+.chc__tile-rule {
+  height: 1px;
+  width: 100%;
+  margin: 8px 0 6px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+// ⚠️ 达标写成 `/ 8,000 步`，和三星一模一样（「每日活动量」那屏就是 `/9,000`）。
+//    ⚠️ 不要写成「目标 8,000 步」—— 那多两个字，而砖里最缺的就是宽度；
+//      斜杠在**任何语言里**都读作「分母是这个」。
+.chc__tile-goal {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: 0.66;
+  font-variant-numeric: tabular-nums;
+}
+
+.chc__tile--blue .chc__tile-goal {
+  color: #fff;
+  opacity: 0.82;
 }
 
 // ⚠️ 指标标签**不折行**。窄块里「7 天睡眠」会被挤成三行（实测），
@@ -688,3 +772,244 @@ $chart-h: 108px;
   color: var(--text-primary);
   font-weight: 600;
 }
+
+// ── 三星那套卡片 ────────────────────────────────────────────
+//
+// ⚠️⚠️ 读者 2026-09-28 的原话是「现在完全 CSS 看起来不像三星的 APP 那个界面，
+//    太不像了」。**最大的一块差距就在这里。**
+//
+//    全站那套是「印刷目录」风格（见 demo.scss 抬头）：`.card` 是
+//    `border-radius: 0` + **只有一条上边线** + 透明底 —— 像目录里的一行条目。
+//    而三星健康的卡片是**大圆角 + 柔和实底 + 内边距**，块与块之间有缝。
+//
+// ⚠️ 两种都对，但不能混用在同一屏上。所以这是**只作用于 CHEALTH 的覆盖**，
+//    不动 `.card` 本身 —— 别的四个品牌页靠它。
+//
+// ⚠️⚠️ 必须写**两个类**（`.card.chc__card`），不能只写 `.chc__card`。
+//
+//    `.card` 是单类选择器，`.chc__card` 也是单类，**特异性平手** ——
+//    胜负由样式表引入顺序决定，而 demo.scss 在后，`.card` 一直赢。
+//    这个项目已经因此栽过**两次**：
+//      · `.chc__stack` —— `flex-direction: row` 把五六个子元素并排挤成四列
+//      · `.chc__unlock` —— 输入框外壳被挤成 30px，真正能打字的 `<input>`
+//        只剩 4×22px，**真实用户在手机上打不了字**
+//    ⇒ 两处都是「看起来只是普通版式」，不是「看起来坏了」。
+.card.chc__card {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  // ⚠️ 11px 是块与块之间的**缝**。三星那边卡片是分开的实体，
+  //    不是用一条线隔开的条目 —— 缝是这套语言的一部分。
+  gap: 10px;
+  margin-top: 11px;
+  padding: 15px 16px;
+  border-radius: 20px;
+  // ⚠️ 干掉那条上边线。覆盖 `border-top-width` 而不是写 `border: none`：
+  //    `.card` 只声明了 top 一侧，改同名属性最省事，也不会连带改掉
+  //    将来别处加的边框。
+  border-top-width: 0;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  // ⚠️ 一圈**发丝描边**。真机截图里三星的卡片是「深底 + 1px 亮边」，
+  //    那个边是卡片形状的**唯一线索** —— 纯靠一层 6% 的浅底，
+  //    在深色壁纸（这一页的壁纸恰好是彩色的）上边界会糊掉。
+  //    ⚠️ 用 `box-shadow: inset` 而不是 `border`：`.card` 已经声明了
+  //    `border-top-*` 三件套，再叠一个 border 会互相盖，而 inset 阴影
+  //    不参与盒模型、不影响子元素宽度。
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 11%, transparent);
+
+  // ⚠️ flex 子元素默认 `min-width: auto`，在列方向里会被内容撑破或压扁。
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+// 卡片标题。比正文重、比正文大，但**不做大写也不加字距** ——
+// 那是印刷目录那套的语言，中文既没有大小写、0.14em 的字距又会把它拉散。
+.chc__card-t {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+// 卡片里的正文说明。
+.chc__note {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+// ⚠️ `.card__label` 是**印刷目录**那套：14px + `text-transform: uppercase`
+//    + 0.14em 字距 + 三级灰。中文没有大小写，所以 uppercase 是空操作，
+//    但**那 0.14em 的字距是看得见的** —— 中文被拉成一格一格的，
+//    这正是「不像三星」的来源之一。在 CHEALTH 的卡片里把它拉回来。
+//    ⚠️ 只在这里覆盖，不动 demo.scss —— 别的页面靠那个语感。
+.chc__card .card__label {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+// ── 达标进度（「今天」那块砖上）────────────────────────────
+//
+// ⚠️ 条的长度只来自**一个**比例，不写死像素。这个项目吃过亏：
+//    柱状图曾用 88/84/76/72 四个手写数字，眼睛会把「长度差」读成「数据差」。
+.chc__goal {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.chc__goal-track {
+  height: 6px;
+  border-radius: 3px;
+  // ⚠️ 底槽用 currentColor 的低透明度 —— 在**蓝色实底**那块砖上是白 22%，
+  //    在普通砖上是灰 22%。写死一个灰的槽，在蓝底上会变成一条脏线。
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  overflow: hidden;
+}
+
+.chc__goal-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: currentColor;
+  transition: width 240ms ease-out;
+}
+
+.chc__goal-t {
+  font-size: 11.5px;
+  line-height: 1.3;
+  opacity: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── 柱状图上的目标线 ────────────────────────────────────────
+//
+// ⚠️ 虚线，不是实线：实线会和柱子本身的边缘混淆，而这是一条**参考**，
+//    不是数据。三星那边画的也是虚线。
+// ⚠️ 无标签 —— 目标值写在读数那一行（`.chc__readout-goal`）。
+//    画在图里就会和柱子抢位置，而「柱子上方」不等于「空白」。
+.chc__target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed color-mix(in srgb, currentColor 55%, transparent);
+  pointer-events: none;
+}
+
+// ⚠️ 读数行里的达标百分比。`margin-left: auto` 把它推到右边 ——
+//    左边是日期和值，右边是目标，中间留白，一眼能对上。
+.chc__readout-goal {
+  margin-left: auto;
+  font-size: 11.5px;
+  opacity: 0.62;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chc__readout-goal-n {
+  font-weight: 700;
+  opacity: 1;
+  color: var(--m, var(--chart-1));
+}
+
+// ── 运动列表卡片（摘要态）────────────────────────────────────
+.chc__sess { cursor: pointer; }
+
+.chc__srow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+}
+
+// ⚠️ 中间那列必须 `flex: 1` + `min-width: 0`，否则长标题不收缩，
+//    把右边的 chevron 顶出卡片外面去。
+.chc__smain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.chc__st {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  // ⚠️ 类型名本身就短（骑行 / 跑步）。`nowrap` 是为了让它**永远**不和下面
+  //    那行抢位置 —— 原来标题和「50 分钟」挤在同一行，390px 上最后的「钟」
+  //    被单独甩到第二行，读者看到的是「50 分/钟」。
+  white-space: nowrap;
+}
+
+.chc__ss {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.chc__sgo {
+  flex: none;
+  opacity: 0.5;
+  transform: rotate(-90deg);   // ⚠️ `chev` 画的是向下的箭头，转成「向右」
+}
+
+// 关键数一行。⚠️ 允许折行 —— 五个指标在 390px 上放不下，
+//    而**折行**比截断好：截断会让读者以为某项不存在。
+.chc__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  width: 100%;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+// ── 「正在骑车」徽标 ────────────────────────────────────────
+.card.chc__riding {
+  flex-direction: row;
+  align-items: center;
+  gap: 11px;
+}
+
+.chc__riding-t {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+// ⚠️ 来源表里的 ⚠️ **必须独占一行**。
+//    原来它和「21.4 小时前」是同一个文本节点里相邻的两个字符，窄列里会被
+//    折到第二行去 —— 而 ⚠️ 是这个表**唯一的重点标记**，它一移位，
+//    「哪一行是坏的」就要读者自己去比对内容。
+//    `<View>` 是块级，直接换行，不依赖折行的时机。
+.chc__stalemark {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+// ⚠️ 2026-09-29 负向对照记录（不是待办，是证据）：
+//    把下面三件事同时放回去，`verify-chealth-ui.mjs` 恰好红三条、绿 23 条 ——
+//      · `.chc__plot { position: static }`        → 「目标线定位在绘图区里」FAIL
+//        （报 `position=static 在区内=false`；虚线仍在，只是画到了卡片上）
+//      · `.igrid` 上没有 `--m-*`                   → 「六个图标…」FAIL
+//        （报 `1 种：rgb(107, 114, 128)` —— 正是那六处兜底灰）
+//      · `.chc__mlabel { color: inherit }`         → 「马赛克的标签…」FAIL（报 2 种）
+//    ⚠️ 三条都是「页面看起来完全正常」的那一类，所以只能靠量出来的数抓。
+
