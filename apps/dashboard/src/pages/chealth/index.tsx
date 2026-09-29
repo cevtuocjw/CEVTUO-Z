@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Input, Text, View } from '@tarojs/components';
 
-import { BarRow, GoalCalendar, HeartChart, Rings, SeriesChart, Spark } from '../../components/ChealthCharts';
+import { BarRow, Gauge, GoalCalendar, HeartChart, Rings, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
 import {
   HR_BANDS,
@@ -638,10 +638,21 @@ export default function Chealth() {
                 <Text className="chc__card-t">今天 · {today}</Text>
                 <Rings
                   items={[
+                    // ⚠️⚠️ 每一行**不带 `/目标`** —— 目标写在卡下面的说明里。
+                    //
+                    //    2026-09-29 实测：带上之后最长那行
+                    //    「活动消耗 · 515 千卡 · / 400」要 ~195px，而左边那列
+                    //    只有 ~174px。`white-space: nowrap` 不让折行，
+                    //    于是文字**直接压在心上**（截图里 `/ 9,000` 的最后一个 0
+                    //    叠在心形上）。
+                    //
+                    //    ⚠️ 溢出比折行难发现得多：折行看得出来，溢出的那截
+                    //      只是安静地叠在别的元素上。
+                    //    ⚠️ 三星那块砖的环卡上也**没有**逐行分母 —— 分母在环里。
                     {
                       label: '步数',
                       value: stepsToday === null ? undefined : Math.round(stepsToday).toLocaleString('en-US'),
-                      goal: `/ ${STEP_GOAL.toLocaleString('en-US')}`,
+                      unit: ' 步',
                       pct: stepsToday === null ? null : stepsToday / STEP_GOAL,
                       color: 'var(--m-steps)',
                     },
@@ -649,7 +660,6 @@ export default function Chealth() {
                       label: '活动消耗',
                       value: kcalToday === null ? undefined : String(Math.round(kcalToday)),
                       unit: ' 千卡',
-                      goal: `/ ${ACTIVE_KCAL_GOAL}`,
                       pct: kcalToday === null ? null : kcalToday / ACTIVE_KCAL_GOAL,
                       color: 'var(--m-kcal)',
                     },
@@ -1032,7 +1042,11 @@ export default function Chealth() {
               title="趋势"
               lede="柱状是每天的总量，最近 14 天。空白的那天是没记录，不是零。点一根柱子看那天的数。"
               showCue={false}
+              // ⚠️ `wide` 解掉 900px 的宽度上限，桌面端两列才排得开。
+              wide
             >
+              {/* ⚠️ 宽屏两列（≥900px），窄屏单列。见 `.chc__grid2` 那段。 */}
+              <View className="chc__grid2">
               <View className="card chc__card">
                 <Text className="chc__card-t">步数</Text>
                 {/* ⚠️ 目标线 + 达标进度。三星那一半辨识度来自「9,686 / 目标 10,000」。 */}
@@ -1079,6 +1093,7 @@ export default function Chealth() {
                   最近 7 天合计 {t ? Math.round(t.calories7d).toLocaleString('en-US') : '—'} kcal，
                   <Text className="chc__em">两者相减才是走路跑步花掉的</Text>。
                 </Text>
+              </View>
               </View>
             </Section>
           </PageStack>
@@ -1401,6 +1416,24 @@ export default function Chealth() {
                 <Icon name="trophy" className="chc__ico" />
                 目标已实现 {monthStats.hit}/{monthStats.tracked} 天
               </Text>
+              {/*
+                ⚠️⚠️ 弧形仪表盘（三星「睡眠得分」那个形状），但这里画的是
+                **达标率**，不是任何「得分」。
+
+                ⚠️ 三星的「能量得分 / 睡眠得分」是它自己的专有算法，
+                  我们**没有也不编**（读者定的规矩：拿不到数据的就不做）。
+                  ⇒ 用它的**形状**，说我们**量得到**的那件事：
+                    「这个月有记录的那些天里，达标了多少天」。
+                    长得像三星，说的是真话。
+              */}
+              <View className="chc__gaugewrap">
+                <Gauge
+                  pct={monthStats.tracked > 0 ? monthStats.hit / monthStats.tracked : 0}
+                  value={`${monthStats.tracked > 0 ? Math.round((monthStats.hit / monthStats.tracked) * 100) : 0}%`}
+                  label="本月达标率"
+                  color="var(--m-steps)"
+                />
+              </View>
               {/*
                 ⚠️⚠️ 这里第一版写的是 `分母是**这个月有记录的天数**` ——
                 Markdown 的粗体标记**原样渲染**，读者看到的是四个星号。

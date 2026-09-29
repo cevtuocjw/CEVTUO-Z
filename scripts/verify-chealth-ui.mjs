@@ -436,38 +436,65 @@ check(
 
 const goal = await page.evaluate(() => {
   const gs = [...document.querySelectorAll('.chc__rings-g')].map((e) => e.textContent.trim());
+  const rows = [...document.querySelectorAll('.chc__rings-row')];
+  const card = document.querySelector('.chc__rings')?.closest('.chc__card');
   return {
     goals: gs,
+    cardText: card ? card.textContent.replace(/\s+/g, ' ').trim() : '',
     // ⚠️ 分母必须在**读数那一行**里，不能折到第二行去 ——
     //    第一版没有 `white-space: nowrap`，`步数 9,686 / 9,000` 被折成两行，
     //    `/ 9,000` 缩进到数值下面，读起来像子标题而不是分母。
     //    ⚠️ 而它在截图里「看着还挺整齐」，只有量行数才抓得住。
-    rowsWrapped: [...document.querySelectorAll('.chc__rings-row')].filter(
-      (r) => r.getBoundingClientRect().height > 34,
-    ).length,
+    rowsWrapped: rows.filter((r) => r.getBoundingClientRect().height > 34).length,
+    // ⚠️⚠️ **溢出**（不是折行）：`nowrap` 拒绝折行时，多出来的那截会安静地
+    //    叠到**旁边的元素**上 —— 实测 `/ 9,000` 的最后一个 0 压在心上。
+    //    ⇒ 折行看得出来，溢出看不出来。这一条就是为它加的。
+    overflow: rows.filter((r) => r.scrollWidth > r.clientWidth + 1).length,
   };
 });
+/**
+ * ⚠️⚠️ 这条**改过判据**，因为逐行的 `/目标` 被自己的布局证伪了。
+ *
+ *    原判据是「每一行读数里都写着 `/ 9,000`」。但 2026-09-29 实测：
+ *    带上分母之后最长那行要 ~195px，而环左边那列只有 ~174px，
+ *    `nowrap` 不让折行 ⇒ **文字压在心上**（截图里能看见）。
+ *    三星那块环卡上也**没有**逐行分母。
+ *
+ *    ⇒ 目标改成断言「**这张卡里有目标**」，位置不限定在行内 ——
+ *      它现在写在环下面的说明里（`目标 9,000 步 · 400 千卡活动消耗 · …`）。
+ *    ⚠️ 这条比原来**更弱**（不限定位置），所以配一条更强的补上：
+ *      读数行**不许溢出**（`scrollWidth <= clientWidth`）——
+ *      那才是这次踩到的那个坑。
+ */
 check(
-  '三环那张卡上写的是 `/目标`（照真机截图：`/9,000`）',
-  goal.goals.some((t) => /^\/\s*9,000$/.test(t)),
-  `分母：${goal.goals.join(' | ') || '(一个都没有)'}`,
+  '三环这张卡里写明了目标（`9,000 步`）',
+  /9,000/.test(goal.cardText),
+  `卡里的文字：${goal.cardText.slice(0, 80) || '(空)'}`,
 );
 check('环的三行读数都没有折行', goal.rowsWrapped === 0, `${goal.rowsWrapped} 行被折成两行`);
 
 // ── 三个同心圆环（读者 2026-09-29 点名要的）────────────────────
 const rings = await page.evaluate(() => {
   const svg = document.querySelector('.chc__rings-svg');
-  const circles = svg ? [...svg.querySelectorAll('circle')] : [];
-  const arcs = circles.filter((c) => c.getAttribute('stroke-dasharray') !== null);
+  // ⚠️ 环从 `<circle>` 改成了 `<path>`（2026-09-29 换成三星那个**心形**），
+  //    所以这里数的是 `path`。⚠️ 断言当时红了一条「轨道 0 条」——
+  //    它测的是**实现用的元素类型**，不是「有三个环」这件事。
+  //    ⇒ 改成按**类名**认弧（`.chc__ring-arc`），轨道 = 总数 − 弧数。
+  const paths = svg ? [...svg.querySelectorAll('path')] : [];
+  const arcs = paths.filter((p) => p.classList.contains('chc__ring-arc'));
   const rows = [...document.querySelectorAll('.chc__rings-row')].map((r) => ({
     label: (r.querySelector('.chc__rings-l') || {}).textContent || '',
     none: Boolean(r.querySelector('.chc__rings-none')),
     v: (r.querySelector('.chc__rings-v') || {}).textContent || '',
   }));
-  return { circles: circles.length, arcs: arcs.length, rows };
+  return { paths: paths.length, arcs: arcs.length, rows };
 });
 // 每个指标一圈「轨道」，有进度的再叠一条「弧」。三条轨道一个都不能少。
-check('三个环的轨道都在', rings.circles - rings.arcs === 3, `轨道 ${rings.circles - rings.arcs} 条 / 弧 ${rings.arcs} 条`);
+check(
+  '三个环的轨道都在（心形）',
+  rings.paths - rings.arcs === 3,
+  `轨道 ${rings.paths - rings.arcs} 条 / 弧 ${rings.arcs} 条`,
+);
 check('环旁边有三行读数', rings.rows.length === 3, `${rings.rows.length} 行：${rings.rows.map((r) => r.label).join('/')}`);
 
 /**

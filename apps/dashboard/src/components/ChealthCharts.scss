@@ -75,6 +75,23 @@ $chart-h: 74px;
     // bar" and "no day" look identical otherwise.
     min-height: 2px;
 
+    // ⚠️ 高度来自行内的 `--h`，见 TSX 里那段注释。
+    //    兜底写 0%：`--h` 没传时柱子是平的，而不是撑满。
+    height: var(--h, 0%);
+
+    // ⚠️⚠️ 入场：**从 0 长到自己的高度**，逐根延迟。
+    //
+    //    ⚠️ 只写 `from { height: 0 }`，**不写 `to`** —— `to` 默认取元素自己的
+    //      计算值（也就是 `var(--h)`）。写了 `to` 就等于把高度**钉死在动画
+    //      那一刻的值**上，之后数据一变（切天/周/月）柱子就不跟着变了。
+    //    ⚠️ `both` 让延迟期间也保持 0 高度，否则每根柱子会先「闪现」在最终
+    //      位置、然后再从头长一次。
+    //    ⚠️ 用 `height` 而不是 `transform: scaleY()`：`.chc__bar--sel` 已经占了
+    //      `transform`（`scaleX(1.6)`），两个动画抢同一个属性会互相覆盖 ——
+    //      而症状只是「选中的柱子不宽了」，看起来像设计变了。
+    animation: chc-bar-grow 620ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 26ms);
+
     // ⚠️ 空白的日子保持灰色，**不能染成指标色** —— 没有记录和「记录是零」
     //    必须一眼分得开，而一根淡色的短柱两件事都像。
     &--empty { background: var(--chart-empty, rgba(128, 128, 128, 0.18)); }
@@ -1160,13 +1177,162 @@ $chart-h: 74px;
 //    否则桌面端会跟着卡片一起长成一个巨大的圆。
 .chc__rings-svg {
   flex: none;
-  // ⚠️ 104px 是**回推**出来的，不是挑的：卡片内容宽约 292px，
-  //    减掉环 104 和间距 14，左边那列还剩 174px ——
-  //    刚好放得下「活动消耗」四个字 + 「515 千卡 / 400」不折行。
-  //    118px 的时候那列只有 160px，`/ 400` 就会掉到第二行（实测截图）。
-  width: 104px;
-  height: 104px;
+  // ⚠️⚠️ 92px，而且是**回推**出来的。
+  //
+  //    卡片内容宽约 292px。左边那列要放下最长的一行：
+  //      「活动消耗」(50px) + 圆点(9) + 三个间隙(~17) + 「515 千卡 / 400」(~90)
+  //      ≈ 166px，再加一点余量 ⇒ 200px。
+  //    ⇒ 环最多 292 − 200 − 14(gap) = 78px？放不下 92。
+  //
+  //    ⚠️ 所以真正的修法是**同时收 viewBox**（见 TSX 那段）：原来
+  //      `0 0 120 120` 而心只占中间 100 单位，盒子比图形大一圈 ——
+  //      104px 的盒子里只有 ~87px 是心，剩下 17px 是看不见的空白。
+  //      收紧成 `4 6 112 100` 之后 92px 的盒子画出来就是 ~92px 的心。
+  //
+  //    ⚠️ 历史：118px 时 `/ 400` 掉到第二行；104px 时改成文字**压到心上**
+  //      （`nowrap` 不折行，只会溢出）。**溢出比折行更难发现** ——
+  //      折行看得出来，溢出的那截只是叠在别的元素上。
+  width: 92px;
+  height: 92px;
   display: block;
+}
+
+@keyframes chc-bar-grow {
+  from {
+    height: 0;
+  }
+}
+
+// ⚠️ 环 / 仪表盘的「画进去」。
+//    `stroke-dashoffset` 从「整段长度」收到 0 —— 长度不变，变的是偏移，
+//    所以看起来是沿着路径长出来，不是从两头缩进来。
+//    ⚠️ `--len` 由行内提供（= 百分比 × 100）。没有它，`from` 解析不出来，
+//      动画会被整条丢掉而元素停在终态 —— 也就是**不动**，但页面完全正常。
+@keyframes chc-ring-draw {
+  from {
+    stroke-dashoffset: var(--len, 0);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.chc__ring-arc,
+.chc__gauge-arc {
+  animation: chc-ring-draw 900ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+
+// ⚠️ 三环错开一点，像三星那样依次长出来。外圈先动。
+.chc__rings-svg g:nth-child(2) .chc__ring-arc {
+  animation-delay: 110ms;
+}
+.chc__rings-svg g:nth-child(3) .chc__ring-arc {
+  animation-delay: 220ms;
+}
+
+// ── 弧形仪表盘 ──────────────────────────────────────────────
+// ⚠️ 单独一个居中容器 —— 仪表盘宽度是固定的 132px，直接放进列方向的卡片里
+//    会被 `align-items: stretch` 拉成整行宽，弧本身居中但容器撑满，
+//    于是下面那条虚线会离得很远。
+.chc__gaugewrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 2px 0 4px;
+}
+
+.chc__gauge {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  flex: none;
+}
+
+.chc__gauge-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+// ⚠️ 圆点必须**看得见地压在同色的弧上** —— 加一圈底色描边把它托出来，
+//    否则它就是弧的一个粗头，看不出「进度到这儿了」。
+.chc__gauge-dot {
+  stroke: var(--bg, #16181d);
+  stroke-width: 2.5;
+}
+
+// ⚠️ 数值叠在弧的**开口里**（不是正中）—— 弧是 240° 开口朝下，
+//    正中的话数字会压在下半部那两段弧中间。往上挪一点。
+.chc__gauge-txt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.chc__gauge-v {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.chc__gauge-l {
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+// ⚠️⚠️ 无障碍契约：`prefers-reduced-motion` 下**状态照样是终态、只是不走过去**。
+//    这里把动画关掉，元素立刻停在 dasharray 定义的终态 —— 也就是「已经画好了」。
+//    ⚠️ 不是「跳过动画变成空白」：那会让环永远看不见。
+@media (prefers-reduced-motion: reduce) {
+  .chc__bar,
+  .chc__ring-arc,
+  .chc__gauge-arc {
+    animation: none;
+  }
+}
+
+// ── 宽屏：两列 ──────────────────────────────────────────────
+//
+// ⚠️ 这一页原来是**一条 900px 的窄柱**走在 1440px 的桌面上，两边空掉一大半。
+//    三星健康在平板 / 折叠屏上是**两列**的。
+//
+// ⚠️⚠️ 不用 `.section__body--wide` 来达成 —— 那个类是给 COOF 的海报墙用的
+//    （「海报网格不能被 900px 挤成两列」），在这里重定义它会波及那边。
+//    所以只在 CHEALTH 自己的容器上加网格。
+//
+// ⚠️ 断点取 900px：低于它两列会挤到每列 ~430px，而卡片里最窄的内容
+//    （环 + 三行读数）实测需要 ~360px 才不折行。
+.chc__grid2 {
+  display: grid;
+  gap: 11px;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .chc__grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  // ⚠️ 卡片自带 `margin-top: 11px`，进了网格之后会和 `gap` 叠加 —— 清零。
+  //    ⚠️ 特异性要和 `.card.chc__card`（0,2,0）平手，靠**写在后面**取胜，
+  //      所以这段必须在那个规则之后。
+  .chc__grid2 > .chc__card {
+    margin-top: 0;
+  }
 }
 
 // ── 总消耗：单独标记的一行 ──────────────────────────────────

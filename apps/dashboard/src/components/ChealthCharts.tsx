@@ -162,7 +162,14 @@ export function BarRow({
               // $chart-h baseline so every chart's zero line is the same line;
               // a percentage height inside an auto-height parent is a
               // coincidence, not a layout.
-              style={{ height: `${h}%` }}
+              //
+              // ⚠️ 高度走**自定义属性** `--h`，不是直接写 `height`：
+              //    入场动画要 `from { height: 0 }`，而 `height` 直接写在行内
+              //    样式里的话，关键帧和它打架（行内样式赢）。
+              //    写成 `height: var(--h)` 之后，关键帧只改 height、
+              //    行内只提供 `--h`，两者不重叠。
+              // ⚠️ `--i` 是**序号**，用来做逐根延迟。
+              style={{ ['--h' as string]: `${h}%`, ['--i' as string]: String(i) } as CSSProperties}
               onClick={() => setPicked(i)}
             />
           );
@@ -413,6 +420,21 @@ export function HeartChart({
  *    0 画一圈空轨道 + 读数 0，null 画空轨道 + 写「未采集」。
  *    这个项目反复栽在「把不知道画成零」上。
  */
+/*
+ * 心形路径 —— 三星「每日活动量」那块砖上的形状。
+ *
+ * ⚠️⚠️ 用**两段三次贝塞尔**画出两瓣和那个凹口，不是拿圆弧拼的。
+ *    圆弧拼出来的「心」两瓣之间是个**尖**的凹口，看起来像一个苹果
+ *    或者一颗牙，而不像心 —— 而它画出来仍然是个闭合的对称图形，
+ *    不像坏了。这个项目对「手工 path 打错一笔看不出来」有明确记录
+ *    （见 ChealthIcons 抬头那段），所以这里只用手推得出坐标的形状，
+ *    并且**用眼睛核过**。
+ *
+ * 坐标：viewBox 0–120，尖端在 (60,100)，两瓣顶在 y=14，凹口在 (60,29)。
+ */
+const HEART =
+  'M60 100 C 30 80 10 60 10 40 C 10 25 25 14 38 14 C 48 14 55 20 60 29 C 65 20 72 14 82 14 C 95 14 110 25 110 40 C 110 60 90 80 60 100 Z';
+
 export function Rings({
   items,
 }: {
@@ -427,9 +449,9 @@ export function Rings({
     color: string;
   }[];
 }) {
-  // ⚠️ 半径从外到内，和传进来的顺序一致。120 的 viewBox 里留够描边宽度。
-  const R = [50, 39, 28];
-  const SW = 10;
+  // ⚠️ 缩放系数从外到内。心形不像圆有半径，只能整体缩放。
+  const K = [1, 0.78, 0.56];
+  const SW = 9;
   return (
     <View className="chc__rings">
       <View className="chc__rings-legend">
@@ -450,29 +472,54 @@ export function Rings({
         ))}
       </View>
       {/* ⚠️ 原生 `<svg>`：`style` 必须是对象，写字符串是 React #62、整页白屏。 */}
-      <svg viewBox="0 0 120 120" className="chc__rings-svg" aria-hidden="true">
+      {/*
+        ⚠️⚠️ `viewBox` 收紧了，不是 `0 0 120 120`。
+
+        心形 path 实际只占 x∈[10,110]、y∈[14,100]，再加描边半个宽（4.5）——
+        也就是 x∈[5.5,114.5]、y∈[9.5,104.5]。用 `0 0 120 120` 的话，
+        **盒子比图形大一圈**：SVG 占了 104px 的布局宽度，画出来的心只有 ~87px，
+        而多出来的那圈空白是**看不见的**。
+
+        ⚠️ 实测后果：左边那列读数（`步数 9,686 / 9,000`）被挤到 174px 而它需要
+        ~195px，`nowrap` 不让折行 ⇒ **文字直接跑到心的下面去了**。
+        截图里 `/ 9,000` 的最后一个 0 压在心形上。
+
+        ⇒ `viewBox="4 6 112 100"` 让图形填满盒子，再把盒子收到 92px。
+      */}
+      <svg viewBox="4 6 112 100" className="chc__rings-svg" aria-hidden="true">
         {items.map((it, i) => {
-          const r = R[i] ?? 28;
-          const c = 2 * Math.PI * r;
+          const k = K[i] ?? 0.56;
           // ⚠️ 夹在 0..1：达标 121% 时弧长超过整圈，`stroke-dasharray`
           //    会绕回去从 21% 处开始画，看起来像「差一点」而不是「超额」。
           const p = it.pct === null ? 0 : Math.max(0, Math.min(1, it.pct));
+          const len = p * 100;
+          // ⚠️ `pathLength={100}` 把这条路径的长度**归一化成 100** ——
+          //    这样 dasharray 可以直接写百分比，不需要 `getTotalLength()`。
+          //    ⚠️ 也正因为有它，三个不同缩放的心可以用同一套 0–100 的数。
+          const common = {
+            d: HEART,
+            pathLength: 100,
+            fill: 'none',
+            stroke: it.color,
+            // ⚠️ 描边宽度要**除以缩放系数**，否则里面那两个心看着比外面粗。
+            strokeWidth: SW / k,
+          } as const;
           return (
-            <g key={it.label}>
-              <circle cx="60" cy="60" r={r} fill="none" stroke={it.color} strokeOpacity="0.18" strokeWidth={SW} />
+            <g key={it.label} transform={`translate(60 60) scale(${k}) translate(-60 -60)`}>
+              <path {...common} strokeOpacity="0.18" />
               {p > 0 ? (
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={r}
-                  fill="none"
-                  stroke={it.color}
-                  strokeWidth={SW}
-                  strokeDasharray={`${(c * p).toFixed(1)} ${c.toFixed(1)}`}
+                <path
+                  {...common}
                   strokeLinecap="round"
-                  // ⚠️ 从**十二点**开始顺时针，不是三点。SVG 的 0 度在三点钟方向，
-                  //    不转这 90 度的话「满了」看起来是从右边开始的。
-                  transform="rotate(-90 60 60)"
+                  className="chc__ring-arc"
+                  style={
+                    {
+                      strokeDasharray: `${len.toFixed(1)} 100`,
+                      // ⚠️ 动画从「整段偏移」收到 0 = 画进去。
+                      //    缩放/描边都在属性上，动画只碰 dashoffset —— 两者不打架。
+                      ['--len' as string]: len.toFixed(1),
+                    } as React.CSSProperties
+                  }
                 />
               ) : null}
             </g>
@@ -501,6 +548,76 @@ export function Rings({
  * ⚠️ 月份从 `to`（**数据自己的最后一天**）来，不是从浏览器的今天来 ——
  *    和这一页别的窗口一致。数据落后三天时，按浏览器算会得到一张近乎全空的月历。
  */
+/*
+ * 240° 的弧，开口朝下 —— 三星「睡眠得分」「每日心肺负荷」那张仪表盘。
+ *
+ * ⚠️ 起点 150°、顺时针扫 240° 到 30°（角度按 SVG 习惯：0° 在三点钟、y 向下）。
+ *    `A 46 46 0 1 1` 里的 `1 1` 是「大弧 + 顺时针」—— 改成 `0 1` 会画成
+ *    剩下那 120°，看起来像一张嘴，而不像一个仪表盘。
+ */
+const GAUGE_ARC = 'M 20.16 83 A 46 46 0 1 1 99.84 83';
+
+/**
+ * 弧形仪表盘 —— 一个 0–100 的比例，配一个末端圆点。
+ *
+ * ⚠️⚠️ 它画的是**比例**，不是三星那种「得分」。三星的「睡眠得分 / 能量得分」
+ *    是它自己的专有算法，我们**没有**，也**不编**（读者定的规矩：
+ *    「拿不到数据的就不做这个功能」）。
+ *    ⇒ 所以这个组件一律接 `pct`（一个真实的比例），标签由调用点写清楚
+ *      「是什么的比例」。长得像三星，说的是真话。
+ *
+ * ⚠️ 动画只碰 `stroke-dashoffset`，不碰 dasharray 的长度 ——
+ *    「画进去」是偏移在变，不是长度在变。
+ */
+export function Gauge({
+  pct,
+  value,
+  label,
+  color = 'var(--m-steps)',
+}: {
+  /** 0–1。给 0–100 的分数要在调用点先除。 */
+  pct: number;
+  value: string;
+  label: string;
+  color?: string;
+}) {
+  const p = Math.max(0, Math.min(1, pct));
+  // ⚠️ 末端圆点的位置要**算出来**，不能写死 —— 它跟着比例走。
+  const a = ((150 + 240 * p) * Math.PI) / 180;
+  const dotX = 60 + 46 * Math.cos(a);
+  const dotY = 60 + 46 * Math.sin(a);
+  const len = p * 100;
+  return (
+    <View className="chc__gauge">
+      <svg viewBox="0 0 120 120" className="chc__gauge-svg" aria-hidden="true">
+        <path d={GAUGE_ARC} pathLength={100} fill="none" stroke={color} strokeOpacity="0.18" strokeWidth={9} strokeLinecap="round" />
+        <path
+          d={GAUGE_ARC}
+          pathLength={100}
+          fill="none"
+          stroke={color}
+          strokeWidth={9}
+          strokeLinecap="round"
+          className="chc__gauge-arc"
+          style={
+            {
+              strokeDasharray: `${len.toFixed(1)} 100`,
+              ['--len' as string]: len.toFixed(1),
+            } as React.CSSProperties
+          }
+        />
+        {/* ⚠️ 圆点用 `--m` 那个色，但**带一圈底色描边**，否则它压在同色的弧上
+            会糊成一个疙瘩，看不出「进度到这儿了」。 */}
+        <circle cx={dotX} cy={dotY} r={5} className="chc__gauge-dot" fill={color} />
+      </svg>
+      <View className="chc__gauge-txt">
+        <Text className="chc__gauge-v">{value}</Text>
+        <Text className="chc__gauge-l">{label}</Text>
+      </View>
+    </View>
+  );
+}
+
 export function GoalCalendar({
   days,
   month,
