@@ -41,7 +41,21 @@
   border-radius: 22px 22px 0 0;
   // ⚠️ 用不透明底，不用毛玻璃：玻璃底在深色壁纸上会让小字失去对比度，
   //    而这里恰恰是要读密度很高的表。
-  background: var(--surface, #16181d);
+  //
+  // ⚠️⚠️ 原来是 `var(--surface, #16181d)`，而 **`--surface` 这个 token 在整个
+  //    主题体系里根本不存在**（tokens.scss 里只有 `--glass-*` / `--page-bg` /
+  //    `--text-*` 这些，没有任何 `--surface*`）。所以那个深色兜底
+  //    **从第一天起就一直在生效**，两个主题都是 `#16181d`。
+  //
+  //    ⇒ 深色主题下碰巧是对的（白字配黑底）；**浅色主题下是黑底黑字**：
+  //      实测文字 `rgba(10,12,16,.94)` 配底 `rgb(22,24,29)`，对比度约 **1.05:1**
+  //      —— 不是「不太清楚」，是**完全读不出来**。
+  //      四张弹窗（周对比 / 数据来源 / 达标 / 类型分布）全部中招。
+  //
+  //    ⚠️ 这个 bug 能活这么久，是因为**它只在一个主题下坏**，
+  //      而所有截图、所有验证、所有人工检查都只跑在一个主题下。
+  //      ⇒ 凡是「主题相关」的东西，**两个主题都要看一遍**（下面两段就是那件事）。
+  background: var(--sheet-bg, #16181d);
   border-top: 1px solid color-mix(in srgb, #fff 10%, transparent);
   animation: sheet-up 220ms cubic-bezier(0.22, 0.9, 0.3, 1);
 }
@@ -225,4 +239,28 @@
   line-height: 1.2;
   text-align: center;
   color: var(--text-secondary);
+}
+
+/**
+ * ⚠️ 弹窗面板的底色**按主题给**。
+ *
+ *    浅色主题配 `#f6f3f0`（和壁纸那层遮罩同色系），深色主题保持 `#16181d`。
+ *    判别直接挂在 `html` 上，和 `app.scss` 里 `.cevtuo-wallpaper` 那条同一个写法 ——
+ *    弹窗虽然在 `.page` 里面，但主题类是打在 `html` 上的，用 `.theme-light &`
+ *    会去找一个页面内部的祖先，**永远匹配不到**（那正是 app.scss 里记过的坑）。
+ *
+ *    ⚠️ 无主题类时跟系统走，`prefers-color-scheme` 那一份也要写，
+ *      否则首次绘制（内联脚本还没打类）会闪一下黑。
+ */
+html.theme-light .sheet__panel {
+  --sheet-bg: #f6f3f0;
+  // ⚠️ 浅底面板压在浅色页面上，只靠底色分不开，得有影子。
+  box-shadow: 0 -8px 34px rgba(20, 18, 16, 0.16);
+}
+
+@media (prefers-color-scheme: light) {
+  html:not(.theme-dark):not(.theme-light) .sheet__panel {
+    --sheet-bg: #f6f3f0;
+    box-shadow: 0 -8px 34px rgba(20, 18, 16, 0.16);
+  }
 }

@@ -268,6 +268,47 @@ export default function Chealth() {
     }));
   }, [days]);
 
+  /**
+   * ⚠️ 三个**手机一直在同步、类型里也声明了、但页面从来没渲染过**的指标
+   *    （读者 2026-09-29：「能展示的内容能展示出来什么」）。
+   *
+   *    补它们之前先量了一遍真实覆盖（`scripts/chealth-coverage.ts`，31 天）：
+   *
+   *        平均速度 speedAvgMps      24/31 天有值
+   *        运动次数 exerciseCount     21/31 天有非零值
+   *        步频     stepsCadenceAvg  14/31 天有值
+   *        体重     weightKg          2/31 天   ← 太少，不做
+   *        楼层     floors            0/31 天   ← 一条都没有
+   *        HRV / 呼吸率               0/31 天   ← 一条都没有
+   *
+   *    ⚠️⚠️ **「躺在类型里」和「躺在数据里」是两件事。** 这个项目已经因为
+   *      「以为有数」栽过一次（HRV / 呼吸率 / 皮温 / 体重在 30 天里一条记录都没有，
+   *      而页面差点把它们画成 0）。**做新指标之前先量一遍，量完再决定做哪几个** ——
+   *      上面那三个 0/31 的就是量完之后**决定不做**的，不是忘了。
+   *
+   *    ⚠️ 均值只除**有记录的那些天**，不是除 7 —— 步频只有 14/31 天有值，
+   *      除以 7 会把「没走路的那天」当成「步频 0」，把均值拉低近一半。
+   *      （同一类错误：把「不知道」当成「零」。）
+   */
+  const extra7d = useMemo(() => {
+    const win = days.slice(-7);
+    const nums = (k: keyof ChealthDay) =>
+      win.map((d) => d[k]).filter((x): x is number => typeof x === 'number');
+    const avg = (k: keyof ChealthDay, digits: number) => {
+      const v = nums(k);
+      return v.length ? (v.reduce((a, b) => a + b, 0) / v.length).toFixed(digits) : null;
+    };
+    const sum = (k: keyof ChealthDay) => {
+      const v = nums(k);
+      return v.length ? Math.round(v.reduce((a, b) => a + b, 0)) : null;
+    };
+    return {
+      speedAvg: avg('speedAvgMps', 2),
+      cadence: avg('stepsCadenceAvg', 1),
+      exercise7d: sum('exerciseCount'),
+    };
+  }, [days]);
+
   const stamp = formatUpdatedAt(index?.updatedAt);
   const freshness = stamp ? `数据更新 ${stamp}` : null;
 
@@ -923,6 +964,55 @@ export default function Chealth() {
                     <Text className="chc__tile-u">km</Text>
                   </Text>
                 </View>
+
+                {/*
+                  ⚠️ 这两块是 2026-09-29 补的：手机一直在同步它们、类型里也声明了，
+                  但**页面上从来没渲染过**。补之前先用 `scripts/chealth-coverage.ts`
+                  量了真实覆盖（平均速度 24/31 天、步频 14/31 天），
+                  确认有数据才做 —— 见 `extra7d` 上面那段。
+                  ⚠️ badge 类和颜色 token 都**复用现成的**（距离那块是 route/蓝，
+                  步数那块是 steps/绿），所以这一处不需要动任何 CSS。
+                */}
+                <View
+                  className="chc__tile chc__tile--half"
+                  style={{ ['--m' as string]: 'var(--m-dist)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--dist">
+                      <Icon name="route" />
+                    </View>
+                    {/*
+                      ⚠️⚠️ 标签是「运动均速」**不是**「平均速度」。
+                      手机那边（SyncWorker.kt）算的是当天 `SpeedRecord` **所有采样点**
+                      的平均值 —— 所以它反映的是**被记录到的那些活动**
+                      （跑步、骑行会把平均数拉高），**不是日常走路的速度**。
+                      实测就是证据：7 天均值 3.58 m/s ＝ 12.9 km/h，
+                      那是跑步的速度；写成「平均速度」会让人以为自己在飞。
+                      ⇒ **口径说不清的时候，把口径写进标签**，不是写个更响的数字。
+                    */}
+                    <Text className="chc__mlabel">运动均速</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {extra7d.speedAvg ?? '—'}
+                    <Text className="chc__tile-u">m/s</Text>
+                  </Text>
+                </View>
+
+                <View
+                  className="chc__tile chc__tile--half"
+                  style={{ ['--m' as string]: 'var(--m-steps)' } as CSSProperties}
+                >
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--steps">
+                      <Icon name="cadence" />
+                    </View>
+                    <Text className="chc__mlabel">步频</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {extra7d.cadence ?? '—'}
+                    <Text className="chc__tile-u">步/分</Text>
+                  </Text>
+                </View>
               </View>
 
               {/*
@@ -937,6 +1027,11 @@ export default function Chealth() {
                 睡眠取最近一晚（{lastSleep ? `${lastSleep.date.slice(5)}，${hm(lastSleep.hours)}` : '没有记录'}）
                 {avgSleep !== null ? `，14 晚均值 ${hm(avgSleep)}` : ''}。
                 消耗 · 距离 是最近 7 天，步数是今天，目标 {STEP_GOAL.toLocaleString('en-US')} 步。
+                {extra7d.speedAvg !== null || extra7d.cadence !== null
+                  ? ' 运动均速 · 步频 是采样均值 —— 手机在记录到速度/步频的那些时刻取平均，'
+                    + '所以它们说的是「被记录到的那些活动」，不是日常走路 —— '
+                    + '跑步会明显拉高均速。没记录的那天不参与，不当作 0。'
+                  : ''}
               </Text>
 
               {/*
@@ -1305,6 +1400,12 @@ export default function Chealth() {
                 <View className="chc__cell"><Text>血氧</Text><Text className="chc__cell-v">{t?.spo2_7d ?? '—'}%</Text></View>
                 <View className="chc__cell"><Text>体重</Text><Text className="chc__cell-v">{t?.weightKgLatest ?? '—'} kg</Text></View>
                 <View className="chc__cell"><Text>距离</Text><Text className="chc__cell-v">{t ? `${t.distance7dKm} km` : '—'}</Text></View>
+                {/*
+                  ⚠️ 运动次数用**次数**不是时长 —— 时长那一项在「每天的运动时长」
+                  那张卡里已经有了，再写一遍就是同一个数出现两次。
+                  这一格回答的是另一个问题：这一周**动了几次**。
+                */}
+                <View className="chc__cell"><Text>运动次数</Text><Text className="chc__cell-v">{extra7d.exercise7d ?? '—'}</Text></View>
               </View>
             </View>
           </Sheet>
@@ -1415,6 +1516,42 @@ export default function Chealth() {
           </Sheet>
 
           <Sheet open={sheet === 'week'} title="周对比" onClose={closeSheet}>
+            {/*
+              ⚠️⚠️ 读者 2026-09-29：「尽量处理成带过程的数据，而不是单一的平均数据」。
+
+              下面那张卡全是**数字**（7 天 vs 前 7 天，加一个百分比）——
+              它答的是「变了多少」，答不了「是**怎么**变的」：
+              一路爬上去然后掉下来，和一路掉下去然后弹回来，可以是同一个百分比。
+              这两条折线给的正是那个形状。
+
+              ⚠️⚠️ 它们原来放在主页**第一屏**，而那一屏的内容一直排到 y=988，
+                面板底边是 900 ⇒ **整块在屏幕外，谁也看不见**。
+                而当时「元素在不在 DOM 里、折线有没有画出来」的检查**全绿**
+                （我确实查了路径长度 177/161 字符，非空）。
+                ⇒ **一屏排不下时，正确的做法是换一屏，不是继续往下堆。**
+                  而且「画出来了」和「看得见」是两件事，**要量的是后者**：
+                  元素矩形有没有落在它所在面板的矩形里面。
+
+              ⚠️ 缺的那天传 `undefined`，**不是 0** —— `Spark` 会跳过它、
+                折线在那里断开。传 0 的话「那天没记录」会被画成「那天速度是 0」，
+                一条俯冲到底的尖；而两端被拉到 0 时，**中间所有正常值看起来都像异常**。
+            */}
+            <View className="card chc__card">
+              {recent.some((d) => typeof d.speedAvgMps === 'number') ? (
+                <View className="chc__trend">
+                  <Text className="chc__card-t">运动均速 · 最近 14 天</Text>
+                  <Spark points={recent.map((d) => d.speedAvgMps)} />
+                </View>
+              ) : null}
+
+              {recent.some((d) => typeof d.stepsCadenceAvg === 'number') ? (
+                <View className="chc__trend">
+                  <Text className="chc__card-t">步频 · 最近 14 天</Text>
+                  <Spark points={recent.map((d) => d.stepsCadenceAvg)} />
+                </View>
+              ) : null}
+            </View>
+
             <View className="card chc__card">
               <Text className="chc__card-t">最近 7 天 vs 再往前 7 天</Text>
               {week.length ? (
