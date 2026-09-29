@@ -293,7 +293,62 @@ export function SeriesChart({
   const x = (t: number) => (t / tMax) * W;
   const y = (v: number) => H - 6 - ((v - lo) / span) * (H - 12);
 
-  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join(' ');
+  /**
+   * ⚠️⚠️ **平滑曲线**（读者 2026-09-29：「平滑曲线 CHEALTH 尽快做」）。
+   *
+   *    原来是一条折线（`M…L…L…`）。心率/功率/踏频都在每 5 秒一个点上抖动，
+   *    折线把这些抖动**原样画出来**，看起来像噪声而不像一条曲线。
+   *
+   *    ⚠️ 算法用**单调三次插值**（Fritsch–Carlson），不是更省事的 Catmull-Rom。
+   *      Catmull-Rom 会**过冲**：曲线跑到数据范围之外，于是心率图上会出现
+   *      一段「低于当天最低心率」的弧 —— 那不是难看，那是读者读到一个
+   *      **不存在的心率**。单调插值在数学上保证不过冲（切线被钳在数据斜率内）。
+   *
+   *    ⚠️ 而且它和「逐段上色」是兼容的：每个区间单独出一条三次贝塞尔，
+   *      端点切线按同一个公式算，所以相邻两段在接缝处平滑（C1 连续），
+   *      颜色却各归各的 —— 这正是下面逐段画 path 的原因。
+   *
+   *    ⚠️ `x` 是单调递增的（时间序列），所以用 x 作参数不会有回折。
+   */
+  const X = pts.map((p) => x(p[0]));
+  const Y = pts.map((p) => y(p[1]));
+  const N = pts.length;
+  const tangents: number[] = (() => {
+    const secant: number[] = [];
+    for (let i = 0; i < N - 1; i += 1) {
+      const dx = (X[i + 1] ?? 0) - (X[i] ?? 0);
+      secant.push(dx === 0 ? 0 : ((Y[i + 1] ?? 0) - (Y[i] ?? 0)) / dx);
+    }
+    const t: number[] = new Array(N).fill(0);
+    t[0] = secant[0] ?? 0;
+    t[N - 1] = secant[N - 2] ?? 0;
+    for (let i = 1; i < N - 1; i += 1) {
+      const a = secant[i - 1] ?? 0;
+      const b = secant[i] ?? 0;
+      // ⚠️ 异号（或有一个是 0）= 这里是个极值点 ⇒ 切线取 0，曲线才不会被拉过头。
+      if (a * b <= 0) {
+        t[i] = 0;
+      } else {
+        const w1 = 2 * (X[i + 1]! - X[i]!) + (X[i]! - X[i - 1]!);
+        const w2 = (X[i + 1]! - X[i]!) + 2 * (X[i]! - X[i - 1]!);
+        t[i] = (w1 + w2) / (w1 / a + w2 / b); // 加权调和平均
+      }
+    }
+    return t;
+  })();
+  /** 第 `i` 段（`pts[i]` → `pts[i+1]`）的贝塞尔控制点。 */
+  const segCurve = (i: number) => {
+    const dx = (X[i + 1] ?? 0) - (X[i] ?? 0);
+    const c1x = (X[i] ?? 0) + dx / 3;
+    const c1y = (Y[i] ?? 0) + ((tangents[i] ?? 0) * dx) / 3;
+    const c2x = (X[i + 1] ?? 0) - dx / 3;
+    const c2y = (Y[i + 1] ?? 0) - ((tangents[i + 1] ?? 0) * dx) / 3;
+    return (
+      `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ` +
+      `${(X[i + 1] ?? 0).toFixed(1)},${(Y[i + 1] ?? 0).toFixed(1)}`
+    );
+  };
+  const d = X.map((xv, i) => (i === 0 ? `M${xv.toFixed(1)},${(Y[0] ?? 0).toFixed(1)}` : segCurve(i - 1))).join(' ');
   const area = `${d} L${W},${H} L0,${H} Z`;
   const peak = pts.reduce<[number, number]>((a, b) => (b[1] > a[1] ? b : a), pts[0] ?? [0, 0]);
 
@@ -303,8 +358,13 @@ export function SeriesChart({
       <svg viewBox={`0 0 ${W} ${H}`} className="chc__spark" preserveAspectRatio="none">
         <path d={area} className="chc__area" />
         {bands?.length ? (
-          // ⚠️ 逐段画 `<line>`，不是把一条 path 拆开 —— 一段一色没法用单条 path 表达
-          //    （`stroke` 是整条路径的属性）。≤120 个点，最多 119 段，开销可以忽略。
+          // ⚠️ 逐段画 `<path>`（每段一条三次贝塞尔），不用单条大 path —— 一段一色
+          //    没法用单条 path 表达（`stroke` 是整条路径的属性）。
+          //    ≤120 个点，最多 119 段，开销可以忽略。
+          //
+          // ⚠️ 每段的控制点来自**整条序列**的单调切线（见上面 `segCurve`），
+          //    不是「把两端连成直线再圆角一下」—— 后者在接缝处会有可见的折角，
+          //    放大看就是一段一段的。
           //
           // ⚠️ 取**两端的中点值**判定颜色，不是两端各自判 —— 各判会得到一条
           //    「半段灰半段红」的线，在图上看起来像数据抖动，其实是判定方式造成的。
@@ -315,15 +375,16 @@ export function SeriesChart({
             let c = bands[0]?.color ?? '';
             for (const b of bands) if (mid >= b.from) c = b.color;
             return (
-              <line
+              <path
                 key={`${p[0]}-${i}`}
-                x1={x(p[0])}
-                y1={y(p[1])}
-                x2={x(nx[0])}
-                y2={y(nx[1])}
+                // ⚠️ `fill="none"` 必须显式写：SVG 的 `<path>` 默认是**黑填充**，
+                //    少这一句整张图会变成一坨黑色色块。
+                d={`M${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)} ${segCurve(i)}`}
+                className="chc__seg"
                 stroke={c}
                 strokeWidth={2}
                 strokeLinecap="round"
+                fill="none"
               />
             );
           })

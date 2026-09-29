@@ -206,6 +206,38 @@
   }
 }
 
+/// 玻璃小圆盘 —— 图标底下那个彩色的圆（步数 / 活动消耗 / 心率 / 距离…）。
+///
+/// ⚠️ 读者 2026-09-29：「那些 logo 例如活动消耗心率区间等的他们这些小圆盘
+///    都改为玻璃质感，你可以有颜色，但是要玻璃质感」。
+///
+/// ⚠️⚠️ **玻璃 = 四样东西，缺一不可**，而且每一样都对应一种「看起来像但不对」：
+///      ① 同色的**渐变**底 —— 单一 alpha 的平底只会显得淡，不是玻璃
+///      ② 上缘一道**内高光**（`inset 0 1px` 白）—— 少了它 = **塑料**
+///      ③ **1px 外描边**（白、低透明）—— 少了它，一堆半透明圆叠在浅色卡片上
+///         会**糊成一片**（这正是 CHEALTH 那边原来那句「圆底用实色」防着的东西；
+///         那句话没错，它防的是糊，不是玻璃）
+///      ④ 一点**外投影**（用**同色**，不是黑）—— 少了它像贴在卡片上的一张色纸
+///
+/// ⚠️ 颜色一点没丢：底色就是传进来的 `$c`。玻璃感来自**光**（高光 + 描边 +
+///    投影），不来自「把颜色调淡」—— 调淡会把「一眼认出这是步数」一起弄没。
+///
+/// ⚠️ 放在这里而不是各页面里：`chc__badge`（马赛克）和 `igrid__ico`（图标格）
+///    是**两处**用它，而两份配方必然漂移（这个项目已经吃过两次）。
+@mixin glass-disc($c) {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, #fff 26%, #{$c}) 0%,
+    #{$c} 52%,
+    color-mix(in srgb, #000 14%, #{$c}) 100%
+  );
+  border: 1px solid color-mix(in srgb, #fff 32%, transparent);
+  box-shadow:
+    inset 0 1px 1px color-mix(in srgb, #fff 60%, transparent),
+    inset 0 -2px 4px color-mix(in srgb, #000 20%, transparent),
+    0 2px 6px color-mix(in srgb, #{$c} 34%, transparent);
+}
+
 /// The near-fullscreen modal sheet (movie detail, note detail).
 @mixin glass-sheet {
   @include glass-base;

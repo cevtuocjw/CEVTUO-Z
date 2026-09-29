@@ -611,12 +611,46 @@ $gutter: t.$space-3;
   animation-iteration-count: infinite;
 }
 
+/**
+ * ⚠️ 读者 2026-09-29：「给全站的下滑箭头都更改更现代一些，而且要玻璃效果」。
+ *
+ *    原来是 `<Text>▼</Text>`：一个 Unicode 三角、30px、靠 `text-shadow` 晕开。
+ *    ⇒ 现在是一枚**玻璃圆片 + 细 chevron**（SVG 在 Section.tsx 里）。
+ *
+ * ⚠️ 玻璃那四样还是缺一不可（和 `glass-disc` 同一套道理）：
+ *      ① 渐变底 ② 上缘内高光 ③ 1px 描边 ④ 柔和投影
+ *
+ * ⚠️⚠️ 但底是**烟灰玻璃**（白→黑），不是 `glass-disc` 那种彩色盘，两个原因：
+ *      · 这一枚出现在**四个品牌页的每一屏**上，不属于任何一个指标 ——
+ *        用 `--m-*` 里任何一个颜色都会把「颜色=指标」那套语义弄脏
+ *      · 它压在**壁纸**上（不是卡片），而壁纸什么颜色都有 ⇒ 白底白箭头会糊。
+ *        烟灰底 + 白 chevron 在任何一张壁纸上都读得出来。
+ *
+ * ⚠️ `backdrop-filter` 在小程序 WebView（tier-b/c）里会被丢掉 ——
+ *    所以底色和描边本身必须**已经够看得见**，不能靠模糊撑着。
+ */
 .section__cue-mark {
-  // Bumped from $font-title (20px) — at 20px it was mistaken for a stray glyph.
-  font-size: 30px;
-  line-height: 1;
-  color: var(--text-primary);
-  text-shadow: 0 1px 8px var(--text-halo-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.06) 46%,
+    rgba(0, 0, 0, 0.22) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  backdrop-filter: blur(8px) saturate(1.15);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.22),
+    0 4px 14px rgba(0, 0, 0, 0.24);
   animation-name: cue-bob;
   animation-duration: 1800ms;
   animation-timing-function: ease-in-out;

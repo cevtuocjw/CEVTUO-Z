@@ -303,7 +303,29 @@ export function Section({
           {/* ⚠️ 没滚到底时说「本屏还有内容」—— 见上面 scrollCue 的注释。
               两者都是「往下」，但一个是**在这一屏里**，一个是**到下一屏**。 */}
           <Text className="section__cue-text">{scrollCue || cueText}</Text>
-          <Text className="section__cue-mark">▼</Text>
+          {/*
+            ⚠️ 读者 2026-09-29：「给全站的下滑箭头都更改更现代一些，而且要玻璃效果」。
+
+            ⚠️ 原来是 `<Text>▼</Text>` —— 一个 **Unicode 三角**，两件事都不对：
+              ① 字形取决于装了哪套字体（这个项目在侧边栏 `▦ ≋ ▤` 上栽过一次，
+                 装错字体就是方框）⇒ 换成**内联 SVG**
+              ② 实心三角读起来像**段落标记**，不像「还能往下」的提示
+                 ⇒ 换成细 chevron
+            ⚠️ 圆片的玻璃质感在 CSS 里（`.section__cue-mark`），不在这里 ——
+              它出现在四个品牌页的每一屏上，样式只有一处。
+          */}
+          <View className="section__cue-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path
+                d="M6 9.5l6 6 6-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </View>
         </View>
       ) : null}
     </View>

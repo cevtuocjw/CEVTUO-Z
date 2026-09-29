@@ -1,3 +1,8 @@
+// ⚠️ 玻璃小圆盘的配方在**共享的** `styles/glass.scss` 里（`glass-disc`），
+//    图标格 `Sheet.scss` 用的是同一个 —— 两份配方必然漂移。
+//    `as *`：那个文件只有 mixin、没有会输出的规则，所以不会重复产出 CSS。
+@use '../styles/glass.scss' as *;
+
 // ── Chealth charts ────────────────────────────────────────────
 //
 // ⚠️ In components/, not in pages/chealth/index.scss, and that is not a style
@@ -676,14 +681,29 @@ $chart-h: 74px;
   color: #fff;          // 图标永远白色 —— 三星就是这么做的
   font-size: 17px;      // 图标尺寸走 1em，所以这里等于设定图标大小
 
-  // ⚠️ 圆底用**实色**，不用半透明。半透明底在一堆浅色卡片里会糊成一片，
-  //    而三星那种一眼能认出「这是步数」的辨识度，恰恰来自实色的高对比。
-  &--steps { background: var(--m-steps, #3ecf8e); }
-  &--heart { background: var(--m-heart, #ff5a72); }
-  &--sleep { background: var(--m-sleep, #8b7cf6); }
-  &--kcal  { background: var(--m-kcal, #ff9f43); }
-  &--dist  { background: var(--m-dist, #4aa3ff); }
-  &--plain { background: color-mix(in srgb, currentColor 18%, transparent); color: inherit; }
+  // ⚠️⚠️ 读者 2026-09-29：「那些 logo 例如活动消耗心率区间等的他们这些小圆盘
+  //    都改为玻璃质感，你可以有颜色，但是要玻璃质感」。
+  //
+  //    ⚠️ 这里原来说的是「圆底用**实色**，不用半透明 —— 半透明在一堆浅色卡片里
+  //      会糊成一片」。那句话没错，但它防的是**糊**，不是**玻璃**：
+  //      糊的成因是「只有一个半透明底色、没有任何边界」。
+  //
+  //    ⇒ 玻璃 = 半透明底（同色渐变）+ 上缘内高光 + 1px 外描边 + 一点外投影。
+  //      **四样缺一不可**：少了描边退回「糊」，少了内高光就是「塑料」，
+  //      少了外投影会像贴在卡片表面的一张色纸。
+  //
+  //    ⚠️ 颜色一点没丢：底色仍然是 `--m-*` 那一族的色，只是做成渐变 ——
+  //      「黄绿=步数 / 橙=活动消耗 / 蓝=距离」照样一眼认得出。
+  &--steps { @include glass-disc(var(--m-steps, #3ecf8e)); }
+  &--heart { @include glass-disc(var(--m-heart, #ff5a72)); }
+  &--sleep { @include glass-disc(var(--m-sleep, #8b7cf6)); }
+  &--kcal  { @include glass-disc(var(--m-kcal, #ff9f43)); }
+  &--dist  { @include glass-disc(var(--m-dist, #4aa3ff)); }
+  &--plain {
+    background: color-mix(in srgb, currentColor 18%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    color: inherit;
+  }
 }
 
 // 圆底 + 标签一行；数字单独一行在下面（三星的排法）
@@ -1116,6 +1136,12 @@ $chart-h: 74px;
   opacity: 0.85;
 }
 
+// 逐段上色的平滑曲线。⚠️ `fill: none` 也在这里兜一道 —— SVG 的 `<path>`
+// 默认是**黑填充**，属性里漏一次整张图就变成一坨黑块（属性里已经写了，双保险）。
+.chc__seg {
+  fill: none;
+}
+
 .chc__rings {
   display: flex;
   align-items: center;
@@ -1438,24 +1464,67 @@ $chart-h: 74px;
 //
 //    ⚠️ 断点 1000px：900px 是卡片两列那条断点，居中要更宽才有意义
 //      （900~1000 之间居中和不居中差不了几个像素）。
+/**
+ * ── 宽屏 ────────────────────────────────────────────────────────────
+ *
+ * ⚠️⚠️ 这里做过两次，方向正好相反，两次都记下来：
+ *
+ *   2026-09-29 上午（`cb905c6`）：把 `.section__body` 居中 + 给几个小组件
+ *     加上限（环 520 / 马赛克 640 / 图标格 560）。理由是「900px 的窄柱贴在
+ *     左边，右边 40% 全空」。
+ *
+ *   2026-09-29 下午（读者）：「现在全部居中……我想要改回来之前的那种版式
+ *     全网站」「第一屏的这些块最右侧没有对齐不好看」。
+ *
+ * ⚠️ 上一版**两条都错了，而且错法不一样**：
+ *
+ *   ① **居中**改的是 `.section__body` —— 那是**全站共用**的，一次改动
+ *      波及 home / coof / cnsr / paperr。「一条窄柱贴在左边」是这四个品牌页
+ *      **共同的版式语言**，不是 CHEALTH 的问题；为了一个页面去动全站的
+ *      版式，代价和收益完全不成比例。⇒ **撤销。**
+ *
+ *   ② 三个上限**各不相同** ⇒ 第一屏出现**三级台阶**。1440 实测右边界：
+ *          卡片 1118 / 马赛克 906 / 图标格 826
+ *      读者一眼就看出来了。⇒ 改成**三块同宽**（跟着卡片走）。
+ *
+ * ⚠️ 教训不是「不要收窄」，是**收窄要一致**：一个页面里的块只要右边界
+ *    对不齐，不管每个单独看起来多合理，整体就是歪的。
+ */
 @media (min-width: 1000px) {
-  // ⚠️ `.section__body` 是全站共用的 —— 这一条会同时影响 home / coof /
-  //    cnsr / paperr。那是**有意的**：它们也都是「900px 窄柱贴在左边」，
-  //    右边同样空着。而 COOF 的海报墙用的是 `--wide`（无上限），
-  //    居中对它是空操作。
-  .section__body {
-    margin-left: auto;
-    margin-right: auto;
+  // 三块同宽 —— 卡片本身撑满，这两个也撑满。不复用那些上限。
+  .chc__mosaic { max-width: none; }
+  .igrid { max-width: none; }
+  .chc__rings { max-width: none; }
+
+  /**
+   * ⚠️⚠️ 环那张卡在宽屏下**必须换形状**，不能只是「变宽」。
+   *
+   *    1440 实测（改之前）：环 svg **92px**、读数列 **414px** ——
+   *    一条小环配四倍宽的读数，中间空一大片，怎么看都不像一张卡。
+   *
+   *    ⇒ 环放大到 128px，读数**从三行改成三列**：
+   *        手机上 228px 宽放不下横排（92+14+135=241），宽屏下反过来 ——
+   *        852px 放着 92px 的环才是荒唐的那一边。
+   *      ⚠️ `.chc__rings-v` 有 `margin-left: auto`，所以每一列的值各自靠
+   *        自己那列的右边 —— 三列等宽（`flex: 1 1 0`）才对齐得起来。
+   */
+  .chc__rings {
+    gap: 32px;
   }
 
-  // ⚠️ 下面这些只在 CHEALTH 里存在，收窄它们不会波及别处。
-  //    每个上限是「这个小组件在手机上看起来正常时的宽度」，不是拍的：
-  //      · 环：手机上卡片内容约 280px，这里给 520px 已经宽了近一倍
-  //      · 马赛克：六列 4/2、3/3 的拼法，640px 时每列约 100px，还是拼图
-  //      · 图标格：三列，560px 时每格约 180px —— 不再是横杠
-  .chc__rings { max-width: 520px; }
-  .chc__mosaic { max-width: 640px; }
-  .igrid { max-width: 560px; }
+  .chc__rings-svg {
+    width: 128px;
+    height: 128px;
+  }
+
+  .chc__rings-legend {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .chc__rings-row {
+    flex: 1 1 0;
+  }
 }
 
 // ── 总消耗：单独标记的一行 ──────────────────────────────────

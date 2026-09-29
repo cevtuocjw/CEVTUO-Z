@@ -380,8 +380,26 @@ check('图标格有 6 个入口', shape.entries === 6, `${shape.entries} 个`);
  * ⚠️ 而 DOM、类型检查、构建、截图**都不会说一个字**。
  * 这个坑在 `.chc__mosaic`（`--blue`）和 `.chc__rows`（`--m`）上已经咬过两次。
  */
+/**
+ * ⚠️⚠️ 2026-09-29：**改成量 `backgroundImage`**，不是 `backgroundColor`。
+ *
+ *    读者要求把那些小圆盘改成玻璃质感，底色从纯色变成了**渐变**
+ *    （`glass-disc`：半透明同色渐变 + 内高光 + 描边）。而渐变存在
+ *    `background-image` 里 —— `backgroundColor` 于是变成 `rgba(0, 0, 0, 0)`，
+ *    六个圆全都"一样"了。
+ *
+ *    ⚠️ 是第一版断言**红**了才发现的（`1 种：rgba(0,0,0,0) ×6`），
+ *      而页面完全正常 —— 又一次「断言测的是当时那种实现」。
+ *    ⇒ 改成量 `backgroundImage`：它同样能把「六个颜色互不相同」测出来，
+ *      而且**换成纯色也照样过**（纯色时 `backgroundImage` 是 `none`，
+ *      这时退回量 `backgroundColor`）。
+ */
 const icoColors = await page.evaluate(() =>
-  [...document.querySelectorAll('.igrid__ico')].map((e) => getComputedStyle(e).backgroundColor),
+  [...document.querySelectorAll('.igrid__ico')].map((e) => {
+    const s = getComputedStyle(e);
+    const img = s.backgroundImage;
+    return img && img !== 'none' ? `${img}|${s.backgroundColor}` : s.backgroundColor;
+  }),
 );
 check(
   '六个图标的颜色互不相同（不是兜底灰）',
@@ -980,15 +998,38 @@ await page.evaluate(() => {
   if (c) c.click();
 });
 await page.waitForTimeout(800);
+/**
+ * ⚠️⚠️ 这条断言**改过判据**（2026-09-29，读者要平滑曲线）。
+ *
+ *    原来数的是 `.sheet__body line` —— 也就是「当时的实现用的是 `<line>`」。
+ *    平滑之后每一段是一条**三次贝塞尔的 `<path>`**，那条断言会读到 0 段，
+ *    报「0 段 / 1 色」，**而曲线比原来更好**。
+ *    （同一个形状这个文件里已经记过两次了：数 `path`、按 `rects[3]` 取。）
+ *
+ *    ⇒ 判据改成「曲线由 ≥2 色的分段组成」，**不绑定元素名**：
+ *      取所有带 `stroke` 的图形，按 stroke 去重。
+ *    ⚠️ 顺手补一条**真的在测「平滑」**的：每段必须是三次贝塞尔（`C` 命令）。
+ *      只测颜色的话，「折线」和「曲线」都通过 —— 而这一次改的正是形状。
+ */
 const hr = await page.evaluate(() => {
-  const lines = [...document.querySelectorAll('.sheet__body line')];
+  const shapes = [...document.querySelectorAll('.sheet__body path, .sheet__body line')].filter(
+    (e) => e.getAttribute('stroke'),
+  );
+  const ds = shapes.map((e) => e.getAttribute('d') || '').filter(Boolean);
   return {
-    segs: lines.length,
-    colors: [...new Set(lines.map((l) => l.getAttribute('stroke')))],
+    segs: shapes.length,
+    colors: [...new Set(shapes.map((e) => e.getAttribute('stroke')))],
+    cubic: ds.filter((x) => x.includes('C')).length,
+    straight: ds.filter((x) => x.includes('L') && !x.includes('C')).length,
     legend: document.querySelectorAll('.chc__band').length,
   };
 });
 check('心率曲线是逐段上色的（≥2 种颜色）', hr.colors.length >= 2, `${hr.segs} 段 / ${hr.colors.length} 色：${hr.colors.join(' ')}`);
+check(
+  '心率曲线是**平滑**的（每段都是三次贝塞尔，不是直线）',
+  hr.cubic > 0 && hr.straight === 0,
+  `${hr.cubic} 段用 C 命令 / ${hr.straight} 段还是直线`,
+);
 check('曲线下面有区间图例', hr.legend === 5, `${hr.legend} 个（应该有 5 个区间）`);
 await page.evaluate(() => {
   const el = document.querySelector('.sheet');

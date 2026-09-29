@@ -110,6 +110,31 @@ export function IconGrid({
           </View>
           {it.value ? <Text className="igrid__v">{it.value}</Text> : null}
           <Text className="igrid__l">{it.label}</Text>
+          {/*
+            ⚠️ 读者 2026-09-29：「可以点击的块要给到提示，心率区间、周对比这些，
+               要给一个箭头或者别的之类的」。
+
+            ⚠️ 这一格原来**只有图标 + 数字 + 标签**，和旁边那些纯展示的砖长得
+              一模一样 —— 读者没有任何线索知道它能点，而它点开是一个全屏弹窗，
+              猜对了才知道。
+
+            ⚠️ 用**内联 SVG**，不用 `▸` `›` 这类 Unicode 字符：这个项目栽过一次
+              （侧边栏用 `▦ ≋ ▤`，字形取决于装了哪套字体，装错了就是方框）。
+            ⚠️ `aria-hidden`：它是**视觉**提示，格子本身已经可点，
+              读屏软件不需要再念一个「箭头」。
+          */}
+          <View className="igrid__more" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="12" height="12">
+              <path
+                d="M9 5l7 7-7 7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </View>
         </View>
       ))}
     </View>
