@@ -167,17 +167,42 @@ check(
 //    这是**上一层**的问题：版式修好了，但如果数据根本没取到，看起来仍然是
 //    「—」—— 而「—」恰好是版式永远不会出问题的那个输入。
 //    ⇒ 两条缺一不可：一条保证数字显示得出来，一条保证它显示得下。
-const chealth = groups.find((g) => g.title === 'CHEALTH');
-const chealthTexts = (chealth?.vals ?? []).map((v) => v.text);
-const unlocked = chealthTexts.length === 2 && chealthTexts.every((t) => t && t !== '—');
+/**
+ * ⚠️⚠️ 这一条**换过判据**（2026-09-29）。
+ *
+ *    读者要求把主页 CHEALTH 那两格文字换成内页的「三环 + 睡眠」两块，
+ *    于是那一屏上**没有 `.stats__value` 了** —— 旧判据报
+ *    「显示的是 (没找到 CHEALTH 那屏)」，**而页面比原来更好**。
+ *
+ *    ⚠️ 又是同一个形状：断言测的是**当时那种实现**（`stats` 那两个数），
+ *      不是「这一屏有没有真数据」。本文件上面已经记过一次了（按下标取
+ *      `rects[3]`，而 CNSR 那屏根本没有 stats）。
+ *
+ *    ⇒ 判据跟着**那个块**走，不跟着实现走：环那三行读数里至少要有一个真数字，
+ *      睡眠那块不许是「—」。⚠️「—」专钉一次 —— 它是版式永远不会出问题的
+ *      那个输入，所以只有专门钉它才会有人发现它。
+ */
+const chealthBlock = await page.evaluate(() => {
+  const el = document.querySelector('.home-chealth');
+  if (!el) return null;
+  return {
+    rows: [...el.querySelectorAll('.chc__rings-row')].map((r) => r.textContent.replace(/\s+/g, ' ').trim()),
+    sleep: (el.querySelector('.chc__tile-v')?.textContent ?? '').trim(),
+  };
+});
+const chealthReal =
+  Boolean(chealthBlock) &&
+  chealthBlock.rows.length === 3 &&
+  chealthBlock.rows.some((t) => /\d[\d,]*\s*步/.test(t)) &&
+  /\d/.test(chealthBlock.sleep);
 check(
   'CHEALTH 那屏显示了真实数字（不是占位符）',
-  Boolean(PASS) && unlocked,
+  Boolean(PASS) && chealthReal,
   !PASS
     ? 'services/ingest/.env.server-backup 里没有口令 ⇒ 测不到解锁态'
-    : unlocked
-      ? chealthTexts.join(' / ')
-      : `显示的是 ${chealthTexts.join(' / ') || '(没找到 CHEALTH 那屏)'}`,
+    : chealthReal
+      ? `${chealthBlock.rows.join(' / ')} · 睡眠 ${chealthBlock.sleep}`
+      : `读到的：${JSON.stringify(chealthBlock)}`,
 );
 
 /**

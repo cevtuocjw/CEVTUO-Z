@@ -4,6 +4,73 @@
 // sheets (COOF's poster strip, CNSR's glass strips); this one exists so the
 // paperr panel can hold charts without every chart importing home's layout.
 
+// ── CHEALTH 那一格：三环 + 睡眠砖 ────────────────────────────────
+//
+// ⚠️ 这里只写**版式**（两块怎么摆），不写任何 `.chc__*` 的外观 ——
+//    那些住在 `components/ChealthCharts.scss`，跟着组件一起被 import 过来。
+//    在这里重写一份的结果是：内页改了、主页没跟着改，而两边都「看着正常」。
+//
+// ⚠️ 环那张卡在内页是整行宽，这里和一块睡眠砖并排 —— 所以它必须能**缩**
+//    （`min-width: 0`）。flex 子项默认不肯缩到内容以下，环的图 + 三行读数
+//    会把这一格顶爆，而溢出的那截只是安静地叠在睡眠砖上。
+.home-chealth {
+  display: flex;
+  // ⚠️⚠️ **竖排**，不是横排 —— 这一条是量出来的，不是选的。
+  //
+  //    读者要求把内页的「三环 + 睡眠」两块搬到主页。第一版照搬内页的版式
+  //    （环和读数横排、睡眠砖并在右边），实测**当场就炸**：
+  //
+  //        这一格可用宽 260px → 环那张卡 145px → 环 92px + 间距 14px
+  //        ⇒ 读数列只剩 **39px**，而「活动消耗 515 千卡」要 **135px**
+  //        ⇒ scrollWidth 135 / clientWidth 39，三行读数叠在一起
+  //
+  //    内页那张卡的可用宽是 ~292px，横排刚好；主页这一格是 260px，
+  //    减去卡片内边距只剩 228px。**92 + 14 + 135 = 241 > 228**，
+  //    横排放不下 —— 这是算术，不是审美。
+  //
+  //    ⚠️ 试过缩小环（76px）来塞：能过，但只多出 3px 余量，而读数的文字
+  //      长度是**跟着数据变**的（「未采集」比「121 分钟」短，13,219 比 515 长）。
+  //      靠 3px 余量的版式，下一次数据一变就再炸一次。
+  //
+  //    ⇒ 换方向：环在上（居中）、三行读数在下（拿到整行 228px）。
+  //      同一个组件、同一套 `.chc__*` 样式，只是**方向**不同。
+  //      这比在这里另写一份「主页专用小号环」诚实得多。
+  flex-direction: column;
+  gap: 11px;
+  width: 100%;
+  min-height: 0;
+
+  &__rings {
+    width: 100%;
+
+    .chc__rings {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    // ⚠️ 环自己居中，读数撑满 —— `align-items: stretch` 会把 92px 的 svg
+    //    也拉成整行宽（它有显式 width，但这个例外不值得赌）。
+    .chc__rings-svg {
+      align-self: center;
+    }
+
+    .chc__rings-legend {
+      width: 100%;
+    }
+  }
+
+  &__sleep {
+    // ⚠️ `--m` 挂在这块砖上，`chc__mlabel` / 圆底图标都从它取色。
+    //    和内页 `.chc__tile` 行内传的是同一个 token，只是这里写进类里 ——
+    //    少一个 `CSSProperties` 断言，也多不了第二份定义。
+    --m: var(--m-sleep);
+    // ⚠️ 砖的 `min-height: 112px` 是给内页那个**四块齐高**的网格用的；
+    //    这里是单独一行，跟着内容高就行 —— 否则一颗月亮下面空一大片。
+    min-height: 0;
+  }
+}
+
 .home-paperr {
   display: flex;
   flex-direction: column;

@@ -33,61 +33,8 @@ import { readPass, savePass } from '../../platform/health-pass';
 
 import '../../styles/demo.scss';
 
-/**
- * ⚠️ 步数目标，**只在这里定义一次**。
- *
- * 它同时出现在三个地方：柱状图上那条虚线、「今天」那块砖的达标进度、
- * 以及 `stepStreak` 数连续达标天数。三处各写一个 8000 就一定会漂移 ——
- * 而这个项目已经因为「同一件事两处定义」吃过两次亏（字数统计算出 127 和 109）。
- *
- * ⚠️ 所以这里不只是「抽个常量」，而是**显式传给 `stepStreak`**：
- *    让它用默认参数就等于又留了一份定义。
- */
-const STEP_GOAL = 9000;
-
-/**
- * 活动消耗的目标。三星「每日活动量」那张卡上写的是 `/400`，这里跟它一致。
- *
- * ⚠️⚠️ 环上画的是**活动消耗**，不是总消耗。读者 2026-09-29 定的：
- *    「消耗应该是活动消耗，总消耗每天要格外标记出来一下」。
- *
- *    道理是对的：总消耗里含基础代谢（实测没活动的日子恒为 1,662），
- *    那部分**人控制不了** —— 拿它当目标等于「活着就算达标」。
- *    能控制的只有活动那一半，所以目标只能挂在它上面。
- *
- * ⚠️ 代价：`activeCalories` 只在 healthsync 写过的日子才有（实测 10/31 天），
- *    所以这个环有时会显示「未采集」。那是真的没数据，不是 0。
- *    ⇒ 总消耗（`calories`，29/31 天）在环下面**单独一行标出来**，
- *      这样两件事都看得到，而且不会混成一个数。
- */
-const ACTIVE_KCAL_GOAL = 400;
-
-/**
- * 活动时间的目标（分钟）。
- *
- * ⚠️ 90 是三星「每日活动量」那张卡上的默认值（截图上是 `/90`）。
- *    这里跟它一致 —— 目标本来就该是一个**约定**，不是从数据里推出来的数。
- *
- * ⚠️⚠️ **口径 = 只算走路**（读者 2026-09-29 定的：运动那一段**不并入**）。
- *
- *    我们的数原来是「走路区间 ∪ 运动会话」，实测**走路那一路 76 分钟 ≈ 三星 75**，
- *    多出来的正是运动那 23 分钟 —— 也就是说**三星这个数本来就不含运动**，
- *    是我们这边多算了一路。数字对不上不是因为谁错了，是**口径不一样**。
- *
- *    ⇒ 手机端 `activeMinutes` 收成走路那一路（见 `SyncWorker.kt` 那段注释）。
- *      运动时长**没有丢**，运动屏上按场次列着，只是不混进这个环。
- *    ⇒ 下面那行说明也跟着改了 —— 文案和口径必须是同一句话，
- *      否则页面会替我们宣称一个我们不遵守的口径。
- */
-const ACTIVE_MIN_GOAL = 90;
-
-/**
- * 睡眠的每晚目标（小时）。
- *
- * ⚠️ 7 小时是通行的成年人下限，取它是因为它**可以被质疑**（不像一个
- *    「睡眠得分」那样只能接受）。读者想改就改这一个数。
- */
-const SLEEP_GOAL_H = 7;
+// ⚠️ 目标值住在 platform 里 —— 主页那格 CHEALTH 也要用同一个分母。见该文件抬头。
+import { STEP_GOAL, ACTIVE_KCAL_GOAL, ACTIVE_MIN_GOAL, SLEEP_GOAL_H } from '../../platform/chealth-goals';
 
 /**
  * 小时 → 「7h32m」。
@@ -274,6 +221,21 @@ export default function Chealth() {
   const t = index?.totals;
 
   /**
+   * ⚠️ 读者 2026-09-29：「CHEALTH 各处要有更新时间的功能」。
+   *
+   *    三屏各挂一次，用的是**同一个值**（不是三个各自的「最后一条数据时间」）——
+   *    这一项答的是「这份索引是什么时候生成的」，三屏看到的不该不一样。
+   *
+   * ⚠️ 只有 `updatedAt` 真的存在才显示，**不写「—」**：
+   *    一个写着「数据更新 —」的时间戳比没有时间戳更糟，它看起来像
+   *    「更新过一次，但值是空的」，而实际是「我们根本没拿到这份索引」。
+   *    （同样的话主页那边也是这么处理的。）
+   */
+  const freshness = index?.updatedAt
+    ? `数据更新 ${index.updatedAt.slice(5).replace('T', ' ')}`
+    : null;
+
+  /**
    * ⚠️ The last 14 days, ending on the data's own last day — not on the
    * viewer's today. A window keyed to the browser would render an empty chart
    * for anyone opening this before the phone's first sync of the day.
@@ -414,7 +376,29 @@ export default function Chealth() {
    *    我们 31 天只有 8 场 —— 默认天的话，大多数时候点进来是一屏「没有记录」。
    *    **默认值该按这份数据的密度挑，不是照抄别人的默认值。**
    */
-  const [span, setSpan] = useState<SpanKey>('week');
+  /**
+   * ⚠️ 默认改成**月**（读者 2026-09-29：「运动改为记录最近一个月的记录」）。
+   *    原来默认周。⚠️ 这一条**取代**了当天早些时候那句「周作为默认」——
+   *    同一屏同一个控件，读者要的是更长的窗口。
+   *
+   * ⚠️ 为什么改的是 `span` 而不是「只把列表换成 30 天」：上面那张摘要卡写着
+   *    「最近 {spanDef.days} 天」，列表跟着 `shown` 走。只换列表的话，
+   *    摘要说 7 天、列表给 30 天，**两个数互相打架而各自都看着对**。
+   */
+  const [span, setSpan] = useState<SpanKey>('month');
+
+  /**
+   * 日期分组默认只画前几组，其余折叠。
+   *
+   * ⚠️ 一个月最多 30 个日期头 × 每头几场，展开着读完要滚好几屏 ——
+   *    而这一屏要先回答「最近练了多少」，不是「把每一场都列出来」。
+   *
+   * ⚠️⚠️ 折叠只影响**画出来多少**，不影响**算进去多少**：窗口仍然是 30 天，
+   *    摘要卡上的总时长/次数/消耗都是整月的。把折叠做成「换窗口」的话，
+   *    上面那几个数就和列表对不上了。
+   */
+  const FOLD_DAYS = 3;
+  const [showAllDays, setShowAllDays] = useState(false);
   const spanDef = SPANS.find((s) => s.k === span) ?? SPANS[1];
 
   /**
@@ -483,6 +467,9 @@ export default function Chealth() {
     }
     return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }, [shown]);
+
+  /** 折叠后**真正画出来**的那几组。见 `FOLD_DAYS` 那段。 */
+  const shownGroups = showAllDays ? grouped : grouped.slice(0, FOLD_DAYS);
 
   /**
    * 完全没有步数记录的日子。
@@ -633,10 +620,17 @@ export default function Chealth() {
               title="今天"
               hero={<PageHero brand="CHEALTH" />}
               compact
+              footnote={freshness}
               // ⚠️ 读者要「文字尽量缩减」。这一段原来三行，占了小半屏，
               //    而它说的是一件**装完就不用再想**的事。完整链路挪进了
               //    「数据来源」弹窗 —— 那里才是读者真的要查它的时候。
-              lede="手表 → 三星健康 → 手机 → 阿里云 → 这里，每 15 分钟一次。"
+              // ⚠️ 这一屏原来有一句 lede：「手表 → 三星健康 → 手机 → 阿里云 →
+              //    这里，每 15 分钟一次。」—— 读者 2026-09-29 让去掉。
+              //    那是**这张图是怎么搭的**，不是「你的身体怎么样」，
+              //    而读者打开这一页问的是后者。
+              //    ⚠️ 管线本身没有丢：它在「数据来源」那个弹窗里，那才是它该在的地方。
+              //    ⚠️ 是**删掉整个 `lede`**，不是传空串 —— 传空串会留下一个
+              //      高度不为零的空容器，读者看不出来，版式上却多了一段空白。
             >
               {/*
                 ⚠️「正在骑 MyWhoosh」——这个徽标**只在 true 时出现**，false 时什么都不显示。
@@ -734,7 +728,7 @@ export default function Chealth() {
                     这条已经复发过一次（`73b8a6a` 修过、2026-09-29 又在弹窗里复发）。 */}
                 <Text className="chc__note">
                   目标 {STEP_GOAL.toLocaleString('en-US')} 步 · {ACTIVE_KCAL_GOAL} 千卡活动消耗 ·{' '}
-                  {ACTIVE_MIN_GOAL} 分钟活动（只算走路；运动另计，运动屏上有）。
+                  {ACTIVE_MIN_GOAL} 分钟活动。
                   {partial ? ' ⚠️ 截至现在，今天还没过完。' : ''}
                 </Text>
               </View>
@@ -901,7 +895,7 @@ export default function Chealth() {
               ⚠️ 默认档是**周**，不是天 —— 见 `useState<SpanKey>('week')` 那段：
                 我们 31 天只有 8 场运动，默认天的话大多数时候点进来是一屏「没有记录」。
             */}
-            <Section index={1} title="运动">
+            <Section index={1} title="运动" footnote={freshness}>
               {!index?.sessions?.length ? (
                 <View className="card chc__card">
                   <Text className="chc__note">最近 30 天没有非走路的运动记录。</Text>
@@ -1003,7 +997,7 @@ export default function Chealth() {
                     实测这一屏内容 2868px 而面板只有 844px，要滚 2000px 才看得到
                     第二条运动。三星健康的列表也是先给摘要、点开才给细节。
                   */}
-                  {grouped.map(([date, list]) => (
+                  {shownGroups.map(([date, list]) => (
                     <View key={date}>
                       {/*
                         ⚠️ 日期头：左边日期，右边**那天的合计** —— 三星运动列表就是
@@ -1077,6 +1071,22 @@ export default function Chealth() {
                       ))}
                     </View>
                   ))}
+
+                  {/*
+                    ⚠️ 折叠开关。**只在真的折掉了东西的时候出现** ——
+                    一个月里只练了 2 天的话，「查看其余 0 天」是个笑话，
+                    而且它会让读者以为下面还有内容。
+
+                    ⚠️ 文案给的是**还剩多少天**，不是「查看全部」：读者要判断
+                      值不值得点，靠的正是那个数。
+                  */}
+                  {grouped.length > FOLD_DAYS ? (
+                    <View className="chc__fold" onClick={() => setShowAllDays((v) => !v)}>
+                      <Text className="chc__fold-t">
+                        {showAllDays ? '收起' : `查看其余 ${grouped.length - FOLD_DAYS} 天`}
+                      </Text>
+                    </View>
+                  ) : null}
                 </>
               )}
             </Section>
@@ -1092,6 +1102,7 @@ export default function Chealth() {
             <Section
               index={2}
               title="趋势"
+              footnote={freshness}
               showCue={false}
               // ⚠️ `wide` 解掉 900px 的宽度上限，桌面端两列才排得开。
               wide

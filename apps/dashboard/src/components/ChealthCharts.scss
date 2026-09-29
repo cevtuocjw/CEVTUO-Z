@@ -1090,6 +1090,32 @@ $chart-h: 74px;
 // ⚠️ 左边三行读数、右边一个环 —— 和三星「每日活动量」那张卡一模一样。
 //    反过来（环在左）在中文里读起来别扭：眼睛先落在环上，
 //    而环本身不带标签，要回到右边才知道哪个色是哪一项。
+// ── 运动列表的「查看其余 N 天 / 收起」────────────────────────────
+//
+// ⚠️ 它是一个**控件**，不是一条说明。所以：
+//    · 整行可点，高度 ≥ 44px（手指的目标，不是文字的目标）
+//    · 有边框和底色 —— 一个月最多 30 个日期头，如果这一行和列表项长得一样，
+//      读者会把它读成「第 4 天的日期头」，然后奇怪那天怎么没有场次
+//    · 不新占一个颜色：这一页的颜色语义是「每种指标一个色」（`--m-*`），
+//      控件用 `currentColor` 派生的灰，不去挤那一套。
+.chc__fold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 2px;
+  border-radius: 15px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  cursor: pointer;
+}
+
+.chc__fold-t {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
 .chc__rings {
   display: flex;
   align-items: center;

@@ -738,25 +738,63 @@ const seg = await page.evaluate(() => ({
 }));
 check('运动屏有 天/周/月 三段', seg.items.join('') === '天周月', seg.items.join(' / '));
 check('有且只有一档被选中', seg.on.length === 1, `选中「${seg.on[0] ?? '无'}」`);
+/**
+ * ⚠️⚠️ **默认档要钉住**（读者 2026-09-29：「运动改为记录最近一个月的记录」）。
+ *
+ *    上面那条只断言「有一档亮着」—— 那样默认从天变成周、从周变成天，
+ *    它**照样绿**，而读者点进来看到的是一屏「没有记录」或者一屏只有两条。
+ *    「有一档被选中」和「选中的是那一档」是两件事。
+ */
+check('默认档是「月」（读者要最近一个月的记录）', seg.on[0] === '月', `选中「${seg.on[0] ?? '无'}」`);
 check('有按天分组的日期头', seg.groups > 0, `${seg.groups} 个日期头`);
 
-const barsWeek = await barsOf();
+/**
+ * ⚠️ 折叠：默认只画前 3 组日期头，其余折起来，点一下展开。
+ *
+ * ⚠️ 拆成四条而不是一条「点一下会变多」，因为那一条同时漏掉两种坏法：
+ *    · 折**过头**（一组都不画）和折**不够**（等于没折）都能通过「变多了」
+ *    · 按钮在**没东西可折**时也出现（「查看其余 0 天」既是笑话，
+ *      又暗示下面还有内容）
+ *    · 展开之后按钮**不换文案**，读者没法把它收回去
+ */
+const fold0 = await page.evaluate(() => ({
+  heads: document.querySelectorAll('.chc__gh').length,
+  btn: (document.querySelector('.chc__fold-t') || {}).textContent || '',
+}));
+check('日期分组默认折叠（只画 3 组）', fold0.heads === 3, `${fold0.heads} 个日期头`);
+check('折叠时写着「查看其余 N 天」', /^查看其余 [1-9]\d* 天$/.test(fold0.btn), `按钮「${fold0.btn}」`);
 await page.evaluate(() => {
-  const it = [...document.querySelectorAll('.chc__seg-i')].find((e) => e.textContent.trim() === '月');
+  const b = document.querySelector('.chc__fold');
+  if (b) b.click();
+});
+await page.waitForTimeout(500);
+const fold1 = await page.evaluate(() => ({
+  heads: document.querySelectorAll('.chc__gh').length,
+  btn: (document.querySelector('.chc__fold-t') || {}).textContent || '',
+}));
+check(
+  '点开之后日期头变多、按钮变「收起」',
+  fold1.heads > 3 && fold1.btn === '收起',
+  `${fold1.heads} 个日期头，按钮「${fold1.btn}」`,
+);
+
+const barsMonth = await barsOf();
+await page.evaluate(() => {
+  const it = [...document.querySelectorAll('.chc__seg-i')].find((e) => e.textContent.trim() === '周');
   if (it) it.click();
 });
 await page.waitForTimeout(700);
-const afterMonth = await page.evaluate(() => ({
+const afterWeek = await page.evaluate(() => ({
   on: [...document.querySelectorAll('.chc__seg-i--on')].map((e) => e.textContent.trim())[0] ?? '',
   big: (document.querySelector('.chc__big') || {}).textContent || '',
 }));
-const barsMonth = await barsOf();
+const barsWeek = await barsOf();
 
-check('切到「月」高亮跟着走', afterMonth.on === '月', `选中「${afterMonth.on}」`);
+check('切到「周」高亮跟着走', afterWeek.on === '周', `选中「${afterWeek.on}」`);
 check(
   '切档**真的换了窗口**（不是只换高亮）',
-  barsMonth > barsWeek && afterMonth.big !== '',
-  `柱状图 ${barsWeek} → ${barsMonth} 根；总时长 周=${seg.big} 月=${afterMonth.big}`,
+  barsWeek < barsMonth && afterWeek.big !== '',
+  `柱状图 月=${barsMonth} → 周=${barsWeek} 根；总时长 月=${seg.big} 周=${afterWeek.big}`,
 );
 
 // ── 达标日历：三种状态必须都在 ────────────────────────────────

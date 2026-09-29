@@ -157,9 +157,32 @@ fi
 # ⇒ `raw.githubusercontent.com` 没有 CDN，它给的就是**分支头**。
 #   ⚠️ 但这也是「推之前那一刻」的状态，不是「推的时候」的 —— 所以下面
 #      推送前还要再核一次（见 `推之前再核一次` 那段）。
+# ⚠️⚠️ 两条路都有缓存，**raw 不是「没有缓存」** —— 我一开始就是栽在这个假设上：
+#
+#     ① `raw.githubusercontent.com` 前面是 Fastly，`max-age=300`，
+#        而且**在这台机器上会挂住**（实测一条 curl 直接超时 120 秒）。
+#        2026-09-29 它给出的 `data/chealth/index.json` 是 38,836 字节，
+#        而仓库里真正的是 118,386 —— 于是 JSON 校验没过。
+#        ⚠️ 而那次**中止发布是正确的**（守卫按设计挡住了），
+#           真正错误的是「raw 一定是最新的」这个假设。
+#     ② 站点（Pages）是 `max-age=600`，也就是最初把 09-29 冲掉的那条路。
+#
+# ⇒ 所以两条都试，**以「能不能解析成 JSON」为准**，不靠「哪条路更权威」：
+#    raw 先（它一般更新一点），不合法或超时就退回站点。
+#    ⚠️ 调用方后面**还会再校验一次 JSON**，所以这里拿到的东西不会直接进树。
 server_owned() { # $1 = 仓库内路径（如 data/paperr/index.json）；stdout = 内容
-  curl -fsSL --noproxy '*' -m 20 \
-    "https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/${1}" 2>/dev/null
+  local p="$1" tmp
+  tmp=$(mktemp)
+  if curl -fsSL --noproxy '*' -m 12 \
+       "https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/${p}" -o "$tmp" 2>/dev/null \
+     && bun -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$tmp" 2>/dev/null; then
+    cat "$tmp"
+    rm -f "$tmp"
+    return 0
+  fi
+  rm -f "$tmp"
+  echo "  ⚠️ raw 取不到（或不是合法 JSON）${p} —— 退回站点" >&2
+  curl -fsSL --noproxy '*' -m 20 "https://z.cevtuogrnd.com/${p}" 2>/dev/null
 }
 
 PAPERR_LIVE="https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/data/paperr/index.json"
@@ -252,6 +275,46 @@ touch "$STAGE"/.nojekyll
 CEVTUO_SITE_DOMAIN="${CEVTUO_SITE_DOMAIN:-z.cevtuogrnd.com}"
 printf '%s\n' "$CEVTUO_SITE_DOMAIN" > "$STAGE/CNAME"
 echo "  ▸ CNAME → $CEVTUO_SITE_DOMAIN"
+
+# ── ⚠️⚠️ 把上一版的构建产物**留在树里** ──────────────────────────────
+#
+# 这个脚本每次都是「新建舞台 → force-push」，所以上一版的 `js/*.js` 在
+# gh-pages 上**直接不存在了**。而浏览器手里的 `index.html` 可以旧到十分钟
+# （Pages 给 HTML 的 `max-age=600`），它引用的那串带 hash 的 chunk 于是 404：
+# **已经加载过的页面照常工作，只有还没访问过的那个页面打不开。**
+#
+# 2026-09-29 读者报「从主页点不进 CHEALTH」，就是这个形状 —— 其它三个品牌
+# 他刚点过（chunk 在浏览器缓存里，不用再请求），CHEALTH 那天还没点过 ⇒ 只有它
+# 404。而同一天里我部署了四次，每次换一套 chunk 名。
+#
+# ⚠️ 判据是「文件在不在」，不是「页面能不能开」：**全新的浏览器永远是对的**
+#    （它拿到的是配套的 index.html + 同一版的 chunk），所以这个问题**用无痕
+#    窗口测不出来**，只有拿一个「页面开着、缓存是旧的」浏览器才看得见。
+#
+# ⇒ 把线上已有、而本版没有的 `js/` `css/` **原样搬进来**。文件名带内容 hash，
+#   新旧互不冲突；一次部署多几 MB，换掉一整类「部署后白屏」。
+if curl -fsSL --noproxy '*' -m 30 \
+     "https://api.github.com/repos/cevtuocjw/CEVTUO-Z/git/trees/${BRANCH}?recursive=1" \
+     -o /tmp/cevtuo-old-tree.json 2>/dev/null; then
+  bun -e 'const j=JSON.parse(require("fs").readFileSync("/tmp/cevtuo-old-tree.json","utf8"));for(const t of j.tree||[])if(t.type==="blob"&&/^(js|css)\//.test(t.path))console.log(t.path);' \
+    > /tmp/cevtuo-old-assets.txt 2>/dev/null || true
+  carried=0
+  while read -r f; do
+    [ -z "$f" ] && continue
+    [ -e "$STAGE/$f" ] && continue
+    if curl -fsSL --noproxy '*' -m 30 \
+         "https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/$f" -o "$STAGE/$f" 2>/dev/null; then
+      carried=$((carried + 1))
+    else
+      rm -f "$STAGE/$f"
+    fi
+  done < /tmp/cevtuo-old-assets.txt
+  # ⚠️ 用 if，不用 `[ ... ] && echo` —— 后者在 carried=0 时返回非 0，
+  #    而上面是 `set -euo pipefail`，脚本会**因为一句提示而中止**。
+  if [ "$carried" -gt 0 ]; then
+    echo "  ▸ 带上上一版的 $carried 个构建产物（旧 index.html 引用的 chunk 不再 404）"
+  fi
+fi
 
 # The publish branch is generated output only — it shares no history with `main`
 # and never gets merged back, so an orphan root keeps its log readable instead of

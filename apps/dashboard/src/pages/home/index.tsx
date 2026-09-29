@@ -17,6 +17,16 @@ import { CnsrStrips } from '../../components/CnsrStrips';
 // type-checks the H5 app as part of `build:h5`. scripts/verify-back.mjs and
 // verify-paperr-ui.mjs now assert on console errors instead.
 import { MonthCalendar, WeekdayBars } from '../../components/PaperrCharts';
+// ⚠️ 读者 2026-09-29：「把圆环这个还有睡眠这两个块带出来给主页上的 CHEALTH
+//    那里替换一下，那里用字写的太难看啦，直接就这两个模块搬过去」。
+//    ⇒ 主页这一格不再用 `stats` 报两个数，改用**和内页同一套组件**。
+//    ⚠️ `ChealthCharts.tsx` 自己 import 了它的 scss，所以 import 组件就等于把
+//      `.chc__*`（含 `.chc__tile`）全带过来 —— **不要在 home 的 scss 里重写一份**。
+//      这个项目为「属于组件的样式住在页面里」付过学费：CAPPERR 的图表 CSS 曾经
+//      住在页面里，主页没 import，于是柱状图退化成一列文字，而 0 报错。
+import { Rings } from '../../components/ChealthCharts';
+import { Icon } from '../../components/ChealthIcons';
+import { ACTIVE_KCAL_GOAL, ACTIVE_MIN_GOAL, STEP_GOAL } from '../../platform/chealth-goals';
 import {
   assetUrl,
   fetchChealthIndex,
@@ -340,6 +350,47 @@ export default function Home() {
     return t ? `更新于 ${t}` : null;
   }, [chealth]);
 
+  /**
+   * 主页那格 CHEALTH 的三环 —— 和内页**同一套口径**（也是同一个组件）。
+   *
+   * ⚠️⚠️ `pct` 是 `null` 而不是 `0`：那一项**没采集**和「今天确实是零」
+   *    必须长得不一样。这个项目反复栽在「把不知道画成零」上。
+   *    `null` 渲染成「未采集」，等手机端上报之后自己变成一条真的弧。
+   *
+   * ⚠️ 分母来自 `platform/chealth-goals` —— 和内页同一个定义。各写一份的结果
+   *    不是「差不多」，是**主页写 9,000、内页写 10,000**，而两边看起来都对。
+   */
+  const chealthRings = useMemo(() => {
+    if (!chealthDay) return null;
+    const steps = typeof chealthDay.steps === 'number' ? chealthDay.steps : null;
+    const kcal = typeof chealthDay.activeCalories === 'number' ? chealthDay.activeCalories : null;
+    const mins = typeof chealthDay.activeMinutes === 'number' ? chealthDay.activeMinutes : null;
+    return [
+      {
+        label: '步数',
+        value: steps === null ? undefined : Math.round(steps).toLocaleString('en-US'),
+        unit: ' 步',
+        pct: steps === null ? null : steps / STEP_GOAL,
+        color: 'var(--m-steps)',
+      },
+      {
+        label: '活动消耗',
+        value: kcal === null ? undefined : String(Math.round(kcal)),
+        unit: ' 千卡',
+        pct: kcal === null ? null : kcal / ACTIVE_KCAL_GOAL,
+        color: 'var(--m-kcal)',
+      },
+      {
+        // ⚠️ 走路那一段（口径见 `platform/chealth-goals` 与 `SyncWorker.kt`）。
+        label: '活动时间',
+        value: mins === null ? undefined : String(Math.round(mins)),
+        unit: ' 分钟',
+        pct: mins === null ? null : mins / ACTIVE_MIN_GOAL,
+        color: 'var(--m-dist)',
+      },
+    ];
+  }, [chealthDay]);
+
   const open = (route: string | null, title: string) => {
     // ⚠️ 2026-09-28 起四个品牌**都有** route 了，正常情况走不到这个分支。
     //    留着它是因为 `route` 的类型仍然是 `string | null`，而「未接线」必须
@@ -385,28 +436,11 @@ export default function Home() {
                         note: `数据到 ${formatDayMonth(paperrWindow.latest)}`,
                       },
                     ]
-                  : p.key === 'chealth' && chealthDay
-                    ? [
-                        {
-                          value: chealthDay.steps !== undefined ? `${chealthDay.steps}` : '—',
-                          label: '步数',
-                          note: formatDayMonth(chealthDay.date),
-                        },
-                        {
-                          // ⚠️ 复用「阅读时长」那个格式化器 —— 它本质就是「秒 → 小时」，
-                          //    名字里有 reading 而已。再写一个「秒 → 睡眠时长」就会有两份
-                          //    实现，而这两份迟早会不一致（CAPPERR 的字数统计就是 127 对 109）。
-                          //
-                          // ⚠️ 取 `chealthSleepDay` 而不是 `chealthDay` —— 见上面那段。
-                          //    note 也跟着走：两格各写自己那天的日期，读者才知道
-                          //    步数是今天的、睡眠是昨天晚上的。**两个日期不一样是对的。**
-                          value: chealthSleepDay
-                            ? formatReadingTime(chealthSleepDay.sleepSeconds ?? 0)
-                            : '—',
-                          label: '睡眠',
-                          note: formatDayMonth(chealthSleepDay?.date ?? chealthDay.date),
-                        },
-                      ]
+                  // ⚠️ CHEALTH 那一格**不再走 `stats`** —— 它那两个「用字写的」
+                  //    数换成了三环 + 睡眠两块组件（见下面 panel body 里那段）。
+                  //    `undefined` 在这里的意思是「这一屏没有 stats」。
+                  : p.key === 'chealth'
+                    ? undefined
                     : p.stats
             }
             // ⚠️ Both brands carry a freshness line now. A panel with live
@@ -447,6 +481,41 @@ export default function Home() {
                 <WeekdayBars bars={paperrWindow.weekBars} unit="本周" />
                 <View className="pc-gap" />
                 <MonthCalendar days={paperr?.daily ?? []} peak={paperrWindow.calPeak} />
+              </View>
+            ) : null}
+
+            {/* ⚠️ CHEALTH 那一格：**三环 + 睡眠**，都是内页那两个组件原样搬过来的。
+                读者 2026-09-29：「那里用字写的太难看啦，直接就这两个模块搬过去」。
+
+                ⚠️ 睡眠取 `chealthSleepDay` 而**不是** `chealthDay` —— 每天上午手表
+                   那一晚的睡眠还没过桥，取末日会显示成 `—`，看起来像睡眠断了。
+                   （内页那块「最近一晚」的砖早就是这么做的。） */}
+            {p.key === 'chealth' && chealthRings ? (
+              <View className="home-chealth">
+                {/* ⚠️ `card` 这个全局类**不能漏** —— 底面、圆角、内边距都由它给，
+                    `.chc__card` 只加 CHEALTH 自己的那点差异。第一版只写了
+                    `chc__card`，于是环和三行读数直接浮在壁纸上，而下面那块砖
+                    有底面 —— 两块看着不像同一张卡上的东西。 */}
+                <View className="card chc__card home-chealth__rings">
+                  <Rings items={chealthRings} />
+                </View>
+                <View className="chc__tile chc__tile--narrow home-chealth__sleep">
+                  <View className="chc__mhead">
+                    <View className="chc__badge chc__badge--sleep">
+                      <Icon name="moon" />
+                    </View>
+                    <Text className="chc__mlabel">最近一晚</Text>
+                  </View>
+                  <Text className="chc__tile-v">
+                    {/* ⚠️ `toFixed(1)` —— 不写的话渲染出来是 `4.633333333333333`。
+                        内页那块砖也只给一位小数（`7.5h`），精确到分钟的写在下面。 */}
+                    {chealthSleepDay ? ((chealthSleepDay.sleepSeconds ?? 0) / 3600).toFixed(1) : '—'}
+                    {chealthSleepDay ? <Text className="chc__tile-u">h</Text> : null}
+                  </Text>
+                  <Text className="chc__tile-note">
+                    {chealthSleepDay ? formatDayMonth(chealthSleepDay.date) : '没有记录'}
+                  </Text>
+                </View>
               </View>
             ) : null}
 
