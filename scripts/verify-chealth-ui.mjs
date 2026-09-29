@@ -211,13 +211,55 @@ check(
     : tones.map((t) => t.m).join(' / '),
 );
 
-const sameColor = tones.filter((t) => t.today !== '' && t.today === t.past);
+/**
+ * ⚠️⚠️ 这一段**改过方向**，而且是被读者推翻的 —— 值得记下来。
+ *
+ *    原来写的是「「今天」那根和过去的日子颜色不同」。那是我 2026-09-29 上午
+ *    自己定的方案（今天满色、过去 42% 淡版），不是读者的要求。
+ *    读者的反馈：「柱状图还是跟三星健康的太不像啦，**尤其是很粗**，
+ *    然后颜色和那些细节还是不像」。
+ *
+ *    ⚠️ 三星的实际做法是：**所有柱子同一个实色**，今天是靠**轴上那个日期**
+ *      标出来的（三星把今天的日期印成醒目色）。淡版让整张图发灰 ——
+ *      那正是「不像」的最大来源。
+ *
+ *    ⇒ 断言跟着**判据换了信息来源**（柱子颜色 → 轴标签），
+ *      不是把阈值放宽。这两件事的区别是：前者换了问题，后者藏了问题。
+ */
+const barPaint = await page.evaluate(() => {
+  const out = [];
+  for (const r of document.querySelectorAll('.chc__rows')) {
+    const bars = [...r.querySelectorAll('.chc__bar')];
+    const past = bars.find((b) => !b.className.includes('--empty'));
+    out.push({
+      bg: past ? getComputedStyle(past).backgroundColor : '',
+      // ⚠️ 读者原话是「尤其是很粗」。原来 14 根均分 290px = 每根 18px。
+      w: past ? Math.round(past.getBoundingClientRect().width) : 0,
+      axisMarked: Boolean(r.querySelector('.chc__axis-today')),
+    });
+  }
+  return out;
+});
+
+// ⚠️ 透明色有两种序列化：`rgba(r,g,b,a)` 和 `color(srgb r g b / a)`。
+//    只匹配前者的话，新版 Chrome 上的淡版会被当成实色放过去。
+const translucent = barPaint.filter((b) => /rgba\(|\/ *0?\.\d+/.test(b.bg));
 check(
-  '「今天」那根和过去的日子颜色不同',
-  sameColor.length === 0,
-  sameColor.length
-    ? `${sameColor.length} 张的今天和过去同色（今天认不出来）`
-    : `例如今天 ${tones[0]?.today} vs 过去 ${tones[0]?.past}`,
+  '柱子是**实色**（三星那样），不是淡版',
+  barPaint.length > 0 && translucent.length === 0,
+  translucent.length ? `${translucent.length} 张还是淡版：${translucent[0]?.bg}` : `例如 ${barPaint[0]?.bg}`,
+);
+check(
+  '今天是靠**轴上的日期**标出来的（不是靠柱子颜色）',
+  barPaint.length > 0 && barPaint.every((b) => b.axisMarked),
+  barPaint.filter((b) => !b.axisMarked).length
+    ? `${barPaint.filter((b) => !b.axisMarked).length} 张没有标记今天的轴标签`
+    : `${barPaint.length} 张都标了`,
+);
+check(
+  '柱子够细（三星那种细竖条，不是一堵墙）',
+  barPaint.length > 0 && barPaint.every((b) => b.w > 0 && b.w <= 13),
+  `宽度 ${barPaint.map((b) => b.w).join('/')}px（改之前是 18px）`,
 );
 
 check(
@@ -662,6 +704,27 @@ const cal = await page.evaluate(() => {
     //      这正是「幽灵类」第四次咬人的方式。
     hitBg: hitDot ? getComputedStyle(hitDot).backgroundColor : '',
     track: getComputedStyle(document.querySelector('.chc__cal') ?? document.body).getPropertyValue('--m-steps').trim(),
+    // ⚠️⚠️ 期望色**当场解析**，不写死。
+    //    第一版断言里写的是 `rgb(62, 207, 142)`（当时的 --m-steps 色值）——
+    //    2026-09-29 把步数色改成三星那种黄绿（#a8e34a）之后，它立刻变红，
+    //    **而页面完全是对的**。
+    //    ⇒ 写死一个色值，测的就是「这个色值没被改过」，不是「这一格用了步数的颜色」。
+    //      探针元素解析 `var(--m-steps)` 才是真正要断言的那个关系。
+    expect: (() => {
+      const p = document.createElement('div');
+      p.style.color = 'var(--m-steps)';
+      // ⚠️⚠️ 探针必须挂在**带 token 的那个容器里面**。
+      //    第一版挂在 `document.body` 上，解析出 `rgba(255,255,255,0.96)`
+      //    —— 因为 `--m-*` 那组 token 是定义在 `.chc__card` / `.chc__mosaic` /
+      //    `.chc__rows` 这些**具体容器**上的（`.chc` 是个匹配不到东西的幽灵类），
+      //    body 上根本没有这个自定义属性，`var()` 就落到继承来的颜色上。
+      //    ⇒ 探针挂错地方，会得到一条**看起来像页面错了**的失败。
+      const host = hitDot?.closest('.chc__card') ?? document.body;
+      host.appendChild(p);
+      const c = getComputedStyle(p).color;
+      p.remove();
+      return c;
+    })(),
   };
 });
 check('达标弹窗里有日历', cal.n >= 28, `${cal.n} 格`);
@@ -675,8 +738,8 @@ check(
 //    颜色可以完全是错的，而页面看起来照样像个日历。
 check(
   '日历上「达标」那格用的是步数的颜色（不是兜底白）',
-  cal.hitBg === 'rgb(62, 207, 142)' && cal.track === '#3ecf8e',
-  `${cal.hitBg} / --m-steps=${cal.track || '(空 —— 幽灵类又来了)'}`,
+  cal.hitBg !== '' && cal.hitBg === cal.expect && cal.track !== '',
+  `${cal.hitBg} vs --m-steps=${cal.track || '(空 —— 幽灵类又来了)'} 解析成 ${cal.expect}`,
 );
 
 await page.evaluate(() => {

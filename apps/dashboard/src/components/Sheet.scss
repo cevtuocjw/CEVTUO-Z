@@ -76,19 +76,29 @@
   color: var(--text-primary);
 }
 
+// ⚠️⚠️ 关闭按钮。2026-09-29 读者：「那个正方形的关闭按钮画的有问题」。
+//
+//    两个原因，都在下面标出来了：
+//      1. 图标用的是 `chev`（向下的宽浅 V），16px 上糊成圆角方块
+//      2. **`aspect-ratio` 没写** —— 圆正因为 `width` 和 `height` 都是 30px
+//         才圆的。哪天有人只改其中一个，它立刻变成圆角方块，
+//         而「圆角方块」看起来也像一个设计选择，没人会当成 bug。
+//         ⇒ 显式写 `aspect-ratio: 1`，让「是圆的」这件事不依赖两个数相等。
 .sheet__close {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  box-sizing: border-box;
+  width: 32px;
+  aspect-ratio: 1;
   border-radius: 50%;
-  font-size: 16px;
+  font-size: 15px;          // 图标走 1em ⇒ 15×15 的叉
   color: var(--text-secondary);
   background: color-mix(in srgb, currentColor 10%, transparent);
   cursor: pointer;
-  transform: rotate(0deg);
+  // ⚠️ 叉比 V 更「满」，同样的字号看起来更大 —— 收 0.5px 让它在圆里不顶边。
+  line-height: 1;
 }
 
 .sheet__body {

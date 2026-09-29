@@ -16,7 +16,9 @@
 type Name =
   | 'steps' | 'heart' | 'flame' | 'moon' | 'route' | 'bolt' | 'clock'
   | 'power' | 'cadence' | 'bike' | 'run' | 'gym' | 'swim' | 'walk'
-  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark' | 'chev' | 'arrow';
+  | 'up' | 'down' | 'flat' | 'trophy' | 'signal' | 'watch' | 'spark' | 'chev' | 'arrow'
+  /** ⚠️ 关闭。见 `Body` 里 `x` 那段 —— 关闭按钮**不该**用 `chev`。 */
+  | 'x';
 
 const S = { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none' } as const;
 const stroke = {
@@ -152,6 +154,22 @@ function Body({ name }: { name: Name }) {
     // 展开/收起。⚠️ 用 SVG 而不是 `▾` 字符 —— 那个字形取决于装的字体。
     case 'chev':
       return <path d="M6 9.5 12 15.5l6-6" {...stroke} />;
+    /*
+     * ⚠️⚠️ 关闭用**叉**，不是 `chev`。
+     *
+     * 2026-09-29 读者的原话：「那个正方形的关闭按钮画的有问题」。
+     * 弹窗右上角原来画的是 `chev`（一个向下的宽浅 V），
+     * 在 16px 上那两道细笔画糊成一个**圆角方块**的样子 ——
+     * 而它本该是一个叉。
+     *
+     * ⚠️ 而且就算画清楚了，**向下的 V 也不是「关闭」**：
+     *    V 的意思是「展开/收起」，读者会以为点它是折起这张卡。
+     *    叉是唯一没有第二种读法的。
+     */
+    case 'x':
+      // 两笔交叉，端点各缩进一点 —— 画满 4→20 的话，圆头端点会在
+      // 四角戳出圆底的外轮廓。
+      return <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" {...stroke} />;
     // ↗ —— 「这里可以点」。参考图（Depo Studio）里统一的交互符号。
     case 'arrow':
       return <path d="M7 17 17 7M9.5 7H17v7.5" {...stroke} />;

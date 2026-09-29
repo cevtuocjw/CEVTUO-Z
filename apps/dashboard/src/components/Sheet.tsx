@@ -48,8 +48,14 @@ export function Sheet({
       <View className="sheet__panel" onClick={(e) => e.stopPropagation?.()}>
         <View className="sheet__head">
           <Text className="sheet__title">{title}</Text>
+          {/*
+            ⚠️ 关闭用叉（`x`），**不是 `chev`**。
+            2026-09-29 读者：「那个正方形的关闭按钮画的有问题」——
+            原来画的是一个向下的宽浅 V，16px 上糊成圆角方块，
+            而且 V 的意思是「展开/收起」，不是关闭。
+          */}
           <View className="sheet__close" onClick={onClose}>
-            <Icon name="chev" />
+            <Icon name="x" />
           </View>
         </View>
         {/*

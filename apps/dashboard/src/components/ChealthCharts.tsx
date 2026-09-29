@@ -173,7 +173,15 @@ export function BarRow({
         {/* ⚠️ 这里是**数据的峰值**，不是刻度上限 —— 有目标线时两者不同，
             而读者关心的是「这几天最多走了多少」。 */}
         <Text>峰值 {n(peak)}</Text>
-        <Text>{days[days.length - 1]?.date.slice(5) ?? ''}</Text>
+        {/*
+          ⚠️ 「今天是哪根」靠**这个标签**说，不靠柱子的颜色 —— 三星就是把
+          今天的日期印成醒目色。柱子因此可以保持同一个实色（见 SCSS 那段）。
+          ⚠️ 比较的是 `date === today`，而 `today` 传进来的是**数据自己的
+          最后一天**，不是浏览器的今天。
+        */}
+        <Text className={days[days.length - 1]?.date === today ? 'chc__axis-today' : undefined}>
+          {days[days.length - 1]?.date.slice(5) ?? ''}
+        </Text>
       </View>
     </View>
   );
