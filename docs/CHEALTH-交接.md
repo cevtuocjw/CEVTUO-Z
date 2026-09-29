@@ -506,5 +506,69 @@ Galaxy Watch8 ─▶ Samsung Health ─▶ Health Connect ─▶ CEVTUO Health(�
 但拿不到米家设备的数据）。可行的路是**小米官方数据导出**（隐私中心 → 管理您的数据），
 拿到 CSV 之后由 CEVTUO Health 的写权限写进 Health Connect。
 写权限**已授**：`WRITE_EXERCISE` / `WRITE_DISTANCE` / `WRITE_ACTIVE_CALORIES_BURNED`。
-⚠️ `READ_EXERCISE_ROUTES` **授不上**（系统里 `granted=false` 且没有 `USER_SET` 标记，
-点授权也不弹对话框），所以**所有会话都没有 GPS 轨迹**。
+⚠️ `READ_EXERCISE_ROUTES` **已从前端移除**（2026-09-29，读者：「GPS 不要这个功能」）——
+它授不上（系统里 `granted=false`、点授权不弹对话框），于是 app 顶上永远挂着
+「34 / 35 ← 点 ① 补齐」，而那个提示点了也没反应。同步流程本来也不读轨迹，
+只有探针会用。删掉之后是 `34 / 34 ✓`。
+
+---
+
+# 2026-09-29 下午：先把循环加快，再看这一页
+
+## ⭐⭐⭐ 一条命令走完「改一行 → 看到效果」
+
+```bash
+bash scripts/preview.sh            # typecheck + build + 重铺本地预览
+bash scripts/preview.sh 1440       # 再量一次主页那几块的矩形
+bun scripts/measure.mjs 1440 .home-chealth .chc__rings   # 通用：量任意选择器
+```
+
+⚠️ **慢的不是构建（6 秒），是往返次数。** 分开跑 = 四次工具调用、四份输出。
+⚠️ 本地预览服务器（`python3 -m http.server 8125`）该长期跑着，不在脚本里起。
+
+## ⚠️⚠️ 两个半天里踩了三次的坑：**特异性相同时，别赌源码顺序**
+
+1. `.home-paperr` 的宽屏 `@media` 写在基础规则**之前** ⇒ 被后面的
+   `flex-direction: column` 盖掉。**同一份代码里 CHEALTH 那半恰好基础规则在前，
+   所以它生效了** —— 一半生效一半不生效，最难看出来。
+2. `.home-chealth__rings { margin-top: 0 }` 盖不掉 `.chc__card { margin-top: 11px }`
+   —— 两者都是 0,1,0，谁赢取决于两个 scss 谁先被 import（构建顺序）。
+   **改完量出来一模一样（182 vs 193），因为 CSS 根本没变。**
+3. 抬高一层（`.home-chealth .home-chealth__rings`）立刻生效。
+
+⇒ 规矩：**媒体查询要写在基础规则之后；同特异性的覆盖一律抬一层。**
+
+## ⚠️ 验证要认准「哪一份」
+
+- **线上前面有 CDN**（`index.html` max-age 600）。刚部署完从站点取到的可能是
+  **上一版** —— 我为此报过一次假的「改动没生效」，也出过一次 51/54 的假红。
+- 要立刻确认真假，取 **origin**：
+  `https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/gh-pages/index.html`
+  看它引用的 `js/app.<hash>.js` 是不是本地 `dist/index.html` 那一份。
+- ⚠️ 部署脚本现在会把**上一版的 chunk 一起带上**（见脚本里那段），否则
+  读者浏览器里那份 `index.html` 引用的 chunk 在新版里不存在 ⇒ 点某个页面
+  404，而**其它页面正常** —— 「从主页点不进 CHEALTH」就是这个形状。
+
+## ⚠️ 手机侧的三个真 bug（都是「看起来对」的）
+
+| 现象 | 真因 |
+|---|---|
+| 活动消耗 906 vs 三星 757 | **同一来源内部重复**：Health Sync 既写分钟级明细、又写同区间汇总；求和算两遍 |
+| 活动时间 162 vs 三星 75 | 口径：三星那个数**不含运动会话**，我们并进去了 ⇒ 只算走路 |
+| 权限永远 34/35 | `READ_EXERCISE_ROUTES` 授不上（已移除） |
+
+⚠️ 三个都不是推理出来的，是把**每一条记录的区间**打到 logcat 里看出来的。
+`SyncWorker.kt` 里那两处 DEBUG 日志留着 —— 下次不必再推理。
+
+## ⚠️ 总消耗今天是空的：**不是我们的 bug**（已证死）
+
+```
+总消耗明细 条数=0 求和=—      ← 2026-09-29 15:51 真机探针
+```
+
+Health Connect 里今天**一条 `TotalCaloriesBurnedRecord` 都没有**（09-28 有 1943）。
+三星是延迟写入的（它自己那屏显示「燃烧的卡路里总数 2,886」）。页面写「未采集」
+是对的，写进来就会自己显示。
+⚠️ **没有 Health Sync 这个 app 可以配**（第三方应用列表里只有三星健康 / Google Fit /
+Fitbit / 小米健康 / Health Connect / 我们的 app）—— 日志里那个 `healthsync`
+是**设备侧的写入方标识**，不是一个能打开的 app。
