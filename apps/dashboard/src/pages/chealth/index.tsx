@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Input, Text, View } from '@tarojs/components';
 
-import { BarRow, GoalCalendar, HeartChart, SeriesChart, Spark } from '../../components/ChealthCharts';
+import { BarRow, GoalCalendar, HeartChart, Rings, SeriesChart, Spark } from '../../components/ChealthCharts';
 import { Icon, typeIcon } from '../../components/ChealthIcons';
 import {
   HR_BANDS,
@@ -43,7 +43,15 @@ import '../../styles/demo.scss';
  * ⚠️ 所以这里不只是「抽个常量」，而是**显式传给 `stepStreak`**：
  *    让它用默认参数就等于又留了一份定义。
  */
-const STEP_GOAL = 8000;
+const STEP_GOAL = 9000;
+
+/**
+ * 活动消耗的目标。三星「每日活动量」那张卡上写的是 `/400`，这里跟它一致。
+ *
+ * ⚠️ 这是一个**目标**，不是一个从数据里算出来的数 —— 目标本来就该由人来定。
+ *    写死在这里是为了让「达标」这件事有个确定的判据，而不是每天换一个分母。
+ */
+const ACTIVE_KCAL_GOAL = 400;
 
 /**
  * 小时 → 「7h32m」。
@@ -268,6 +276,13 @@ export default function Chealth() {
     return null;
   }, [days]);
 
+  /** 数据里**最后一天**那一整条 —— 三个环读的就是「今天」。 */
+  const lastDay = useMemo(() => days.find((d) => d.date.slice(0, 10) === today) ?? null, [days, today]);
+
+  const stepsToday = typeof t?.stepsToday === 'number' ? t.stepsToday : null;
+  /** ⚠️ `activeCalories` 只在 healthsync 写过的那些日子才有（实测 10/31 天）。 */
+  const kcalToday = typeof lastDay?.activeCalories === 'number' ? lastDay.activeCalories : null;
+
   /** 每晚均值 —— 和「最近一晚」并排，两者回答的是不同的问题。 */
   const avgSleep = useMemo(() => {
     const v = recent.map((d) => (d.sleepSeconds ? d.sleepSeconds / 3600 : undefined)).filter((x): x is number => typeof x === 'number');
@@ -418,6 +433,17 @@ export default function Chealth() {
   }, [shown]);
 
   /**
+   * 完全没有步数记录的日子。
+   *
+   * ⚠️ 这个列表是**可执行的**：它告诉读者「哪几天要去 Health Sync 补」。
+   *    只写一个「有 N 天没数据」是不够的 —— 那样读者知道有问题，但不知道从哪下手。
+   */
+  const missingDays = useMemo(
+    () => days.filter((d) => typeof d.steps !== 'number').map((d) => d.date.slice(5)),
+    [days],
+  );
+
+  /**
    * 本月的达标情况 —— 读者给的三星截图里那张「目标已实现 27/29 天」。
    *
    * ⚠️⚠️ 分母是**有记录的天数**，不是「这个月过了几天」。
@@ -563,6 +589,47 @@ export default function Chealth() {
                 今日步数最大（块最宽、字最大、蓝色实底），其余按重要性递减。
                 四个块都做成不一样大就变成噪音了。
               */}
+              {/*
+                ⚠️⚠️ 读者 2026-09-29 点名要的：「每天的三个圆环或者心环，
+                步数时间和消耗都要」。这是三星首页那张「每日活动量」卡片的主体 ——
+                三个同心弧，外面步数、中间活动消耗、里面活动时间。
+
+                ⚠️⚠️ 第三项「活动时间」传的 `pct` 是 `null`，**不是 0**。
+                Health Connect 里**没有**「活动时长」这种记录类型（三星那个数是
+                它自己从步数记录的时间区间里算的），所以这一项我们**根本没采集**。
+                传 0 会画成一圈空轨道 + 读数 0 —— 那是把「我们没采」说成「他没动」，
+                正是这个项目反复栽的那个坑（缺数据画成 0 / 占位符冒充真数据）。
+                它现在写「未采集」，等手机端开始上报，这一行会自己变成一条真的弧。
+              */}
+              <View className="card chc__card">
+                <Text className="chc__card-t">今天 · {today}</Text>
+                <Rings
+                  items={[
+                    {
+                      label: '步数',
+                      value: stepsToday === null ? undefined : Math.round(stepsToday).toLocaleString('en-US'),
+                      goal: `/ ${STEP_GOAL.toLocaleString('en-US')}`,
+                      pct: stepsToday === null ? null : stepsToday / STEP_GOAL,
+                      color: 'var(--m-steps)',
+                    },
+                    {
+                      label: '活动消耗',
+                      value: kcalToday === null ? undefined : String(Math.round(kcalToday)),
+                      unit: ' 千卡',
+                      goal: `/ ${ACTIVE_KCAL_GOAL}`,
+                      pct: kcalToday === null ? null : kcalToday / ACTIVE_KCAL_GOAL,
+                      color: 'var(--m-kcal)',
+                    },
+                    // ⚠️ 没有 value、没有 goal —— 只有 `null`，所以它渲染成「未采集」。
+                    { label: '活动时间', pct: null, color: 'var(--m-dist)' },
+                  ]}
+                />
+                <Text className="chc__note">
+                  目标 {STEP_GOAL.toLocaleString('en-US')} 步 / {ACTIVE_KCAL_GOAL} 千卡活动消耗。
+                  {partial ? ' ⚠️ 截至现在，今天还没过完。' : ''}
+                </Text>
+              </View>
+
               <View className="chc__mosaic">
                 {/*
                   ⚠️ 每块的结构是「**彩色圆底图标 + 标签**」在上、大数字在下 —— 这是
@@ -596,34 +663,15 @@ export default function Chealth() {
                        这个项目吃过亏：柱状图曾用 88/84/76/72 四个手写数字，
                        眼睛会把「长度差」读成「数据差」。
                   */}
-                  {t?.stepsToday !== null && t?.stepsToday !== undefined ? (
-                    <>
-                      {/*
-                        ⚠️⚠️ 发丝线 + `/ 8,000 步` 是**照真机截图抄的**。
-                        三星「每日活动量」那块砖上是「大数字 / 一条线 / 分母」，
-                        分母写作 `/9,000` —— 斜杠在任何语言里都读作「分母是这个」，
-                        比「目标 8,000 步」省两个字，而砖里最缺的就是宽度。
-                      */}
-                      <View className="chc__tile-rule" />
-                      <Text className="chc__tile-goal">
-                        / {STEP_GOAL.toLocaleString('en-US')} 步 · {Math.round((t.stepsToday / STEP_GOAL) * 100)}%
-                      </Text>
-                      {/*
-                        ⚠️ 进度条留在 `/目标` 下面。真机那块砖只有分母没有条，
-                        但读者（和交接文档）明确要「达标进度」——
-                        分母说的是「目标是多少」，条说的是「走到了几成」，
-                        两者不重复。条做细，不抢数字。
-                      */}
-                      <View className="chc__goal">
-                        <View className="chc__goal-track">
-                          <View
-                            className="chc__goal-fill"
-                            style={{ width: `${Math.min(100, Math.round((t.stepsToday / STEP_GOAL) * 100))}%` }}
-                          />
-                        </View>
-                      </View>
-                    </>
-                  ) : null}
+                  {/*
+                    ⚠️⚠️ 这块砖原来还有「发丝线 + `/ 8,000 步 · 121%` + 进度条」。
+                    2026-09-29 加了上面那张**三环卡**之后，那三样全被删掉了 ——
+                    因为环上已经写着 `9,686 / 9,000`，同一个数和同一个分母
+                    **在同一个视口里出现了两次**。三星首页确实会把步数显示两处，
+                    但它不会把**目标**也重复一遍；那是冗余，不是呼应。
+
+                    ⚠️ 判据留给环那张卡（`.chc__rings-g`），砖上只留数字。
+                  */}
                   {/* ⚠️ 「截至现在」必须说出来。不说的话，早上读到 3,123
                       而中位数接近 22,000，看起来像塌了。 */}
                   <Text className="chc__tile-note">{partial ? '截至现在 · 今天还没过完' : '至今'}</Text>
@@ -1326,6 +1374,43 @@ export default function Chealth() {
                 ⚠️ 总消耗含基础代谢（躺着也在烧），所以它比「活动消耗」大得多。
               </Text>
             </View>
+
+            {/*
+              ⚠️⚠️ 读者 2026-09-29 的原话：「我这个月基本上全部做到啦你要检查一下，
+              为什么前面的 9 月 1 日到 13 日的数据好像有一点奇怪」。
+
+              查完的结论：**不是这条管道漏了，是 Health Connect 里那几天压根没有步数记录。**
+              逐日摊开（`bun scripts/chealth-coverage.ts`）看得清清楚楚：
+                08-29 ~ 09-05  每天**只有** `calories = 1662`（基础代谢那个常数），
+                               步数、睡眠、活动消耗全是空的
+                09-06 ~ 09-07  只有 `fitness`（Google Fit）在写步数
+                09-08 起       `healthsync`（三星健康过桥）才开始写
+
+              ⚠️ 所以日历上那几天是**空心的「没记录」**，而不是「没达标」——
+                这正是日历要画三种形状的原因。要是把没记录画成没达标，
+                读者会以为自己那几天没走，而实际上是我们没收到。
+
+              ⚠️ 这件事**是可以去补的**，所以必须写在页面上，不能只写在我的回话里：
+                Health Sync 有「对特定日期重新同步」，把 08-29 ~ 09-05 捞一次。
+            */}
+            {missingDays.length ? (
+              <View className="card chc__card">
+                <Text className="chc__card-t">
+                  ⚠️ {missingDays.length} 天没有步数记录
+                </Text>
+                <Text className="chc__note">{missingDays.join('、')}</Text>
+                <Text className="chc__note">
+                  这<Text className="chc__em">不是</Text>「那天没走」——
+                  那几天在 Health Connect 里<Text className="chc__em">只有一条基础代谢记录</Text>
+                  （固定 1,662 千卡），连一条步数记录都没有，睡眠和活动消耗也是空的。
+                  实测三星健康的过桥（Health Sync）到 9 月 8 日才开始写。
+                </Text>
+                <Text className="chc__note">
+                  ⇒ 在 Health Sync 里用「对特定日期重新同步」把那几天捞一次，
+                  这里就会自己填上。
+                </Text>
+              </View>
+            ) : null}
 
             <View className="card chc__card">
               <Text className="chc__card-t">

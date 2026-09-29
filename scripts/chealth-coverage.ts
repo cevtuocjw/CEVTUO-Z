@@ -78,6 +78,32 @@ for (const k of SERIES) {
 
 // ⚠️ 楼层是三星「活动」那屏的一个正式指标，我们的类型里有 `floors` ——
 //    但只有在真有数的时候才值得给它一屏。
+// ── 逐日表 ─────────────────────────────────────────────────
+//
+// ⚠️ 读者 2026-09-29 问「为什么 9/1 到 9/13 的数据好像有一点奇怪」，
+//    而三星截图那张九月日历上 1 号到 29 号**几乎全满**（目标已实现 27/29 天）。
+//    要对上这个问题，只有把**每一天**摊开看：哪几天没有步数、
+//    `stepSources` 说那天是谁写的、`origins` 说各来源一共写了多少条。
+console.log('\n── 逐日');
+console.log('   日期          步数      来源(谁写的:条数)                睡眠s   总消耗  活动');
+for (const d of days) {
+  const src = d.stepSources
+    ? Object.entries(d.stepSources as Record<string, number>)
+        .map(([k, v]) => `${String(k).split('.').pop()}:${v}`)
+        .join(' ')
+    : '—';
+  const pad = (v: unknown, n: number) => String(v ?? '—').padStart(n);
+  console.log(
+    `   ${d.date}  ${pad(d.steps, 7)}  ${src.padEnd(32)} ${pad(d.sleepSeconds, 7)} ${pad(d.calories, 7)} ${pad(d.activeCalories, 6)}`,
+  );
+}
+
+console.log('\n── 来源（origins）');
+for (const [pkg, o] of Object.entries(idx.origins ?? {})) {
+  const oo = o as { count?: number; lastAt?: string };
+  console.log(`   ${pkg.padEnd(42)} ${String(oo.count ?? '—').padStart(6)} 条   最后 ${oo.lastAt ?? '—'}`);
+}
+
 const floors = days.filter((d) => typeof d.floors === 'number' && (d.floors as number) > 0);
 console.log(`\n楼层 floors：${floors.length}/${days.length} 天有非零值`);
 const ex = days.filter((d) => typeof d.exerciseCount === 'number' && (d.exerciseCount as number) > 0);

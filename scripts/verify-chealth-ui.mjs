@@ -78,6 +78,28 @@ const panels = await page.evaluate(() => {
   return s ? Math.max(1, Math.round(s.scrollHeight / s.clientHeight)) : 1;
 });
 
+/**
+ * ⚠️⚠️ 先确认**页面真的解锁了**，再往下跑。
+ *
+ *    本地 `bun run app:build:h5` 和 `deploy-pages.sh` 都会**清掉 `dist/data` 软链**
+ *    （项目里早有记录）。没挂上时 CHEALTH 页取不到密文索引 ⇒ 退回「需要口令」
+ *    那一屏 ⇒ 下面**每一条**都红：柱状图 0 张、日历 0 格、三环 0 条、
+ *    「主屏收成了 3 屏 — 1 屏」…… 我实测过一次，**29 条失败里没有一条说的是真原因**。
+ *
+ *    ⚠️ 这不是「多加一层保险」。一次报 29 条假失败和一次报 1 条真原因，
+ *      差别是下一个人要不要花半小时去排查一个不存在的问题。
+ */
+const unlockedTiles = await page.evaluate(() => document.querySelectorAll('.chc__tile').length);
+if (unlockedTiles === 0) {
+  console.log('\n  ⚠️⚠️ 页面没解锁（`.chc__tile` 一个都没有）—— 后面的失败都只是这一个原因。');
+  console.log('      本地跑的话，先确认 dist/data 挂上了：');
+  console.log('        ln -sfn ../../../data apps/dashboard/dist/data');
+  console.log('      （`bun run app:build:h5` 和 `deploy-pages.sh` 都会清掉它。）\n');
+  console.log('0/1 通过\n');
+  await browser.close();
+  process.exit(1);
+}
+
 // ── 逐屏：马赛克文字不许被截断 ──────────────────────────────
 let tileBad = [];
 let labelBad = [];
@@ -371,28 +393,68 @@ check(
 );
 
 const goal = await page.evaluate(() => {
-  const g = document.querySelector('.chc__tile-goal');
-  const tile = g ? g.closest('.chc__tile') : null;
-  const fill = document.querySelector('.chc__goal-fill');
-  const track = fill ? fill.parentElement : null;
+  const gs = [...document.querySelectorAll('.chc__rings-g')].map((e) => e.textContent.trim());
   return {
-    hasRule: Boolean(tile && tile.querySelector('.chc__tile-rule')),
-    text: g ? g.textContent.trim() : '',
-    // ⚠️ 条的长度必须来自**那一个**比例，不能是写死的宽度 ——
-    //    这个项目吃过亏：柱状图曾用 88/84/76/72 四个手写数字，
-    //    眼睛会把「长度差」读成「数据差」。
-    fillPct:
-      fill && track
-        ? Math.round((fill.getBoundingClientRect().width / track.getBoundingClientRect().width) * 100)
-        : -1,
+    goals: gs,
+    // ⚠️ 分母必须在**读数那一行**里，不能折到第二行去 ——
+    //    第一版没有 `white-space: nowrap`，`步数 9,686 / 9,000` 被折成两行，
+    //    `/ 9,000` 缩进到数值下面，读起来像子标题而不是分母。
+    //    ⚠️ 而它在截图里「看着还挺整齐」，只有量行数才抓得住。
+    rowsWrapped: [...document.querySelectorAll('.chc__rings-row')].filter(
+      (r) => r.getBoundingClientRect().height > 34,
+    ).length,
   };
 });
 check(
-  '今天那块砖有发丝线和 `/目标`（照真机截图）',
-  goal.hasRule && /^\/\s*[\d,]+/.test(goal.text),
-  `"${goal.text}" 发丝线=${goal.hasRule}`,
+  '三环那张卡上写的是 `/目标`（照真机截图：`/9,000`）',
+  goal.goals.some((t) => /^\/\s*9,000$/.test(t)),
+  `分母：${goal.goals.join(' | ') || '(一个都没有)'}`,
 );
-check('达标进度条的长度来自真实比例', goal.fillPct >= 1 && goal.fillPct <= 100, `${goal.fillPct}%`);
+check('环的三行读数都没有折行', goal.rowsWrapped === 0, `${goal.rowsWrapped} 行被折成两行`);
+
+// ── 三个同心圆环（读者 2026-09-29 点名要的）────────────────────
+const rings = await page.evaluate(() => {
+  const svg = document.querySelector('.chc__rings-svg');
+  const circles = svg ? [...svg.querySelectorAll('circle')] : [];
+  const arcs = circles.filter((c) => c.getAttribute('stroke-dasharray') !== null);
+  const rows = [...document.querySelectorAll('.chc__rings-row')].map((r) => ({
+    label: (r.querySelector('.chc__rings-l') || {}).textContent || '',
+    none: Boolean(r.querySelector('.chc__rings-none')),
+    v: (r.querySelector('.chc__rings-v') || {}).textContent || '',
+  }));
+  return { circles: circles.length, arcs: arcs.length, rows };
+});
+// 每个指标一圈「轨道」，有进度的再叠一条「弧」。三条轨道一个都不能少。
+check('三个环的轨道都在', rings.circles - rings.arcs === 3, `轨道 ${rings.circles - rings.arcs} 条 / 弧 ${rings.arcs} 条`);
+check('环旁边有三行读数', rings.rows.length === 3, `${rings.rows.length} 行：${rings.rows.map((r) => r.label).join('/')}`);
+
+/**
+ * ⚠️⚠️ 「未采集」和「0」必须长得不一样。
+ *
+ *    没有这一行，`活动时间` 会被画成一圈空轨道 + 读数 `0` —— 那是把
+ *    「我们没采这一项」说成「他今天一分钟都没动」。
+ *    这个项目反复栽在同一个形状上（缺数据画成 0、占位符冒充真数据）。
+ *
+ *    ⚠️⚠️ 判据**按行名找，不数总数**。第一版写的是「未采集恰好 1 处」，
+ *      本机绿、**线上红**（报了 2 处）—— 因为线上那份索引更新，
+ *      而 `activeCalories` 只在 healthsync 写过的那些日子才有（实测 10/31 天），
+ *      所以「活动消耗」那一行今天也可能没有数。
+ *
+ *      ⇒ 写死一个总数，测的是**那一天的数据碰巧长什么样**，不是页面行为。
+ *        断言该钉住的是「这一项没采集时必须写未采集」，而不是「一共几项没采集」。
+ */
+const timeRow = rings.rows.find((r) => r.label === '活动时间');
+check(
+  '「活动时间」写「未采集」，不是 0',
+  Boolean(timeRow && timeRow.none),
+  timeRow ? (timeRow.none ? '标了未采集' : `渲染成了「${timeRow.v}」`) : '找不到这一行',
+);
+// ⚠️ 补一条更硬的：**任何一个环都不许把「没采集」画成 0**。
+check(
+  '没有哪个环把「没采集」画成 0',
+  rings.rows.every((r) => r.none || !/^0(\.0+)?$/.test(r.v.trim())),
+  rings.rows.map((r) => `${r.label}=${r.none ? '未采集' : r.v}`).join(' · '),
+);
 
 // ── 三星那套卡片 ──────────────────────────────────────────────
 const card = await page.evaluate(() => {

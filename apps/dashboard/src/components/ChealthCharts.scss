@@ -1020,6 +1020,107 @@ $chart-h: 108px;
 //      · `.chc__mlabel { color: inherit }`         → 「马赛克的标签…」FAIL（报 2 种）
 //    ⚠️ 三条都是「页面看起来完全正常」的那一类，所以只能靠量出来的数抓。
 
+// ── 三个同心圆环（三星首页那张卡的主体）─────────────────────
+//
+// ⚠️ 左边三行读数、右边一个环 —— 和三星「每日活动量」那张卡一模一样。
+//    反过来（环在左）在中文里读起来别扭：眼睛先落在环上，
+//    而环本身不带标签，要回到右边才知道哪个色是哪一项。
+.chc__rings {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.chc__rings-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex: 1;
+  min-width: 0;
+}
+
+.chc__rings-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+
+// ⚠️ 小圆点 + 颜色：环上那三道弧没有标签，这个点是把「哪一项」和「哪个颜色」
+//    绑起来的唯一线索。少了它，三个环就只是三个彩色圈。
+.chc__rings-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  // ⚠️ 和文字基线对齐要往下推一点，纯 `baseline` 会让点看起来浮在上面。
+  align-self: center;
+}
+
+.chc__rings-l {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.chc__rings-v {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  // ⚠️⚠️ `nowrap` 是必须的，而且是**实测出来的**。
+  //    第一版没有它，`步数 9,686 / 9,000` 会被折成两行 ——
+  //    `/ 9,000` 单独掉到第二行并**缩进到数值下面**，看起来像一条子标题，
+  //    而它其实是这个数的分母。截图里三行全在折。
+  //    ⚠️ 值和分母拆行 = 读者读到「9,686」时还不知道分母是多少。
+  white-space: nowrap;
+}
+
+.chc__rings-u {
+  font-size: 11.5px;
+  font-weight: 500;
+  opacity: 0.6;
+  margin-left: 2px;
+  letter-spacing: 0;
+}
+
+// ⚠️ 分母。比数值小、比数值淡，但**不能太淡** —— 它是这一行有没有意义的全部依据：
+//    没有它，「9,686」是一个数；有了它，才是「超额 8%」。
+.chc__rings-g {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.55;
+  margin-left: 5px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+// ⚠️「未采集」必须和「0」长得不一样：小字号、低对比、**不是数字**。
+//    写成「0 分钟」就是把「我们没采」说成「他没动」。
+.chc__rings-none {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.45;
+  white-space: nowrap;
+}
+
+// ⚠️ 环的大小写死不行、`width: 100%` 也不行 —— 它得有个上限，
+//    否则桌面端会跟着卡片一起长成一个巨大的圆。
+.chc__rings-svg {
+  flex: none;
+  // ⚠️ 104px 是**回推**出来的，不是挑的：卡片内容宽约 292px，
+  //    减掉环 104 和间距 14，左边那列还剩 174px ——
+  //    刚好放得下「活动消耗」四个字 + 「515 千卡 / 400」不折行。
+  //    118px 的时候那列只有 160px，`/ 400` 就会掉到第二行（实测截图）。
+  width: 104px;
+  height: 104px;
+  display: block;
+}
+
 // ── 心率曲线的区间图例 ──────────────────────────────────────
 // ⚠️ 没有它，线上那五种颜色只是「花」—— 读者不知道黄比绿更吃力。
 .chc__bands {

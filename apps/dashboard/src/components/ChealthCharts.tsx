@@ -391,6 +391,91 @@ export function HeartChart({
 }
 
 /**
+ * 三星那三个同心圆环 —— 步数 / 活动消耗 / 活动时间。
+ *
+ * ⚠️ 读者 2026-09-29 点名要的：「每天的三个圆环或者心环，步数时间和消耗都要」。
+ *    这是三星健康最有辨识度的一个图形，也是它首页那张「每日活动量」卡片的主体。
+ *
+ * ⚠️ 用 `stroke-dasharray` 画弧，不用 `path` 的 A 命令算弧线 ——
+ *    一周的弧长就是 `2πr × pct`，一个乘法；写成 path 就要处理
+ *    「大于半圈要拆成两段」那个经典坑，而那个坑的表现是**画出一段反向的弧**。
+ *
+ * ⚠️ `pct` 允许是 `null`，表示**这一项我们根本没采集**（比如活动时间）。
+ *    它必须和 `pct = 0`（采集了，今天是零）长得不一样：
+ *    0 画一圈空轨道 + 读数 0，null 画空轨道 + 写「未采集」。
+ *    这个项目反复栽在「把不知道画成零」上。
+ */
+export function Rings({
+  items,
+}: {
+  items: {
+    label: string;
+    value?: string;
+    unit?: string;
+    /** 分母，写成 `/ 9,000 步` —— 照三星那块砖（斜杠在任何语言里都读作「分母是这个」）。 */
+    goal?: string;
+    /** `null` = 这一项没采集；`0` = 采集了，今天是零。两者必须长得不一样。 */
+    pct: number | null;
+    color: string;
+  }[];
+}) {
+  // ⚠️ 半径从外到内，和传进来的顺序一致。120 的 viewBox 里留够描边宽度。
+  const R = [50, 39, 28];
+  const SW = 10;
+  return (
+    <View className="chc__rings">
+      <View className="chc__rings-legend">
+        {items.map((it) => (
+          <View className="chc__rings-row" key={it.label}>
+            <View className="chc__rings-dot" style={{ background: it.color }} />
+            <Text className="chc__rings-l">{it.label}</Text>
+            {it.pct === null ? (
+              <Text className="chc__rings-none">未采集</Text>
+            ) : (
+              <Text className="chc__rings-v">
+                {it.value}
+                {it.unit ? <Text className="chc__rings-u">{it.unit}</Text> : null}
+                {it.goal ? <Text className="chc__rings-g">{it.goal}</Text> : null}
+              </Text>
+            )}
+          </View>
+        ))}
+      </View>
+      {/* ⚠️ 原生 `<svg>`：`style` 必须是对象，写字符串是 React #62、整页白屏。 */}
+      <svg viewBox="0 0 120 120" className="chc__rings-svg" aria-hidden="true">
+        {items.map((it, i) => {
+          const r = R[i] ?? 28;
+          const c = 2 * Math.PI * r;
+          // ⚠️ 夹在 0..1：达标 121% 时弧长超过整圈，`stroke-dasharray`
+          //    会绕回去从 21% 处开始画，看起来像「差一点」而不是「超额」。
+          const p = it.pct === null ? 0 : Math.max(0, Math.min(1, it.pct));
+          return (
+            <g key={it.label}>
+              <circle cx="60" cy="60" r={r} fill="none" stroke={it.color} strokeOpacity="0.18" strokeWidth={SW} />
+              {p > 0 ? (
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={r}
+                  fill="none"
+                  stroke={it.color}
+                  strokeWidth={SW}
+                  strokeDasharray={`${(c * p).toFixed(1)} ${c.toFixed(1)}`}
+                  strokeLinecap="round"
+                  // ⚠️ 从**十二点**开始顺时针，不是三点。SVG 的 0 度在三点钟方向，
+                  //    不转这 90 度的话「满了」看起来是从右边开始的。
+                  transform="rotate(-90 60 60)"
+                />
+              ) : null}
+            </g>
+          );
+        })}
+      </svg>
+    </View>
+  );
+}
+
+/**
  * 达标日历 —— 一个月里每天一个小格。
  *
  * ⚠️ 读者给的三星截图里，「每日活动量」那屏的顶上一张就是**按天的达标格**
