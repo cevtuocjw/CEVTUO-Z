@@ -107,6 +107,20 @@ const DaySchema = z.object({
   speedAvgMps: z.number().optional(),
   speedMaxMps: z.number().optional(),
   sleepSeconds: z.number().nonnegative().optional(),
+  /**
+   * 当天**所有活动**加起来多少分钟 —— 走路 + 运动会话，**不只是走路**。
+   *
+   * ⚠️⚠️ 这个键必须**显式列在这里**。`z.object` 默认会**静默丢掉** schema 里
+   *    没写的键，而手机端已经在发了（2026-09-29 加的）—— 症状会是
+   *    「手机明明推了、服务器上就是没有」，**零报错**。
+   *    ⚠️ 这个坑在本文件下面 `powerSeries` 那段已经记过一次，
+   *      那次是 `hrSeries` / `powerSeries` / `cadenceSeries` 三个键被丢掉。
+   *
+   * ⚠️ 口径（手机端算的，不是 Health Connect 的字段 —— 那边没有这种记录类型）：
+   *    `并集(有步数的步数记录的时间区间, 运动会话的时间区间)`，已排除 Google Fit
+   *    那种**整天聚合**记录（不排的话会变成 1,440 分钟）。
+   */
+  activeMinutes: z.number().nonnegative().optional(),
   hrAvg: z.number().optional(),
   hrMax: z.number().optional(),
   restingHr: z.number().optional(),

@@ -46,12 +46,30 @@ import '../../styles/demo.scss';
 const STEP_GOAL = 9000;
 
 /**
- * 活动消耗的目标。三星「每日活动量」那张卡上写的是 `/400`，这里跟它一致。
+ * 消耗的目标。
  *
- * ⚠️ 这是一个**目标**，不是一个从数据里算出来的数 —— 目标本来就该由人来定。
- *    写死在这里是为了让「达标」这件事有个确定的判据，而不是每天换一个分母。
+ * ⚠️⚠️ 这是**总消耗**（含基础代谢），不是三星那个 /400 的「活动卡路里」。
+ *    读者 2026-09-29 明确要求：「消耗的总共也是」。
+ *
+ * ⚠️ 为什么这个改动同时也修了一个真问题：
+ *    `activeCalories` 只在 healthsync 写过的日子才有（实测 **10/31 天**），
+ *    所以原来那个「活动消耗」环大多数时候是空的。
+ *    而 `calories` 有 **29/31 天** —— 换成它，环基本天天有数。
+ *
+ * ⚠️ 分母取 2,000 是**推导出来的，不是拍的**：
+ *    实测没活动的日子 `calories` 恒为 **1,662**（就是基础代谢，见本文件抬头第 2 条），
+ *    所以 2,000 相当于「每天动出 ~340 千卡」。
+ *    比三星的 /400 略宽松，因为我们这个分母里含着**实测的**基础代谢。
  */
-const ACTIVE_KCAL_GOAL = 400;
+const CALORIE_GOAL = 2000;
+
+/**
+ * 活动时间的目标（分钟）。
+ *
+ * ⚠️ 90 是三星「每日活动量」那张卡上的默认值（截图上是 `/90`）。
+ *    这里跟它一致 —— 目标本来就该是一个**约定**，不是从数据里推出来的数。
+ */
+const ACTIVE_MIN_GOAL = 90;
 
 /**
  * 小时 → 「7h32m」。
@@ -280,8 +298,24 @@ export default function Chealth() {
   const lastDay = useMemo(() => days.find((d) => d.date.slice(0, 10) === today) ?? null, [days, today]);
 
   const stepsToday = typeof t?.stepsToday === 'number' ? t.stepsToday : null;
-  /** ⚠️ `activeCalories` 只在 healthsync 写过的那些日子才有（实测 10/31 天）。 */
-  const kcalToday = typeof lastDay?.activeCalories === 'number' ? lastDay.activeCalories : null;
+  /**
+   * ⚠️⚠️ 用 `calories`（**总消耗**，含基础代谢），不用 `activeCalories`。
+   *
+   *    读者 2026-09-29：「消耗的总共也是」。
+   *    ⚠️ 顺带修了一个真问题：`activeCalories` 只在 healthsync 写过的日子才有
+   *      （实测 10/31 天），所以原来那个环大多数时候是空的；`calories` 有 29/31 天。
+   *
+   *    ⚠️ 代价是它含基础代谢，所以没活动的日子也在 1,662 左右 —— 这正是
+   *      本文件抬头第 2 条那个「看起来像坏了的传感器」的常数。
+   *      分母 `CALORIE_GOAL` 就是照着它定的，环下面的说明也写明了这一点。
+   */
+  const kcalToday = typeof lastDay?.calories === 'number' ? lastDay.calories : null;
+
+  /**
+   * ⚠️ 活动时间 —— 手机端派生的字段，**历史数据没有**。
+   *    没有的时候传 `null`（渲染成「未采集」），不是 0。
+   */
+  const activeMinToday = typeof lastDay?.activeMinutes === 'number' ? lastDay.activeMinutes : null;
 
   /** 每晚均值 —— 和「最近一晚」并排，两者回答的是不同的问题。 */
   const avgSleep = useMemo(() => {
@@ -613,19 +647,31 @@ export default function Chealth() {
                       color: 'var(--m-steps)',
                     },
                     {
-                      label: '活动消耗',
+                      // ⚠️ **总消耗**，不是活动消耗 —— 见上面 `kcalToday` 那段。
+                      label: '总消耗',
                       value: kcalToday === null ? undefined : String(Math.round(kcalToday)),
                       unit: ' 千卡',
-                      goal: `/ ${ACTIVE_KCAL_GOAL}`,
-                      pct: kcalToday === null ? null : kcalToday / ACTIVE_KCAL_GOAL,
+                      goal: `/ ${CALORIE_GOAL.toLocaleString('en-US')}`,
+                      pct: kcalToday === null ? null : kcalToday / CALORIE_GOAL,
                       color: 'var(--m-kcal)',
                     },
-                    // ⚠️ 没有 value、没有 goal —— 只有 `null`，所以它渲染成「未采集」。
-                    { label: '活动时间', pct: null, color: 'var(--m-dist)' },
+                    {
+                      // ⚠️ 走路 + 运动会话的**并集**（读者：「不是单单的走路」）。
+                      //    手机端还没开始上报时这里是 `null` ⇒ 渲染成「未采集」。
+                      label: '活动时间',
+                      value: activeMinToday === null ? undefined : String(Math.round(activeMinToday)),
+                      unit: ' 分钟',
+                      pct: activeMinToday === null ? null : activeMinToday / ACTIVE_MIN_GOAL,
+                      color: 'var(--m-dist)',
+                    },
                   ]}
                 />
+                {/* ⚠️ 强调一律用 `<Text className="chc__em">`，**不要写 Markdown 星号** ——
+                    这条已经复发过一次（`73b8a6a` 修过、2026-09-29 又在弹窗里复发）。 */}
                 <Text className="chc__note">
-                  目标 {STEP_GOAL.toLocaleString('en-US')} 步 / {ACTIVE_KCAL_GOAL} 千卡活动消耗。
+                  目标 {STEP_GOAL.toLocaleString('en-US')} 步 · {CALORIE_GOAL.toLocaleString('en-US')} 千卡
+                  （<Text className="chc__em">含</Text>基础代谢，所以没活动的日子也在 1,662 左右）·{' '}
+                  {ACTIVE_MIN_GOAL} 分钟活动（走路 + 运动，不是只算走路）。
                   {partial ? ' ⚠️ 截至现在，今天还没过完。' : ''}
                 </Text>
               </View>

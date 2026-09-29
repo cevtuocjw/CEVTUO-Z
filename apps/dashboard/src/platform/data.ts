@@ -315,6 +315,18 @@ export interface ChealthDay {
   activeCalories?: number;
   floors?: number;
   sleepSeconds?: number;
+  /**
+   * 当天**所有活动**加起来多少分钟 —— 走路 + 运动会话，**不只是走路**。
+   *
+   * ⚠️ 读者 2026-09-29 明确要求：「活动时间应该是所有的活动时间加起来，
+   *    而不是单单的走路」。所以手机端算的是
+   *    `并集(有步数的步数记录的时间区间, 运动会话的时间区间)`。
+   *
+   * ⚠️ 这不是 Health Connect 里的一个字段 —— 那边**没有**「活动时长」这种
+   *    记录类型，三星那个数是它自己算的。所以这一项是手机端派生的，
+   *    历史数据要等手机端补上之后才会出现。
+   */
+  activeMinutes?: number;
   hrAvg?: number;
   hrMax?: number;
   restingHr?: number;
