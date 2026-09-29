@@ -108,7 +108,18 @@ export function IconGrid({
           >
             <Icon name={it.icon} />
           </View>
-          {it.value ? <Text className="igrid__v">{it.value}</Text> : null}
+          {/*
+            ⚠️⚠️ **值那行永远要占位**，即使这一格没有值。
+            读者 2026-09-29：「这几个都没有对齐，例如周对比功率类型分布数据来源
+            都太靠上啦」。
+
+            有值的三格是「图标 / 数值 / 标签」，没值的两格是「图标 / 标签」——
+            列方向 flex 从顶部排，于是没值那两格的**标签**整整高出一行。
+            看起来像两组不同的东西，其实是同一组。
+            ⚠️ 不写 `{it.value ? … : null}` 而是让它空着：空 `<Text>` 的高度由
+            `.igrid__v` 的 `min-height` 撑住（见那条规则）。
+          */}
+          <Text className="igrid__v">{it.value ?? ''}</Text>
           <Text className="igrid__l">{it.label}</Text>
           {/*
             ⚠️ 读者 2026-09-29：「可以点击的块要给到提示，心率区间、周对比这些，

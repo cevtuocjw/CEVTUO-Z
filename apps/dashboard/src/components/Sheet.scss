@@ -165,6 +165,12 @@
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
+  // ⚠️ 这一行**永远占位**，即使这一格没有值 —— 见 Sheet.tsx 里那段注释：
+  //    没值的那几格（周对比 / 功率 / 类型分布 / 数据来源）标签会整整高出一行，
+  //    六格看起来像两组不同的东西。
+  //    ⚠️ 空 `<Text>` 的高度是 0，所以这里给一个行高，不靠内容撑。
+  line-height: 1.35;
+  min-height: 1.35em;
 }
 
 .igrid__l {
