@@ -65,6 +65,47 @@ trap 'rm -rf "$STAGE"' EXIT
 cp -R "$DIST"/. "$STAGE"/
 cp -R data "$STAGE"/data
 
+# ── ⚠️⚠️ data/coof 和 data/cnsr 的写入方是 GitHub Action，**不是这台机器** ──
+#
+# 这是同一个 bug 的第三个和第四个实例（paperr、chealth 各有一个，都在下面
+# 各自打了补丁）。这一次不再逐个目录打补丁，而是说清楚**机制**：
+#
+#   5 小时一次的 `sync` workflow 把新数据 commit 到 **main**，
+#   而站点读的是 **gh-pages**。workflow 里**没有任何 gh-pages 步骤** ——
+#   `grep -nE "gh-pages|deploy|pages" .github/workflows/sync.yml` 只返回
+#   一行 `git push`。
+#
+#   ⇒ 两个后果，第二个才是真正伤人的：
+#     1. 自动同步的数据**从来不会自己到达读者**，唯一的桥是这个脚本
+#     2. 而这个脚本 `cp` 的是**本地工作区** —— 于是每次手动部署都会
+#        把线上已经同步好的数据**覆盖回本地那份旧的**
+#
+#   ⚠️⚠️ 2026-09-29 实测（就是发现它的那次）：
+#      `git diff --stat origin/main -- data/` 显示本地**缺**
+#      `data/cnsr/img/3e909462….jpg`（1.4 MB，origin/main 上有），
+#      而 `data/cnsr/index.json` / `learn.json` 都是旧的。
+#      ⇒ 我之前每一次部署都在删那张图。
+#
+#   修法：这两棵树从 **origin/main** 取，不从工作区取。
+#   ⚠️ 取不到就**大声失败**，绝不退回本地那份 ——
+#      静默地用旧数据覆盖，正是这个 bug 能活这么久的原因。
+if git fetch -q origin main 2>/dev/null; then
+  for d in data/coof data/cnsr; do
+    rm -rf "${STAGE:?}/$d"
+    mkdir -p "$STAGE/$d"
+    if ! git archive origin/main "$d" | tar -x -C "$STAGE"; then
+      echo "✗ 从 origin/main 取 $d 失败" >&2
+      exit 1
+    fi
+  done
+  echo "  ✓ coof / cnsr 取自 origin/main（不是本地工作区）"
+else
+  echo "✗ git fetch origin main 失败 —— 拒绝用本地那份 coof/cnsr 覆盖线上" >&2
+  echo "  本地可能是旧的；用旧数据强推正是这个脚本此前的 bug。" >&2
+  echo "  网络恢复后重跑即可。" >&2
+  exit 1
+fi
+
 # ⚠️⚠️ `cp -R data` copies EVERYTHING, including the files that are gitignored
 # precisely because they must not be published. .gitignore protects `main`; it
 # does NOTHING here, because this script builds the site from the filesystem, not

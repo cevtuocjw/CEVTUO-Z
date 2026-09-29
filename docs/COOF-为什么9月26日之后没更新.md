@@ -1,97 +1,96 @@
 # COOF：为什么 9 月 26 日之后就没有更新
 
-> 调查于 2026-09-29。分支 `fix/coof-sync-stalled`。
-> **结论：没有任何东西坏掉。** 所以这个分支**没有代码改动** —— 只留下这份记录。
+> 调查于 2026-09-29（第二轮，第一轮结论不完整）。分支 `fix/coof-sync-stalled`。
 
 ---
 
-## 一句话
+## 两句话
 
-**Notion 里 9 月 26 日之后就没有新条目**，而页面显示的正是 Notion 里有的东西。
-链条上每一环都验过，全通。
+1. **COOF 本身没有坏** —— Notion 里 9 月 26 日之后**就没有新条目**，
+   Action 每 5 小时读一次都读到了同样的 155 条，正确地判定「无变更」。
+2. **但读者的直觉指向了一个真 bug** —— 自动同步的数据**根本到不了站点**，
+   而且每次手动部署都会把线上已经同步好的数据**覆盖回旧的**。
+   COOF 只是还没被它伤到（因为它这几天本来就没变），**CNSR 已经被伤了**。
 
 ---
 
-## 逐环验的证据
+## 一、COOF 为什么停在 09-26
 
-| 环节 | 怎么验的 | 结果 |
+每一个环节都验过：
+
+| 环节 | 证据 | 结论 |
 |---|---|---|
-| Notion 里有新片子吗 | 直接查数据库（按 `Date` 倒序） | **最新 = 2026-09-26** |
-| 同步的 Action 在跑吗 | `gh run list --workflow=sync.yml` | ✅ 每 5 小时一次，最近 `2026-09-28T21:04Z` **success** |
-| 数据文件跟上了吗 | 读 `data/coof/COOF2026/index.json` | ✅ 155 条，`recent` 最新 `watchedAt` = 09-26 |
-| 那为什么没有 09-26 之后的 | 读 `~/Library/Scripts/coof-movie.py` | **它不是一个同步脚本** |
+| Notion 里有新片子吗 | 按 `Date` 倒序查数据库 | **最新 = 2026-09-26** |
+| 同步读的是哪个库 | `packages/schema/src/collections.ts` | `COOF2026` = `2da09462-a4af-8040-a7dc-fb733cb776c5` |
+| 和 `coof-movie.py` 写的是同一个吗 | `~/.coof-movie/config.json` | **是同一个** |
+| Action 在跑吗 | `gh run list --workflow=sync.yml` | 每 5 小时一次，最近 `success` |
+| Action 读到了什么 | 那次的**运行日志** | `▸ COOF2026 … 155 条` |
+| 它为什么没提交 | 同一条日志 | `无数据变更 —— 不提交（这正是预期行为）` |
+| `main` 上最后一次 coof 提交 | `git log origin/main -- data/coof` | `928f28c sync: coof data 2026-09-26T09:42Z` |
+| 线上 gh-pages 的 coof | 直接下载线上文件 | 155 条，最新 `watchedAt` **09-26** |
 
-## 真正的答案
+⇒ 四份数据（Notion / main / 本地 / 线上）**完全一致**。
+`data/sync-meta.json` 的 `generatedAt` 三处都是 `2026-09-26T17:42+08:00`、
+`runId` 都是 `36233574590` —— 因为 **sync-meta 只在数据真的变了时才写**。
 
-`coof-movie.py` 是一个**手动、一部一部记录**的命令行工具：
-
-```
-coof-movie 贝鲁特酒店
-  → 查豆瓣 → 下载海报 → 上传到 Notion → 写一行
-```
-
-`~/.coof-movie/debug.log` 的最后一次运行：
-
-```
-14:40:22  ---- 启动 ----
-14:40:22  argv=['贝鲁特酒店']
-14:40:28  Notion 已写入，映射：COUNTRY←countries, KIND←genres, ... 
-```
-
-`argv` 是电影名 —— 也就是说**每看一部就得手动跑一次**。
-
-⚠️ 而且它**没有计划任务**：
-
-```bash
-launchctl list | grep -i coof     # 无
-ls ~/Library/LaunchAgents/        # 里面没有 coof
-crontab -l                        # 空
-```
-
-对比一下，CAPPERR / RWP 都有自己的 LaunchAgent（`com.cevtuo.rwp2epub.plist`）。
-**COOF 的「采集」这一步天生是手动的**，只有「Notion → 页面」那一段是自动的。
-
-⇒ 所以 **09-26 之后没更新，是因为 09-26 之后没有新看片子被记录**。
-页面没错，同步没错，Action 没错。
+⚠️ `coof-movie.py` 不是一个同步脚本，是**手动、一部一部记录**的 CLI
+（`argv=['贝鲁特酒店']`），而且**没有任何计划任务**。
+所以「09-26 之后没更新」= **09-26 之后没有新片子被记录**。
 
 ---
 
-## ⚠️ 这次调查里我自己差点被骗的地方
+## 二、⚠️⚠️ 但真正的问题在这里：自动同步到不了站点
 
-第一版查 Notion 用的是：
-
-```js
-body: JSON.stringify({ page_size: 100 })
+```
+GitHub Action (每 5 小时)
+      │  git push
+      ▼
+   main  ──────────✗ 没有任何步骤把它送到 gh-pages
+                      
+读者看的站点 ←── gh-pages ←── 只有 scripts/deploy-pages.sh（手动）
+                                    └── cp -R data  ← **本地工作区**
 ```
 
-返回 100 条，`has_more: true` —— 也就是我在**任意 100 条**里找最大日期。
-那不叫「最新日期」，那叫「这一页里最大的日期」，**而它和真值长得一模一样**：
-两者都是一个像模像样的日期，都排在一个像模像样的列表顶上。
+`grep -nE "gh-pages|deploy|pages" .github/workflows/sync.yml` 只返回一行 `git push`。
+**workflow 里根本没有 gh-pages 步骤。**
 
-改成服务端排序才是可信的：
+于是有两个后果，第二个才是真正伤人的：
 
-```js
-body: JSON.stringify({
-  page_size: 100,
-  sorts: [{ property: 'Date', direction: 'descending' }],
-})
+1. 自动同步的数据**从来不会自己到达读者** —— 必须有人手动跑 `deploy-pages.sh`
+2. 而那个脚本 `cp` 的是**本地工作区** ⇒
+   **每次手动部署都会把线上已经同步好的数据覆盖回本地那份旧的**
+
+### 实测证据（2026-09-29）
+
+```
+git diff --stat origin/main -- data/
+  data/cnsr/img/3e909462a4af81cdb5cecc534d278efe.jpg | Bin 0 -> 1417433 bytes
+  data/cnsr/index.json                               |   6 ++---
+  data/cnsr/learn.json                               |  28 +++++-----
 ```
 
-⚠️ 同一个教训在这个项目里已经出现过一次（`/v1/search` 必须全量分页）。
+⚠️ 那张 1.4 MB 的海报**本地根本不存在**，而 `origin/main` 上有。
+**我之前每一次部署都在把它从线上删掉。**
+
+### 修法
+
+`deploy-pages.sh` 里新增一段：`data/coof` 和 `data/cnsr` **从 `origin/main` 取**
+（`git archive origin/main <dir> | tar -x`），不从工作区取。
+⚠️ 取不到就**大声失败**，绝不退回本地那份 ——
+**静默地用旧数据覆盖，正是这个 bug 能活这么久的原因。**
+
+⚠️ 这是同一个 bug 的**第三个和第四个实例**（paperr、chealth 各有一个，
+那两个是各自打的补丁）。所以这次没有再加一个 per-directory 补丁，
+而是在脚本里把**机制**写清楚了。
+
+---
+
+## 三、这次调查里我自己差点被骗的地方
+
+第一版查 Notion 用的是**未排序**的 `page_size: 100` 查询，返回 100 条而
+`has_more: true` —— 那是在**任意 100 条**里找最大值。
+它和真值长得一模一样：都是一个像模像样的日期，都排在列表顶上。
+加服务端排序（`sorts: [{property:'Date', direction:'descending'}]`）才可信。
+
+⚠️ 同一个教训在这个项目里出现过（`/v1/search` 必须全量分页）。
 **分页和排序是两件事，漏了排序的分页看起来完全正常。**
-
----
-
-## 要不要做点什么
-
-**没有 bug 要修。** 但有一个**可以去改进的地方**：
-
-页面上现在只显示「最近看了什么」，**没写「数据到哪一天」**。
-于是「这个月没看片子」和「同步坏了」在页面上**长得一模一样** ——
-这正是这个项目在别处反复踩的那个形状（两个时间戳摆在一起却不给结论）。
-
-可做的小改动：在 COOF 那屏加一行
-`数据到 2026-09-26 · 同步每 5 小时一次（最近 09-28 21:04）`，
-这样读者一眼能区分「没新片」和「断了」。
-
-⚠️ 但**没做**，因为它不在读者这一轮的要求里 —— 留个记录，要做的时候再做。
