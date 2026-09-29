@@ -270,6 +270,27 @@ $gutter: t.$space-3;
   //    `.section__body` 上，而不是只给 CHEALTH 打补丁。下一个把内容写长的
   //    页面不该再踩一次。
   overflow-y: auto;
+  /**
+   * ⚠️⚠️ **给下滑提示让出位置** —— 它是**绝对定位浮在内容上面**的。
+   *
+   *    读者 2026-09-29 在 CHEALTH 第一屏看到的：「本屏还有内容」那行字压在
+   *    图标格上，第三个格子（功率）被盖掉一半。
+   *
+   *    ⚠️ 这个碰撞**一直存在**，不是这次改出来的 —— 只是提示从 30px 的三角
+   *      变成 34px 的圆片之后更明显了一点。成因很朴素：
+   *        · 提示占据「面板底部往上 48px ~ 99px」这一条
+   *          （`bottom: safe + 24px`，自身高 = 文本 + 间隙 + 34px 圆片）
+   *        · 而滚动容器的内容盒底边就在 48px 处 —— 两者**正好重叠**
+   *      ⇒ 内容排到底时，最后一行必然被压住，而**没有任何断言会红**
+   *        （`innerText` 顺序是对的、元素都在、零报错）。
+   *
+   * ⚠️⚠️ **但光靠留白是不够的**（我先只改了这一条，实测没用）：留白只在
+   *    **滚到底**那一刻起作用，而读者看到的是**初始位置** ——
+   *    初始位置上，内容该在那个高度还是在那个高度。
+   *    ⇒ 真正的修法是把提示从 `position: absolute` 改回**参与布局**
+   *      （见 `.section__cue` 那段）。那之后这条留白就只剩「别贴着」这一个作用了。
+   */
+  padding-bottom: t.$space-3;
   // ⚠️ `justify-content: center` HERE, on the body — not on the panel.
   //
   // The panel must stay `flex-start` so a tall child (the poster grid) can fill
@@ -577,19 +598,35 @@ $gutter: t.$space-3;
 //
 // ⚠️ Rendered on every panel but the last — see the JSX. A chevron on the final
 // panel would promise content that does not exist.
+/**
+ * ⚠️⚠️ **不再绝对定位** —— 2026-09-29 改的，理由是实测出来的。
+ *
+ *    它原来写的是 `position: absolute; bottom: calc(safe + 24px)`，也就是
+ *    **浮在内容上面**。于是任何排到那个高度的内容都会被它压住 ——
+ *    读者在 CHEALTH 第一屏看到的就是「本屏还有内容」盖住第三个图标格
+ *    （「功率」被切掉一半）。
+ *
+ *    ⚠️ 而**只给滚动容器加 `padding-bottom` 是不够的**（我先那么改了，没用）：
+ *      留白只在**滚到底**的那一刻起作用，而读者看到的是**初始位置** ——
+ *      初始位置上，内容该在那个高度还是在那个高度。
+ *
+ *    ⚠️ 它本来就写在 `.section__body` **后面**，是同一个 flex 列的兄弟节点；
+ *      是 `absolute` 把它从布局里拿走的。⇒ 去掉定位，它就正常占位，
+ *      body（`flex: 1` + `overflow-y: auto`）自己会让出这一条高度。
+ *
+ *    ⚠️ 当初用 `absolute` 的理由是「内容别把面板顶出去」——那个顾虑现在由
+ *      body 自己的 `overflow-y: auto` 承接了（见上面那段长注释），
+ *      所以这条理由**已经过期**。
+ *
+ *    ⚠️ 仍然 `pointer-events: none`：它是提示不是控件（控件是右边的导轨），
+ *      一个能被点的目标正好落在滚动时拇指的位置上。
+ */
 .section__cue {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--safe-bottom) + #{t.$space-5});
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  // ⚠️ Not a button. It is a cue, not a control — the rail is the control. A tap
-  // target here would sit directly under the thumb during a scroll gesture.
   pointer-events: none;
-  flex-direction: column;
   // The gap between the word and the arrow — they read as one unit.
   gap: t.$space-1;
 }
