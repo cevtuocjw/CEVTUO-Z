@@ -24,13 +24,44 @@ CHEALTH 页    https://z.cevtuogrnd.com/#/pages/chealth/index
                  **往文档里写密钥是个肌肉记忆式的动作，而它在这里的代价是全局的。**
 ```
 
-四个验证器全绿（**每次部署后都要跑**）：
+四个验证器全绿（**每次部署后都要跑**）—— 2026-09-29 线上实测 47/47：
 
 ```
 bun scripts/verify-https-live.mjs    9/9    全站 HTTPS + 混合内容
 bun scripts/verify-copy.mjs          5/5    页面上渲染出来的字（Markdown 星号 / NaN / undefined）
 bun scripts/verify-home-stats.mjs    7/7    主页数字截断
-bun scripts/verify-chealth-ui.mjs   12/12   CHEALTH 版式 + 交互 + 配色 + 解锁入口
+bun scripts/verify-chealth-ui.mjs   26/26   CHEALTH 三屏 / 七个弹窗 / 目标线 / 三星卡片 / 解锁入口
+```
+
+⚠️⚠️ **跑之前先把代理摘掉**，否则会间歇性 `ERR_CONNECTION_CLOSED` 白跑三轮：
+
+```bash
+env -u HTTPS_PROXY -u HTTP_PROXY -u ALL_PROXY -u https_proxy -u http_proxy -u all_proxy \
+    NO_PROXY='*' no_proxy='*' bun scripts/verify-chealth-ui.mjs
+```
+
+⚠️ 宿主机 `HTTPS_PROXY=http://127.0.0.1:7890` 而 `NO_PROXY` 不含本站域名，
+Chromium 会走那个代理 —— 它**通得了 bun 的 fetch，却会掐掉浏览器的连接**。
+`verify-https-live` 那次 9/9 是摘了代理跑的。
+
+⚠️ 同理，`bash scripts/deploy-pages.sh` 推 GitHub 要用 **HTTP/1.1**：
+
+```bash
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.version GIT_CONFIG_VALUE_0=HTTP/1.1
+bash scripts/deploy-pages.sh
+```
+
+不加的话走的是 `LibreSSL SSL_connect: SSL_ERROR_SYSCALL`；
+**而且它是一阵一阵的**（同一条命令连失败 4 次、第 5 次成功），所以脚本外面套重试。
+
+⚠️⚠️ **部署前必须删掉本地预览的软链** `apps/dashboard/dist/data`。
+`deploy-pages.sh` 第 65 行 `cp -R dist/.` 会把它拷进暂存目录，
+第 66 行 `cp -R data` 于是撞上 `cp: .../data: File exists` ——
+而 `set -euo pipefail` 让**整个部署中止**。报错只有一行 cp，很容易看漏成「推完了」。
+
+```bash
+rm -f apps/dashboard/dist/data     # 部署前
+ln -sfn ../../../data apps/dashboard/dist/data   # 要本地预览时再建
 ```
 
 ⚠️ **别只看构建通过**。这个项目里「构建全绿、页面白屏」发生过三次，
@@ -163,9 +194,39 @@ SCSS 里 `.chc { &__rows { … } }` 编译成 `.chc__rows`（真在用），
 
 ---
 
-## 下一步 A：把十屏收进三屏（读者明确要求）
+## ✅ 已完成（2026-09-29，commit `e1fa4c3`）—— 十屏收进三屏
 
-### 目标结构
+**这一节原来的内容全部做完了。** 下面「目标结构 / 当前文件结构」两段是
+动手前的快照，**行号已经全部失效**，留着是为了说明当时的计划。
+
+### 实际落成的结构
+
+```
+屏 0「今天」    hero + 马赛克四块（步数那块带达标进度）+ 图标格（六个入口）
+屏 1「运动」    筛选 chips + 会话列表（摘要卡，点开是场次弹窗）
+屏 2「趋势」    步数（带目标虚线）/ 睡眠 / 活动消耗 三张柱状图
+
+七个 Sheet：zones 心率与体征 / week 周对比 / power 功率与个人记录 /
+            streak 连续达标 / kinds 类型分布 / sources 数据来源与同步 /
+            session 单场运动（四条曲线）
+```
+
+⚠️ 七个 Sheet 全部渲染在 `</PageStack>` **外面**。
+`.sheet` 是 `position: fixed`，而 `fixed` 的包含块是最近一个带
+transform / filter / backdrop-filter / contain 的祖先 ——
+留在栈里就要赌 `.stack`/`.section` 上没有这些属性。赌赢一次，
+下次有人加一句 `will-change` 就静默失效（弹窗跑进某一屏里面去，
+被那一屏的滚动裁掉）。`verify-chealth-ui` 里有一条断言专门盯这个。
+
+⚠️ 接线手法：**把 `<Section>` 的开闭标签整个换成 `<Sheet>`，children 一个字节都不动。**
+上一轮用脚本跨 300 行搬 JSX，typecheck 报了 9 处语法错误。
+
+⚠️ 顺手抓到的真 bug：「正在骑 MyWhoosh」那个徽标原来是 `<PageStack>` 的兄弟节点
+（第 0 屏和第 1 屏之间）—— **它就是第 11 屏**。面板栈按
+`scrollTop / clientHeight` 算「我在第几屏」，多一个兄弟节点就让所有面板和导轨
+对不上，而 `count` 还写着 10。已挪进第 0 屏。
+
+### 当时的计划（历史，行号已失效）
 
 ```
 屏 0「今天」    hero + 马赛克四块 + 图标格（六个入口）
@@ -250,7 +311,42 @@ function ZonesPanel({ zones, zoneMinutes, refMaxHr }: …) { return (…原样�
 
 ---
 
-## 下一步 B：三星视觉（读者的原话是「太不像了」）
+## ✅ 已完成（2026-09-29）—— 三星视觉
+
+**读者 2026-09-29 直接给了七张三星健康真机截图**，所以这一轮是**照着真机抄的**，
+不是凭「简洁」「现代」这类词猜的。从截图里读出来的硬事实：
+
+| 截图上看到的 | 落到了哪里 |
+|---|---|
+| 「每日活动量」三块砖的**标签各是各的色**（步数绿/活动时间青/活动卡路里紫），数字是白的 | `.chc__mlabel { color: var(--m) }`，`--m` 挂在整块砖上 |
+| 大数字下面一条**发丝线**，线下面写 `/9,000` | `.chc__tile-rule` + `.chc__tile-goal` |
+| 卡片是**20px 圆角 + 1px 亮边**的深色块 | `.card.chc__card`（圆角 20px + `box-shadow: inset … 1px`） |
+| 柱子是**胶囊形**，不是直角 | `.chc__bar { border-radius: 999px 999px 0 0 }` |
+| 运动详情每行的标签都染成该指标的颜色（心率粉/卡路里紫/时长青/海拔绿） | 同理，走 `--m` |
+
+⚠️⚠️ **蓝色实底那一块的标签必须是白的** —— 步数的绿在蓝底上几乎看不见。
+`.chc__tile--blue .chc__mlabel { color: #fff }` 是故意覆盖的，不是漏改。
+
+⚠️ 睡眠口径也改了：原来是「7 天累计 37.7h」——**37.7 小时不是任何人理解睡眠的方式**。
+现在那块砖是**最近一晚**（带日期），说明里给精确到分钟的 `5h47m` 和 14 晚均值。
+
+⚠️ 窄块（53px 可用宽）里放不下 `7h32m`（3.2em ≈ 63px，会切字）——
+所以砖上写 `5.8h`，精确值写在下面的说明行里。
+
+---
+
+## 🚧 下一步（2026-09-29 时点还没做）
+
+1. **主页 CHEALTH 卡和 CHEALTH 页的睡眠口径是两份实现**。主页那份已修
+   （取最后一条真的有睡眠记录的那天），但两处逻辑没有共享 —— 迟早漂移。
+2. `verify-copy.mjs` 只查「星号 / NaN / undefined」三种串，**不查弹窗里的文案** ——
+   弹窗是新加的，还没被文案类断言覆盖过。
+3. 弹窗里 `.chc__zone-bar` 的颜色：心率区间现在是红的（`--m-heart`），
+   但「类型分布」那张的各行还没有按运动类型分色。
+
+---
+
+## 原来的「下一步 B」（历史）
 
 **已经做了**：柱状图每指标一色（步数绿 `#3ecf8e` / 睡眠紫 `#8b7cf6` / 消耗橙
 `#ff9f43`），今天满色、过去 42% 淡版、空白保持灰。色值只在
