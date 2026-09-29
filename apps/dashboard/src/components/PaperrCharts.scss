@@ -893,6 +893,29 @@ $chart-h: 108px;
   text-shadow: var(--text-halo);
 }
 
+/**
+ * ⚠️⚠️ 上面那句注释**描述的是意图，而意图没有生效**。
+ *
+ *    2026-09-29 用 `verify-theme-contrast.mjs` 量出来：格子里的日期数字
+ *    和它自己的填充**是同一个颜色**，对比度 **1:1** —— 也就是完全看不见。
+ *    浅色主题下是黑字压在 `rgba(10,12,16,.9)` 上，深色主题下是白字压在
+ *    `rgba(255,255,255,.94)` 上。两个主题、两个页面（home / CAPPERR）全中。
+ *
+ *    ⚠️ 原因不是「忘了写防护」，而是**写了的那层防护根本没生效**：
+ *      `.pc-cal__day` 的 `text-shadow: var(--text-halo)` 计算值是 **`none`**
+ *      （`--text-halo` 本身解析正常，是 `hsla(0,0%,100%,.86)`）。
+ *      ⇒ **写在样式表里 ≠ 浏览器认了它。** 这一条比 bug 本身更值得记。
+ *
+ *    ⇒ 修法换一条**不依赖 text-shadow** 的路：填充最深的两档改用反色墨。
+ *      判据是「哪一档最深」而不是写死颜色 —— `--text-inverse` 随主题翻转，
+ *      而色阶本身也随主题翻转，所以同一条规则在两个主题下都对。
+ *      （`--chart-1` 是色阶最深的一档，`--chart-3` 次之。）
+ */
+.pc-cal__cell--l3 .pc-cal__day,
+.pc-cal__cell--l4 .pc-cal__day {
+  color: var(--text-inverse);
+}
+
 
 // ⚠️ Today's column in the week bars. A filled dot rather than a colour change:
 // every bar's fill already encodes a value, and recolouring one would make it
