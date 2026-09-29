@@ -67,6 +67,17 @@ const ACTIVE_KCAL_GOAL = 400;
  *
  * ⚠️ 90 是三星「每日活动量」那张卡上的默认值（截图上是 `/90`）。
  *    这里跟它一致 —— 目标本来就该是一个**约定**，不是从数据里推出来的数。
+ *
+ * ⚠️⚠️ **口径 = 只算走路**（读者 2026-09-29 定的：运动那一段**不并入**）。
+ *
+ *    我们的数原来是「走路区间 ∪ 运动会话」，实测**走路那一路 76 分钟 ≈ 三星 75**，
+ *    多出来的正是运动那 23 分钟 —— 也就是说**三星这个数本来就不含运动**，
+ *    是我们这边多算了一路。数字对不上不是因为谁错了，是**口径不一样**。
+ *
+ *    ⇒ 手机端 `activeMinutes` 收成走路那一路（见 `SyncWorker.kt` 那段注释）。
+ *      运动时长**没有丢**，运动屏上按场次列着，只是不混进这个环。
+ *    ⇒ 下面那行说明也跟着改了 —— 文案和口径必须是同一句话，
+ *      否则页面会替我们宣称一个我们不遵守的口径。
  */
 const ACTIVE_MIN_GOAL = 90;
 
@@ -723,7 +734,7 @@ export default function Chealth() {
                     这条已经复发过一次（`73b8a6a` 修过、2026-09-29 又在弹窗里复发）。 */}
                 <Text className="chc__note">
                   目标 {STEP_GOAL.toLocaleString('en-US')} 步 · {ACTIVE_KCAL_GOAL} 千卡活动消耗 ·{' '}
-                  {ACTIVE_MIN_GOAL} 分钟活动（走路 + 运动，不是只算走路）。
+                  {ACTIVE_MIN_GOAL} 分钟活动（只算走路；运动另计，运动屏上有）。
                   {partial ? ' ⚠️ 截至现在，今天还没过完。' : ''}
                 </Text>
               </View>
@@ -880,11 +891,17 @@ export default function Chealth() {
               />
             </Section>
 
-            <Section
-              index={1}
-              title="运动"
-              lede="天 / 周 / 月 三段，和三星那一屏一样。点一条看过程曲线。"
-            >
+            {/*
+              ⚠️ 这一屏的 `lede` 删了（读者 2026-09-29）。
+                原来是「天 / 周 / 月 三段，和三星那一屏一样。点一条看过程曲线。」
+                —— 那是**给做这个页面的人看的**，不是给读者看的：
+                三段控件长得就像三段控件，不需要一句话告诉他要怎么用。
+                ⚠️ 而且它和下面那排胶囊**压在一起**（截图里能看见重叠）。
+
+              ⚠️ 默认档是**周**，不是天 —— 见 `useState<SpanKey>('week')` 那段：
+                我们 31 天只有 8 场运动，默认天的话大多数时候点进来是一屏「没有记录」。
+            */}
+            <Section index={1} title="运动">
               {!index?.sessions?.length ? (
                 <View className="card chc__card">
                   <Text className="chc__note">最近 30 天没有非走路的运动记录。</Text>
@@ -1064,10 +1081,17 @@ export default function Chealth() {
               )}
             </Section>
 
+            {/*
+              ⚠️ `lede` 删了（读者 2026-09-29：「以及其他的解释都删掉」）。
+                原来是「柱状是每天的总量，最近 14 天。空白的那天是没记录，不是零。
+                点一根柱子看那天的数。」—— 三句话里有两句在解释控件怎么用。
+
+              ⚠️「空白的那天是没记录，不是零」这个区别**没有丢**：它靠的是画法本身
+                （空的天根本不画柱子），而不是靠一句话。这里删的是**文案**。
+            */}
             <Section
               index={2}
               title="趋势"
-              lede="柱状是每天的总量，最近 14 天。空白的那天是没记录，不是零。点一根柱子看那天的数。"
               showCue={false}
               // ⚠️ `wide` 解掉 900px 的宽度上限，桌面端两列才排得开。
               wide
@@ -1104,22 +1128,20 @@ export default function Chealth() {
                 <Text className="chc__card-t">活动消耗</Text>
                 <BarRow days={recent} pick={(d) => d.activeCalories} today={today} unit=" kcal" tone="kcal" />
                 {/*
-                  ⚠️⚠️ The label is the whole point of this panel.
-                  `calories7d` sums TotalCaloriesBurnedRecord, which includes BMR.
-                  In the first real data set it was 1662 on ELEVEN consecutive
-                  days with no other data at all — a dead-flat line that any
-                  reader would file as a broken sensor, when it is the most
-                  correct number on the page.
+                  ⚠️ 读者 2026-09-29：「这个去除掉，只写明白是总消耗还是活动消耗就可以」。
 
-                  ⚠️ 总消耗那张图撤了，但**这句话不能跟着撤**：
-                     「活动消耗」和「总消耗」差着一个基础代谢，不写出来，
-                     读者会拿这里的数去对三星健康首页那个大数字，然后对不上。
+                  ⇒ 撤掉的是**解释**，留下的必须是**区分**：
+                      这一格是「活动消耗」⇒ 它就写「活动消耗」。
+                      总消耗那一行在环下面（`.chc__totalmark`），写着「含基础代谢」。
+                    两个名字各自说清自己是什么，比一段对比散文更难读错 ——
+                    原来那段还把 `calories7d`（总消耗的 7 天合计）混在一张
+                    「活动消耗」的卡片里，那正是读者说的「要去掉」的东西。
+
+                  ⚠️ 别把这一行也删掉。「活动消耗」和「总消耗」差着一个基础代谢，
+                    读者会拿这里的数去对三星健康首页那个大数字 ——
+                    对得上还是对不上，取决于他知道自己看的是哪一个。
                 */}
-                <Text className="chc__note">
-                  这是动出来的那部分。总消耗（含基础代谢 —— 静息也在烧，所以没活动的日子也在 1,600 左右）
-                  最近 7 天合计 {t ? Math.round(t.calories7d).toLocaleString('en-US') : '—'} kcal，
-                  <Text className="chc__em">两者相减才是走路跑步花掉的</Text>。
-                </Text>
+                <Text className="chc__note">活动消耗（不含基础代谢）</Text>
               </View>
               </View>
             </Section>

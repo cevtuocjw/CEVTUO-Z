@@ -476,24 +476,84 @@ check('环的三行读数都没有折行', goal.rowsWrapped === 0, `${goal.rowsW
 // ── 三个同心圆环（读者 2026-09-29 点名要的）────────────────────
 const rings = await page.evaluate(() => {
   const svg = document.querySelector('.chc__rings-svg');
-  // ⚠️ 环从 `<circle>` 改成了 `<path>`（2026-09-29 换成三星那个**心形**），
-  //    所以这里数的是 `path`。⚠️ 断言当时红了一条「轨道 0 条」——
-  //    它测的是**实现用的元素类型**，不是「有三个环」这件事。
-  //    ⇒ 改成按**类名**认弧（`.chc__ring-arc`），轨道 = 总数 − 弧数。
-  const paths = svg ? [...svg.querySelectorAll('path')] : [];
-  const arcs = paths.filter((p) => p.classList.contains('chc__ring-arc'));
+  /**
+   * ⚠️ 这段**又改回来了**，而且值得记一笔它来回了两趟：
+   *
+   *    圆环 → 心形（`path`）→ 圆环（`circle`），一天之内。
+   *    每换一次，这条断言就红一次 —— **而功能一直是正常的**。
+   *
+   *    ⇒ 它测的是**实现用的元素类型**，不是「有三个环」这件事。
+   *      但也不能简单换成「数一数 SVG 里有几个图形」：那样加一道高光
+   *      就会把它弄红（高光也是 `circle`）。所以分成两条：
+   *        · 轨道 = 图形总数 − 弧 − 高光   ← 这条对实现不敏感
+   *        · 高光 = 和弧**成对**出现        ← 这条钉住新的玻璃层
+   *    ⚠️ 认图形仍然按**类名**（`.chc__ring-arc` / `.chc__ring-gloss`），
+   *      不按元素名 —— 下一次再换形状时，红的应该是「有几个环」，
+   *      而不是「你用错了标签」。
+   */
+  const shapes = svg ? [...svg.querySelectorAll('circle, path')] : [];
+  const arcs = shapes.filter((s) => s.classList.contains('chc__ring-arc'));
+  const gloss = shapes.filter((s) => s.classList.contains('chc__ring-gloss'));
   const rows = [...document.querySelectorAll('.chc__rings-row')].map((r) => ({
     label: (r.querySelector('.chc__rings-l') || {}).textContent || '',
     none: Boolean(r.querySelector('.chc__rings-none')),
     v: (r.querySelector('.chc__rings-v') || {}).textContent || '',
   }));
-  return { paths: paths.length, arcs: arcs.length, rows };
+  /**
+   * ⚠️⚠️ 高光必须**贴在它所服务的那条弧的外缘**，半径 = 弧半径 + 3。
+   *
+   *    画在**同一条中心线上**时它只是一条浅色的线，看起来像「两种颜色的环」；
+   *    偏到外缘才读成**一道反光** —— 也就是「玻璃」和「塑料」的区别。
+   *    ⇒ 所以这里量的是**两个半径的差**，不是「有没有一条白线」。
+   *      一条和弧重合的白线会通过「存在性」断言，却完全没有玻璃感。
+   */
+  const pairs = svg
+    ? [...svg.querySelectorAll('g')].map((g) => {
+        const a = g.querySelector('.chc__ring-arc');
+        const gl = g.querySelector('.chc__ring-gloss');
+        return {
+          hasArc: Boolean(a),
+          hasGloss: Boolean(gl),
+          dr: a && gl ? Number(gl.getAttribute('r')) - Number(a.getAttribute('r')) : null,
+          glossOpacity: gl ? Number(gl.getAttribute('stroke-opacity')) : null,
+        };
+      })
+    : [];
+  return {
+    shapes: shapes.length,
+    arcs: arcs.length,
+    gloss: gloss.length,
+    pairs,
+    rows,
+  };
 });
 // 每个指标一圈「轨道」，有进度的再叠一条「弧」。三条轨道一个都不能少。
 check(
-  '三个环的轨道都在（心形）',
-  rings.paths - rings.arcs === 3,
-  `轨道 ${rings.paths - rings.arcs} 条 / 弧 ${rings.arcs} 条`,
+  '三个环的轨道都在（圆环）',
+  rings.shapes - rings.arcs - rings.gloss === 3,
+  `轨道 ${rings.shapes - rings.arcs - rings.gloss} 条 / 弧 ${rings.arcs} 条 / 高光 ${rings.gloss} 条`,
+);
+/**
+ * ⚠️ 两条**成对**断言。`pairs` 是按 `<g>` 分组的（一个指标一组），
+ *    所以「3 对里 2 对缺高光」和「总共 2 条高光」是两件不同的事，
+ *    而后者会**通过**。这正是「数总数、不数归属」那个老毛病。
+ */
+check(
+  '玻璃高光和它所贴的弧成对出现',
+  rings.pairs.length === 3 && rings.pairs.every((p) => p.hasArc === p.hasGloss),
+  rings.pairs.map((p, i) => `#${i + 1} ${p.hasArc ? '弧' : '—'}/${p.hasGloss ? '高光' : '—'}`).join(' · '),
+);
+check(
+  '高光贴在弧的**外缘**（半径 = 弧 + 3），不是压在中心线上',
+  rings.pairs.filter((p) => p.hasGloss).length > 0 &&
+    rings.pairs.filter((p) => p.hasGloss).every((p) => p.dr === 3),
+  rings.pairs.filter((p) => p.hasGloss).map((p) => `Δr=${p.dr}`).join(' · ') || '(一条高光都没有)',
+);
+check(
+  '高光是**淡的**（不透明度 < 0.6），不是又描了一圈',
+  rings.pairs.filter((p) => p.hasGloss).length > 0 &&
+    rings.pairs.filter((p) => p.hasGloss).every((p) => p.glossOpacity !== null && p.glossOpacity < 0.6),
+  rings.pairs.filter((p) => p.hasGloss).map((p) => `α=${p.glossOpacity}`).join(' · ') || '(一条高光都没有)',
 );
 check('环旁边有三行读数', rings.rows.length === 3, `${rings.rows.length} 行：${rings.rows.map((r) => r.label).join('/')}`);
 

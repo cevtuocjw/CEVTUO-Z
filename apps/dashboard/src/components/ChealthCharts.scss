@@ -1195,6 +1195,28 @@ $chart-h: 74px;
   width: 92px;
   height: 92px;
   display: block;
+
+  // ⚠️⚠️ **玻璃投影**：玻璃不是「颜色淡」，是**它底下有东西、而它自己有一点厚度**。
+  //    三条环压在卡片上，没有投影时读起来是「三条画上去的线」；
+  //    有投影才读成「一片压在卡片上的玻璃」（读者 2026-09-29：「要有玻璃的质感」）。
+  //
+  //    ⚠️ 只能是 `filter: drop-shadow()`，**不能是 `box-shadow`** ——
+  //      这个元素是 92×92 的**方盒子**，里面画的是**圆的**。
+  //      `box-shadow` 跟的是那个方盒子，会在环周围印出一个**方形的影子**；
+  //      而方影子看着像「这张卡片渲染坏了」，不像深度。
+  //      `drop-shadow` 跟的是**不透明像素**，也就是那三条环本身。
+  //
+  //    ⚠️ 两道叠着：一道 1px 贴边（把环的边缘从背景上「切」出来），
+  //      一道 10px 散开（给出厚度）。只留大的会糊，只留小的就退化成描边。
+  //
+  //    ⚠️ 色值走 `rgba(0,0,0,…)` —— **`--m-*` 一个都没动**。高光和投影都是
+  //      叠上去的，底下仍然是 `--m-*` 那个色（读者：「颜色不能丢」）。
+  //    ⚠️ 这里能用 CSS `filter`：`ChealthCharts` 只被 `apps/dashboard` 引用，
+  //      没有小程序端。`glass.scss:87` 记的那条「Skyline 不支持 drop-shadow」
+  //      说的是 `backdrop-filter` 的函数列表，不波及这里。
+  filter:
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22))
+    drop-shadow(0 6px 10px rgba(0, 0, 0, 0.16));
 }
 
 @keyframes chc-bar-grow {
@@ -1218,15 +1240,18 @@ $chart-h: 74px;
 }
 
 .chc__ring-arc,
+.chc__ring-gloss,
 .chc__gauge-arc {
   animation: chc-ring-draw 900ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
 }
 
 // ⚠️ 三环错开一点，像三星那样依次长出来。外圈先动。
-.chc__rings-svg g:nth-child(2) .chc__ring-arc {
+//    ⚠️ 高光**必须跟着同一条规则走**，否则它会「啪」地整条贴上去，
+//      而底下的弧还在慢慢长 —— 一眼就看出是两层贴纸。
+.chc__rings-svg g:nth-child(2) :is(.chc__ring-arc, .chc__ring-gloss) {
   animation-delay: 110ms;
 }
-.chc__rings-svg g:nth-child(3) .chc__ring-arc {
+.chc__rings-svg g:nth-child(3) :is(.chc__ring-arc, .chc__ring-gloss) {
   animation-delay: 220ms;
 }
 
@@ -1335,6 +1360,7 @@ $chart-h: 74px;
 @media (prefers-reduced-motion: reduce) {
   .chc__bar,
   .chc__ring-arc,
+  .chc__ring-gloss,
   .chc__gauge-arc {
     animation: none;
   }

@@ -141,8 +141,29 @@ fi
 #
 # 所以这里同时做两件事：URL 跟着站点走，**并且加 `-L`** ——
 # 下一个搬地址的人不会再因为忘记改这里而删掉数据。
-PAPERR_LIVE="https://z.cevtuogrnd.com/data/paperr/index.json"
-if curl -fsSL --noproxy '*' -m 20 "$PAPERR_LIVE" -o "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
+# ⚠️⚠️⚠️ 从这里取「服务器拥有的文件」，**不能从站点取** —— 站点前面有 CDN。
+#
+# 2026-09-29 实测（同一天里第二次栽在同一个形状上）：
+#
+#     06:24:27Z  本脚本 force-push 完（它取到的是 CDN 的旧副本）
+#     06:25:37Z  服务器自己发布了一次，把带 09-29 的索引写回 gh-pages
+#     06:28      从站点取到的**仍然是旧的那一版**（没有 09-29）
+#
+# 也就是说：站点那份可以比分支头**旧十分钟**（`max-age=600`），而这个脚本
+# 是拿它当「线上权威副本」往回推的 —— 读者看到的 09-29 就是这样消失的。
+# 2026-09-24 那次是「本地旧副本」冲掉服务器的发布，这次换成了「CDN 旧副本」，
+# 同一个 bug 换了张脸。
+#
+# ⇒ `raw.githubusercontent.com` 没有 CDN，它给的就是**分支头**。
+#   ⚠️ 但这也是「推之前那一刻」的状态，不是「推的时候」的 —— 所以下面
+#      推送前还要再核一次（见 `推之前再核一次` 那段）。
+server_owned() { # $1 = 仓库内路径（如 data/paperr/index.json）；stdout = 内容
+  curl -fsSL --noproxy '*' -m 20 \
+    "https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/${1}" 2>/dev/null
+}
+
+PAPERR_LIVE="https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/data/paperr/index.json"
+if server_owned data/paperr/index.json > "$STAGE/data/paperr/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/paperr/index.json.tmp','utf8'))" 2>/dev/null; then
   mv "$STAGE/data/paperr/index.json.tmp" "$STAGE/data/paperr/index.json"
   echo "  ▸ 保留线上已发布的 index.json（服务器拥有它，本脚本不覆盖）"
@@ -176,9 +197,9 @@ fi
 # paperr 那段可以退回本地副本（最坏是旧数据）；这一段退回不了，因为
 # **Mac 上根本没有 `data/chealth/` 目录**。所以「拿不到线上的」等于
 # 「这次发布会删掉它」——那是不可接受的副作用，宁可不发布。
-CHEALTH_LIVE="https://z.cevtuogrnd.com/data/chealth/index.json"
+CHEALTH_LIVE="https://raw.githubusercontent.com/cevtuocjw/CEVTUO-Z/${BRANCH}/data/chealth/index.json"
 mkdir -p "$STAGE/data/chealth"
-if curl -fsSL --noproxy '*' -m 20 "$CHEALTH_LIVE" -o "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
+if server_owned data/chealth/index.json > "$STAGE/data/chealth/index.json.tmp" 2>/dev/null \
    && bun -e "JSON.parse(require('fs').readFileSync('$STAGE/data/chealth/index.json.tmp','utf8'))" 2>/dev/null; then
   mv "$STAGE/data/chealth/index.json.tmp" "$STAGE/data/chealth/index.json"
   echo "  ▸ 保留线上已发布的 chealth/index.json（服务器拥有它，本脚本不覆盖也不删除）"
@@ -243,6 +264,41 @@ echo "  ▸ CNAME → $CEVTUO_SITE_DOMAIN"
   git -c user.name="cevtuo-deploy" -c user.email="deploy@cevtuogrnd.com" \
       commit --quiet -m "publish: H5 build + data ($(date -u +%Y-%m-%dT%H:%MZ))"
 )
+
+# ── ⚠️⚠️ 推之前再核一次：服务器可能就在这几十秒里发布过 ──────────────
+#
+# 上面取那几个文件到这里的推送之间隔着「构建 + 提交」，实测 20~40 秒；
+# 而服务器是**每次 Kindle 同步就发布一次**。2026-09-29 那天它的两次发布
+# 分别落在我那次部署的前后一分钟里 —— 也就是说「取一次就够了」这个假设
+# 在这条链路上根本不成立。
+#
+# ⇒ 推之前再取一次（从 raw），**变了就把新的装进舞台并重新提交**；
+#   连着三轮还在变就**中止发布**。宁可这次不发，也不要再冲掉别人的数据。
+#   ⚠️ 中止而不是「警告后继续」：这个项目里「警告后继续」已经删过文件了
+#      （见上面 chealth 那段）。
+moved=1
+for i in 1 2 3; do
+  moved=0
+  for p in data/paperr/index.json data/chealth/index.json; do
+    server_owned "$p" > "$STAGE/$p.tmp" 2>/dev/null || { rm -f "$STAGE/$p.tmp"; continue; }
+    if ! cmp -s "$STAGE/$p.tmp" "$STAGE/$p"; then
+      mv "$STAGE/$p.tmp" "$STAGE/$p"
+      moved=1
+    fi
+    rm -f "$STAGE/$p.tmp"
+  done
+  [ "$moved" = 0 ] && break
+  git -C "$STAGE" add -A
+  git -C "$STAGE" -c user.name="cevtuo-deploy" -c user.email="deploy@cevtuogrnd.com" \
+      commit --quiet --amend --no-edit
+  echo "  ▸ 线上索引在构建期间又更新了，已重新装进这一版（第 $i 次）"
+  sleep 3
+done
+if [ "$moved" != 0 ]; then
+  echo "✗ 线上索引一直在这几十秒里变 —— **中止发布**，避免覆盖服务器刚发布的数据。" >&2
+  echo "  稍等一分钟再跑一次即可（服务器每次同步都会发布，这个窗口不常有）。" >&2
+  exit 1
+fi
 
 echo "▸ 推送…"
 git -C "$STAGE" push --force "https://github.com/cevtuocjw/CEVTUO-Z.git" "$BRANCH"
