@@ -1121,6 +1121,40 @@ $chart-h: 108px;
   display: block;
 }
 
+// ── 总消耗：单独标记的一行 ──────────────────────────────────
+//
+// ⚠️ 读者 2026-09-29：「总消耗每天要格外标记出来一下」。
+//
+// ⚠️ 它必须**看起来就不属于上面那三行** —— 一条**虚线**把它隔开、
+//    字号更小、标签里写明「含基础代谢」。
+//    理由不是排版好看：总消耗含基础代谢，那部分人控制不了；
+//    如果它和三个环长得一样，读者会把「今天烧了 1,953」当成自己动出来的。
+//    ⚠️ 虚线（而不是实线）是因为它**不是**一个分区标题，是一条注解的边界。
+.chc__totalmark {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  margin-top: 3px;
+  padding-top: 10px;
+  border-top: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.chc__totalmark-l {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+.chc__totalmark-v {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
 // ── 心率曲线的区间图例 ──────────────────────────────────────
 // ⚠️ 没有它，线上那五种颜色只是「花」—— 读者不知道黄比绿更吃力。
 .chc__bands {

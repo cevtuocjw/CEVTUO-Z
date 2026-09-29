@@ -46,22 +46,21 @@ import '../../styles/demo.scss';
 const STEP_GOAL = 9000;
 
 /**
- * 消耗的目标。
+ * 活动消耗的目标。三星「每日活动量」那张卡上写的是 `/400`，这里跟它一致。
  *
- * ⚠️⚠️ 这是**总消耗**（含基础代谢），不是三星那个 /400 的「活动卡路里」。
- *    读者 2026-09-29 明确要求：「消耗的总共也是」。
+ * ⚠️⚠️ 环上画的是**活动消耗**，不是总消耗。读者 2026-09-29 定的：
+ *    「消耗应该是活动消耗，总消耗每天要格外标记出来一下」。
  *
- * ⚠️ 为什么这个改动同时也修了一个真问题：
- *    `activeCalories` 只在 healthsync 写过的日子才有（实测 **10/31 天**），
- *    所以原来那个「活动消耗」环大多数时候是空的。
- *    而 `calories` 有 **29/31 天** —— 换成它，环基本天天有数。
+ *    道理是对的：总消耗里含基础代谢（实测没活动的日子恒为 1,662），
+ *    那部分**人控制不了** —— 拿它当目标等于「活着就算达标」。
+ *    能控制的只有活动那一半，所以目标只能挂在它上面。
  *
- * ⚠️ 分母取 2,000 是**推导出来的，不是拍的**：
- *    实测没活动的日子 `calories` 恒为 **1,662**（就是基础代谢，见本文件抬头第 2 条），
- *    所以 2,000 相当于「每天动出 ~340 千卡」。
- *    比三星的 /400 略宽松，因为我们这个分母里含着**实测的**基础代谢。
+ * ⚠️ 代价：`activeCalories` 只在 healthsync 写过的日子才有（实测 10/31 天），
+ *    所以这个环有时会显示「未采集」。那是真的没数据，不是 0。
+ *    ⇒ 总消耗（`calories`，29/31 天）在环下面**单独一行标出来**，
+ *      这样两件事都看得到，而且不会混成一个数。
  */
-const CALORIE_GOAL = 2000;
+const ACTIVE_KCAL_GOAL = 400;
 
 /**
  * 活动时间的目标（分钟）。
@@ -298,18 +297,18 @@ export default function Chealth() {
   const lastDay = useMemo(() => days.find((d) => d.date.slice(0, 10) === today) ?? null, [days, today]);
 
   const stepsToday = typeof t?.stepsToday === 'number' ? t.stepsToday : null;
+  /** ⚠️ 环上画的是**活动消耗** —— 见 `ACTIVE_KCAL_GOAL` 那段。 */
+  const kcalToday = typeof lastDay?.activeCalories === 'number' ? lastDay.activeCalories : null;
+
   /**
-   * ⚠️⚠️ 用 `calories`（**总消耗**，含基础代谢），不用 `activeCalories`。
+   * ⚠️ 总消耗**单独标出来**，不进环。读者 2026-09-29：
+   *    「总消耗每天要格外标记出来一下」。
    *
-   *    读者 2026-09-29：「消耗的总共也是」。
-   *    ⚠️ 顺带修了一个真问题：`activeCalories` 只在 healthsync 写过的日子才有
-   *      （实测 10/31 天），所以原来那个环大多数时候是空的；`calories` 有 29/31 天。
-   *
-   *    ⚠️ 代价是它含基础代谢，所以没活动的日子也在 1,662 左右 —— 这正是
-   *      本文件抬头第 2 条那个「看起来像坏了的传感器」的常数。
-   *      分母 `CALORIE_GOAL` 就是照着它定的，环下面的说明也写明了这一点。
+   *    它含基础代谢，所以和活动消耗不是一回事 —— 摆进同一个环里会让读者
+   *    以为「今天烧了 1,953」是自己动出来的。⚠️ 而这个项目抬头第 2 条
+   *    记的正是这个数：没活动的日子也恒在 1,662，像一个坏掉的传感器。
    */
-  const kcalToday = typeof lastDay?.calories === 'number' ? lastDay.calories : null;
+  const kcalTotalToday = typeof lastDay?.calories === 'number' ? lastDay.calories : null;
 
   /**
    * ⚠️ 活动时间 —— 手机端派生的字段，**历史数据没有**。
@@ -647,12 +646,11 @@ export default function Chealth() {
                       color: 'var(--m-steps)',
                     },
                     {
-                      // ⚠️ **总消耗**，不是活动消耗 —— 见上面 `kcalToday` 那段。
-                      label: '总消耗',
+                      label: '活动消耗',
                       value: kcalToday === null ? undefined : String(Math.round(kcalToday)),
                       unit: ' 千卡',
-                      goal: `/ ${CALORIE_GOAL.toLocaleString('en-US')}`,
-                      pct: kcalToday === null ? null : kcalToday / CALORIE_GOAL,
+                      goal: `/ ${ACTIVE_KCAL_GOAL}`,
+                      pct: kcalToday === null ? null : kcalToday / ACTIVE_KCAL_GOAL,
                       color: 'var(--m-kcal)',
                     },
                     {
@@ -666,11 +664,28 @@ export default function Chealth() {
                     },
                   ]}
                 />
+                {/*
+                  ⚠️ 总消耗**单独一行**，而且用一条虚线和大字号把它和上面三行分开。
+                  读者 2026-09-29：「总消耗每天要格外标记出来一下」。
+
+                  ⚠️ 为什么它不该混进环里：总消耗含基础代谢（实测没活动的日子
+                    恒为 1,662），那部分人控制不了 —— 混进去读者会以为
+                    「今天烧了 1,953」是自己动出来的。
+                */}
+                <View className="chc__totalmark">
+                  <Text className="chc__totalmark-l">
+                    总消耗 <Text className="chc__em">含基础代谢</Text>
+                  </Text>
+                  <Text className="chc__totalmark-v">
+                    {kcalTotalToday === null
+                      ? '未采集'
+                      : `${Math.round(kcalTotalToday).toLocaleString('en-US')} 千卡`}
+                  </Text>
+                </View>
                 {/* ⚠️ 强调一律用 `<Text className="chc__em">`，**不要写 Markdown 星号** ——
                     这条已经复发过一次（`73b8a6a` 修过、2026-09-29 又在弹窗里复发）。 */}
                 <Text className="chc__note">
-                  目标 {STEP_GOAL.toLocaleString('en-US')} 步 · {CALORIE_GOAL.toLocaleString('en-US')} 千卡
-                  （<Text className="chc__em">含</Text>基础代谢，所以没活动的日子也在 1,662 左右）·{' '}
+                  目标 {STEP_GOAL.toLocaleString('en-US')} 步 · {ACTIVE_KCAL_GOAL} 千卡活动消耗 ·{' '}
                   {ACTIVE_MIN_GOAL} 分钟活动（走路 + 运动，不是只算走路）。
                   {partial ? ' ⚠️ 截至现在，今天还没过完。' : ''}
                 </Text>

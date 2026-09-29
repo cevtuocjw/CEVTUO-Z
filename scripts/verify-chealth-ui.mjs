@@ -443,17 +443,56 @@ check('环旁边有三行读数', rings.rows.length === 3, `${rings.rows.length}
  *      ⇒ 写死一个总数，测的是**那一天的数据碰巧长什么样**，不是页面行为。
  *        断言该钉住的是「这一项没采集时必须写未采集」，而不是「一共几项没采集」。
  */
+/**
+ * ⚠️⚠️ 这条断言**改过一次，而且是被自己打红的** —— 值得记下来。
+ *
+ *    第一版写的是「「活动时间」写「未采集」」。它在手机端还没上报时是绿的；
+ *    2026-09-29 装上带 `activeMinutes` 的版本之后，线上渲染成了「88 分钟」，
+ *    于是它**红了 —— 而那是功能正常工作的证据**。
+ *
+ *    ⇒ 断言写成了「这一项永远是空的」，测的就成了**那一天的数据状态**，
+ *      不是页面行为。数据一到位它必然红，而它红了不代表有 bug。
+ *      这正是这个项目反复吃亏的那个形状。
+ *
+ *    ⇒ 真正的规则是：**要么是真数，要么写「未采集」，绝不许是 0。**
+ *      它和手机端有没有上报无关。
+ */
 const timeRow = rings.rows.find((r) => r.label === '活动时间');
 check(
-  '「活动时间」写「未采集」，不是 0',
-  Boolean(timeRow && timeRow.none),
-  timeRow ? (timeRow.none ? '标了未采集' : `渲染成了「${timeRow.v}」`) : '找不到这一行',
+  '「活动时间」要么是真数，要么写「未采集」—— 绝不许是 0',
+  Boolean(timeRow) && (timeRow.none || parseFloat(timeRow.v) > 0),
+  timeRow ? (timeRow.none ? '未采集（手机端还没上报）' : `实测 ${timeRow.v}`) : '找不到这一行',
 );
 // ⚠️ 补一条更硬的：**任何一个环都不许把「没采集」画成 0**。
 check(
   '没有哪个环把「没采集」画成 0',
   rings.rows.every((r) => r.none || !/^0(\.0+)?$/.test(r.v.trim())),
   rings.rows.map((r) => `${r.label}=${r.none ? '未采集' : r.v}`).join(' · '),
+);
+
+/**
+ * ⚠️ 读者 2026-09-29：「消耗应该是**活动消耗**，总消耗每天要格外标记出来一下」。
+ *
+ *    环上画的必须是**活动消耗**（能控制的那一半），总消耗单独一行。
+ *    ⚠️ 这条防的是「把两者合成一个数」—— 总消耗含基础代谢（实测没活动的日子
+ *      恒为 1,662），混进环里读者会以为那是自己动出来的。
+ */
+const kcal = await page.evaluate(() => {
+  const rows = [...document.querySelectorAll('.chc__rings-row')].map((r) => ({
+    label: (r.querySelector('.chc__rings-l') || {}).textContent || '',
+  }));
+  const tm = document.querySelector('.chc__totalmark');
+  return {
+    labels: rows.map((r) => r.label),
+    hasTotal: Boolean(tm),
+    totalText: tm ? tm.textContent.trim() : '',
+  };
+});
+check('环上是「活动消耗」，不是总消耗', kcal.labels.includes('活动消耗'), kcal.labels.join('/'));
+check(
+  '总消耗单独一行标出来（含基础代谢）',
+  kcal.hasTotal && /总消耗/.test(kcal.totalText) && /基础代谢/.test(kcal.totalText),
+  kcal.totalText || '(没有这一行)',
 );
 
 // ── 三星那套卡片 ──────────────────────────────────────────────

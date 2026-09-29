@@ -26,7 +26,10 @@ const line = readFileSync('services/ingest/.env.server-backup', 'utf8')
 if (!line) throw new Error('services/ingest/.env.server-backup 里没有 ' + KEY);
 const pass = line.slice(KEY.length).trim();
 
-const idx = JSON.parse(openSealed(readFileSync('data/chealth/index.json', 'utf8'), pass)) as {
+// ⚠️ 路径可以传参 —— 这样才能拿它去问**线上**那一份（`raw.githubusercontent.com`
+//    没有 CDN 缓存，`z.cevtuogrnd.com` 有，最多差 10 分钟）。
+const FILE = process.argv[2] ?? 'data/chealth/index.json';
+const idx = JSON.parse(openSealed(readFileSync(FILE, 'utf8'), pass)) as {
   from: string;
   to: string;
   dayCount: number;
@@ -85,7 +88,9 @@ for (const k of SERIES) {
 //    要对上这个问题，只有把**每一天**摊开看：哪几天没有步数、
 //    `stepSources` 说那天是谁写的、`origins` 说各来源一共写了多少条。
 console.log('\n── 逐日');
-console.log('   日期          步数      来源(谁写的:条数)                睡眠s   总消耗  活动');
+console.log('   日期          步数      来源(谁写的:条数)                睡眠s   总消耗  活动  活动分');
+// ⚠️ 最后一列「活动分」= `activeMinutes`。**要盯住它别是 1440** ——
+//    那个数意味着 Google Fit 的整天聚合记录被并进来了（见 SyncWorker 里的注释）。
 for (const d of days) {
   const src = d.stepSources
     ? Object.entries(d.stepSources as Record<string, number>)
@@ -94,7 +99,7 @@ for (const d of days) {
     : '—';
   const pad = (v: unknown, n: number) => String(v ?? '—').padStart(n);
   console.log(
-    `   ${d.date}  ${pad(d.steps, 7)}  ${src.padEnd(32)} ${pad(d.sleepSeconds, 7)} ${pad(d.calories, 7)} ${pad(d.activeCalories, 6)}`,
+    `   ${d.date}  ${pad(d.steps, 7)}  ${src.padEnd(32)} ${pad(d.sleepSeconds, 7)} ${pad(d.calories, 7)} ${pad(d.activeCalories, 6)} ${pad(d.activeMinutes, 6)}`,
   );
 }
 

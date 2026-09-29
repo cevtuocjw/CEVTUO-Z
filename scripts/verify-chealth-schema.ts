@@ -148,7 +148,11 @@ if (!parsed.success) {
 }
 
 const day = parsed.data.days[0] as unknown as Record<string, unknown>;
-const sess = parsed.data.sessions[0] as unknown as Record<string, unknown>;
+// ⚠️ `sessions` 在 schema 里是 `.optional()`（手机端读失败时**不发这个键**，
+//    而不是发空数组 —— 空数组的含义是「窗口内真的没有」，见 SyncWorker 的注释）。
+//    不写 `?.` 的话这里会红，而**webpack 照样构建成功** —— 又一例
+//    「构建全绿、typecheck 红」。
+const sess = (parsed.data.sessions?.[0] ?? {}) as Record<string, unknown>;
 
 const lostDay = DAY_KEYS.filter((k) => !(k in day));
 check(
