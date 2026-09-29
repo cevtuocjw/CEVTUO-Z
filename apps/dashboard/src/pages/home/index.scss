@@ -95,9 +95,22 @@
     align-items: stretch;
   }
 
-  .home-chealth__rings {
-    flex: 1 1 auto;
-    min-width: 0;
+  /**
+   * ⚠️⚠️ `.chc__card` 自带 `margin-top: 11px`（ChealthCharts.scss:902）。横排时
+   *    它把环那张卡**往下推 11px**，于是它比右边的睡眠砖矮 11px ——
+   *    实测 182 vs 193，差值正好就是这个 margin。
+   *    读者原话：「最近一晚和步数三环没有一样高」。
+   *
+   *    ⚠️ 写成两层 `.home-chealth .home-chealth__rings`（特异性 0,2,0）**不是**
+   *      为了好看：`.chc__card` 和 `.home-chealth__rings` 都是 0,1,0，
+   *      谁赢取决于**两个 scss 文件谁先被 import** —— 那是构建顺序，
+   *      不是我能一眼看出来的东西。第一版就是这么写的，改完**量出来一模一样**
+   *      （还是 182 vs 193），因为 CSS 根本没变。
+   *    ⚠️ 同一种坑在这一页已经踩过两次（.home-paperr 的媒体查询顺序）。
+   *      只要两条规则特异性相同，就别赌顺序 —— **抬高一层**。
+   */
+  .home-chealth .home-chealth__rings {
+    margin-top: 0;
   }
 
   .home-chealth__rings .chc__rings {
