@@ -1241,10 +1241,47 @@ $chart-h: 74px;
   padding: 2px 0 4px;
 }
 
+// ⚠️ 两个仪表盘并排（步数达标率 / 睡眠达标率）—— 三星首页也是几个「得分」
+//    并排放。⚠️ 并排之后每个都要能**缩**：两个 132px + 间距在窄屏上放不下，
+//    `flex: 1; min-width: 0` + SVG 的 viewBox 让它们自己缩，不会溢出。
+//    ⚠️ 写死宽度就会溢出，而溢出只是叠在别的元素上 —— 看不出来。
+.chc__gauges {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.chc__gaugebox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.chc__gaugebox .chc__gauge {
+  width: 100%;
+  max-width: 128px;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.chc__gaugecap {
+  font-size: 11.5px;
+  line-height: 1.2;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .chc__gauge {
   position: relative;
   width: 132px;
   height: 132px;
+  // ⚠️ `flex: none` 只在单独用时对；并排那两个靠 `.chc__gaugebox` 给宽。
   flex: none;
 }
 

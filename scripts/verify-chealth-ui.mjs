@@ -769,6 +769,96 @@ check(
   `${cal.hitBg} vs --m-steps=${cal.track || '(空 —— 幽灵类又来了)'} 解析成 ${cal.expect}`,
 );
 
+// ── 弧形仪表盘（三星「睡眠得分」那个形状）────────────────────
+//
+// ⚠️⚠️ 这个组件第一版**一次都没被看过就上线了**，因为断言只数了
+//    `path` 的个数 —— 而**数得出个数，数不出弧画歪了**。
+//    ⇒ 下面这几条特意盯的是**几何关系**，不是元素个数：
+//      · 进度弧的 dasharray 长度必须和它自己显示的那个百分比对得上
+//      · 末端圆点必须落在弧上（离圆心 ≈ 半径），而不是飘在别处
+const gauges = await page.evaluate(() => {
+  const out = [];
+  for (const g of document.querySelectorAll('.chc__gauge')) {
+    const svg = g.querySelector('svg');
+    const paths = svg ? [...svg.querySelectorAll('path')] : [];
+    const arc = paths.find((p) => p.classList.contains('chc__gauge-arc'));
+    const dot = svg ? svg.querySelector('.chc__gauge-dot') : null;
+    const shown = (g.querySelector('.chc__gauge-v') || {}).textContent || '';
+    const d = arc ? arc.getAttribute('d') : '';
+    // 弧的圆心写死在 (60,60)、半径 46（见 GAUGE_ARC）。
+    let dotR = null;
+    if (dot) {
+      const dx = Number(dot.getAttribute('cx')) - 60;
+      const dy = Number(dot.getAttribute('cy')) - 60;
+      dotR = Math.round(Math.sqrt(dx * dx + dy * dy) * 10) / 10;
+    }
+    out.push({
+      paths: paths.length,
+      hasArc: Boolean(arc),
+      len: arc ? parseFloat(arc.style.strokeDasharray || '0') : -1,
+      shown,
+      // ⚠️ 开口朝下：`A 46 46 0 1 1` 里的 `1 1` 是「大弧 + 顺时针」。
+      //    改成 `0 1` 会画成剩下那 120°，看起来像一张嘴。
+      bigArc: /A 46 46 0 1 1/.test(d),
+      dotR,
+    });
+  }
+  return out;
+});
+
+check('达标弹窗里有仪表盘（步数 + 睡眠两个）', gauges.length === 2, `${gauges.length} 个`);
+check(
+  '每个仪表盘都有轨道 + 进度弧 + 末端圆点',
+  gauges.every((g) => g.paths === 2 && g.hasArc),
+  gauges.map((g) => `${g.paths} path`).join(' / '),
+);
+check(
+  '弧是 240° 大弧（不是画成 120° 的「一张嘴」）',
+  gauges.every((g) => g.bigArc),
+  gauges.map((g) => (g.bigArc ? '✓' : '✗')).join(' '),
+);
+// ⚠️ 关系断言：弧长必须和**它自己显示的那个数**对得上。
+//    写死一个期望值就变成了「测这个数没被改过」—— 而数字每天在变。
+check(
+  '进度弧的长度和显示出来的百分比一致',
+  gauges.every((g) => Math.abs(g.len - parseFloat(g.shown)) < 1.5),
+  gauges.map((g) => `${g.shown} vs dash ${g.len}`).join(' · '),
+);
+check(
+  '末端圆点落在弧上（离圆心 ≈ 半径 46）',
+  gauges.every((g) => g.dotR !== null && Math.abs(g.dotR - 46) < 1),
+  gauges.map((g) => `r=${g.dotR}`).join(' / '),
+);
+
+// ── 关闭按钮是**叉**，不是向下的 V ────────────────────────────
+//
+// ⚠️ 读者 2026-09-29：「那个正方形的关闭按钮画的有问题」。
+//    原来画的是 `chev`（向下的宽浅 V），16px 上糊成圆角方块，
+//    而且 V 的意思是「展开/收起」，不是关闭。
+//    ⚠️ 这条盯的是**回归**：有人把图标换回 chev、或者把 aspect-ratio 删了。
+const closeBtn = await page.evaluate(() => {
+  const b = document.querySelector('.sheet__close');
+  if (!b) return null;
+  const p = b.querySelector('svg path');
+  const r = b.getBoundingClientRect();
+  return {
+    d: p ? p.getAttribute('d') || '' : '',
+    w: Math.round(r.width),
+    h: Math.round(r.height),
+    radius: getComputedStyle(b).borderRadius,
+  };
+});
+check(
+  '关闭按钮画的是叉（不是向下的 V）',
+  Boolean(closeBtn) && closeBtn.d.startsWith('M6.5 6.5') && !closeBtn.d.includes('12 15.5'),
+  closeBtn ? `path=${closeBtn.d.slice(0, 28)}` : '找不到按钮',
+);
+check(
+  '关闭按钮是圆的（不靠两个数恰好相等）',
+  Boolean(closeBtn) && Math.abs(closeBtn.w - closeBtn.h) <= 1 && closeBtn.radius.includes('50%'),
+  closeBtn ? `${closeBtn.w}×${closeBtn.h} radius=${closeBtn.radius}` : '—',
+);
+
 await page.evaluate(() => {
   const el = document.querySelector('.sheet');
   if (el) el.click();

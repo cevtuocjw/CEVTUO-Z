@@ -71,6 +71,14 @@ const ACTIVE_KCAL_GOAL = 400;
 const ACTIVE_MIN_GOAL = 90;
 
 /**
+ * 睡眠的每晚目标（小时）。
+ *
+ * ⚠️ 7 小时是通行的成年人下限，取它是因为它**可以被质疑**（不像一个
+ *    「睡眠得分」那样只能接受）。读者想改就改这一个数。
+ */
+const SLEEP_GOAL_H = 7;
+
+/**
  * 小时 → 「7h32m」。
  *
  * ⚠️ 三星健康展示睡眠用的是**时长**，不是「7.53 小时」。后者读者要在脑子里
@@ -475,6 +483,25 @@ export default function Chealth() {
     () => days.filter((d) => typeof d.steps !== 'number').map((d) => d.date.slice(5)),
     [days],
   );
+
+  /**
+   * 睡眠达标率 —— **有记录的晚**里，睡够 `SLEEP_GOAL_H` 的比例。
+   *
+   * ⚠️⚠️ 三星的「睡眠得分」是它自己的专有算法（掺了睡眠阶段、翻身、血氧、
+   *    呼吸…），我们**没有、也不编**。这里用它的**形状**画一件我们量得到的
+   *    事：「最近这些晚里，有几晚睡够了」。
+   *
+   * ⚠️ 分母是**有睡眠记录的那些晚**，不是「最近 30 晚」——
+   *    没同步的那几晚我们不知道他睡了多久，不能算成没睡够。
+   *    （和 `monthStats` 同一个规矩。）
+   */
+  const sleepStats = useMemo(() => {
+    const withData = days.filter((d) => typeof d.sleepSeconds === 'number' && d.sleepSeconds > 0);
+    return {
+      tracked: withData.length,
+      hit: withData.filter((d) => (d.sleepSeconds as number) >= SLEEP_GOAL_H * 3600).length,
+    };
+  }, [days]);
 
   /**
    * 本月的达标情况 —— 读者给的三星截图里那张「目标已实现 27/29 天」。
@@ -1426,13 +1453,33 @@ export default function Chealth() {
                     「这个月有记录的那些天里，达标了多少天」。
                     长得像三星，说的是真话。
               */}
-              <View className="chc__gaugewrap">
-                <Gauge
-                  pct={monthStats.tracked > 0 ? monthStats.hit / monthStats.tracked : 0}
-                  value={`${monthStats.tracked > 0 ? Math.round((monthStats.hit / monthStats.tracked) * 100) : 0}%`}
-                  label="本月达标率"
-                  color="var(--m-steps)"
-                />
+              {/*
+                ⚠️ 两个仪表盘并排 —— 三星首页也是几个「得分」并排放的。
+                步数用步数色、睡眠用睡眠色，两种比例各自有分母。
+                ⚠️ 每个下面的小字写清**分母是什么** —— 没有它，「83%」是一个
+                  没有依据的数；有了它，读者能自己判断这个比例算得对不对。
+              */}
+              <View className="chc__gauges">
+                <View className="chc__gaugebox">
+                  <Gauge
+                    pct={monthStats.tracked > 0 ? monthStats.hit / monthStats.tracked : 0}
+                    value={`${monthStats.tracked > 0 ? Math.round((monthStats.hit / monthStats.tracked) * 100) : 0}%`}
+                    label="步数达标率"
+                    color="var(--m-steps)"
+                  />
+                  <Text className="chc__gaugecap">{monthStats.hit}/{monthStats.tracked} 天</Text>
+                </View>
+                <View className="chc__gaugebox">
+                  <Gauge
+                    pct={sleepStats.tracked > 0 ? sleepStats.hit / sleepStats.tracked : 0}
+                    value={`${sleepStats.tracked > 0 ? Math.round((sleepStats.hit / sleepStats.tracked) * 100) : 0}%`}
+                    label="睡眠达标率"
+                    color="var(--m-sleep)"
+                  />
+                  <Text className="chc__gaugecap">
+                    {sleepStats.hit}/{sleepStats.tracked} 晚 ≥ {SLEEP_GOAL_H}h
+                  </Text>
+                </View>
               </View>
               {/*
                 ⚠️⚠️ 这里第一版写的是 `分母是**这个月有记录的天数**` ——
