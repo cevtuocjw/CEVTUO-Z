@@ -308,7 +308,7 @@ const anon = await browser.newContext({
   hasTouch: true,
 });
 const anonPage = await anon.newPage();
-await anonPage.goto(`${BASE}/#/pages/chealth/index`, { waitUntil: 'networkidle' });
+await anonPage.goto(`${BASE}/#/pages/chealth/index?k=__definitely_wrong__`, { waitUntil: 'networkidle' });
 await anonPage.waitForTimeout(2500);
 const lock = await anonPage.evaluate(() => {
   const shell = document.querySelector('.chc__unlock-input');
