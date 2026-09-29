@@ -22,6 +22,9 @@ import { Wallpaper } from '../../components/Wallpaper';
 import {
   fetchChealthHeartbeat,
   fetchChealthIndex,
+  // ⚠️ 三屏的「数据更新 …」用它 —— 和主页那一格**同一个格式化器**。
+  //    自己 `slice(5).replace('T',' ')` 会多带一个 `+08:00`（见下面 freshness 那段）。
+  formatUpdatedAt,
   type ChealthDay,
   type ChealthSession,
   type ChealthHeartbeat,
@@ -231,9 +234,13 @@ export default function Chealth() {
    *    「更新过一次，但值是空的」，而实际是「我们根本没拿到这份索引」。
    *    （同样的话主页那边也是这么处理的。）
    */
-  const freshness = index?.updatedAt
-    ? `数据更新 ${index.updatedAt.slice(5).replace('T', ' ')}`
-    : null;
+  // ⚠️ 走 `formatUpdatedAt`，**不要自己 `slice(5).replace('T',' ')`** ——
+  //    第一版就是那么写的，页面上显示成「09-29 15:17+08:00」：
+  //    那个 `+08:00` 是给机器看的，读者要的是「几点更新的」。
+  //    ⚠️ 而且主页同一格用的是 `formatUpdatedAt` —— 同一个字段两种显示，
+  //      迟早会一处改了另一处没改（这个项目已经吃过两次）。
+  const stamp = formatUpdatedAt(index?.updatedAt);
+  const freshness = stamp ? `数据更新 ${stamp}` : null;
 
   /**
    * ⚠️ The last 14 days, ending on the data's own last day — not on the
