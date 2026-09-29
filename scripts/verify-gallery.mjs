@@ -99,7 +99,11 @@ function readVars(page) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+// ⚠️ 视口可以换（`VW=390 bun scripts/verify-gallery.mjs`）——
+//    画框在窄屏有一档完全不同的尺寸和让位量，**只在 1440 下全绿说明不了窄屏**。
+const VW = Number(process.env.VW || 1440);
+const VH = Number(process.env.VH || 900);
+const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
 const page = await ctx.newPage();
 
 try {
@@ -144,6 +148,42 @@ try {
       `cls="${info.cls}"`
     );
     check(`H ${key} 画框里的图不可拖动`, info.draggable === false, `draggable=${info.draggable}`);
+
+    /**
+     * ── J：画框不能压在正文上 ──────────────────────────────
+     *
+     * ⚠️ 这条是**看了图**才想到要加的：CHEALTH 内页截图上，左侧那枚画框
+     *    正好盖住「13,268 步」那张卡片的左半截。
+     *    而 A/B/C/D 全绿 —— 「画框在不在、在哪一侧、图加载没有」都不管它压没压住东西。
+     *
+     * ⚠️ 判据用 `elementsFromPoint`（在画框内取 3×3 个点，看**底下还有什么**），
+     *    不比对固定选择器 —— 正文的类名每页都不一样，写选择器就等于每加一个
+     *    组件都要回来补一次，而漏补的那次**看起来和通过一模一样**。
+     *    这里只认「节点自己有非空文字」，所以壁纸、容器、装饰都不会误报。
+     */
+    const clash = await page.evaluate((want) => {
+      const frames = [...document.querySelectorAll('.gal')];
+      const el = frames.find((f) => {
+        const i = f.querySelector('.gal__photo');
+        return i && (i.getAttribute('src') || '').includes(want);
+      });
+      if (!el) return ['(找不到画框)'];
+      const r = el.getBoundingClientRect();
+      const bad = new Set();
+      for (let i = 1; i <= 3; i++) {
+        for (let j = 1; j <= 3; j++) {
+          const x = r.left + (r.width * i) / 4;
+          const y = r.top + (r.height * j) / 4;
+          for (const n of document.elementsFromPoint(x, y)) {
+            if (n.closest('.gal') || n.closest('.cevtuo-wallpaper')) continue;
+            const own = [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim());
+            if (own) bad.add(`${n.tagName.toLowerCase()}.${String(n.className || '').split(' ')[0]}`);
+          }
+        }
+      }
+      return [...bad];
+    }, `/gallery/${file}.jpg`);
+    check(`J ${key} 画框没有压在正文上`, clash.length === 0, clash.slice(0, 4).join(', '));
   }
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
@@ -212,7 +252,7 @@ try {
 
   // ── I：reduced-motion ───────────────────────────────────────
   const rmCtx = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
+    viewport: { width: VW, height: VH },
     reducedMotion: 'reduce',
   });
   const rm = await rmCtx.newPage();
