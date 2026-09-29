@@ -3,7 +3,7 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-28T10:54+08:00",
+ "updatedAt": "2026-09-30T03:48+08:00",
  "counts": {
   "days": 5,
   "lines": 31,
@@ -138,21 +138,25 @@
    "lines": [
     {
      "k": "bookmark",
-     "t": "mistral makes sovereign open weight ai to frontier",
+     "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
      "links": [
       {
-       "t": "mistral makes sovereign open weight ai to frontier",
-       "href": "https://mistral.ai/news/mistral-makes-sovereign-open-weight-ai-to-frontier/"
+       "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "href": "https://mistral.ai/news/mistral-makes-sovereign-open-weight-ai-to-frontier/",
+       "title": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "desc": "Mistral today announced that it has raised €3 billion in a Series D funding round at a post-money valuation of more than €21 billion."
       }
      ]
     },
     {
      "k": "bookmark",
-     "t": "uae ai model tops 50 million monthly",
+     "t": "UAE AI model tops 50 million monthly downloads",
      "links": [
       {
-       "t": "uae ai model tops 50 million monthly",
-       "href": "https://www.middleeastainews.com/p/uae-ai-model-tops-50-million-monthly"
+       "t": "UAE AI model tops 50 million monthly downloads",
+       "href": "https://www.middleeastainews.com/p/uae-ai-model-tops-50-million-monthly",
+       "title": "UAE AI model tops 50 million monthly downloads",
+       "desc": "Falcons AI&#x27;s NSFW classifier ranks among top global open-source models"
       }
      ]
     }
@@ -210,21 +214,25 @@
     },
     {
      "k": "bookmark",
-     "t": "google ai mode prefers more expensive products",
+     "t": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
      "links": [
       {
-       "t": "google ai mode prefers more expensive products",
-       "href": "https://productrise.app/blog/google-ai-mode-prefers-more-expensive-products"
+       "t": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
+       "href": "https://productrise.app/blog/google-ai-mode-prefers-more-expensive-products",
+       "title": "Google AI Mode shows the same products 21.6% more expensive than traditional search [Data Study] | Productrise",
+       "desc": "A US and UK data study: when the same product ranks in both Google AI Mode and traditional search, the AI Mode price is about 21.6% higher."
       }
      ]
     },
     {
      "k": "paragraph",
-     "t": "bob.ibm.com",
+     "t": "IBM Bob",
      "links": [
       {
-       "t": "bob.ibm.com",
-       "href": "https://bob.ibm.com/"
+       "t": "IBM Bob",
+       "href": "https://bob.ibm.com/",
+       "title": "IBM Bob",
+       "desc": "AI SDLC (Software Development Lifecycle) partner."
       }
      ]
     },
@@ -281,11 +289,13 @@
     },
     {
      "k": "bookmark",
-     "t": "muse spark",
+     "t": "Meta Model API",
      "links": [
       {
-       "t": "muse spark",
-       "href": "https://developer.meta.com/ai/models/muse-spark/"
+       "t": "Meta Model API",
+       "href": "https://developer.meta.com/ai/models/muse-spark/",
+       "title": "Meta Model API",
+       "desc": "Meta Model API Developer Portal"
       }
      ]
     },
