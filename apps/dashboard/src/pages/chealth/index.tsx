@@ -1208,12 +1208,6 @@ export default function Chealth() {
 
                     改成嵌套 `<Text>`：强调还在，而且不再依赖一个**永远不会发生**
                     的解析。⚠️ 别在 JSX 里写 Markdown。 */}
-                <Text className="chc__note">
-                  基准最高心率 {refMaxHr} —— 取的是
-                  <Text className="chc__em">最近 30 天实测到的最高值</Text>
-                  ，不是 220−年龄。代价是它偏低（没尽全力就到不了真最大值），
-                  所以这个划分整体偏严。
-                </Text>
               </View>
             ) : null}
 
@@ -1232,10 +1226,6 @@ export default function Chealth() {
                 <View className="chc__cell"><Text>体重</Text><Text className="chc__cell-v">{t?.weightKgLatest ?? '—'} kg</Text></View>
                 <View className="chc__cell"><Text>距离</Text><Text className="chc__cell-v">{t ? `${t.distance7dKm} km` : '—'}</Text></View>
               </View>
-              <Text className="chc__note">
-                ⚠️ HRV、呼吸率、皮温、体重在最近 30 天里一条记录都没有 —— 是三星健康不往 Health Connect 写，
-                不是这里读漏了。显示成 0 会让它看起来像「测出来是零」。
-              </Text>
             </View>
           </Sheet>
 
@@ -1389,16 +1379,6 @@ export default function Chealth() {
                       </View>
                     ) : null}
                   </View>
-                  <Text className="chc__note">
-                    箭头按
-                    <Text className="chc__em">「这个指标是变好还是变坏」</Text>
-                    画，不是按数值变大。⚠️「—」是
-                    <Text className="chc__em">上周没有可比数据</Text>
-                    ，不是上周为零 —— 两者用一个百分比表示会得到一个看起来很确定、
-                    实际没有依据的数。静息心率是
-                    <Text className="chc__em">越低越好</Text>
-                    ，箭头按那个方向画。
-                  </Text>
                 </>
               ) : (
                 <Text className="chc__note">还没有足够两周的数据可以对比。</Text>
@@ -1445,23 +1425,10 @@ export default function Chealth() {
                       <View className="chc__cell"><Text>最佳 20 分钟</Text><Text className="chc__cell-v">{p.best20} W</Text></View>
                     ) : null}
                   </View>
-                  <Text className="chc__note">
-                    ⚠️ NP 是给「间歇骑比匀速骑累得多」这件事用的：30 秒滚动平均后取四次方平均再开四次方。
-                    <Text className="chc__em">但我们没有 30 秒数据</Text>
-                    —— 手机端发来的已经是逐分钟聚合过的，所以这个 NP
-                    <Text className="chc__em">偏低</Text>
-                    。
-                    ⚠️ 不算 IF / TSS：那两个都要 FTP，而 FTP 得专门测。拿「最佳 20 分钟 × 0.95」估一个再算 TSS，
-                    会得到一个看起来很专业、其实是我们编的数字。
-                  </Text>
                 </View>
               ))
             ) : (
               <View className="card chc__card">
-                <Text className="chc__note">
-                  最近 30 天没有带功率的场次。功率来自骑行台 / 码表那一路 ——
-                  三星根本记不了功率和踏频，所以这两项只有骑行台那次才有。
-                </Text>
               </View>
             )}
           </Sheet>
@@ -1586,10 +1553,6 @@ export default function Chealth() {
                   （固定 1,662 千卡），连一条步数记录都没有，睡眠和活动消耗也是空的。
                   实测三星健康的过桥（Health Sync）到 9 月 8 日才开始写。
                 </Text>
-                <Text className="chc__note">
-                  ⇒ 在 Health Sync 里用「对特定日期重新同步」把那几天捞一次，
-                  这里就会自己填上。
-                </Text>
               </View>
             ) : null}
 
@@ -1597,12 +1560,6 @@ export default function Chealth() {
               <Text className="chc__card-t">
                 <Icon name="steps" className="chc__ico" />
                 连续 {streak} 天
-              </Text>
-              <Text className="chc__note">
-                ⚠️ 从最新一天往回数，
-                <Text className="chc__em">缺数据的日子算断</Text>
-                ，不算跳过 —— 那天可能确实没走，也可能手机没同步，
-                我们不知道，所以不替它猜。
               </Text>
             </View>
           </Sheet>
@@ -1630,7 +1587,6 @@ export default function Chealth() {
                     );
                   })}
                 </View>
-                <Text className="chc__note">条的长度是这个类型的时长占比，右边是次数。</Text>
               </View>
             ) : (
               <View className="card chc__card">

@@ -51,6 +51,31 @@
   to { transform: translateY(0); }
 }
 
+/**
+ * ⚠️⚠️ 宽屏：弹窗的**面板**要收住。
+ *
+ *    读者 2026-09-29：「单个运动点进去那些曲线，完全被拉长在宽屏下不好看」。
+ *
+ *    成因：`.sheet__panel` 铺满整个视口宽（1440 上就是 1440px），而曲线用的是
+ *    `preserveAspectRatio="none"` —— 它**按容器拉伸**。于是 300×56 的曲线被
+ *    横向拉到 1400px：振幅不变、波长变成五倍，看起来像一条平线。
+ *
+ *    ⚠️ 所以收的是**面板**，不是曲线自己：曲线全宽在手机上是对的，
+ *      让它自己去猜「多宽算宽」就等于把版面的事塞进组件的 props。
+ *      面板收住了，里面的图、表、卡片一起跟着收 ✓。
+ *
+ *    ⚠️ 断点 900px（不是 home 那边的 1000px）：弹窗是**浮层**，
+ *      它什么时候开始显得空，取决于它自己的内容，而不是页面的栅格。
+ */
+@media (min-width: 900px) {
+  .sheet__panel {
+    max-width: 720px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 .sheet__head {
   display: flex;
   align-items: center;

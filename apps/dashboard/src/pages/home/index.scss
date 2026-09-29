@@ -71,6 +71,52 @@
   }
 }
 
+/**
+ * ⚠️⚠️ 宽屏：这两格都从**竖排**改成**横排**。
+ *
+ *    读者 2026-09-29：
+ *      ·「主页上的 CHEALTH 那里，依旧在宽屏下要调整，这两个分成横向两列，
+ *         而不是现在纵向这样，很难看，窄屏没有关系」
+ *      ·「主页上的 CAPPERR 那里也是，如果在宽屏下就分成左右排布这两个表格，
+ *         而不是现在这样上下排布拉的很长」
+ *
+ *    ⚠️ 窄屏**不动**：260px 宽的面板里，环的读数和睡眠砖横排根本放不下
+ *      （92 + 14 + 135 > 228，实测读数列会被压成 39px）。所以这不是
+ *      「统一改成横排」，而是「宽屏**换一种**排法」—— 两个断点本来就该不一样。
+ *
+ *    ⚠️⚠️ `.home-chealth__rings .chc__rings` 这条**必须写在 @media 里**：
+ *      窄屏那条 `flex-direction: column` 是两层的选择器（0,2,0），
+ *      而 ChealthCharts.scss 里宽屏那条 `.chc__rings` 只有一层（0,1,0）——
+ *      不写这条的话，宽屏下环仍然是竖排（特异性赢了），而**看起来像没生效**。
+ */
+@media (min-width: 1000px) {
+  .home-chealth {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .home-chealth__rings {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .home-chealth__rings .chc__rings {
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+
+  // 睡眠砖横排时给一个固定宽度：它是这一行的次要那一块，
+  // 跟着环一起伸缩会读成两块同等重要。
+  .home-chealth__sleep {
+    flex: 0 0 200px;
+  }
+
+  // ⚠️ CAPPERR 那半条**不在这里** —— 它必须写在 `.home-paperr` 基础规则
+  //    **之后**，否则会被那条 `flex-direction: column` 盖掉（媒体查询不加
+  //    特异性，同特异性看源码顺序）。见文件末尾那段。
+}
+
 .home-paperr {
   display: flex;
   flex-direction: column;
@@ -79,4 +125,37 @@
   // refuses to go below its content, and two charts push the panel past the
   // viewport on a phone.
   min-height: 0;
+}
+
+/**
+ * ⚠️⚠️ CAPPERR：宽屏下本周柱状图与本月日历**左右排布**。
+ *
+ *    读者 2026-09-29：「如果在宽屏下就分成左右排布这两个表格，
+ *    而不是现在这样上下排布拉的很长」。
+ *
+ *    ⚠️⚠️ **这一段的位置是被咬过的**：媒体查询**不加特异性**，同特异性的
+ *      两条规则由**源码顺序**决定。我第一版把它写在 `.home-paperr` 基础规则
+ *      **之前**，于是后面那条 `flex-direction: column` 赢了 —— 界面上就是
+ *      「改了没生效」，而**没有任何报错**。
+ *      （同一份代码里 CHEALTH 那半当时恰好基础规则在前，所以它生效了 ——
+ *       一半生效一半不生效，正是这种错最难看出来。）
+ *    ⇒ 规矩：**覆盖同一选择器的 @media 必须写在基础规则之后。**
+ */
+@media (min-width: 1000px) {
+  .home-paperr {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .home-paperr > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  // ⚠️ `pc-gap` 是给**竖排**用的间距元素；横排之后它变成「第三列」，
+  //    会把两个图表各挤掉三分之一。必须藏掉。
+  .home-paperr > .pc-gap {
+    display: none;
+  }
 }
