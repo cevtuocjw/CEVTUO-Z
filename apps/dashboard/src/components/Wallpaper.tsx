@@ -34,7 +34,13 @@ export function Wallpaper() {
 
   return (
     <>
-      <View className="cevtuo-wallpaper" ref={ref as never} />
+      <View className="cevtuo-wallpaper" ref={ref as never}>
+        {/* ⚠️ 玻璃流动层 —— 是**子元素**不是背景的一部分，因为它要动，
+            而背景是 JS 一次写完就不动的（见 platform/background.ts）。
+            为什么要它、为什么不能靠调淡白色遮罩解决，见
+            styles/wallpaper.scss 里那段注释。 */}
+        <View className="cevtuo-glass" />
+      </View>
       <GalleryFrame />
     </>
   );

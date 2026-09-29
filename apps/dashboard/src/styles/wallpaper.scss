@@ -69,15 +69,104 @@
 // A warm paper wash. Light mode puts near-black type on glass, and these photos
 // bottom out dark enough to swallow it.
 //
-// ⚠️ The first stop must stay high (>0.85). At the 0.62 this started at, a dark
-// photo with near-black text on top was unreadable.
+// ⚠️ These values were 0.90 / 0.93 / 0.97, and that was WRONG in a way nothing
+// caught: at 90%+ the photo contributes 3–10% of the final pixel, so the layer
+// rendered as flat cream. It did not look like a dimmed photo — it looked like
+// the background had failed to load. The reader put it exactly right
+// (2026-09-29): 「背景的白色模糊太白」.
+//
+// The old comment here argued the first stop "must stay high (>0.85)" because
+// near-black type sits on these photos. That reasoning is still true — what was
+// wrong was the conclusion. Covering the photo harder is not the only way to
+// keep type legible; the other way is to stop covering it FLATLY and let the
+// glass layer carry the contrast (see `.cevtuo-glass` at the bottom of this
+// file). Frosted glass and blotting paper differ precisely here: paper hides
+// what is under it, glass keeps it there but takes away its edges.
+//
+// ⚠️ Must stay in step with `LIGHT_SCRIM` in platform/background.ts — that is
+// the copy that actually paints once the page mounts; this one is the
+// pre-hydration fallback. Two copies of one number is exactly the shape that
+// has bitten this project repeatedly, so: change both or neither.
 @mixin wallpaper-light {
   background-image:
     linear-gradient(
       to bottom,
-      rgba(246, 243, 240, 0.90) 0%,
-      rgba(242, 240, 238, 0.93) 46%,
-      rgba(238, 237, 236, 0.97) 100%
+      rgba(246, 243, 240, 0.58) 0%,
+      rgba(242, 240, 238, 0.46) 46%,
+      rgba(236, 235, 234, 0.70) 100%
     ),
     var(--page-photo);
+}
+
+// ── The glass layer ───────────────────────────────────────────
+//
+// ⚠️ Why this exists at all (reader, 2026-09-29: 「背景的白色模糊太白，
+//    可以改为玻璃质感而且有流动感」).
+//
+// The scrim above is a FLAT wash. Lowering its alpha alone would have traded
+// one failure for another — type contrast for photo presence. So the wash comes
+// down AND this goes on top: large, softly-blurred light blooms that drift
+// slowly, `soft-light`-blended so they modulate the photo instead of veiling
+// it. The photo stays present but loses its edges — which is what glass does
+// and what a white rectangle does not.
+//
+// ⚠️ It is a CHILD of `.cevtuo-wallpaper`, not part of its `background-image`:
+// the background is written once by JS and then never touched (see
+// platform/background.ts), and this has to MOVE.
+//
+// ⚠️ `mix-blend-mode` blends against the parent's own background and cannot
+// leak onto the page: `.cevtuo-wallpaper` is `position: fixed; z-index: -1`,
+// which makes it a stacking context. Without that it would blend with the
+// document behind it and tint the panels.
+.cevtuo-glass {
+  position: absolute;
+  // ⚠️ Larger than the parent, or the drifting blooms show a hard edge as they
+  // reach the boundary.
+  inset: -30%;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 32% at 22% 28%, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0) 68%),
+    radial-gradient(34% 40% at 78% 62%, rgba(196, 224, 255, 0.44) 0%, rgba(196, 224, 255, 0) 70%),
+    radial-gradient(42% 34% at 58% 12%, rgba(255, 238, 214, 0.34) 0%, rgba(255, 238, 214, 0) 66%),
+    radial-gradient(30% 30% at 40% 88%, rgba(226, 214, 255, 0.30) 0%, rgba(226, 214, 255, 0) 70%);
+  filter: blur(30px) saturate(1.08);
+  mix-blend-mode: soft-light;
+  // ⚠️ Animates `transform` ONLY. Animating `background-position` would
+  // re-rasterise a very large blur every frame and drop the frame rate on a
+  // phone — and a stuttering drift is worse than no drift.
+  animation: cevtuo-glass-drift 38s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes cevtuo-glass-drift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1.06) rotate(0.4deg);
+  }
+  50% {
+    transform: translate3d(2%, 3%, 0) scale(1.12) rotate(-0.6deg);
+  }
+  100% {
+    transform: translate3d(4%, -3%, 0) scale(1.08) rotate(0.3deg);
+  }
+}
+
+// ⚠️ Dark theme gets the DRIFT but not the brightness. Its contrast comes from
+// the vignette above (0.34 → 0.52); adding white here would grey the photo out,
+// which is the very complaint this layer was added to fix on the light side.
+html.theme-dark .cevtuo-glass {
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.theme-dark):not(.theme-light) .cevtuo-glass {
+    opacity: 0.5;
+  }
+}
+
+// ⚠️ Reduced motion stops the DRIFT, not the glass. What has to go is the
+// movement; the surface itself is content, not decoration.
+@media (prefers-reduced-motion: reduce) {
+  .cevtuo-glass {
+    animation: none;
+  }
 }

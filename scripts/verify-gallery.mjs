@@ -22,6 +22,9 @@
  *   G. 按下 ⇒ `gal--press`（框收 0.975），松手 ⇒ 没有
  *   H. 框内那个 `<img>` 不能被拖走（`draggable` 关掉）
  *   I. reduced-motion 下**状态照样变、只是不走过去**（过渡时长 0）
+ *   J. 画框不压在正文上（`elementsFromPoint` 看底下还有什么）
+ *   K. 至少一半露在屏幕内（窄屏允许被裁，但不能只剩一条边）
+ *   M. 正文在屏幕内且有宽度（让位让过头同样是坏的）
  *
  * ⚠️ 负向对照（改坏了应该 FAIL）：
  *   · 把 `pointermove` 监听删掉 ⇒ E 失败
@@ -184,6 +187,53 @@ try {
       return [...bad];
     }, `/gallery/${file}.jpg`);
     check(`J ${key} 画框没有压在正文上`, clash.length === 0, clash.slice(0, 4).join(', '));
+
+    /**
+     * ── K：至少一半露在屏幕里 ────────────────────────────────
+     *
+     * ⚠️ 读者 2026-09-29 允许窄屏上画框被屏幕边裁掉一部分，但要求
+     *    **露出来的面积大于整张的一半**。把这条「允许」写成一个可判定的数 ——
+     *    否则「裁多少都行」在实现里很快就会变成「只剩一条边也算有一张」。
+     */
+    const shown = await page.evaluate((want) => {
+      const frames = [...document.querySelectorAll('.gal')];
+      const el = frames.find((f) => {
+        const i = f.querySelector('.gal__photo');
+        return i && (i.getAttribute('src') || '').includes(want);
+      });
+      if (!el) return 0;
+      const r = el.getBoundingClientRect();
+      const w = Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0));
+      const h = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      return (w * h) / (r.width * r.height);
+    }, `/gallery/${file}.jpg`);
+    check(`K ${key} 画框至少一半露在屏幕内`, shown > 0.5, `${(shown * 100).toFixed(0)}%`);
+
+    /**
+     * ── M：正文真的在屏幕上、而且有宽度 ──────────────────────
+     *
+     * ⚠️⚠️ 这条是**补一个盲区**，而它抓到的是一个真 bug：
+     *    窄屏上正文被 `padding-left: 378px` 推到 x=394，而视口只有 390 ——
+     *    **整个正文在屏幕外**，而 J/K 照样全绿：
+     *    画框确实没压住任何东西，**因为没有任何东西可压**。
+     *    截图上是「一片空白」，断言上是「全过」。
+     *
+     *    ⇒ 「让位让够了」的反面是「让过头」，同一个数两头都能坏。
+     *      而只有这条断言是盯着**正文**的，前面十二条全都盯着画框。
+     */
+    const bodyBox = await page.evaluate(() => {
+      const els = [...document.querySelectorAll('.section__body')];
+      if (!els.length) return null;
+      const r = els[0].getBoundingClientRect();
+      return { x: r.x, right: r.right, w: r.width };
+    });
+    check(
+      `M ${key} 正文在屏幕内且有宽度`,
+      !!bodyBox && bodyBox.x < VW && bodyBox.right > 0 && bodyBox.w > VW * 0.45,
+      bodyBox
+        ? `x=${Math.round(bodyBox.x)} right=${Math.round(bodyBox.right)} w=${Math.round(bodyBox.w)} vw=${VW}`
+        : '(没有 .section__body)'
+    );
   }
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
@@ -250,6 +300,35 @@ try {
   check('F 指针离开 ⇒ 高光回到中心 50%', left.mx === '50%' && left.my === '50%', `${left.mx}/${left.my}`);
   check('G 松手 ⇒ gal--press 摘掉', !(await page.evaluate(() => document.querySelector('.gal').className)).includes('gal--press'));
 
+  /**
+   * ── L：背景的玻璃层真的在「流动」 ──────────────────────────
+   *
+   * ⚠️ 读者要的是「玻璃质感而且有流动感」。**「有流动感」这句话本身没法验**，
+   *    能验的是它下面那件事：`transform` 随时间在变。
+   *    ⇒ 不写这条的话，「动画被别处的 `animation: none` 干掉」
+   *      或者「写了 keyframes 但名字对不上」都会**静默通过** ——
+   *      而这两种坏法在截图上一模一样（都是一张静止的玻璃）。
+   */
+  const glassA = await page.evaluate(
+    () => getComputedStyle(document.querySelector('.cevtuo-glass')).transform
+  );
+  await page.waitForTimeout(1800);
+  const glassB = await page.evaluate(
+    () => getComputedStyle(document.querySelector('.cevtuo-glass')).transform
+  );
+  check('L 玻璃层在流动（transform 随时间变）', glassA !== glassB, `${glassA.slice(0, 26)} → ${glassB.slice(0, 26)}`);
+  check(
+    'L 玻璃层有动画名（不是静态的）',
+    (await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).animationName)) !== 'none',
+    await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).animationName)
+  );
+  // ⚠️ 玻璃是**内容**（照片得透过来），不是装饰 —— 它必须一直在，和画框一样。
+  check(
+    'L 玻璃层的混合模式是 soft-light（调照片，不是盖白）',
+    (await page.evaluate(() => getComputedStyle(document.querySelector('.cevtuo-glass')).mixBlendMode)) === 'soft-light',
+    ''
+  );
+
   // ── I：reduced-motion ───────────────────────────────────────
   const rmCtx = await browser.newContext({
     viewport: { width: VW, height: VH },
@@ -278,6 +357,17 @@ try {
     'I reduced-motion：过渡关掉（0s），但按下状态照样变',
     rmBox.dur.startsWith('0s') && rmPress.includes('gal--press'),
     `duration=${rmBox.dur} press=${rmPress.includes('gal--press')}`
+  );
+  // ⚠️ 流动**停**、玻璃**在** —— 要关的是「动」，不是「看得见的东西」。
+  const rmGlass = await rm.evaluate(() => {
+    const el = document.querySelector('.cevtuo-glass');
+    const cs = getComputedStyle(el);
+    return { anim: cs.animationName, blend: cs.mixBlendMode };
+  });
+  check(
+    'I reduced-motion：玻璃的流动停掉，但玻璃层还在',
+    rmGlass.anim === 'none' && rmGlass.blend === 'soft-light',
+    `animation-name=${rmGlass.anim} mix-blend=${rmGlass.blend}`
   );
   await rmCtx.close();
 } finally {

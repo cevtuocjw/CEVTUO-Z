@@ -59,3 +59,26 @@ export function galleryFile(page: string): string {
 export function gallerySide(page: string): 'left' | 'right' {
   return page === 'home' ? 'right' : 'left';
 }
+
+/**
+ * ⚠️ 画框**竖直方向**的位置（百分比 —— 画框中心落在视口这个高度）。
+ *
+ *    读者 2026-09-29：「位置太固定，只要这边的范围就可以」——
+ *    之前五页一律钉在 50%，像同一张图在同一个位置贴了五次。
+ *    现在每页给一个不同的值，**但都在这一侧的中段**，不越出这个范围。
+ *
+ *    ⚠️ 范围刻意只取 36~58：再往上碰顶栏、再往下碰底部那行「还有内容」。
+ *    ⚠️ 纵向随便动的前提是**宽屏下正文已经横向让开**（见 GalleryFrame.scss
+ *      的 `--gal-gutter-left`）—— 两者没有横向交集，所以纵向怎么动都不会压住字。
+ *      ⚠️ 窄屏不适用：那里画框挂在屏幕外沿。两者改一个要想着另一个。
+ */
+export function galleryAnchor(page: string): number {
+  const ANCHOR: Record<string, number> = {
+    home: 50,
+    coof: 42,
+    cnsr: 57,
+    paperr: 46,
+    chealth: 38,
+  };
+  return ANCHOR[page] ?? 50;
+}

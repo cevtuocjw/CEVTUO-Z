@@ -50,8 +50,19 @@ const DARK_SCRIM =
  * One number has to hold for both, and legibility wins over how much of the
  * photo shows: a wallpaper nobody can read text over is not a wallpaper.
  */
+// ⚠️ 0.80 / 0.74 / 0.88 → 0.58 / 0.46 / 0.70（读者 2026-09-29：
+//    「背景的白色模糊太白，可以改为玻璃质感而且有流动感」）。
+//
+//    上面那段论证「浅色主题必须压得重」**是对的**，但结论错了：
+//    让字读得清不止「多盖一点」一条路。另一条是**别平铺着盖** ——
+//    把白色换成一层会流动的玻璃（`styles/wallpaper.scss` 的 `.cevtuo-glass`），
+//    照片留着、只是没了边。磨砂纸和玻璃的区别正在这里。
+//
+//    ⚠️ 这个值必须和 `styles/wallpaper.scss` 里 `wallpaper-light` 的
+//      那一份**一起改** —— 那份是挂载前的兜底，这份是真正在画的。
+//      同一个数字存两份，正是这个项目反复栽的那个形状。
 const LIGHT_SCRIM =
-  'linear-gradient(to bottom, rgba(246,243,240,0.80) 0%, rgba(242,240,238,0.74) 46%, rgba(238,237,236,0.88) 100%)';
+  'linear-gradient(to bottom, rgba(246,243,240,0.58) 0%, rgba(242,240,238,0.46) 46%, rgba(236,235,234,0.70) 100%)';
 
 /**
  * ⚠️ 这张「页面 → 背景图」的表**搬到 `platform/gallery.ts` 了**

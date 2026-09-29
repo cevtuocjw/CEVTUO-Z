@@ -32,7 +32,7 @@ import { useEffect, useRef } from 'react';
 import { View } from '@tarojs/components';
 
 import { assetUrl, currentPage } from '../platform/background';
-import { galleryFile, gallerySide } from '../platform/gallery';
+import { galleryAnchor, galleryFile, gallerySide } from '../platform/gallery';
 import './GalleryFrame.scss';
 
 export function GalleryFrame() {
@@ -41,6 +41,8 @@ export function GalleryFrame() {
   const page = currentPage();
   const src = assetUrl(galleryFile(page));
   const side = gallerySide(page);
+  // ⚠️ 竖直位置**按页给**（读者：「位置太固定」）。值都落在这一侧的中段。
+  const anchor = galleryAnchor(page);
 
   /**
    * ⚠️⚠️ 事件**不走 JSX 的 `onPointerDown`**，走原生的 `addEventListener`。
@@ -105,7 +107,9 @@ export function GalleryFrame() {
   }, []);
 
   return (
-    <View className={`gal gal--${side}`} ref={ref as never}>
+    // ⚠️ `top` 走**行内样式**（按页不同），不是 CSS —— `.gal` 里那个 `top: 50%`
+    //    只是没拿到页名时的兜底。
+    <View className={`gal gal--${side}`} style={{ top: `${anchor}%` }} ref={ref as never}>
       {/* ① 外框 + ② 卡纸 + ③ 照片 —— 三层，见文件抬头 */}
       <View className="gal__frame">
         <View className="gal__mat">
