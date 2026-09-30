@@ -2,18 +2,47 @@
 //
 // 三层叠出来的「挂在墙上的画」：外框 / 卡纸 / 照片。见 GalleryFrame.tsx 抬头。
 //
-// ⚠️⚠️ 尺寸全部走**两个变量**（`--gal-w` / `--gal-h`），不要写死 ——
-//    读者要的是「长宽可以调整，到时候可以自适应我们的其他那些图片」。
-//    自适应靠 `aspect-ratio`：照片按框的比例 `object-fit: cover` 填满，
-//    所以换成横的、竖的、方的照片都不会变形，只会裁。
+// ⚠️⚠️ **五种做法共用这一套 DOM**，差别全在下面的
+//    `.gal--frame-*` 里 —— 没有五份 JSX。理由不是省代码：
+//    多一份 DOM 就多一处「某个分支忘了加高光层」的地方，
+//    而漏掉的那次**看起来完全正常**（只是少了点光）。
+//
+// ⚠️⚠️ 读者 2026-09-29：「你只做啦一种画框，我要求在网站上的各个地方的
+//    画框都不一样」。所以下面五个**不是同一个框换颜色** ——
+//    是五种结构不同的做法（有截面的实框 / 细金线 / 无框画布 /
+//    双层卡纸 / 金属倒角）。每种都要**两个主题各看一遍**。
+
+// ══════════════════════════════════════════════════════════════
+// 一、框体本身
+// ══════════════════════════════════════════════════════════════
+//
+// ⚠️ 尺寸**不在 CSS 里** —— 它是**按枚**给的（主页三枚各不相同），
+//    由 `GalleryFrame.tsx` 写成行内自定义属性：
+//      --gal-w / --gal-h / --gal-inset          （宽屏）
+//      --gal-w-n / --gal-h-n / --gal-inset-n    （窄屏）
+//    ⚠️ 两组都给出来、**由下面的媒体查询挑** —— 断点属于样式表，
+//      不该在 JS 里再写一遍 `innerWidth < 700`（那就是同一个数两处各写一份）。
 .gal {
-  // ⚠️ 尺寸（读者 2026-09-29：「画太小，再大一倍也没关系」）——
-  //    168×210 → 300×375，接近两倍。**这里就是调画框大小的唯一旋钮**，
-  //    里面的三层和外框厚度全是百分比，跟着走。
-  //    ⚠️ 改这两个数**必须同时改下面的让位量**（`--gal-gutter-left`），
-  //      否则正文要么被压住（J 断言会红）、要么白白让掉一条。
-  --gal-w: 300px;
-  --gal-h: 375px;
+  // ⚠️⚠️ **画框永远在内容之下**（读者 2026-09-30：「现在的画框在内容上面，
+  //    要在内容文字的下面才可以，以及在边栏这些组件的下面」）。
+  //
+  //    ⚠️ 为什么必须是 **-1**，不能是 0 也不能更负：
+  //
+  //      · 0 或任何非负数 —— `position: fixed` 且有 z-index 的元素
+  //        在层叠里画在**所有非定位内容之后**，也就是**盖住正文**。
+  //        那正是读者抱怨的那个现象。
+  //      · −2、−3 —— Taro 的页面壳 `.taro_page` 是个层叠上下文，
+  //        而**壁纸**（`.cevtuo-wallpaper`）就在 −1。比 −1 更负的画框
+  //        会掉到**壁纸底下**，整枚看不见（而页面上看不出哪里坏了，
+  //        只是「画框没了」）。
+  //      · **−1 正好**：和壁纸同一层，而画框在 DOM 里排在壁纸**之后**
+  //        （见 Wallpaper.tsx 的 fragment 顺序）⇒ 同层里后画的在上，
+  //        所以画框盖住壁纸、又被正文盖住。
+  //
+  //    ⚠️ 三枚画框也**都是 −1**，它们之间的前后由**数组顺序**决定。
+  //      给成 −1/−2/−3 会让后两枚掉到壁纸底下 —— 页面上看就是「少了两枚」。
+  z-index: -1;
+
   // ⚠️ 倾斜和高光位置由 JS 写（指针跟随），这里给初值 ——
   //    没有初值的自定义属性在 `transform` 里会让整条声明失效。
   --tx: 0deg;
@@ -22,13 +51,14 @@
   --my: 50%;
 
   position: fixed;
-  // ⚠️ 竖屏手机上它压在内容上，所以**必须让开正文**：
-  //    顶部留出顶栏，垂直居中。
-  top: 50%;
-  z-index: 8; // 在壁纸之上、卡片之下（卡片是 10+）
-  width: var(--gal-w);
-  height: var(--gal-h);
-  pointer-events: auto;
+  top: 50%; // 兜底；真正的值按枚写在行内（`spec.anchor`）
+  width: var(--gal-w, 300px);
+  height: var(--gal-h, 375px);
+  // ⚠️⚠️ **不是 `auto`**。指针跟随现在挂在 `window` 上、按几何命中
+  //    （见 GalleryFrame.tsx 抬头），所以画框**不需要**被命中 —— 而且
+  //    一旦能被命中，它就会在空白处**抢走本该属于内容的点击**
+  //    （它是 `position: fixed` 且铺在那儿的）。
+  pointer-events: none;
   // ⚠️ `transform-style: preserve-3d` + 透视 —— 少了它，`rotateX/Y`
   //    是**平面斜切**，看起来像图片被拉扯，而不是「朝你这边倒过来」。
   transform: perspective(900px) translateY(-50%) rotateX(var(--tx)) rotateY(var(--ty));
@@ -37,29 +67,15 @@
   will-change: transform;
 }
 
-// ⚠️ 离屏幕边 48px，不是 18px（读者：「太靠近边缘」）。
+// ⚠️ 离屏幕边 48px（起），不是 18px（读者：「太靠近边缘」）。
 //    18px 让画框看着像「贴在边框上」，48px 才像**挂在墙上** ——
 //    挂画和贴纸的区别就是这个距离。
 .gal--right {
-  right: max(48px, env(safe-area-inset-right, 0px));
-}
-
-// ⚠️⚠️ 窄屏时主页那枚画框**必须让开右边的翻页轨道**。
-//
-//    宽屏没暴露：轨道细、圆点稀，测试点正好落在两个圆点之间。
-//    一到 390 宽，画框（right 18）和轨道（right 8）叠在一起，
-//    而**圆点会吃掉指针事件** ⇒ 按下去没反应、倾斜也不动。
-//    ⚠️ 症状看着像「触摸动画在手机上失效」—— 那是去改动画代码的路，
-//      而真正的原因是两个固定元素抢同一块地方。
-//    是 `VW=390` 跑验证器暴露的：宽屏 40/40 全绿。
-@media (max-width: 700px) {
-  .gal--right {
-    right: max(60px, calc(env(safe-area-inset-right, 0px) + 42px));
-  }
+  right: var(--gal-inset, 48px);
 }
 
 .gal--left {
-  left: max(48px, env(safe-area-inset-left, 0px));
+  left: var(--gal-inset, 48px);
 }
 
 // ⚠️ 按下时**只缩一点点**（0.975）—— 缩多了像按钮，像「点下去」而不是
@@ -68,32 +84,18 @@
   transition-duration: 140ms;
 }
 
-.gal--press .gal__frame {
-  transform: scale(0.975);
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.28),
-    0 1px 2px rgba(0, 0, 0, 0.30);
-}
-
 .gal__frame {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  // ① 外框：有厚度的一圈。用渐变而不是纯色 —— 纯色的边看起来是「描边」，
-  //    渐变（上亮下暗）才读成「一条有截面的木条/金属条」。
-  padding: 7px;
-  border-radius: 3px;
-  background: linear-gradient(160deg, #4a4640 0%, #2b2823 46%, #1b1917 100%);
-  box-shadow:
-    // 外投影：画框离墙的那点距离
-    0 14px 30px rgba(0, 0, 0, 0.34),
-    0 2px 6px rgba(0, 0, 0, 0.28),
-    // 内投影：框内侧压住卡纸的那道边
-    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
-    inset 0 1px 2px rgba(255, 255, 255, 0.16);
+  padding: var(--gal-frame-pad, 7px);
   transition:
     transform 520ms cubic-bezier(0.34, 1.56, 0.5, 1),
     box-shadow 240ms ease-out;
+}
+
+.gal--press .gal__frame {
+  transform: scale(0.975);
 }
 
 .gal__mat {
@@ -101,13 +103,7 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  // ② 卡纸：米白的一圈。**它是「画框」和「描边的图片」之间唯一的区别** ——
-  //    去掉它，照片边上就只剩一道深色线，在深色壁纸上糊成一团。
-  padding: 9px;
-  background: linear-gradient(170deg, #f3efe7 0%, #e6e0d5 100%);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.22),
-    0 0 0 1px rgba(0, 0, 0, 0.35);
+  padding: var(--gal-mat-pad, 9px);
   overflow: hidden;
 }
 
@@ -142,65 +138,198 @@
   transition: background 120ms linear;
 }
 
-// ⚠️ 窄屏：画框缩小，并且**靠边**（正文本来就窄，压在中间就读不了）。
-//    ⚠️ 仍然留着 —— 读者说的是「每个页面必须有一张图」，
-//      所以不是「手机上藏起来」。
-@media (max-width: 700px) {
-  .gal {
-    --gal-w: 156px;
-    --gal-h: 195px;
-    opacity: 0.94;
-  }
+// ══════════════════════════════════════════════════════════════
+// 二、五种做法
+// ══════════════════════════════════════════════════════════════
 
-  // ⚠️⚠️ 窄屏**允许画框被屏幕边裁掉一部分**（读者 2026-09-29），
-  //    条件是**露出来的面积必须超过整张的一半** —— 这条由 K 断言在验。
-  //
-  //    ⇒ 于是画框本体反而可以给大（156 宽，比原来的 96 大六成），
-  //      而正文只让出「露出来的那一截 + 间隙」＝ 94 + 12。
-  //      不让的话，手机上要为一张画让掉 156px，正文只剩 234 ——
-  //      而「窄屏内容太窄」正是读者明确抱怨过的方向。
-  //
-  // ⚠️ **只有 `.gal--left` 挂出去**：内页的画框在左，左边没有别的东西。
-  //    主页的画框在**右**，而右边有翻页轨道 —— 挂出去正好钻到轨道底下，
-  //    轨道上的圆点会**吃掉指针事件**（就是上面「窄屏让开轨道」那一条）。
-  //    同一块地方同时放「固定元素」和「控件」时，最先坏的一定是控件。
-  .gal--left {
-    left: -62px;
-  }
-
-
-  .gal__frame {
-    padding: 5px;
-  }
-
-  .gal__mat {
-    padding: 6px;
-  }
+// ── ① moulding：有截面的实木框 + 米白卡纸（经典装裱）────────────
+// 用渐变而不是纯色 —— 纯色的边看起来是「描边」，
+// 渐变（上亮下暗）才读成「一条有截面的木条」。
+.gal--frame-moulding {
+  --gal-frame-pad: 7px;
+  --gal-mat-pad: 9px;
 }
 
-// ── 让位：正文给画框腾出它所在一侧的空间 ─────────────────────
+.gal--frame-moulding .gal__frame {
+  border-radius: 3px;
+  background: linear-gradient(160deg, #4a4640 0%, #2b2823 46%, #1b1917 100%);
+  box-shadow:
+    // 外投影：画框离墙的那点距离
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    0 2px 6px rgba(0, 0, 0, 0.28),
+    // 内投影：框内侧压住卡纸的那道边
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.16);
+}
+
+.gal--frame-moulding .gal__mat {
+  // ② 卡纸：米白的一圈。**它是「画框」和「描边的图片」之间唯一的区别** ——
+  //    去掉它，照片边上就只剩一道深色线，在深色壁纸上糊成一团。
+  background: linear-gradient(170deg, #f3efe7 0%, #e6e0d5 100%);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.gal--frame-moulding.gal--press .gal__frame {
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+// ── ② gilt：一条细亮金线当外框，卡纸是**深色**的 ────────────────
+// 和 ① 的关系刻意反过来：那里是「厚木框 + 亮卡纸」，这里是
+// 「细亮线 + 暗卡纸」。反过来才读得出是两种做法，而不是深浅两档。
+.gal--frame-gilt {
+  --gal-frame-pad: 3px;
+  --gal-mat-pad: 14px;
+}
+
+.gal--frame-gilt .gal__frame {
+  border-radius: 2px;
+  background: linear-gradient(
+    152deg,
+    #e6d49b 0%,
+    #9a7f3f 28%,
+    #f2e6bd 52%,
+    #7d6330 76%,
+    #d8c489 100%
+  );
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.32),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.gal--frame-gilt .gal__mat {
+  background: linear-gradient(168deg, #2c2823 0%, #191713 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(230, 212, 155, 0.28),
+    inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+// ── ③ float：无框画布 ─────────────────────────────────────────
+// 没有外框也没有卡纸 —— 照片自己就是那块布。
+// ⚠️ 让它「离开墙」的**只有投影**，所以投影必须**厚而软**：
+//    薄投影会让它看起来像一张贴纸。
+.gal--frame-float {
+  --gal-frame-pad: 0px;
+  --gal-mat-pad: 0px;
+}
+
+.gal--frame-float .gal__frame {
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.gal--frame-float .gal__mat {
+  border-radius: 2px;
+  background: transparent;
+  // 画布包在木条上的那点厚度：底边一条更亮的边，顶上压暗一点
+  box-shadow:
+    0 30px 58px rgba(0, 0, 0, 0.46),
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 -4px 0 rgba(255, 255, 255, 0.1),
+    inset 0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+// ── ④ double：双层卡纸 ────────────────────────────────────────
+// 外层米白 + 里面一圈细线，中间留一条缝。**缝必须看得见** ——
+// 没有那条线它就是一块更宽的卡纸，读者读不出「双层」。
+.gal--frame-double {
+  --gal-frame-pad: 6px;
+  --gal-mat-pad: 16px;
+}
+
+.gal--frame-double .gal__frame {
+  border-radius: 2px;
+  background: linear-gradient(158deg, #c3b193 0%, #9c8a6d 48%, #6f6049 100%);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.26),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.gal--frame-double .gal__mat {
+  background: linear-gradient(170deg, #f7f3ea 0%, #eae4d7 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+// ⚠️ 那条缝：`inset` 比卡的 `padding` **小**，所以它落在卡纸露出来的那圈上。
+//    ⚠️ 必须 `pointer-events: none` —— 它盖在照片上面，
+//      不然照片那一圈点不到（而症状是「按下没反应」，看起来像动画坏了）。
+.gal--frame-double .gal__mat::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+// ── ⑤ bevel：金属倒角框 + 深色卡纸 ────────────────────────────
+// 45° 的亮面在外、暗面在内 —— 用两条 `inset` 投影做出来，
+// 比 `border-image` 可控，也不依赖 `conic-gradient`。
+.gal--frame-bevel {
+  --gal-frame-pad: 9px;
+  --gal-mat-pad: 5px;
+}
+
+.gal--frame-bevel .gal__frame {
+  border-radius: 2px;
+  background: linear-gradient(146deg, #9aa3ab 0%, #4c545c 40%, #232a30 64%, #737c84 100%);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.38),
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.gal--frame-bevel .gal__mat {
+  background: linear-gradient(170deg, #20242a 0%, #12151a 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+// ══════════════════════════════════════════════════════════════
+// 三、让位：正文给画框腾地方 —— **宽屏才腾，窄屏一点不腾**
+// ══════════════════════════════════════════════════════════════
 //
 // ⚠️⚠️ 这一段是**看了图**才补的，而 A/B/C/D 四条断言当时全绿 ——
 //    「画框在不在、在哪一侧、图加载没有」都不管它**压没压住东西**。
 //    CHEALTH 内页截图里，左侧那枚画框正好盖住「13,268 步」那张卡片的左半截。
-//    ⇒ 补了 J 断言（画框内取 3×3 个点，用 `elementsFromPoint` 看底下还有什么），
-//      它当场点名了四页各压在哪个元素上（`stats__value` / `cn__line` /
-//      `pr-h` / `chc__note`）。**先有断言，再有这个修法。**
+//    ⇒ 补了 J 断言（画框内取点用 `elementsFromPoint` 看底下还有什么），
+//      它当场点名了四页各压在哪个元素上。**先有断言，再有这个修法。**
 //
-// ⚠️ 空格量 = 框宽 + 边距 + 间隙。**下面窄屏那一档也要跟着改** ——
-//    两处各写一个数字的结果是改了一处、另一处压着正文，而两边单独看都正常。
-//    （这一轮已经栽过一次同样的形状：背景和画框各自持有「哪一页用哪张图」。）
+// ⚠️⚠️ **而读者 2026-09-30 又把它掰回去了一半**：
+//    「在窄屏幕上，所有的内容都要压住画框，不能画框不敢被压住
+//      导致内容看不了多少位置」。
+//    ⇒ 窄屏让位量是 **0**，正文满宽，画框在它底下被压着。
+//
+//    为什么这个方向是对的：窄屏上让掉 106px 意味着正文只剩 284px
+//    （390 的视口），**为了装饰牺牲内容**。宽屏上有 1440px，
+//    让掉 378 还剩 900 多，那是「画廊」；窄屏上那是「挤」。
 //
 // ⚠️ 选择器写成 `.page .section`（两个 class）**不是** `.section` 一个 ——
 //    `.section` 的 padding 在 `styles/section.scss` 里也有一份，
 //    两个同特异型的规则谁赢取决于**打包后的顺序**，而那正是本项目犯过三次的坑。
-// 48（边距）+ 300（框宽）+ 30（间隙）＝ 378
-.page:has(.gal--left) {
-  --gal-gutter-left: 378px;
-}
-
+//
+// ⚠️ 让位量的**数字**不在这里 —— 它由 `gutterFor()` 从同一份 spec 算出来，
+//    写成 `.page` 上的 `--gal-gutter-wide`（自定义属性只往下继承，
+//    而 `.page` 是 `.gal` 的祖先，读不到后代身上的变量）。
 .page .section {
   padding-left: var(--gal-gutter-left, 0px);
+}
+
+// 默认（也就是窄屏）：不让。
+.page:has(.gal--left) {
+  --gal-gutter-left: 0px;
+}
+
+// ⚠️ 宽屏那一档**必须排在上面那条之后** —— 同特异型、后写的赢。
+@media (min-width: 701px) {
+  .page:has(.gal--left) {
+    --gal-gutter-left: var(--gal-gutter-wide, 0px);
+  }
 }
 
 // ⚠️ 无障碍：`prefers-reduced-motion` 下**不做倾斜和回弹**，
@@ -216,21 +345,57 @@
   }
 }
 
-// ⚠️⚠️ 窄屏那一档的让位量**必须排在上面那条宽屏规则之后**。
+// ══════════════════════════════════════════════════════════════
+// 四、⚠️⚠️ 窄屏 —— **必须排在上面所有规则之后**
+// ══════════════════════════════════════════════════════════════
 //
-//    第一版把它写在 `@media (max-width: 700px)` 块里，而那个块在文件里
-//    位于宽屏 `--gal-gutter-left: 378px` **之前** —— 同特异型、后写的赢，
-//    于是窄屏拿到的是 378px：正文被推到 x=394，而视口只有 390
+// ⚠️⚠️ 这一条是**这个项目最贵的一次教训**（同特异型的规则谁赢取决于顺序，
+//    而媒体查询**不增加特异型**）：
+//
+//    第一版把窄屏让位量写在 `@media (max-width: 700px)` 里，而那个块
+//    在文件里位于宽屏 `--gal-gutter-left: 378px` **之前** —— 同特异型、
+//    后写的赢，于是窄屏拿到 378px：正文被推到 x=394，而视口只有 390
 //    ⇒ **整个正文在屏幕外，页面一片空白。**
 //
 //    ⚠️⚠️ 而那时 J/K 全绿：画框确实没压住任何东西 —— **因为没有任何东西可压**。
-//       截图上是空白，断言上是全过。这也是这个项目**第四次**栽在
-//       「同特异型的规则谁赢取决于顺序」上（前三次：.home-paperr /
-//       .home-chealth__rings / .chc__gaugebox）。
-//       ⇒ 老规矩：媒体查询永远写在它所覆盖的基础规则**之后**。
+//       截图上是空白，断言上是全过。
+//       ⇒ 这也是为什么 M 断言（正文在屏幕内且有宽度）必须存在。
+//
+// ⚠️ 窄屏只换**行内给的那组 token**（`-n` 后缀），不重写任何几何 ——
+//    于是不存在「另一处没跟上」。
 @media (max-width: 700px) {
-  // 94（露出来的那截框宽）+ 12（间隙）
-  .page:has(.gal--left) {
-    --gal-gutter-left: 106px;
+  .gal {
+    width: var(--gal-w-n, var(--gal-w, 300px));
+    height: var(--gal-h-n, var(--gal-h, 375px));
+    opacity: 0.94;
+    // 窄屏框小，框和卡的厚度也要跟着收 ——
+    // 不收的话 16px 的双层卡纸会吃掉 156px 里的一大截，照片只剩一条。
+    --gal-frame-pad: 5px;
+    --gal-mat-pad: 6px;
+  }
+
+  .gal--right {
+    right: var(--gal-inset-n, var(--gal-inset, 48px));
+  }
+
+  .gal--left {
+    left: var(--gal-inset-n, var(--gal-inset, 48px));
+  }
+
+  // ⚠️ `float` 是「无框画布」—— 窄屏也必须无框。
+  //    不写这条的话它会被上面那档压成 5px/6px，等于给画布描了一圈边。
+  //    ⚠️ 要排在 `.gal` **之后**（同特异型）。
+  .gal--frame-float {
+    --gal-frame-pad: 0px;
+    --gal-mat-pad: 0px;
+  }
+
+  // 双层卡纸的缝在小尺寸上要收紧，否则会跑到照片上
+  .gal--frame-double {
+    --gal-mat-pad: 9px;
+  }
+
+  .gal--frame-double .gal__mat::after {
+    inset: 3px;
   }
 }
