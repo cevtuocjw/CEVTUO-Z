@@ -234,12 +234,29 @@ export function gutterFor(page: string): number {
   return left.inset + left.w + 30; // 30 = 正文和画框之间的间隙
 }
 
+/**
+ * 哪一页用哪种做法。
+ *
+ * ⚠️⚠️ 读者要的是「**各个地方**的画框都不一样」，所以要**看这张表里的分配**，
+ *    不是只看 SCSS 里有几种做法 —— 做法写了五种、而实际只用到四种，
+ *    在页面上是**看不出来**的（每一页自己都挺好看）。
+ *
+ *    2026-09-30 的现场：COOF 不挂画框之后，原本给它的 `gilt` 就成了**死代码**，
+ *    而 `moulding` / `double` 各被两处用到（主页与内页各一）——
+ *    这一条是**核对这张表**发现的，不是看页面发现的。
+ *
+ *    现在的分配（六枚画框、五种做法，只有一处在主页和内页之间重了）：
+ *      home-a float ・ home-b moulding ・ home-c double
+ *      cnsr   double ・ paperr **gilt** ・ chealth bevel
+ */
 function frameStyle(page: string): FrameStyle {
   const STYLE: Record<string, FrameStyle> = {
     cnsr: 'double',
-    paperr: 'moulding',
+    // ⚠️ paperr 原来是 `moulding`，和主页那枚重了；改成 `gilt`，
+    //    让五种做法**都用上**（细金线 + 深色卡纸，也配「书」这件事）。
+    paperr: 'gilt',
     chealth: 'bevel',
-    // coof 不放画框，这里留着只是兜底（`frames()` 对它是空数组）
+    // coof 不放画框（`frames()` 对它返回空数组），这里只是兜底
     coof: 'gilt',
   };
   return STYLE[page] ?? 'moulding';
