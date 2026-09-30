@@ -80,12 +80,24 @@ const BASE = (process.argv[2] || 'http://127.0.0.1:8125/z').replace(/\/$/, '');
  *    ⇒ 这正是这个文件抬头警告过的那个坑，我重写时把它丢了。
  *      **夹具要按页给，不能只给需要区分的那些页。**
  */
+/**
+ * ⚠️⚠️ `title` 是**这一页的顶栏标题**，而它是「读到的是不是这一页」的**唯一可靠判据**。
+ *
+ *    原来只等「只有一个可见的 `.taro_page`」—— **不够**：
+ *    hash 已经变了、而新页还没挂上，这一瞬间**旧页是唯一可见页**，
+ *    于是「只剩一个可见页 + 壁纸已上图 + 画框数对」**全部成立**，
+ *    读到的却是**上一页**。
+ *    实测症状：线上约 **1/3** 的运行里，CNSR 和 CAPPERR 拿到完全一样的做法和照片
+ *    （本地看不出来，因为本地快，那一瞬间窗口极窄）。
+ *
+ *    ⇒ 加一条**属于这一页**的判据。顶栏标题每页唯一，而且**换页时一定跟着变**。
+ */
 const PAGES = [
-  { key: 'home', frames: 3, side: 'right' },
-  { key: 'coof', frames: 0, side: null },
-  { key: 'cnsr', frames: 1, side: 'left' },
-  { key: 'paperr', frames: 1, side: 'left' },
-  { key: 'chealth', frames: 1, side: 'left' },
+  { key: 'home', title: 'CEVTUO-Z', frames: 3, side: 'right' },
+  { key: 'coof', title: 'COOF', frames: 0, side: null },
+  { key: 'cnsr', title: 'CNSR', frames: 1, side: 'left' },
+  { key: 'paperr', title: 'CAPPERR', frames: 1, side: 'left' },
+  { key: 'chealth', title: 'CHEALTH', frames: 1, side: 'left' },
 ];
 
 /**
@@ -124,7 +136,7 @@ function check(name, ok, detail) {
  *    15 秒后抛 `TimeoutError`，**后面 40 多条断言一条都没跑**。
  *    崩溃会把「一条断言失败」伪装成「验证器坏了」。
  */
-async function waitFrames(page, n, key) {
+async function waitFrames(page, n, key, title) {
   // ⚠️ 先等**路由真的切过去** —— 只等「有几枚画框」会满足于**上一页**那一枚。
   if (key) {
     await page.waitForFunction((k) => (location.hash || '').includes(`/pages/${k}/`), key, {
@@ -143,12 +155,17 @@ async function waitFrames(page, n, key) {
    *    做法和照片 —— 看起来像「随机分配算错了」，其实是**读错了页面**。
    */
   await page.waitForFunction(
-    () =>
-      [...document.querySelectorAll('.taro_page')].filter(
+    (want) => {
+      const visible = [...document.querySelectorAll('.taro_page')].filter(
         (el) => getComputedStyle(el).display !== 'none',
-      ).length === 1,
-    undefined,
-    { timeout: 15000 },
+      );
+      if (visible.length !== 1) return false;
+      // ⚠️ **必须同时**是这个路由那一页 —— 见 `PAGES` 上面那段。
+      const bar = visible[0].querySelector('.topbar');
+      return !!bar && (bar.textContent || '').includes(want);
+    },
+    title ?? '',
+    { timeout: 20000 },
   );
   // ⚠️ 壁纸也要等 —— `applyBackground` 挂在 `hashchange` 上，比 React 渲染**晚**。
   //    不等的话 C 断言会读到预热前的那份兜底样式（实测红过一次）。
@@ -274,7 +291,7 @@ try {
   // ── A–D / H–P：逐页检查 ─────────────────────────────────────
   for (const P of PAGES) {
     await page.goto(`${BASE}/#/pages/${P.key}/index`, { waitUntil: 'domcontentloaded' });
-    await waitFrames(page, P.frames, P.key);
+    await waitFrames(page, P.frames, P.key, P.title);
 
     const readInfo = () => page.evaluate(() => {
       const frames = [...window.__root().querySelectorAll('.gal')];
@@ -571,7 +588,7 @@ try {
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, 'home');
+  await waitFrames(page, 3, 'home', 'CEVTUO-Z');
   // ⚠️ 等过渡走完再读，否则读到的是上一段过渡的中间值。
   await page.waitForTimeout(700);
 
@@ -631,7 +648,7 @@ try {
    *      （宽屏一直没暴露，就是因为那一按落在空的页边距里。）
    */
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, 'home');
+  await waitFrames(page, 3, 'home', 'CEVTUO-Z');
   await page.waitForTimeout(300);
 
   // 离开
@@ -666,7 +683,7 @@ try {
    *    ⇒ 后面 N/I/L 要先回到主页，否则测的是别的页面。
    */
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, 'home');
+  await waitFrames(page, 3, 'home', 'CEVTUO-Z');
   await page.waitForTimeout(400);
 
   /**
