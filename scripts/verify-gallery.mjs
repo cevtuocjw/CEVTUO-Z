@@ -25,16 +25,28 @@
  *   M. 正文在屏幕内且有宽度（让位让过头同样是坏的）
  *   N. **画框真的被画出来了**（不是掉到壁纸底下 —— 那是「看起来少了一件东西」）
  *   O. 主页那三枚**各放一张不同的图**（同源时和壁纸糊成一整块）
- *   P. **窄屏不让位**（读者 2026-09-30：「所有的内容都要压住画框，
- *      不能画框不敢被压住导致内容看不了多少位置」）
+ *   P. **不为画框让位**（宽窄屏都是）—— 判据是**不变量**，见下面那段
+ *   Q. **全站做法与照片互不重样**（读者：「CNSR 和主页上的画框是一样的，
+ *      这种不允许出现」）+ **没有池塘那张（g08）**
+ *   R. **每一枚都有可见的框**（读者：「不允许出现池塘这幅这样没有画框的」）
  *
  * ⚠️ 负向对照（改坏了应该 FAIL）：
  *   · 把 `pointermove` 的几何监听删掉 ⇒ E 失败
  *   · 把 `reset` 从 `pointerup` 上摘掉 ⇒ F 失败
  *   · 把 `.gal` 的 `z-index` 改回 8 ⇒ J 失败
- *   · 把窄屏让位量写回 106 ⇒ P 失败
- *   · 把主页三枚都指到 g02（背景那张）⇒ O 失败
+ *   · 把让位量改回 106/378 ⇒ P 失败（内边距会随有没有画框而变）
+ *   · 把某枚的 `photo` 指成另一枚的 ⇒ Q 失败
+ *   · 把某个做法改回「无框」（padding 0 + 透明底）⇒ R 失败
  *   · 把 `.gal` 的 `z-index` 改成 −2 ⇒ N 失败（掉到壁纸底下，屏幕上是空的）
+ *
+ * ⚠️⚠️ 这一轮最贵的一条经验，记在这里免得重犯：
+ *    **偶发红一条、每次红的还是不同的一页** —— 我查了三轮，
+ *    先怀疑随机分配算错、又怀疑 Taro 换页读到上一页、再怀疑壁纸没预热，
+ *    三次都在**改产品代码看不出来的地方**。
+ *    真因是**断言里那条正则**：`g0\d+` 匹配 `g01`…`g09`，**匹配不上 `g10`**。
+ *    而背景是随机的 ⇒ 轮到 g10 的那一页红。
+ *    ⇒ 「检查器报假红，要当检查器的 bug 来修」——不是放宽判据，
+ *      是**把正则改对**（`g\d+`）。判据一点没松。
  */
 import { chromium } from 'playwright';
 
@@ -266,8 +278,32 @@ try {
 
     const readInfo = () => page.evaluate(() => {
       const frames = [...window.__root().querySelectorAll('.gal')];
-      const wall = window.__root().querySelector('.cevtuo-wallpaper');
+      /**
+       * ⚠️⚠️ **壁纸必须和「我们量到的那几枚画框」同一页** —— 从画框自己往上找。
+       *
+       *    原来这里又调了一次 `window.__root()`，于是「量画框」和「量壁纸」
+       *    是**两次独立的挑选**，中间页面可能变 ⇒ 量到的壁纸是**另一页**的
+       *    （或预热前那份兜底渐变）。症状：`C` **随机红一页**，
+       *    三次重读也读不到 —— 因为重读的还是同一个错对象。
+       *
+       *    ⇒ 锚在**已经量到的东西**上：`frames[0].closest('.taro_page')`。
+       *      没画框的页面（COOF）锚在 `.section` 上。
+       *      「同一个页面」这件事就变成了**结构性**的，不再靠再挑一次。
+       */
+      const anchorEl = frames[0] || window.__root().querySelector('.section');
+      const pageRoot = (anchorEl && anchorEl.closest('.taro_page')) || window.__root();
+      const wall = pageRoot.querySelector('.cevtuo-wallpaper');
       const bg = wall ? getComputedStyle(wall).backgroundImage : '';
+      // ⚠️ 临时诊断：C 失败时要知道**为什么**读不到（下面 detail 里会打出来）
+      const diag = {
+        visiblePages: [...document.querySelectorAll('.taro_page')].filter(
+          (el) => getComputedStyle(el).display !== 'none',
+        ).length,
+        rootIsDoc: pageRoot === document,
+        wallInline: wall ? (wall.getAttribute('style') || '(无内联)') : '(没有壁纸元素)',
+        wallCls: wall ? String(wall.className) : '-',
+        hash: (location.hash || '').slice(0, 30),
+      };
       return {
         count: frames.length,
         frames: frames.map((el) => {
@@ -294,6 +330,7 @@ try {
           };
         }),
         bg,
+        diag,
         // ⚠️ `.section` 的 padding-left 就是让位量的**落点** ——
         //    窄屏它必须回到基础值（不让位）。
         padLeft: (() => {
@@ -314,7 +351,7 @@ try {
      *      重读不会：真的没换过的话三次都读不到。
      */
     let info = await readInfo();
-    for (let attempt = 0; attempt < 3 && !/gallery\/g0\d+\.jpg/.test(info.bg); attempt += 1) {
+    for (let attempt = 0; attempt < 3 && !/gallery\/g\d+\.jpg/.test(info.bg); attempt += 1) {
       await page.waitForTimeout(400);
       info = await readInfo();
     }
@@ -329,11 +366,11 @@ try {
       info.frames.every((f) => f.natural > 0),
       P.frames ? info.frames.map((f) => f.natural).join(', ') : '(没有画框，无需检查)',
     );
-    const bgName = (info.bg.match(/gallery\/(g0\d+)\.jpg/) || [])[1] || '';
+    const bgName = (info.bg.match(/gallery\/(g\d+)\.jpg/) || [])[1] || '';
     check(
       `C ${P.key} 背景是画廊里的一张（不是老的五张背景图）`,
       POOL.includes(bgName) && !/static\/(home|coof|cnsr|paperr|chealth)\.jpg/.test(info.bg),
-      `bg=${bgName || '(没有)'} ` + info.bg.slice(0, 70),
+      `bg=${bgName || '(没有)'}  计算值全文=[${info.bg}]  inline=[${info.diag.wallInline}]`,
     );
     check(
       `D ${P.key} 画框在${P.side === 'right' ? '右' : P.side === 'left' ? '左' : '（无）'}侧`,
