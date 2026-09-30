@@ -669,6 +669,24 @@ check('柱子是胶囊形（不是 3px 直角）', card.barRadius >= 8, `${card.
 //      而「跑进面板里」真正的问题是它会被那个面板的滚动裁掉。
 const SHEETS = ['zones', 'week', 'power', 'streak', 'kinds', 'sources'];
 const sheetBad = [];
+
+/**
+ * ⚠️⚠️ 趋势线的 `d` **必须以 `M` 开头** —— 这条是**看图**才发现的。
+ *
+ *    2026-09-30：线上「周对比」的「步频 · 最近 14 天」**从上线那天起
+ *    就没画出来过**，而原来那条断言（「路径非空」）**是绿的**：
+ *    节点在 DOM 里、`d` 有 147 个字符、几何正确（656×48、落在自己卡片里）、
+ *    `opacity:1`、`visibility:visible` —— 屏幕上是空的。
+ *
+ *    根因在 `ChealthCharts.tsx` 的 `Spark`：`i === 0 ? 'M' : 'L'` 用的是
+ *    **数组下标**，而步频只有 14/31 天有值，第 0 天缺席时第一个活得下来的
+ *    点下标是 1 ⇒ 拿到 `L` ⇒ 一条没有 `M` 起点的路径按 SVG 规范整条不画。
+ *
+ *    ⇒ 判据必须是「**以 M 开头**」。空 `d` 不算（那是「数据不足」的正常分支），
+ *      所以只挑非空的查。这是本项目「画出来了 ≠ 看得见」那条纪律的第二次实例
+ *      （第一次是趋势折线排到面板外面：元素在 DOM 里、路径非空，全绿）。
+ */
+const lineBad = [];
 for (let i = 0; i < SHEETS.length; i += 1) {
   await page.evaluate((idx) => {
     const cells = [...document.querySelectorAll('.igrid__cell')];
@@ -686,8 +704,14 @@ for (let i = 0; i < SHEETS.length; i += 1) {
       covers: Math.abs(sr.width - innerWidth) < 2 && Math.abs(sr.top) < 2,
       panelInView: pr.bottom <= innerHeight + 2 && pr.top >= -2,
       empty: !p.textContent.trim(),
+      // 非空但**不以 M 开头**的 `d` ⇒ 整条线画不出来
+      badLines: [...p.querySelectorAll('.chc__line')]
+        .map((n) => (n.getAttribute('d') || '').trim())
+        .filter((d) => d && !d.startsWith('M'))
+        .map((d) => d.slice(0, 28)),
     };
   });
+  for (const d of r.badLines ?? []) lineBad.push(`${SHEETS[i]}: ${d}`);
   if (!r.open) sheetBad.push(`${SHEETS[i]}:没打开`);
   else if (!r.covers) sheetBad.push(`${SHEETS[i]}:没铺满视口（fixed 失效？）`);
   else if (!r.panelInView) sheetBad.push(`${SHEETS[i]}:面板跑到视口外`);
@@ -706,6 +730,21 @@ check(
   '六个图标入口都能开出铺满视口的弹窗、且关得掉',
   sheetBad.length === 0,
   sheetBad[0] ?? `${SHEETS.length} 个全部通过`,
+);
+
+// ⚠️ 再扫一遍**页面自己**的趋势线（不在弹窗里的那些）—— 弹窗里的上面顺手收了。
+const pageLines = await page.evaluate(() =>
+  [...document.querySelectorAll('.chc__line')]
+    .map((n) => (n.getAttribute('d') || '').trim())
+    .filter((d) => d && !d.startsWith('M'))
+    .map((d) => d.slice(0, 28)),
+);
+for (const d of pageLines) lineBad.push(`页面: ${d}`);
+
+check(
+  '每条趋势线的 d 都以 M 开头（以 L 开头 ⇒ 整条画不出来）',
+  lineBad.length === 0,
+  lineBad[0] ?? '全部以 M 开头',
 );
 
 // ⚠️ 单场运动是**另一个**触发点（点列表卡片，不是点图标格），单独走一遍。

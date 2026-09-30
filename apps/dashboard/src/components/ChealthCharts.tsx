@@ -204,8 +204,33 @@ export function Spark({ points }: { points: (number | undefined)[] }) {
   const W = 300;
   const H = 48;
   const at = (i: number, v: number) => [((i + 0.5) / points.length) * W, H - ((v - lo) / span) * (H - 8) - 4];
+
+  /**
+   * ⚠️⚠️ 第一个**发出来的**命令必须是 `M`。这里原来写的是 `i === 0 ? 'M' : 'L'`
+   *    —— 用的是**数组下标**。而 `points` 里整天可以没有值
+   *    （步频只有 14/31 天有值），于是第 0 天缺席时，第一个活得下来的点
+   *    下标是 1，它拿到的是 `L`。
+   *
+   *    一条以 `L` 开头、前面没有 `M` 的路径，按 SVG 规范**整条画不出来**。
+   *    而它的失败长得和成功**一模一样**：节点在 DOM 里、`d` 非空（147 个字符）、
+   *    几何正确（656×48、落在自己那张卡片里）、`opacity:1`、`visibility:visible`
+   *    —— 屏幕上是空的，而断言（「路径非空」）是**绿的**。
+   *
+   *    2026-09-30 是**截图**抓出来的：线上「周对比」的
+   *    「步频 · 最近 14 天」从上线那天起就没画出来过。
+   *    ⇒ 判据不是「`d` 非空」，是「`d` 以 `M` 开头」——
+   *      已经补进 `verify-chealth-ui.mjs`。
+   */
+  let started = false;
   const d = points
-    .map((v, i) => (typeof v === 'number' ? `${i === 0 ? 'M' : 'L'}${at(i, v).map((x) => x.toFixed(1)).join(',')}` : ''))
+    .map((v, i) => {
+      if (typeof v !== 'number') return '';
+      const cmd = started ? 'L' : 'M';
+      started = true;
+      return `${cmd}${at(i, v)
+        .map((x) => x.toFixed(1))
+        .join(',')}`;
+    })
     .filter(Boolean)
     .join(' ');
   const area = `${d} L${W},${H} L0,${H} Z`;
