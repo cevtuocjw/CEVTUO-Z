@@ -19,6 +19,12 @@
 # ⚠️ 本地预览服务器（`python3 -m http.server 8125`）**不在这个脚本里起** ——
 #    它该长期跑着。没跑的话先：
 #       mkdir -p /tmp/sv/z && (cd /tmp/sv && python3 -m http.server 8125 &)
+#
+# ⚠️⚠️ **还需要一个 8096**：有五个脚本（shots / verify-cnsr-ui / verify-coof-ui /
+#    verify-paperr-ui / verify-https-live）默认端口是 **8096**，而服务端的
+#    `ALLOWED_ORIGINS` **只放行了 8096**。拿 8125 去跑它们会得到几条关于心跳/CORS 的
+#    **假红**（`net::ERR_FAILED`），看起来像心跳坏了。两个都起着最省事：
+#       (cd /tmp/sv && nohup python3 -m http.server 8096 >/tmp/http8096.log 2>&1 &)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
