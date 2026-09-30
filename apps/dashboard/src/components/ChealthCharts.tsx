@@ -194,8 +194,89 @@ export function BarRow({
   );
 }
 
-/** A 7-day trend line. Values already filtered by the caller. */
-export function Spark({ points }: { points: (number | undefined)[] }) {
+/**
+ * 单调三次插值（Fritsch–Carlson）—— 把一串点连成**平滑**曲线。
+ *
+ * ⚠️⚠️ 读者 2026-09-30：「CHEALTH 里的这些线要改为平滑曲线」。
+ *    在这之前 `Spark` 用的是 `L`（直线段）—— 14 个点连成 13 段折线，
+ *    在宽屏上看起来是一条**锯齿**。
+ *
+ * ⚠️ 用**单调**插值，不是更省事的 Catmull-Rom：后者会**过冲** ——
+ *    曲线跑到数据范围之外，于是在图上画出一段「比当天最高值还高」的弧。
+ *    那不是难看，那是读者读到一个**不存在的数**。
+ *    单调插值在数学上保证不过冲（切线被钳在数据斜率内）。
+ *
+ * ⚠️ 这个函数和 `HeartChart` 里那套是**同一个算法**（那边早就有了）。
+ *    抽出来共用，是为了不让两条线在同一个页面上用两种曲率。
+ *
+ * @param xs 单调递增的 x（时间序列天然满足）
+ * @param ys 对应的值
+ */
+function smoothPath(xs: number[], ys: number[]): string {
+  const n = xs.length;
+  if (n === 0) return '';
+  const P = (a: number[], k: number) => (a[k] ?? 0).toFixed(1);
+  if (n === 1) return `M${P(xs, 0)},${P(ys, 0)}`;
+
+  const secant: number[] = [];
+  for (let k = 0; k < n - 1; k += 1) {
+    const dx = (xs[k + 1] ?? 0) - (xs[k] ?? 0);
+    secant.push(dx === 0 ? 0 : ((ys[k + 1] ?? 0) - (ys[k] ?? 0)) / dx);
+  }
+  const t: number[] = new Array(n).fill(0);
+  t[0] = secant[0] ?? 0;
+  t[n - 1] = secant[n - 2] ?? 0;
+  for (let k = 1; k < n - 1; k += 1) {
+    const a = secant[k - 1] ?? 0;
+    const b = secant[k] ?? 0;
+    // ⚠️ 异号（或有一个是 0）= 这里是个极值点 ⇒ 切线取 0，曲线才不会被拉过头。
+    if (a * b <= 0) {
+      t[k] = 0;
+    } else {
+      const w1 = 2 * ((xs[k + 1] ?? 0) - (xs[k] ?? 0)) + ((xs[k] ?? 0) - (xs[k - 1] ?? 0));
+      const w2 = ((xs[k + 1] ?? 0) - (xs[k] ?? 0)) + 2 * ((xs[k] ?? 0) - (xs[k - 1] ?? 0));
+      t[k] = (w1 + w2) / (w1 / a + w2 / b);
+    }
+  }
+  let d = `M${P(xs, 0)},${P(ys, 0)}`;
+  for (let k = 0; k < n - 1; k += 1) {
+    const dx = (xs[k + 1] ?? 0) - (xs[k] ?? 0);
+    const c1x = (xs[k] ?? 0) + dx / 3;
+    const c1y = (ys[k] ?? 0) + ((t[k] ?? 0) * dx) / 3;
+    const c2x = (xs[k + 1] ?? 0) - dx / 3;
+    const c2y = (ys[k + 1] ?? 0) - ((t[k + 1] ?? 0) * dx) / 3;
+    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${P(xs, k + 1)},${P(ys, k + 1)}`;
+  }
+  return d;
+}
+
+/**
+ * 一条趋势线，**平滑**，而且**能读出数**。
+ *
+ * ⚠️⚠️ 读者 2026-09-30 的两条要求都在这里：
+ *    「这些线要改为平滑曲线」
+ *    「鼠标或者放上去或者点击的时候要有数据，**不能什么数据都不体现**」
+ *    ⇒ 之前这两张图是**纯装饰**：没有任何交互，也没有任何读数的可能。
+ *
+ * ⚠️ 触摸和鼠标走**同一条路**（都是 pointer 事件）——
+ *    分两套写的结果是手机上有效果、桌面上没有（或者反过来）。
+ *    `onPointerDown` 也算：手机上「放上去」是不存在的，只有按。
+ */
+export function Spark({
+  points,
+  labels,
+  unit = '',
+  name = '',
+}: {
+  points: (number | undefined)[];
+  /** 每个点对应的标签（一般传日期）。给了才显示在读数里。 */
+  labels?: string[];
+  /** 数值单位（` 分钟` / ` bpm` / ` m/s`…）。 */
+  unit?: string;
+  /** 曲线名，读数里带上（同一个弹窗里有两张时要能分清）。 */
+  name?: string;
+}) {
+  const [idx, setIdx] = useState<number | null>(null);
   const vals = points.filter((v): v is number => typeof v === 'number');
   if (vals.length < 2) return <Text className="chc__axis">数据不足</Text>;
   const lo = Math.min(...vals);
@@ -203,63 +284,108 @@ export function Spark({ points }: { points: (number | undefined)[] }) {
   const span = hi - lo || 1;
   const W = 300;
   const H = 48;
-  const at = (i: number, v: number) => [((i + 0.5) / points.length) * W, H - ((v - lo) / span) * (H - 8) - 4];
+  const at = (i: number, v: number): [number, number] => [
+    ((i + 0.5) / points.length) * W,
+    H - ((v - lo) / span) * (H - 8) - 4,
+  ];
 
   /**
-   * ⚠️⚠️ 第一个**发出来的**命令必须是 `M`。这里原来写的是 `i === 0 ? 'M' : 'L'`
-   *    —— 用的是**数组下标**。而 `points` 里整天可以没有值
-   *    （步频只有 14/31 天有值），于是第 0 天缺席时，第一个活得下来的点
-   *    下标是 1，它拿到的是 `L`。
+   * ⚠️ 缺的那天**要断开**，不能跨过去连一条线。
    *
-   *    一条以 `L` 开头、前面没有 `M` 的路径，按 SVG 规范**整条画不出来**。
-   *    而它的失败长得和成功**一模一样**：节点在 DOM 里、`d` 非空（147 个字符）、
-   *    几何正确（656×48、落在自己那张卡片里）、`opacity:1`、`visibility:visible`
-   *    —— 屏幕上是空的，而断言（「路径非空」）是**绿的**。
-   *
-   *    2026-09-30 是**截图**抓出来的：线上「周对比」的
-   *    「步频 · 最近 14 天」从上线那天起就没画出来过。
-   *    ⇒ 判据不是「`d` 非空」，是「`d` 以 `M` 开头」——
-   *      已经补进 `verify-chealth-ui.mjs`。
+   *    原来是把缺席的点跳过、下一个点照常 `L` —— 于是 14 天里缺了第 5 天，
+   *    第 4 天和第 6 天之间会**直接连一条直线**，看起来像「那天有个值」。
+   *    走 `undefined` 的整个意义就是「那天没有记录」（见调用方的注释）。
+   *    ⇒ 连续有值的一段各自成一条子路径（各自以 `M` 开头）。
    */
-  let started = false;
-  const d = points
-    .map((v, i) => {
-      if (typeof v !== 'number') return '';
-      const cmd = started ? 'L' : 'M';
-      started = true;
-      return `${cmd}${at(i, v)
-        .map((x) => x.toFixed(1))
-        .join(',')}`;
-    })
-    .filter(Boolean)
+  const runs: { i: number; v: number }[][] = [];
+  let run: { i: number; v: number }[] = [];
+  points.forEach((v, i) => {
+    if (typeof v === 'number') run.push({ i, v });
+    else if (run.length) {
+      runs.push(run);
+      run = [];
+    }
+  });
+  if (run.length) runs.push(run);
+
+  const d = runs
+    .filter((r) => r.length > 1)
+    .map((r) => smoothPath(r.map((p2) => at(p2.i, p2.v)[0]), r.map((p2) => at(p2.i, p2.v)[1])))
     .join(' ');
-  const area = `${d} L${W},${H} L0,${H} Z`;
-  /*
+  // 面积用**全部有点**的一条包络（不逐段），免得每段各自封口画出锯齿状的底边。
+  const allPts = points.map((v, i) => (typeof v === 'number' ? at(i, v) : null)).filter(Boolean) as [number, number][];
+  const area = allPts.length
+    ? `M${allPts[0]![0].toFixed(1)},${H} ` +
+      allPts.map((q) => `L${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(' ') +
+      ` L${allPts[allPts.length - 1]![0].toFixed(1)},${H} Z`
+    : '';
+
+  const pick = (clientX: number, el: SVGSVGElement) => {
+    const r = el.getBoundingClientRect();
+    if (!r.width) return;
+    const frac = Math.min(Math.max((clientX - r.left) / r.width, 0), 0.9999);
+    // 最近的一个**有值**的点 —— 缺的那天不该被选成「这一天的读数」
+    let best: number | null = null;
+    let bestD = Infinity;
+    points.forEach((v, i) => {
+      if (typeof v !== 'number') return;
+      const dist = Math.abs((i + 0.5) / points.length - frac);
+      if (dist < bestD) {
+        bestD = dist;
+        best = i;
+      }
+    });
+    // ⚠️ 只在**换了点**的时候 setState —— 每次 pointermove 都 set 会重渲染 100+ 次/秒，
+    //    而掉帧正是廉价感的来源（和画框那套同一个理由）。
+    if (best !== null && best !== idx) setIdx(best);
+  };
+
+  const shown = idx === null ? null : points[idx];
+  const pos = idx === null ? null : at(idx, shown as number);
+
+  /**
    * ⚠️⚠️ `style={{ aspectRatio }}` 是这一条的全部重点。
    *
    *    `viewBox` 是 300×48，而卡片在宽屏有 **656px** 宽 ——
-   *    `preserveAspectRatio="none"` 于是把 x 方向拉了 **2.19 倍**，
-   *    曲线被**横向抻平**（每个斜率都变缓 2.19 倍），描边也被拉成
-   *    横着的椭圆。读者 2026-09-30：「变成宽屏这些曲线只是被拉伸，很不好看」。
+   *    `preserveAspectRatio="none"` 于是把 x 方向拉了 **2.19 倍**：
+   *    曲线被**横向抻平**（每个斜率都变缓 2.19 倍），描边也被拉成横着的椭圆。
+   *    读者 2026-09-30：「变成宽屏这些曲线只是被拉伸，很不好看」。
    *
-   *    ⇒ 把盒子的宽高比**锁成和 viewBox 一样**（`aspect-ratio: 300 / 48`），
-   *      于是缩放是**等比**的，形状不变，只是变大。
-   *      宽屏下它自己长到 105px 高 —— 那才是「一张图」，而不是一条压扁的带子。
-   *      ⚠️ 高度**不能写死**：写死就又回到「拉伸」。
-   *
-   *    ⚠️ 另外那条 `vector-effect` 见下面 `.chc__line` —— 等比缩放之后
-   *      2px 的线会跟着放大到 4.4px，`non-scaling-stroke` 让它恒为 2px。 */
-
+   *    ⇒ 把盒子的宽高比**锁成和 viewBox 一样**，缩放才是**等比**的。
+   *    ⚠️ 高度**不能写死**：写死就又回到「拉伸」。
+   *    ⚠️ `vectorEffect="non-scaling-stroke"` 是配套的：等比放大之后
+   *      2px 的线会跟着放大到 4.4px，那个属性让它恒为 2px。
+   */
   return (
+    <View className="chc__chart">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="chc__spark"
         preserveAspectRatio="none"
         style={{ aspectRatio: `${W} / ${H}` }}
+        onPointerMove={(e) => pick((e as unknown as PointerEvent).clientX, e.currentTarget)}
+        onPointerDown={(e) => pick((e as unknown as PointerEvent).clientX, e.currentTarget)}
+        onPointerLeave={() => setIdx(null)}
       >
-      <path d={area} className="chc__area" />
-      <path d={d} className="chc__line" vectorEffect="non-scaling-stroke" />
-    </svg>
+        {area ? <path d={area} className="chc__area" /> : null}
+        <path d={d} className="chc__line" vectorEffect="non-scaling-stroke" />
+        {pos ? (
+          <circle cx={pos[0]} cy={pos[1]} r={2.6} className="chc__cursor" vectorEffect="non-scaling-stroke" />
+        ) : null}
+      </svg>
+      {/* ⚠️ 读数**必须有** —— 读者：「不能什么数据都不体现」。 */}
+      {idx !== null && pos ? (
+        <View className="chc__tip" style={{ left: `${(pos[0] / W) * 100}%` }}>
+          <Text className="chc__tip-k">{name ? `${name} · ` : ''}{labels?.[idx] ?? ''}</Text>
+          <Text className="chc__tip-v">
+            {typeof shown === 'number' ? Math.round(shown * 10) / 10 : '—'}
+            {unit}
+          </Text>
+        </View>
+      ) : (
+        <Text className="chc__hint">点或移到曲线上看那一天的数</Text>
+      )}
+    </View>
   );
 }
 
@@ -414,14 +540,42 @@ export function SeriesChart({
    *    ⚠️ 另外那条 `vector-effect` 见下面 `.chc__line` —— 等比缩放之后
    *      2px 的线会跟着放大到 4.4px，`non-scaling-stroke` 让它恒为 2px。 */
 
+  /**
+   * ⚠️ 和 `Spark` 同一套读数（读者：「鼠标放上去或者点击的时候要有数据」）。
+   *    心率曲线比趋势线更需要它 —— 读者要的是「跑到第 20 分钟时心率多少」，
+   *    而形状本身说不出这个数。
+   *    ⚠️ 只在**换了点**时 setState：每次 pointermove 都 set 会重渲染
+   *      100+ 次/秒，而掉帧正是廉价感的来源。
+   */
+  const [idx, setIdx] = useState<number | null>(null);
+  const pick = (clientX: number, el: SVGSVGElement) => {
+    const r = el.getBoundingClientRect();
+    if (!r.width) return;
+    const vx = Math.min(Math.max((clientX - r.left) / r.width, 0), 0.9999) * W;
+    let best: number | null = null;
+    let bestD = Infinity;
+    pts.forEach((p2, i2) => {
+      const dist = Math.abs(x(p2[0]) - vx);
+      if (dist < bestD) {
+        bestD = dist;
+        best = i2;
+      }
+    });
+    if (best !== null && best !== idx) setIdx(best);
+  };
+  const cur = idx === null ? null : pts[idx];
+
   return (
-    <View>
+    <View className="chc__chart">
       {/* ⚠️ `style` 是对象，不是字符串 —— 原生 <svg> 上写字符串是 React #62，整页白屏。 */}
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="chc__spark"
         preserveAspectRatio="none"
         style={{ aspectRatio: `${W} / ${H}` }}
+        onPointerMove={(e) => pick((e as unknown as PointerEvent).clientX, e.currentTarget)}
+        onPointerDown={(e) => pick((e as unknown as PointerEvent).clientX, e.currentTarget)}
+        onPointerLeave={() => setIdx(null)}
       >
         <path d={area} className="chc__area" />
         {bands?.length ? (
@@ -461,7 +615,33 @@ export function SeriesChart({
           <path d={d} className="chc__line" vectorEffect="non-scaling-stroke" />
         )}
         <circle cx={x(peak[0])} cy={y(peak[1])} r={2.5} className="chc__peak" />
+        {cur ? (
+          <circle
+            cx={x(cur[0])}
+            cy={y(cur[1])}
+            r={2.6}
+            className="chc__cursor"
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
       </svg>
+      {/*
+        ⚠️ 光有气泡没有位置标记，读者不知道气泡说的是哪一点；
+          光有标记没有气泡，又读不出数。**两个都要。**
+      */}
+      {cur ? (
+        <View className="chc__tip" style={{ left: `${(x(cur[0]) / W) * 100}%` }}>
+          <Text className="chc__tip-k">
+            {name} · 第 {Math.round(cur[0])} 分钟
+          </Text>
+          <Text className="chc__tip-v">
+            {Math.round(cur[1])}
+            {unit || ' bpm'}
+          </Text>
+        </View>
+      ) : (
+        <Text className="chc__hint">点或移到曲线上看那一刻的数</Text>
+      )}
       {/* 区间图例 —— 没有它，线上那五种颜色只是「花」，读者不知道黄比绿更吃力。 */}
       {bands?.length ? (
         <View className="chc__bands">

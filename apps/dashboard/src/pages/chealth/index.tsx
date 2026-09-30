@@ -1264,7 +1264,12 @@ export default function Chealth() {
                           <Text className="chc__note">
                             心率过程 · 这一场的 {sess.hrSeries.length} 个采样点
                           </Text>
-                          <Spark points={sess.hrSeries.map(([, v]) => v)} />
+                          <Spark
+                            points={sess.hrSeries.map(([, v]) => v)}
+                            labels={sess.hrSeries.map(([t2]) => `第 ${Math.round(t2)} 分钟`)}
+                            name="心率"
+                            unit=" bpm"
+                          />
                         </View>
                       ) : null}
                     </View>
@@ -1407,7 +1412,14 @@ export default function Chealth() {
             {have('hrAvg') ? (
               <View className="card chc__card">
                 <Text className="chc__card-t">日均心率 · 最近 14 天</Text>
-                <Spark points={recent.map((d) => d.hrAvg)} />
+                <Spark
+                    points={recent.map((d) => d.hrAvg)}
+                    // ⚠️ 日期和单位**必须给** —— 不给的话读数气泡上只有一个裸数字，
+                    //    读者不知道那是哪一天、也不知道单位（读者：「不能什么数据都不体现」）。
+                    labels={recent.map((d) => d.date.slice(5))}
+                    name="日均心率"
+                    unit=" bpm"
+                  />
               </View>
             ) : null}
 
@@ -1558,14 +1570,24 @@ export default function Chealth() {
               {recent.some((d) => typeof d.speedAvgMps === 'number') ? (
                 <View className="chc__trend">
                   <Text className="chc__card-t">运动均速 · 最近 14 天</Text>
-                  <Spark points={recent.map((d) => d.speedAvgMps)} />
+                  <Spark
+                      points={recent.map((d) => d.speedAvgMps)}
+                      labels={recent.map((d) => d.date.slice(5))}
+                      name="运动均速"
+                      unit=" m/s"
+                    />
                 </View>
               ) : null}
 
               {recent.some((d) => typeof d.stepsCadenceAvg === 'number') ? (
                 <View className="chc__trend">
                   <Text className="chc__card-t">步频 · 最近 14 天</Text>
-                  <Spark points={recent.map((d) => d.stepsCadenceAvg)} />
+                  <Spark
+                      points={recent.map((d) => d.stepsCadenceAvg)}
+                      labels={recent.map((d) => d.date.slice(5))}
+                      name="步频"
+                      unit=" 步/分"
+                    />
                 </View>
               ) : null}
             </View>
@@ -1660,6 +1682,34 @@ export default function Chealth() {
                       <View className="chc__cell"><Text>最佳 20 分钟</Text><Text className="chc__cell-v">{p.best20} W</Text></View>
                     ) : null}
                   </View>
+                  {/*
+                    ⚠️⚠️ **这一屏原来一条曲线都没有。**
+                    上面那四个格子全是汇总值（平均 / 峰值 / NP / 最佳 20 分钟），
+                    而这一页其他地方（单场弹窗）早就在画功率**过程曲线**了。
+                    读者 2026-09-30：「过程的这些全都没画出来曲线，
+                    这些 CHEALTH 弹窗出来的功能少了太多，全部都补充好」。
+
+                    ⚠️ 而 `powerSeries` 是**真的有**的（本地实测 25/25 场都有，
+                       `HR_BANDS` 那条链路上同一个 schema 的三个序列字段）。
+                      所以这不是「没数据不做」，是**数据在、图没画**。
+
+                    ⚠️ 汇总值恰恰是读者点名不要的那种：「平均功率会把
+                      『4 分钟 400W + 4 分钟 100W』和『全程 250W』
+                      显示成同一个数字，而这两件事在训练上完全不同。」
+                  */}
+                  {s.powerSeries && s.powerSeries.length > 1 ? (
+                    <View className="chc__trend">
+                      <Text className="chc__card-t">功率曲线</Text>
+                      <SeriesChart
+                        series={s.powerSeries}
+                        name="功率曲线"
+                        unit=" W"
+                        peakNote="（原始峰值见上）"
+                      />
+                    </View>
+                  ) : (
+                    <Text className="chc__note">这一场没有功率过程序列（只有汇总值）。</Text>
+                  )}
                 </View>
               ))
             ) : (

@@ -78,6 +78,14 @@ function shuffled<T>(list: readonly T[], seed: number): T[] {
  *
  *   moulding / gilt / double / bevel 是更早一轮做的，留着。
  *
+ *   ── 第二批（同样来自读者给的链接）──────────────────────────
+ *   antique   复古金框    细金带 + 一道内阶，几乎不留卡纸
+ *   baroque   复古银框    繁复**雕花**银框（最厚的一枚）
+ *   lace      蕾丝边      米白蕾丝 + **扇贝形**内缘
+ *   gothic    椭圆黑蕾丝  黑色 + **波浪/尖拱**内缘
+ *   barbed    铁丝网      细黑**枝桠带刺**的方框
+ *   gnarl     哥特枝桠    黑色有机、边缘**不规则**（滴与刺）
+ *
  * ⚠️⚠️ **没有「无框」这一档。** 原来有个 `float`（无框画布，只靠投影），
  *    读者 2026-09-30 明确否掉了：「也不允许出现池塘这幅这样**没有画框**的」。
  *    ⇒ 每一种做法都必须**看得出来是个框**（有边、有卡纸或有一圈线）。
@@ -94,6 +102,13 @@ export const FRAME_STYLES = [
   'gilt',
   'double',
   'bevel',
+  // 读者 2026-09-30 第二批（6 个 pinterest 链接，同样逐张下载看过）
+  'antique',
+  'baroque',
+  'lace',
+  'gothic',
+  'barbed',
+  'gnarl',
 ] as const;
 
 export type FrameStyle = (typeof FRAME_STYLES)[number];

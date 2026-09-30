@@ -747,6 +747,123 @@ check(
   lineBad[0] ?? '全部以 M 开头',
 );
 
+// ══════════════════════════════════════════════════════════════
+// 2026-09-30 第三轮：平滑曲线 / 能读出数 / 功率弹窗要有曲线
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * ── S：曲线必须是**平滑**的 ──────────────────────────────────
+ *
+ * ⚠️ 读者 2026-09-30：「CHEALTH 里的这些线要改为平滑曲线」。
+ *    在这之前 `Spark` 用的是 `L`（13 段折线），宽屏上看起来是锯齿。
+ *
+ * ⚠️ 判据是「`d` 里有 `C`（三次贝塞尔）」——
+ *    **不是**「看起来圆不圆」。形状这件事截图说了不算，
+ *    而 `d` 里有没有 `C` 是二值的。
+ * ⚠️ 只看 `.chc__line`（数据线）：`.chc__area` 是面积包络，
+ *    它本来就该是直线段拼的底边。
+ */
+// ⚠️⚠️ **必须先把弹窗打开再做这两组**。
+//    第一次写的时候直接在主页面找 `.chc__spark` —— 找到了元素、`getBoundingClientRect()`
+//    也返回了坐标，但那块图**不在视口里**（`.stack` 停在别的屏）⇒ 鼠标移过去落在
+//    别的地方 ⇒ 气泡当然不出现。**而失败信息说的是「没有 .chc__tip」，
+//    看起来像功能没做。**
+//    ⇒ 判据要在一个**确定可见**的容器里做。
+await page.evaluate(() => {
+  const cells = [...document.querySelectorAll('.igrid__cell')];
+  if (cells[1]) cells[1].click(); // 周对比（里面有两张趋势线）
+});
+await page.waitForTimeout(800);
+
+const curvy = await page.evaluate(() => {
+  const root = document.querySelector('.sheet__panel') || document;
+  return [...root.querySelectorAll('.chc__line')]
+    .map((n) => (n.getAttribute('d') || '').trim())
+    .filter((d) => d.length > 0)
+    .map((d) => ({ hasC: /C[\d.-]/.test(d), len: d.length }));
+});
+check(
+  '曲线上真的有三次贝塞尔（平滑，不是折线）',
+  curvy.length > 0 && curvy.every((c) => c.hasC),
+  curvy.length ? `${curvy.filter((c) => c.hasC).length}/${curvy.length} 段是曲线` : '(没找到 .chc__line)',
+);
+
+/**
+ * ── T：放上去 / 点一下**要能读出数** ─────────────────────────
+ *
+ * ⚠️ 读者 2026-09-30：「鼠标或者放上去或者点击的时候要有数据，
+ *    **不能什么数据都不体现**」。
+ *    在这之前这几张图是**纯装饰**：没有交互，也没有任何读数。
+ *
+ * ⚠️ 判据要**同时**查三件事，缺一条这个功能就等于没有：
+ *    ① 气泡出现（`.chc__tip`）
+ *    ② 气泡里有**日期**（哪一天）
+ *    ③ 气泡里有**数值**（不是空的、不是 `—`）
+ *    ⚠️ 只查 ① 的话，「气泡出来了但是空的」会全绿 ——
+ *      而那正是这个项目栽过很多次的那种失败。
+ */
+const tipBox = await page.evaluate(() => {
+  const root = document.querySelector('.sheet__panel') || document;
+  const svg = root.querySelector('.chc__spark');
+  if (!svg) return null;
+  const r = svg.getBoundingClientRect();
+  return { x: r.x + r.width * 0.62, y: r.y + r.height / 2 };
+});
+let tipRead = null;
+if (tipBox) {
+  await page.mouse.move(tipBox.x, tipBox.y);
+  await page.waitForTimeout(350);
+  tipRead = await page.evaluate(() => {
+    const root = document.querySelector('.sheet__panel') || document;
+    const t = root.querySelector('.chc__tip');
+    if (!t) return { open: false };
+    return {
+      open: true,
+      k: (t.querySelector('.chc__tip-k') || {}).textContent || '',
+      v: (t.querySelector('.chc__tip-v') || {}).textContent || '',
+      cursor: root.querySelectorAll('.chc__cursor').length,
+    };
+  });
+  // 移开，免得影响后面的断言
+  await page.mouse.move(2, 2);
+  await page.waitForTimeout(200);
+}
+check(
+  '放到曲线上会弹出读数气泡',
+  !!tipRead && tipRead.open,
+  tipRead ? (tipRead.open ? `${tipRead.k} → ${tipRead.v}` : '(没有 .chc__tip)') : '(页面上没有 .chc__spark)',
+);
+check(
+  '读数气泡里**有日期**（不只是个数字）',
+  !!tipRead && tipRead.open && /\d/.test(tipRead.k),
+  tipRead?.k || '(空)',
+);
+check(
+  '读数气泡里**有数值**（不是空的、不是破折号）',
+  !!tipRead && tipRead.open && /\d/.test(tipRead.v),
+  tipRead?.v || '(空)',
+);
+check(
+  '读数时那一点上有位置标记',
+  !!tipRead && tipRead.open && tipRead.cursor > 0,
+  tipRead ? `cursor=${tipRead.cursor}` : '',
+);
+check(
+  '没碰它的时候有「可以点」的提示',
+  (await page.evaluate(() => {
+    const root = document.querySelector('.sheet__panel') || document;
+    return [...root.querySelectorAll('.chc__hint')].length;
+  })) > 0,
+  '（没有 .chc__hint 的话，读者不知道这张图能读）',
+);
+
+// 关掉弹窗，别影响后面的断言
+await page.evaluate(() => {
+  const s2 = document.querySelector('.sheet');
+  if (s2) s2.click();
+});
+await page.waitForTimeout(300);
+
 // ⚠️ 单场运动是**另一个**触发点（点列表卡片，不是点图标格），单独走一遍。
 const sessOpened = await page.evaluate(() => {
   const c = document.querySelector('.chc__sess');
