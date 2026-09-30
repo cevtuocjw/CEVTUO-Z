@@ -933,7 +933,18 @@ check(
 //      · 末端圆点必须落在弧上（离圆心 ≈ 半径），而不是飘在别处
 const gauges = await page.evaluate(() => {
   const out = [];
-  for (const g of document.querySelectorAll('.chc__gauge')) {
+  /**
+   * ⚠️⚠️ **限定在弹窗里查**，不是全文档。
+   *
+   *    原来写的是 `document.querySelectorAll('.chc__gauge')` —— 于是
+   *    「弹窗里有几个」这个问题，答的是「整个文档里有几个」。
+   *    今天恰好相等，所以一直没人发现；等页面别处也出现这个类，
+   *    它就会开始数进**不属于弹窗**的那些（而失败信息只会说个数不对）。
+   *    ⇒ 判据要问**弹窗自己**。和画廊验证器里「一切查询限定到当前可见的
+   *      `.taro_page`」是同一条。
+   */
+  const root = document.querySelector('.sheet__panel') || document;
+  for (const g of root.querySelectorAll('.chc__gauge')) {
     const svg = g.querySelector('svg');
     const paths = svg ? [...svg.querySelectorAll('path')] : [];
     const arc = paths.find((p) => p.classList.contains('chc__gauge-arc'));
@@ -961,7 +972,15 @@ const gauges = await page.evaluate(() => {
   return out;
 });
 
-check('达标弹窗里有仪表盘（步数 + 睡眠两个）', gauges.length === 2, `${gauges.length} 个`);
+/**
+ * ⚠️ **是四个，不是两个** —— 这条原来写「步数 + 睡眠两个」，后来达标弹窗
+ *    又加了「活动时间达标率」和「运动次数达标率」（读者要的「能展示的都展示
+ *    出来」），而断言没跟着改，于是它一直红。
+ *    ⚠️ 但它红得**有价值**：它证明的正是「弹窗里确实有仪表盘」这件事，
+ *      只是数字过时了。数字要跟着产品走，**判据本身不能松**
+ *      （所以不是改成 `>= 2`，是改成确切的 4 —— 少一个也要红）。
+ */
+check('达标弹窗里有仪表盘（步数 / 睡眠 / 活动时间 / 运动次数 四个）', gauges.length === 4, `${gauges.length} 个`);
 check(
   '每个仪表盘都有轨道 + 进度弧 + 末端圆点',
   gauges.every((g) => g.paths === 2 && g.hasArc),
