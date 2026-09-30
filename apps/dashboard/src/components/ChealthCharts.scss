@@ -130,7 +130,24 @@ $chart-h: 74px;
     color: var(--m, currentColor);
   }
 
-  &__spark { width: 100%; height: 48px; display: block; }
+  // ⚠️⚠️ `height` 必须是 `auto`，**不能写死 48px**。
+  //
+  //    高度一旦写死，组件上那个 `style={{ aspectRatio }}`（见
+  //    ChealthCharts.tsx）就**完全不参与计算** —— 而 `preserveAspectRatio="none"`
+  //    于是把曲线横向拉 **2.19 倍**（viewBox 300 宽、盒子 656 宽）：
+  //    每个斜率都变缓，描边被拉成横着的椭圆。读者 2026-09-30：
+  //    「变成宽屏这些曲线只是被拉伸，很不好看」。
+  //
+  //    ⚠️⚠️ 而**这个改动看起来像「删掉一个高度」，特别简单** ——
+  //       那正是危险的地方：写死高度时的页面**照样渲染**，
+  //       只是形状被拉扁，**一声不吭**。
+  //       ⇒ 我第一版只加了组件上的 `aspectRatio` 就以为修好了，
+  //         量了一下才发现盒子还是 656×48 —— **是量出来的，不是看出来的**。
+  &__spark {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
 
   // ⚠️ Native <svg>: `style` must be an OBJECT. A string here is React #62 and
   // takes the whole page white — the same mistake as the reading charts.
