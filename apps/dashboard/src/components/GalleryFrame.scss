@@ -214,31 +214,220 @@
     inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-// ── ③ float：无框画布 ─────────────────────────────────────────
-// 没有外框也没有卡纸 —— 照片自己就是那块布。
-// ⚠️ 让它「离开墙」的**只有投影**，所以投影必须**厚而软**：
-//    薄投影会让它看起来像一张贴纸。
-.gal--frame-float {
-  --gal-frame-pad: 0px;
+// ── ③–⑨ 读者给的参考图（2026-09-30 逐张下载看过）────────────
+//
+// ⚠️⚠️ **这里没有「无框」这一档。** 原来有个 `float`（无框画布，只靠投影），
+//    读者明确否掉了：「也不允许出现池塘这幅这样**没有画框**的」。
+//    ⇒ 每一种都必须**看得出来是个框**：有边、有卡纸、或有一圈线。
+//    ⚠️ 验证器里那条「每一枚都有可见的框」是靠
+//      「`.gal__frame` 的 padding > 0 **且** 它不是透明的」判的 ——
+//      不写那条的话，把某个做法改回无框**在页面上是看不出来的**
+//      （它只是「显得轻了一点」）。
+
+// ── ③ ornate：油画外框（厚重、深色、多道线脚）────────────────
+.gal--frame-ornate {
+  --gal-frame-pad: 16px;
+  --gal-mat-pad: 5px;
+}
+
+.gal--frame-ornate .gal__frame {
+  border-radius: 2px;
+  background: linear-gradient(158deg, #241d16 0%, #16110c 48%, #2c2318 100%);
+  // ⚠️ 三条 `inset` 叠出「线脚」：亮金线 / 暗槽 / 再一条金线 ——
+  //    单色厚边只会读成「一圈粗描边」，读不出是**有截面的木头**。
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.44),
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 2px rgba(198, 166, 106, 0.5),
+    inset 0 0 0 5px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 6px rgba(198, 166, 106, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+.gal--frame-ornate .gal__mat {
+  background: linear-gradient(170deg, #6b5636 0%, #46361f 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+// ── ④ gallery：极简细框 + **很大**的卡纸 + 小照片 ─────────────
+// ⚠️ 它的识别点是**比例**，不是颜色：框只有 2px，卡纸占掉一大圈，
+//    照片因此很小。把卡纸调小它就退化成「另一个 moulding」。
+.gal--frame-gallery {
+  --gal-frame-pad: 2px;
+  --gal-mat-pad: 34px;
+}
+
+.gal--frame-gallery .gal__frame {
+  background: linear-gradient(160deg, #3a3a3c 0%, #1c1c1e 100%);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.gal--frame-gallery .gal__mat {
+  background: linear-gradient(170deg, #dad6cd 0%, #c6c1b6 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+}
+
+// ── ⑤ tray：银器托盘（银渐变 + 珠串边 + 圆角口沿）──────────────
+.gal--frame-tray {
+  --gal-frame-pad: 14px;
+  --gal-mat-pad: 9px;
+}
+
+.gal--frame-tray .gal__frame {
+  border-radius: 10px;
+  background: linear-gradient(
+    150deg,
+    #eef1f4 0%,
+    #a7afb6 24%,
+    #e2e7eb 46%,
+    #8a9299 70%,
+    #ccd3d8 100%
+  );
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.gal--frame-tray .gal__mat {
+  border-radius: 6px;
+  // ⚠️ 珠串边：一层铺满小圆点的径向渐变叠在银底上。
+  //    照片把中间盖掉，于是**只有露出来的那圈**看得见珠子 ——
+  //    这就是「一圈珠边」，不用去算环形的几何。
+  background:
+    radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.95) 1.6px, rgba(0, 0, 0, 0) 1.8px),
+    linear-gradient(160deg, #f2f4f6 0%, #c9cfd4 100%);
+  background-size:
+    8px 8px,
+    auto;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.26);
+}
+
+// ── ⑥ arch：拱顶金属框（拉丝板 + 拱形开口）────────────────────
+// ⚠️ 拱形靠**卡纸的 `border-radius` 百分比写法**做出来
+//    （上面两个角各 46%/28%，下面两个角是直角），
+//    `overflow: hidden` 把照片一起裁成拱形。
+//    外框仍然是方的 —— 那正是参考图的样子：一块金属板开了个拱形的洞。
+.gal--frame-arch {
+  --gal-frame-pad: 12px;
+  --gal-mat-pad: 4px;
+}
+
+.gal--frame-arch .gal__frame {
+  background:
+    repeating-linear-gradient(
+      92deg,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      rgba(0, 0, 0, 0.05) 1px 3px
+    ),
+    linear-gradient(150deg, #d2d7db 0%, #98a0a6 40%, #c8ced3 62%, #828a90 100%);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.gal--frame-arch .gal__mat {
+  border-radius: 46% 46% 2px 2px / 26% 26% 2px 2px;
+  background: linear-gradient(170deg, #242930 0%, #14171b 100%);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+// ── ⑦ ricrac：织物滚边（帆布织纹 + 锯齿滚边）──────────────────
+.gal--frame-ricrac {
+  --gal-frame-pad: 11px;
+  --gal-mat-pad: 12px;
+}
+
+.gal--frame-ricrac .gal__frame {
+  // ⚠️ 两个方向的细条纹交叉 = 帆布的经纬织纹。
+  //    单向条纹读成「拉丝金属」，交叉才读成「布」。
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.055) 0 1px, rgba(255, 255, 255, 0.05) 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.055) 0 1px, rgba(255, 255, 255, 0.05) 1px 3px),
+    linear-gradient(160deg, #e9e3d6 0%, #d3cbb9 100%);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+.gal--frame-ricrac .gal__mat {
+  background: linear-gradient(170deg, #f8f5ef 0%, #e9e4da 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+// ⚠️ 锯齿滚边本身 —— 用内联 SVG 画一段折线再横向平铺。
+//    用 `conic-gradient` 做不出尖角（它给的是扇形），
+//    用 `clip-path` 要手写几十个顶点且改尺寸就废。
+.gal--frame-ricrac .gal__mat::before,
+.gal--frame-ricrac .gal__mat::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 6px;
+  background-repeat: repeat-x;
+  background-size: 12px 6px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 5 L3 1 L6 5 L9 1 L12 5' fill='none' stroke='%23a8603a' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+
+.gal--frame-ricrac .gal__mat::before {
+  top: 3px;
+}
+
+.gal--frame-ricrac .gal__mat::after {
+  bottom: 3px;
+}
+
+// ── ⑧ polaroid：拍立得（白框，**底边特别宽**）──────────────────
+.gal--frame-polaroid {
+  --gal-frame-pad: 10px;
   --gal-mat-pad: 0px;
 }
 
-.gal--frame-float .gal__frame {
-  border-radius: 2px;
-  background: transparent;
-  box-shadow: none;
+.gal--frame-polaroid .gal__frame {
+  background: linear-gradient(170deg, #fcfbf8 0%, #eeeae2 100%);
+  // ⚠️ 底边多出来的那一截就是「拍立得」三个字的全部 ——
+  //    四边等宽的话它只是一张白边的照片。
+  padding-bottom: calc(var(--gal-frame-pad, 10px) + 30px);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
-.gal--frame-float .gal__mat {
-  border-radius: 2px;
-  background: transparent;
-  // 画布包在木条上的那点厚度：底边一条更亮的边，顶上压暗一点
+.gal--frame-polaroid .gal__mat {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+// ── ⑨ film：胶片（深色片基 + 上下齿孔）───────────────────────
+.gal--frame-film {
+  --gal-frame-pad: 9px;
+  --gal-mat-pad: 5px;
+}
+
+.gal--frame-film .gal__frame {
+  background-color: #131416;
+  // ⚠️ 两排齿孔：每 12px 一个白点，只在上下两条上重复（`repeat-x`），
+  //    所以中间那片是片基本色。
+  background-image:
+    radial-gradient(circle at 6px 4px, rgba(255, 255, 255, 0.88) 2px, rgba(0, 0, 0, 0) 2.2px),
+    radial-gradient(circle at 6px calc(100% - 4px), rgba(255, 255, 255, 0.88) 2px, rgba(0, 0, 0, 0) 2.2px);
+  background-size: 12px 100%;
+  background-repeat: repeat-x;
   box-shadow:
-    0 30px 58px rgba(0, 0, 0, 0.46),
-    0 8px 20px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-    inset 0 -4px 0 rgba(255, 255, 255, 0.1),
-    inset 0 3px 6px rgba(0, 0, 0, 0.35);
+    0 14px 30px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.gal--frame-film .gal__mat {
+  background: linear-gradient(170deg, #1d1f22 0%, #101113 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
 // ── ④ double：双层卡纸 ────────────────────────────────────────
@@ -394,12 +583,33 @@
     left: var(--gal-inset-n, var(--gal-inset, 48px));
   }
 
-  // ⚠️ `float` 是「无框画布」—— 窄屏也必须无框。
-  //    不写这条的话它会被上面那档压成 5px/6px，等于给画布描了一圈边。
-  //    ⚠️ 要排在 `.gal` **之后**（同特异型）。
-  .gal--frame-float {
-    --gal-frame-pad: 0px;
+  // ⚠️ 窄屏下画框只有 156px 宽，**卡纸得跟着收** ——
+  //    `gallery` 的 34px 卡纸在 156 里会吃掉一半，照片只剩 78px。
+  //    ⚠️ 这几条**必须排在 `.gal` 那一档之后**（同特异型，后写的赢）——
+  //      这个项目为「媒体查询不增加特异型」栽过四次。
+  .gal--frame-gallery {
+    --gal-mat-pad: 14px;
+  }
+
+  .gal--frame-ornate,
+  .gal--frame-tray,
+  .gal--frame-ricrac {
+    --gal-frame-pad: 7px;
+    --gal-mat-pad: 5px;
+  }
+
+  .gal--frame-polaroid {
+    --gal-frame-pad: 6px;
     --gal-mat-pad: 0px;
+  }
+
+  .gal--frame-polaroid .gal__frame {
+    padding-bottom: calc(var(--gal-frame-pad, 6px) + 16px);
+  }
+
+  .gal--frame-film {
+    --gal-frame-pad: 6px;
+    --gal-mat-pad: 3px;
   }
 
   // 双层卡纸的缝在小尺寸上要收紧，否则会跑到照片上

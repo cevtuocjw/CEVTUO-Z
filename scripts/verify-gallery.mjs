@@ -69,12 +69,26 @@ const BASE = (process.argv[2] || 'http://127.0.0.1:8125/z').replace(/\/$/, '');
  *      **夹具要按页给，不能只给需要区分的那些页。**
  */
 const PAGES = [
-  { key: 'home', file: 'g02', frames: 3, side: 'right', photos: ['g08', 'g07', 'g09'] },
-  { key: 'coof', file: 'g03', frames: 0, side: null, photos: [] },
-  { key: 'cnsr', file: 'g01', frames: 1, side: 'left', photos: ['g01'] },
-  { key: 'paperr', file: 'g05', frames: 1, side: 'left', photos: ['g05'] },
-  { key: 'chealth', file: 'g04', frames: 1, side: 'left', photos: ['g04'] },
+  { key: 'home', frames: 3, side: 'right' },
+  { key: 'coof', frames: 0, side: null },
+  { key: 'cnsr', frames: 1, side: 'left' },
+  { key: 'paperr', frames: 1, side: 'left' },
+  { key: 'chealth', frames: 1, side: 'left' },
 ];
+
+/**
+ * ⚠️⚠️ **夹具（`photos`）没了，而且是故意的。**
+ *
+ *    读者 2026-09-30：「所有的画和所有的画框要每次刷新都随机出」——
+ *    于是**没有任何一张图或一种做法是可以写死的**。
+ *
+ *    ⚠️ 那原来靠 `photos` 挡的那个坑（Taro 换页时读到**上一页残留的画框**）
+ *      现在谁来挡？—— `window.__root()`。它把查询限定在**当前可见的**
+ *      `.taro_page` 上，旧页面是 `display:none`，于是根本查不到。
+ *      **一个机制同时解决了两个问题**，这比再加一份夹具稳。
+ *      ⚠️ 但前提是 `__root()` 真的在用 —— 去掉它，这条会静默失效。
+ */
+const POOL = ['g01','g02','g03','g04','g05','g06','g07','g09','g10'];
 
 const results = [];
 function check(name, ok, detail) {
@@ -98,21 +112,60 @@ function check(name, ok, detail) {
  *    15 秒后抛 `TimeoutError`，**后面 40 多条断言一条都没跑**。
  *    崩溃会把「一条断言失败」伪装成「验证器坏了」。
  */
-async function waitFrames(page, n, photos) {
+async function waitFrames(page, n, key) {
+  // ⚠️ 先等**路由真的切过去** —— 只等「有几枚画框」会满足于**上一页**那一枚。
+  if (key) {
+    await page.waitForFunction((k) => (location.hash || '').includes(`/pages/${k}/`), key, {
+      timeout: 15000,
+    });
+  }
+  /**
+   * ⚠️⚠️ 再等「**只剩一个可见的 `.taro_page`**」。
+   *
+   *    换页时新旧两页会**同时可见**一小会儿，而「取第一个」和「取最后一个」
+   *    都只是**猜**新页在前还是在后 —— 实测两种都读到过上一页。
+   *    ⇒ 唯一靠得住的判据是「过渡结束了」：可见页只剩一个。
+   *      那时不管取哪个都对。
+   *
+   * ⚠️ 反例（没等这个时的现场）：CNSR 和 CAPPERR 每次都拿到**完全一样**的
+   *    做法和照片 —— 看起来像「随机分配算错了」，其实是**读错了页面**。
+   */
   await page.waitForFunction(
-    ({ n, photos }) => {
+    () =>
+      [...document.querySelectorAll('.taro_page')].filter(
+        (el) => getComputedStyle(el).display !== 'none',
+      ).length === 1,
+    undefined,
+    { timeout: 15000 },
+  );
+  // ⚠️ 壁纸也要等 —— `applyBackground` 挂在 `hashchange` 上，比 React 渲染**晚**。
+  //    不等的话 C 断言会读到预热前的那份兜底样式（实测红过一次）。
+  await page.waitForFunction(
+    () => {
+      // ⚠️ 必须用**同一个 `__root()`**，不能另写一个「取第一个可见页」——
+      //    两处选页不一样的话，等的是 A 页、量的是 B 页，
+      //    于是「等到了」和「量到的是预热前那份」同时成立（实测窄屏红过一次）。
+      const w = window.__root().querySelector('.cevtuo-wallpaper');
+      return !!w && getComputedStyle(w).backgroundImage.includes('/gallery/');
+    },
+    undefined,
+    { timeout: 15000 },
+  );
+  // ⚠️ 过渡结束后**再停一拍**：React 可能还会把最后一枚画框换上去，
+  //    而那时图还没解码完 ⇒ `B`（图真的渲染了）会偶发红。
+  //    实测：三次里红过一次（`naturalWidth=0`）。**碰运气的断言在慢机器上
+  //    会随机变红，那比没有断言更糟** —— 所以这里等一拍，不是等运气。
+  await page.waitForTimeout(350);
+  await page.waitForFunction(
+    ({ n }) => {
       const frames = [...window.__root().querySelectorAll('.gal')];
       if (frames.length !== n) return false;
       if (!n) return true;
       const imgs = frames.map((f) => f.querySelector('.gal__photo'));
       if (imgs.some((i) => !i || !i.complete || i.naturalWidth === 0)) return false;
-      if (photos && photos.length) {
-        const got = imgs.map((i) => (i.getAttribute('src') || '').split('/').pop());
-        return photos.every((p, k) => got[k] === `${p}.jpg`);
-      }
       return true;
     },
-    { n, photos: photos ?? [] },
+    { n },
     { timeout: 20000 },
   );
 }
@@ -149,10 +202,31 @@ const browser = await chromium.launch();
  *
  *    ⇒ 一切查询都限定到**当前可见的那个 `.taro_page`**。
  */
-const ROOT = () =>
-  [...document.querySelectorAll('.taro_page')].find(
+const ROOT = () => {
+  const visible = [...document.querySelectorAll('.taro_page')].filter(
     (el) => getComputedStyle(el).display !== 'none',
-  ) || document;
+  );
+  /**
+   * ⚠️⚠️ **优先挑「壁纸已经上过图」的那一页。**
+   *
+   *    换页时新旧两页会同时可见，而新页刚插进来时它的 `.cevtuo-wallpaper`
+   *    还是 `index.html` 里那份**预热前的兜底渐变**（`applyBackground` 挂在
+   *    `hashchange` 上，比 React 渲染晚）。
+   *
+   *    ⚠️ 只按「第一个 / 最后一个」挑**都会挑中它** —— 实测两种都读到过
+   *      上一页或半成品页，症状是 `C`（背景是画廊里的一张）**随机红一页**，
+   *      看起来像「背景有时候没换」，其实是**读错了页面**。
+   *
+   *    ⇒ 判据用「这一页准备好了没有」，不用「它在 DOM 里排第几」。
+   *      位置是实现的细节，准备好了才是我们要的那一页。
+   */
+  const ready = visible.filter((el) => {
+    const w = el.querySelector('.cevtuo-wallpaper');
+    return !!w && getComputedStyle(w).backgroundImage.includes('/gallery/');
+  });
+  return ready[ready.length - 1] || visible[visible.length - 1] || document;
+};
+
 // ⚠️ 视口可以换（`VW=390 ...`）——
 //    画框在窄屏有一档完全不同的尺寸**和一条不同的让位规则**，
 //    **只在 1440 下全绿说明不了窄屏**。
@@ -180,14 +254,17 @@ const page = await ctx.newPage();
  *      而「无让位」时它恒等。**一个数都不用挑。**
  */
 const padLefts = [];
+/** ⚠️ 全局收集：做法和照片。用来查「不许重样」。 */
+const allStyles = [];
+const allPhotos = [];
 
 try {
   // ── A–D / H–P：逐页检查 ─────────────────────────────────────
   for (const P of PAGES) {
     await page.goto(`${BASE}/#/pages/${P.key}/index`, { waitUntil: 'domcontentloaded' });
-    await waitFrames(page, P.frames, P.photos);
+    await waitFrames(page, P.frames, P.key);
 
-    const info = await page.evaluate(() => {
+    const readInfo = () => page.evaluate(() => {
       const frames = [...window.__root().querySelectorAll('.gal')];
       const wall = window.__root().querySelector('.cevtuo-wallpaper');
       const bg = wall ? getComputedStyle(wall).backgroundImage : '';
@@ -202,6 +279,17 @@ try {
             natural: img ? img.naturalWidth : 0,
             draggable: img ? img.draggable : null,
             z: getComputedStyle(el).zIndex,
+            style: String(el.className).match(/gal--frame-([a-z]+)/)?.[1] ?? '?',
+            framePad: (() => {
+              const fr = el.querySelector('.gal__frame');
+              return fr ? parseFloat(getComputedStyle(fr).paddingTop) : -1;
+            })(),
+            frameBg: (() => {
+              const fr = el.querySelector('.gal__frame');
+              if (!fr) return 'none';
+              const cs = getComputedStyle(fr);
+              return cs.backgroundImage !== 'none' ? cs.backgroundImage : cs.backgroundColor;
+            })(),
             rect: { x: r.x, y: r.y, w: r.width, h: r.height },
           };
         }),
@@ -215,6 +303,22 @@ try {
       };
     });
 
+    /**
+     * ⚠️ **有界重读**（最多 3 次），不是调阈值。
+     *
+     *    壁纸是 `applyBackground` 在 `hashchange` 之后**异步**写上去的，
+     *    而它和「读一次」之间有一瞬 —— 实测宽屏和窄屏**各偶发红过一次**，
+     *    红的都是 `C`（读到预热前那份兜底渐变）。
+     *    ⚠️ 判据没有放宽（还是「必须匹配到画廊里的一张」）——
+     *      只是允许**再读一次**。放宽阈值会把真问题一起漏过去，
+     *      重读不会：真的没换过的话三次都读不到。
+     */
+    let info = await readInfo();
+    for (let attempt = 0; attempt < 3 && !/gallery\/g0\d+\.jpg/.test(info.bg); attempt += 1) {
+      await page.waitForTimeout(400);
+      info = await readInfo();
+    }
+
     check(
       `A ${P.key} 画框枚数 = ${P.frames}`,
       info.count === P.frames,
@@ -225,11 +329,11 @@ try {
       info.frames.every((f) => f.natural > 0),
       P.frames ? info.frames.map((f) => f.natural).join(', ') : '(没有画框，无需检查)',
     );
+    const bgName = (info.bg.match(/gallery\/(g0\d+)\.jpg/) || [])[1] || '';
     check(
-      `C ${P.key} 背景换成了画廊的 ${P.file}.jpg`,
-      info.bg.includes(`/gallery/${P.file}.jpg`) &&
-        !/static\/(home|coof|cnsr|paperr|chealth)\.jpg/.test(info.bg),
-      info.bg.slice(0, 110),
+      `C ${P.key} 背景是画廊里的一张（不是老的五张背景图）`,
+      POOL.includes(bgName) && !/static\/(home|coof|cnsr|paperr|chealth)\.jpg/.test(info.bg),
+      `bg=${bgName || '(没有)'} ` + info.bg.slice(0, 70),
     );
     check(
       `D ${P.key} 画框在${P.side === 'right' ? '右' : P.side === 'left' ? '左' : '（无）'}侧`,
@@ -365,11 +469,60 @@ try {
       const names = info.frames.map((f) => f.src.split('/').pop());
       check(
         `O ${P.key} 每一枚放的是不同的图（且都不是背景那张）`,
-        new Set(names).size === names.length && !names.includes(`${P.file}.jpg`),
+        new Set(names).size === names.length && !names.includes(`${bgName}.jpg`),
         names.join(', '),
       );
     }
+
+    // ── R：每一枚都**看得出来是个框** ──────────────────────────
+    /**
+     * ⚠️ 读者 2026-09-30：「也不允许出现池塘这幅这样**没有画框**的」。
+     *
+     *    判据是「外框有厚度（padding > 0）**且**它自己在画东西
+     *    （背景不是透明的）」—— 两条都要：
+     *      · 只查 padding：一个 `padding: 0` 但带描边的框会被误杀；
+     *      · 只查背景：一个 `transparent` 背景 + 纯投影的「无框画布」
+     *        正是要挡的那个（它**看起来就是没框**）。
+     *    ⚠️ 不写这条的话，把某个做法改回无框**在页面上看不出来** ——
+     *      它只是「显得轻了一点」。
+     */
+    const noFrame = info.frames
+      .map((f, i) => ({ i, ...f }))
+      .filter((f) => !(f.framePad > 0) || f.frameBg === 'none' || f.frameBg === 'transparent');
+    check(
+      `R ${P.key} 每一枚都有可见的框（不是无框画布）`,
+      noFrame.length === 0,
+      P.frames
+        ? info.frames.map((f) => `pad=${f.framePad} ${String(f.frameBg).slice(0, 22)}`).join(' | ')
+        : '(没有画框)',
+    );
+
+    for (const f of info.frames) allStyles.push(f.style);
+    allPhotos.push(...info.frames.map((f) => f.src.split('/').pop()));
   }
+
+  /**
+   * ── Q：⚠️ **全站的做法不许重样** ─────────────────────────────
+   *
+   *    读者 2026-09-30：「CNSR 和主页上的画框是一样的，这种不允许出现」。
+   *    ⚠️ 这一条**必须全局查**，不能一页一页查 ——
+   *      重样恰恰是发生在**两页之间**的，而每一页单独看都「有画框、方向对」。
+   */
+  check(
+    'Q 全站画框做法互不重样（读者：CNSR 和主页不许一样）',
+    new Set(allStyles).size === allStyles.length,
+    allStyles.join(', '),
+  );
+  check(
+    'Q 全站画框里的照片也互不重样',
+    new Set(allPhotos).size === allPhotos.length,
+    allPhotos.join(', '),
+  );
+  check(
+    'Q 没有用到已删掉的池塘那张（g08）',
+    !allPhotos.includes('g08.jpg') && !allStyles.includes('float'),
+    `photos=${allPhotos.join(',')} styles=${allStyles.join(',')}`,
+  );
 
   // ── P：内边距不随画框变化（见上面那段）──────────────────────
   const uniq = [...new Set(padLefts.map(([, v]) => v))];
@@ -381,7 +534,7 @@ try {
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, PAGES[0].photos);
+  await waitFrames(page, 3, 'home');
   // ⚠️ 等过渡走完再读，否则读到的是上一段过渡的中间值。
   await page.waitForTimeout(700);
 
@@ -441,7 +594,7 @@ try {
    *      （宽屏一直没暴露，就是因为那一按落在空的页边距里。）
    */
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, PAGES[0].photos);
+  await waitFrames(page, 3, 'home');
   await page.waitForTimeout(300);
 
   // 离开
@@ -476,7 +629,7 @@ try {
    *    ⇒ 后面 N/I/L 要先回到主页，否则测的是别的页面。
    */
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });
-  await waitFrames(page, 3, PAGES[0].photos);
+  await waitFrames(page, 3, 'home');
   await page.waitForTimeout(400);
 
   /**

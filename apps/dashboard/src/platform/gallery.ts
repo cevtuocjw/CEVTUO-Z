@@ -7,46 +7,21 @@
  * ⚠️⚠️ **换图只改这一个文件。** 两处各写一份映射的结果不是「差不多」，
  *    是背景换了画框没换（或者反过来）—— 而两边单独看都正常。
  *
- * ── 怎么换 ────────────────────────────────────────────────────
- *
- * 最快的一条（推荐）：
+ * ── 怎么加图 ──────────────────────────────────────────────────
  *
  *     bash scripts/gallery.sh add ~/Downloads/新照片.jpg
  *
  * 它会把图画质压到 1600px、写进 `apps/dashboard/static/gallery/`、
- * 打印出可用的名字，然后你把下面这张表里的一行改成那个名字就行。
+ * 打印出可用的名字，然后把名字加进下面的 `PHOTOS` 就行。
  *
  * ⚠️ 图放 `apps/dashboard/static/gallery/`，**必须是 jpg**，长边 1600px 以内 ——
  *    这些照片原图是 6016×3384（单张 8MB），直接上站首屏要等十几秒。
- *    `scripts/gallery.sh add` 会替你压；手动放的话记得先压。
- *
- * ⚠️ 下面每一条的注释写的是**那张照片是什么**（我看过图之后写的），
- *    换图时把注释一起改掉 —— 否则下一个人不知道该挑哪张。
  */
-export const GALLERY: Record<string, string> = {
-  // 深浅蓝的玻璃天棚，仰拍，网格状反光
-  home: 'g02',
-  // 两栋高楼夹着一线天，灰白，极简
-  coof: 'g03',
-  // 黄绿色斑驳的墙面转角，画面中央有一枚白色手绘签名
-  cnsr: 'g01',
-  // 木质墙面上一幅深棕色的抽象画（画中画）
-  paperr: 'g05',
-  // 水晶吊灯，暖金色，背景压暗
-  chealth: 'g04',
-};
-
-/** 兜底：任何没在表里的页面用它，而不是「没有图」。 */
-export const GALLERY_FALLBACK = 'g06';
+/** 画廊里所有的照片。⚠️ 换图/加图只改这一行。 */
+const PHOTOS = ['g01', 'g02', 'g03', 'g04', 'g05', 'g06', 'g07', 'g09', 'g10'];
 
 /** 图放在哪 —— 和 `build:h5` 里那条 `cp -R static/.` 对得上。 */
 const DIR = 'static/gallery';
-
-/** 页面 → 可以交给 `<img src>` 的**相对路径**（绝对化在 background.ts / 组件里做）。 */
-export function galleryFile(page: string): string {
-  const name = GALLERY[page] ?? GALLERY_FALLBACK;
-  return `${DIR}/${name}.jpg`;
-}
 
 /** 按**画廊里的名字**取路径（`g07` → `static/gallery/g07.jpg`）。 */
 export function photoFile(name: string): string {
@@ -54,220 +29,200 @@ export function photoFile(name: string): string {
 }
 
 /**
- * 画框的**做法**（不是一个「主题色」的开关 —— 是五种结构不同的框）。
+ * ⚠️⚠️ **每次刷新都重新洗牌**（读者 2026-09-30）：
+ *    「我需要对于所有的画和所有的画框要每次**刷新都随机出**，
+ *      而不是一直保持不变」。
  *
- * ⚠️⚠️ 读者 2026-09-29 第二轮：「这个部分的画框要做更多才可以，你只做啦一种画框，
- *    我要求在网站上的各个地方的画框都不一样」。
+ * ⚠️ 种子在**模块加载时**算一次，同一次加载里所有调用**完全相同** ——
+ *    否则每次 React 重渲染画框都会换一张、页面会闪。
+ *    「刷新变、渲染不变」正是这里要的那个粒度。
  *
- *    所以这五个**不是同一个框换颜色**，是五种真的做法：
- *
- *      moulding  木/金属**有截面的实框** + 米白卡纸 + 照片。经典装裱。
- *      gilt      一条**细亮金线**当外框，卡纸是**深色**的（关系反过来）。
- *      float     无框画布 —— 照片自己就是那块布，**厚而软的投影**让它离开墙。
- *      double    **双层卡纸**：外层米白，内层再一圈，中间留一条细缝。
- *      bevel     金属**倒角**框，45° 的亮面在外，暗面在内。
+ *   ⚠️ 用 `mulberry32` 而不是 `Math.random()`：需要一个**可复现**的序列，
+ *      因为「同一页里两枚画框不能重样」要靠「从洗好的序列里依次取」，
+ *      而不是「随机取、撞了再重取」（后者在池子小的时候会死循环）。
  */
-export type FrameStyle = 'moulding' | 'gilt' | 'float' | 'double' | 'bevel';
+const SEED = (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+
+function mulberry32(a: number) {
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** 洗一份**确定性**的牌（同一个 `seed` 永远得到同一个顺序）。 */
+function shuffled<T>(list: readonly T[], seed: number): T[] {
+  const rnd = mulberry32(seed);
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rnd() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
 
 /**
- * 一枚画框。尺寸**按枚给**，不再是「一页一个尺寸」——
- * 因为主页上要挂好几枚，它们各不一样（读者 2026-09-30：「主页面上放置更多的画框」）。
+ * 画框的**做法**。⚠️ 全部来自读者给的参考图（pin.it 那 7 个链接，
+ * 2026-09-30 逐张下载看过），一个都不是我编的：
  *
- * ⚠️ `anchor` 是**竖直中心落在视口的百分之几**；`inset` 是离它那一侧的屏幕边多少 px。
- * ⚠️ 窄屏（≤700px）用 `narrow` 那一组 —— 手机上画框小得多，而且**贴边挂出去**。
+ *   ornate     油画外框    厚重、深色、多道线脚的雕花木框
+ *   gallery    极简细框    **很细**的深框 + **很大**的浅色卡纸 + 小照片
+ *   tray       银器托盘    银渐变 + **珠串边** + 圆角（托盘的口沿）
+ *   arch       拱顶金属框  拉丝金属板 + **拱形开口**（上面是圆拱）
+ *   ricrac     织物滚边    帆布织纹 + 一圈**锯齿滚边**
+ *   polaroid   拍立得      白框，**底边特别宽**
+ *   film       胶片拼贴    深色片基 + 上下**齿孔**
+ *
+ *   moulding / gilt / double / bevel 是更早一轮做的，留着。
+ *
+ * ⚠️⚠️ **没有「无框」这一档。** 原来有个 `float`（无框画布，只靠投影），
+ *    读者 2026-09-30 明确否掉了：「也不允许出现池塘这幅这样**没有画框**的」。
+ *    ⇒ 每一种做法都必须**看得出来是个框**（有边、有卡纸或有一圈线）。
+ */
+export const FRAME_STYLES = [
+  'ornate',
+  'gallery',
+  'tray',
+  'arch',
+  'ricrac',
+  'polaroid',
+  'film',
+  'moulding',
+  'gilt',
+  'double',
+  'bevel',
+] as const;
+
+export type FrameStyle = (typeof FRAME_STYLES)[number];
+
+/**
+ * ⚠️ 页面的固定顺序 —— 「哪一页拿哪张图 / 哪种做法」都从这个顺序往后数。
+ *    ⚠️ 它必须**稳定**：加一页就往后顺延，不要插在中间（插在中间会让
+ *      所有页的分配整体错位，而那是看不见的）。
+ */
+export const PAGE_ORDER = ['home', 'coof', 'cnsr', 'paperr', 'chealth'] as const;
+
+const PHOTO_DECK = shuffled(PHOTOS, SEED);
+const STYLE_DECK = shuffled(FRAME_STYLES, SEED ^ 0x9e3779b9);
+
+/**
+ * 这一页的背景用哪张。
+ *
+ * ⚠️ 读者：「所有的画……每次刷新都随机出」—— 背景也是「一张画」，
+ *    所以它跟着一起洗。
+ */
+export function galleryFile(page: string): string {
+  const i = Math.max(0, PAGE_ORDER.indexOf(page as (typeof PAGE_ORDER)[number]));
+  return photoFile(PHOTO_DECK[i % PHOTO_DECK.length]!);
+}
+
+/**
+ * ⚠️ 一枚画框的**几何**。几何**不随机** —— 它决定版面，
+ *    而随机的是「长什么样」（`style`）和「里面是哪张」（`photo`）。
+ *    ⚠️ 这两件事必须分开：几何一随机，正文就可能被推到屏幕外
+ *      （这个项目真的干过一次，整页空白而断言全绿）。
  */
 export interface FrameSpec {
-  /** 给 React 当 key，也用来在验证器里点名。 */
   key: string;
   style: FrameStyle;
   side: 'left' | 'right';
-  /** 竖直中心，视口百分比（36~88 —— 再往上碰顶栏，再往下出屏幕）。 */
+  /** 竖直中心，视口百分比。 */
   anchor: number;
   w: number;
   h: number;
   inset: number;
-  /**
-   * ⚠️ **静态倾角**（度）—— 挂着的那点歪。
-   *
-   *    读者 2026-09-30：「所有画框都要有一些角度，不能现在这样过正，
-   *    每个的角度都不一样才可以」。
-   *
-   *    ⚠️ 它和指针跟随的那个 `--tx/--ty` 是**两回事**：
-   *      这个是「这枚画当初就挂歪了」，那边是「你按上去它晃了一下」。
-   *      两个叠在一起才是真的 —— 少了它，画框像用水平仪校过，
-   *      一眼就是排出来的，不是挂上去的。
-   *    ⚠️ 幅度**刻意在 ±2.5° 以内**：再大就变成「贴纸没贴正」。
-   */
+  /** ⚠️ 静态倾角（度）—— 「这枚画当初就挂歪了」。和指针跟随的 tx/ty 是两回事。 */
   rotate: number;
-  /**
-   * 这一枚里放的**是哪张**（画廊里的名字）。不给就用这一页背景那一张。
-   *
-   * ⚠️⚠️ 主页必须**每枚给一张不同的** —— 这是**看了图**才发现的：
-   *    三枚都放 g02（也就是主页背景本身那张）时，无框画布那枚
-   *    和壁纸**糊成一整块**，读不出「这是挂在墙上的另一件东西」，
-   *    只剩框的材料还能认出是个框。
-   *    画框和壁纸**同源**是这里唯一的陷阱：单看 DOM 一切正常。
-   */
-  photo?: string;
-  /**
-   * ⚠️ 这里**没有** `z` 字段 —— 不是漏了。
-   *    三枚画框必须是**同一个** z-index（−1，见 GalleryFrame.scss 那段），
-   *    它们之间的前后由**数组顺序**（也就是 DOM 顺序）决定：
-   *    同一个 z-index 下，后画的在上面。给成 −1/−2/−3 是错的 ——
-   *    壁纸也在 −1，−2/−3 会掉到**壁纸底下**，整枚看不见。
-   */
+  /** 这一枚里放哪张（已洗过，同一页里不重样）。 */
+  photo: string;
   narrow: { w: number; h: number; inset: number };
 }
 
 /**
- * ⚠️⚠️ 读者 2026-09-30 定的三件事，都在这张表里：
+ * ⚠️⚠️ 读者 2026-09-30 定的：
+ *   ① **COOF 不放画框** ② **主页放三枚** ③ **不怕内容压住**（不为画框让位）
+ *   ④ **每次刷新随机** ⑤ **CNSR 和主页的画框不许一样**（⇒ 全局不重样）
+ *   ⑥ **不许出现没有画框的**
  *
- *   ① **COOF 那页不放画框**（`frames()` 对 coof 返回空数组）。
- *   ② **主页放更多**（三枚，尺寸/做法/高度都不同）。
- *   ③ **不怕内容压住** —— 画框是装饰，正文压在上面是对的。
- *      见 `GalleryFrame.scss` 里 `.gal` 的 `z-index` 与窄屏的让位量。
+ * 几何（`anchor`/`w`/`h`/`inset`/`rotate`）是**手挑的**，做法和照片是洗出来的。
  */
-// ⚠️ 三枚的**高度加起来 + 两道缝必须装得进 900 高的视口**：
-//    210 + 20 + 320 + 20 + 230 = 800，从 y=57 起，到 y=862 收。
-//    第一版没算这一条，中枚和下枚在右下角**叠了 65px** —— 而探针说
-//    「三枚都在、都在内容之下」，全绿。**是看截图看出来的。**
-//    ⚠️ 视口矮于 ~820 时它们会开始相叠。这是**故意不处理的**：
-//      矮视口上要么相叠、要么三枚都小到看不清，而读者要的是「更多画框」。
-const HOME_FRAMES: FrameSpec[] = [
-  {
-    key: 'home-a',
-    // 无框画布 —— 最轻的一枚，放在上段
-    style: 'float',
-    photo: 'g08',
-    side: 'right',
-    rotate: -1.8,
-    anchor: 18,
-    w: 200,
-    h: 210,
-    // ⚠️ 读者 2026-09-30：「主屏幕宽屏时候的画框太贴右边了，要更靠左多一大些」。
-    //    48 → 140。同时**不再为它让位**（正文满宽，画框压在它下面）。
-    inset: 140,
-    narrow: { w: 104, h: 118, inset: 60 },
-  },
-  {
-    key: 'home-b',
-    // 经典实木框 —— 主画，最大，正中间
-    style: 'moulding',
-    photo: 'g07',
-    side: 'right',
-    rotate: 1.3,
-    anchor: 50,
-    w: 288,
-    h: 320,
-    inset: 250,
-    narrow: { w: 132, h: 158, inset: 150 },
-  },
-  {
-    key: 'home-c',
-    // 双层卡纸 —— 下段，靠边
-    style: 'double',
-    photo: 'g09',
-    side: 'right',
-    rotate: -0.9,
-    anchor: 83,
-    w: 216,
-    h: 230,
-    inset: 105,
-    narrow: { w: 110, h: 128, inset: 150 },
-  },
+interface FrameGeo {
+  /** ⚠️ 内页的 key 就是页名 —— 验证器靠它点名。 */
+  key: string;
+  anchor: number;
+  w: number;
+  h: number;
+  inset: number;
+  rotate: number;
+  narrow: { w: number; h: number; inset: number };
+}
+
+const HOME_GEO: FrameGeo[] = [
+  { key: 'home-a', anchor: 18, w: 200, h: 210, inset: 200, rotate: -1.8, narrow: { w: 104, h: 118, inset: 60 } },
+  { key: 'home-b', anchor: 50, w: 288, h: 320, inset: 330, rotate: 1.3, narrow: { w: 132, h: 158, inset: 150 } },
+  { key: 'home-c', anchor: 83, w: 216, h: 230, inset: 160, rotate: -0.9, narrow: { w: 110, h: 128, inset: 150 } },
 ];
+
+const PAGE_GEO: Record<string, FrameGeo> = {
+  cnsr: { key: 'cnsr', anchor: 57, w: 304, h: 380, inset: 46, rotate: -1.4, narrow: { w: 156, h: 195, inset: -62 } },
+  paperr: { key: 'paperr', anchor: 46, w: 300, h: 375, inset: 48, rotate: 1.7, narrow: { w: 156, h: 195, inset: -62 } },
+  chealth: { key: 'chealth', anchor: 38, w: 300, h: 375, inset: 52, rotate: -2.2, narrow: { w: 156, h: 195, inset: -62 } },
+};
+
+const PAGE_SIDE: Record<string, 'left' | 'right'> = { home: 'right', cnsr: 'left', paperr: 'left', chealth: 'left' };
 
 /**
  * 这一页要挂哪几枚画框。**空数组 = 这页不挂**（COOF 就是这样）。
  *
- * ⚠️ 主页在**右**、内页在**左**（读者 2026-09-29）。
- *    不是随手挑的：主页那几屏的文字是**左对齐**的，画框在右不挡字；
- *    而内页左边是 hero 和标题、右边是长长的说明，
- *    画框压左边反而落在空白处。⇒ 判据是「哪一边没有字」，不是「哪一边好看」。
+ * ⚠️⚠️ 「做法」和「照片」**从洗好的牌里依次抽**，于是：
+ *      · 同一页里几枚**不重样**（依次抽，不重复）
+ *      · **跨页也不重样** —— 全局第一条从这里开始数
+ *        ⇒ 读者那条「CNSR 和主页的画框是一样的，这种不允许出现」自动成立。
+ *      ⚠️ 牌堆有 11 张做法、9 张照片，而全站一共 6 枚 ⇒ 抽得开。
  */
 export function frames(page: string): FrameSpec[] {
-  // ⚠️⚠️ 读者 2026-09-30：「COOF 这个页面的不放画框，其余的都放」。
-  //    ⇒ 空数组。**注意它同时意味着 `--gal-gutter-left` 不会生效**
-  //      （那条规则挂在 `.page:has(.gal--left)` 上）—— 这是对的：
-  //      没有画框的页面不该白白让掉一条 378px。
+  // ⚠️ 读者 2026-09-30：「COOF 这个页面的不放画框，其余的都放」。
   if (page === 'coof') return [];
 
-  if (page === 'home') return HOME_FRAMES;
+  const pageIdx = Math.max(0, PAGE_ORDER.indexOf(page as (typeof PAGE_ORDER)[number]));
+  // 几何的偏移：前几页各用掉几枚，做法/照片就从那一格往后数
+  const used = PAGE_ORDER.slice(0, pageIdx).reduce((a, p) => a + (p === 'coof' ? 0 : p === 'home' ? 3 : 1), 0);
+  const bg = galleryFile(page).split('/').pop()!.replace('.jpg', '');
 
-  // 其余内页：一枚，在左。竖直位置**按页给**（读者：「位置太固定」）——
-  // 之前五页一律钉在 50%，像同一张图在同一个位置贴了五次。
-  return [
-    {
-      key: page,
-      style: frameStyle(page),
-      side: 'left',
-      anchor: ANCHOR[page] ?? 50,
-      w: WIDE[page]?.w ?? 300,
-      h: WIDE[page]?.h ?? 375,
-      inset: WIDE[page]?.inset ?? 48,
-      // ⚠️ 每页一个不同的角度（读者：「每个的角度都不一样才可以」）。
-      rotate: ROT[page] ?? -1.2,
-      narrow: { w: 156, h: 195, inset: -62 },
-    },
-  ];
+  const geo: FrameGeo[] = page === 'home' ? HOME_GEO : [PAGE_GEO[page] ?? PAGE_GEO.paperr!];
+  return geo.map((g, i) => {
+    const n = used + i;
+    // ⚠️ 照片要跳过「这一页背景那张」—— 画框和壁纸同一张时，
+    //    无框的那几枚会和壁纸糊成一整块（上一轮的真 bug）。
+    // ⚠️ 索引里**只有 `n`**，不能加 `pageIdx` —— 加了之后模 9 会绕回去撞上
+    //    已经用过的那张（实测 home-a 和 chealth 都拿到 g09）。
+    //    `n` 是**全局第几枚**（0..5），而池子有 9 张 ⇒ `(n + k) % 9` 在 0..5 上
+    //    是**单射**的，不重复。这正是「依次抽牌」比「随机抽、撞了重抽」稳的地方。
+    let photo = PHOTO_DECK[(n + 1) % PHOTO_DECK.length]!;
+    if (photo === bg) photo = PHOTO_DECK[(n + 2) % PHOTO_DECK.length]!;
+    return {
+      key: g.key,
+      style: STYLE_DECK[n % STYLE_DECK.length]!,
+      side: (PAGE_SIDE[page] ?? 'left') as 'left' | 'right',
+      anchor: g.anchor,
+      w: g.w,
+      h: g.h,
+      inset: g.inset,
+      rotate: g.rotate,
+      photo,
+      narrow: g.narrow,
+    } as FrameSpec;
+  });
 }
 
 /**
- * ⚠️ 画框**竖直方向**的位置（百分比 —— 画框中心落在视口这个高度）。
- *
- *    读者 2026-09-29：「位置太固定，只要这边的范围就可以」。
- *    ⚠️ 范围刻意只取 36~58：再往上碰顶栏、再往下碰底部那行「还有内容」。
- */
-const ANCHOR: Record<string, number> = {
-  cnsr: 57,
-  paperr: 46,
-  chealth: 38,
-};
-
-/**
- * 宽屏下每种做法给内页的尺寸。
- * ⚠️ 只有**一处**有数字 —— 让位量本来是从这里算出来的（见 GalleryFrame.scss）。
- */
-/** ⚠️ 每页一个**不同**的角度。重复了就等于「都一样」——见 ROT 的用法。 */
-const ROT: Record<string, number> = {
-  cnsr: -1.4,
-  paperr: 1.7,
-  chealth: -2.2,
-};
-
-const WIDE: Record<string, { w: number; h: number; inset: number }> = {
-  cnsr: { w: 304, h: 380, inset: 46 },
-  paperr: { w: 300, h: 375, inset: 48 },
-  chealth: { w: 300, h: 375, inset: 52 },
-};
-
-/**
- * ⚠️⚠️ **没有让位量了** —— 这个函数恒返回 0，留着只是为了让「为什么没有」
- *    有个能写注释的地方。
- *
- *    读者 2026-09-30：「**每页的所有的画框都应该是可以跟内容重叠着的，
- *    而不是占据了很多版面**」。
- *
- *    ⇒ 宽屏那份 `--gal-gutter-left` 一起删了。之前宽屏要腾 378px、
- *      窄屏 0 —— 现在**两边都是 0**，正文永远满宽，画框永远压在它下面。
- *
- *    ⚠️ 代价是画框会**压在正文上**。那是读者明确要的
- *      （「不怕内容压住」「在内容文字的下面」），而且它排在内容之下，
- *      所以读的时候字还是在最上面。
+ * ⚠️⚠️ **没有让位量**（读者 2026-09-30：「每页的所有的画框都应该是
+ *    可以跟内容重叠着的，而不是占据了很多版面」）。
+ *    留着这个函数只是为了让「为什么没有」有个能写注释的地方。
  */
 export function gutterFor(): number {
   return 0;
-}
-
-function frameStyle(page: string): FrameStyle {
-  const STYLE: Record<string, FrameStyle> = {
-    cnsr: 'double',
-    // ⚠️ paperr 原来是 `moulding`，和主页那枚重了；改成 `gilt`，
-    //    让五种做法**都用上**（细金线 + 深色卡纸，也配「书」这件事）。
-    paperr: 'gilt',
-    chealth: 'bevel',
-    // coof 不放画框（`frames()` 对它返回空数组），这里只是兜底
-    coof: 'gilt',
-  };
-  return STYLE[page] ?? 'moulding';
 }

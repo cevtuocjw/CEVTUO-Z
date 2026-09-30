@@ -77,7 +77,7 @@ const LIGHT_SCRIM =
  *      想换回某一张，把 `gallery.ts` 里那张的路径指过去就行。
  *      （它们是 900px 左右的老图，画质比新的画廊低一档。）
  */
-import { GALLERY, galleryFile } from './gallery';
+import { PAGE_ORDER, galleryFile } from './gallery';
 
 const DEFAULT_PAGE = 'home';
 
@@ -93,11 +93,11 @@ export function currentPage(): string {
   if (typeof location === 'undefined') return DEFAULT_PAGE;
   const m = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
   const key = m?.[1];
-  // ⚠️ 判据从「在不在 BACKGROUNDS 里」改成「在不在 GALLERY 里」——
+  // ⚠️ 判据从「在不在 BACKGROUNDS 里」改成「在不在 PAGE_ORDER 里」——
   //    那张表搬走了（见上面那段）。**仍然要判**：不判的话任何
   //    `/pages/<什么>/index` 都会被当成一个已知页面，于是画框和背景
   //    都拿到兜底图，而 `gallerySide` 也会按「内页」处理。
-  return key && GALLERY[key] ? key : DEFAULT_PAGE;
+  return key && (PAGE_ORDER as readonly string[]).includes(key) ? key : DEFAULT_PAGE;
 }
 
 /**
@@ -136,9 +136,9 @@ export function assetUrl(rel: string): string {
 
 export function backgroundUrl(): string {
   // ⚠️⚠️ 背景**改从画廊取**（读者 2026-09-29：「用这些图片把网站上的所有图片
-  //    背景都换掉」）。五种页面都在 `GALLERY` 里，所以这一句就是「换背景」的
+  //    背景都换掉」）。五种页面都在 `PAGE_ORDER` 里，所以这一句就是「换背景」的
   //    全部 —— 换图只改 `platform/gallery.ts` 一处。
-  //    ⚠️ `galleryFile` 自己带兜底（任何没配的页面拿到 `GALLERY_FALLBACK`），
+  //    ⚠️ `galleryFile` 自己带兜底（任何没配的页面拿第一张），
   //      所以这里不需要再兜一层。
   const file = galleryFile(currentPage());
   return assetUrl(file);
