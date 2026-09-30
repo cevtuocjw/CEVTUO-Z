@@ -3,21 +3,68 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-28T10:54+08:00",
+ "updatedAt": "2026-09-30T12:05+08:00",
  "counts": {
   "days": 5,
-  "lines": 21,
-  "hidden": 0,
-  "links": 2,
+  "lines": 17,
+  "hidden": 2,
+  "links": 4,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
   {
+   "id": "3ea09462-a4af-8195-a953-ea951a299373",
+   "date": "2026-09-29",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "荣耀 HONOR Life 墨水屏阅读器 S3 上架：61g 重、磁吸设计，359 元",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
    "id": "3e909462-a4af-8162-818e-e87d903ba221",
    "date": "2026-09-28",
    "title": "",
    "lines": [
+    {
+     "k": "bookmark",
+     "t": "letter passport case in leather 796318AADUK1000",
+     "links": [
+      {
+       "t": "letter passport case in leather 796318AADUK1000",
+       "href": "https://www.ysl.com/en-hk/pr/letter-passport-case-in-leather-796318AADUK1000.html"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "传统的木制墙面护墙板（boiserie）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "日本设计师吉冈德仁（Tokujin Yoshioka） 和法国设计师Ronan Bouroullec为意大利瓷砖品牌Mutina设计的两个陶瓷系列",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "一出好戏 | MUTINA中国首店",
+     "links": [
+      {
+       "t": "一出好戏 | MUTINA中国首店",
+       "href": "https://mp.weixin.qq.com/s/niIu259CHelpjAr0bV1Rtw",
+       "title": "一出好戏 | MUTINA中国首店",
+       "desc": "MUTINA上海空间初次亮相"
+      }
+     ]
+    },
     {
      "k": "paragraph",
      "t": "创始人、创意总监 Charlie Hedin 曾在 Acne Studios 担任 CEO 助理，随后到巴黎从事品牌的全球传播工作。他在接受 AnOther 采访时说，自己辗转多个城市生活，却一直难以找到合适的床品和毛巾，这成为他创立 Tekla 的起点。",
@@ -47,20 +94,14 @@
      "k": "paragraph",
      "t": "Flower Mountain（山雾花野）是一个2015年成立于东京的户外潮流鞋履品牌，由中国设计师杨超和日本设计师太田圭辅共同创立，灵感源自自然与户外文化。",
      "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "“les sachets sous vide”（真空袋）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "La Grande Épicerie de Paris，巴黎左岸一家 gourmet 食品百货",
-     "links": []
     }
    ],
-   "more": 0,
+   "more": 2,
    "images": [
+    {
+     "src": "data/cnsr/img/3e909462a4af81cdb5cecc534d278efe.jpg",
+     "caption": ""
+    },
     {
      "src": "data/cnsr/img/3e909462a4af812fad3aca1afd44e7b3.jpg",
      "caption": ""
@@ -74,7 +115,7 @@
      "caption": ""
     }
    ],
-   "imagesSeen": 3
+   "imagesSeen": 4
   },
   {
    "id": "3e709462-a4af-8165-91ec-cd07f72b560a",
@@ -123,10 +164,6 @@
     {
      "src": "data/cnsr/img/3e509462a4af8106ae6ef8f9c240b96c.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3e509462a4af81b293b9e6b4b30f2055.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 2
@@ -157,51 +194,6 @@
    "more": 0,
    "images": [],
    "imagesSeen": 0
-  },
-  {
-   "id": "3dc09462-a4af-80ea-8af3-f18a94b36b9b",
-   "date": "2026-09-18",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "旗舰店里不仅卖产品，还有不同品种的展示、现场烘焙、试吃和冰淇淋制作。品牌试图把开心果从一种商品，变成一种可以被学习、比较和体验的产品。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "不同产区被像葡萄酒、咖啡一样展示和解释。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "伊朗Qazvin、西西里、Anatolia、La Mancha……",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Baussan做的第一件事，却是告诉消费者：开心果也有产地、品种和风味差异。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "这个品牌叫 La Maison de la Pistache。2024年前后在法国普罗旺斯正式推出，目前在法国已经有5家门店，",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "不是护肤，也不是香氛，而是开心果。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "L’Occitane欧舒丹创始人Olivier Baussan最近几年又做了一个很有意思的品牌。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 1
   }
  ]
 }
