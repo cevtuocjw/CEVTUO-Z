@@ -435,6 +435,63 @@ section('⑫ 运动明细变了也必须算「变了」');
 }
 
 // ─────────────────────────────────────────────────────────────
+section('⑫b ⚠️⚠️ 富化失败的那一轮**不能**把已经存好的过程序列清掉');
+// ─────────────────────────────────────────────────────────────
+//
+// ⚠️⚠️ 这是 2026-09-30 查出来的真 bug 的回归测试，而它的形状值得单独说：
+//
+//    `hrSeries` / `powerSeries` / `cadenceSeries` 是手机对这场运动的时间窗
+//    **单独读一次**得来的 —— schema 自己的注释就写着 "each of which can come
+//    back empty"。那一次读失败时，手机发的这条**没有**这些键。
+//
+//    而 `mergeSessions` 原来是「窗口内整表替换」，于是**一次读失败 = 永久丢失
+//    那场的曲线**，而且零报错、返回 202「成功」。
+//
+//    实测代价：本地那份快照 25/25 场都有心率序列（点数 = 时长 + 1），
+//    线上 30 场里只剩 4 场 —— 同一场（09-13 15:12 骑行 44 分）
+//    本地 45 点、线上一！个！都！没！有。
+//
+//    ⚠️ 修法是把 `mergeSessions` 的语义**和 `mergeDay` 对齐**：
+//      「哪些场次存在」以 incoming 为准，「每一场有哪些字段」用 stored 打底。
+//      两套语义并存正是长出这个 bug 的原因。
+//
+//    ⚠️⚠️ 负向对照：把 `mergeSessions` 改回「整表替换」，这条当场 FAIL。
+{
+  const s = memStore();
+  const base = {
+    schemaVersion: 1 as const, device: 'health-connect', exportedAt: '2026-09-24T17:00+08:00',
+    days: [day('2026-09-24', { steps: 100 })],
+  };
+  const sess = (extra: Record<string, unknown>) => ({
+    start: '2026-09-23T18:44+08:00', minutes: 63, type: 'BIKING', exerciseType: 8,
+    source: 'nl.appyhapps.healthsync', ...extra,
+  });
+
+  // 第一轮：带序列
+  await handleHealthIngest(ENV, s, 'Bearer tok-health-test',
+    JSON.stringify({ ...base, sessions: [sess({ hrSeries: [[0, 90], [30, 150]], powerSeries: [[0, 200], [30, 260]] })] }));
+
+  // 第二轮：同一场，但这一轮富化**失败了**（没有 hrSeries / powerSeries），
+  //        只有汇总值。窗口内有这一场 ⇒ 场次本身当然要留。
+  const r = await handleHealthIngest(ENV, s, 'Bearer tok-health-test',
+    JSON.stringify({ ...base, sessions: [sess({ hrAvg: 135 })] }));
+
+  const m = HealthRawSchema.parse(JSON.parse(s.files.merged!));
+  eq(m.sessions!.length, 1, '这一场还在（窗口内以 incoming 为准）');
+  eq(m.sessions![0]!.hrAvg, 135, '这一轮的汇总值是新的');
+  eq(m.sessions![0]!.hrSeries?.length, 2, '★ 上一轮存的心率序列**没有被清掉**');
+  eq(m.sessions![0]!.powerSeries?.length, 2, '★ 功率序列也没有被清掉');
+  void r;
+
+  // ⚠️ 反过来也要成立：手机显式发空数组 = 「这里确实没有」⇒ 以它为准。
+  //    不然就从一个 bug 翻到另一个 bug（永远删不掉的东西）。
+  await handleHealthIngest(ENV, s, 'Bearer tok-health-test',
+    JSON.stringify({ ...base, sessions: [sess({ hrSeries: [] })] }));
+  const m2 = HealthRawSchema.parse(JSON.parse(s.files.merged!));
+  eq(m2.sessions![0]!.hrSeries?.length, 0, '显式空数组 ⇒ 以 incoming 为准（能删掉）');
+}
+
+// ─────────────────────────────────────────────────────────────
 section('⑬ 保留期：超过一个月的删掉，但绝不按墙上时钟删');
 // ─────────────────────────────────────────────────────────────
 {

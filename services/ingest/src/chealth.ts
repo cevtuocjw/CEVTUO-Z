@@ -369,8 +369,51 @@ export function mergeSessions(
   incoming: HealthSession[] | undefined,
 ): HealthSession[] {
   if (incoming === undefined) return stored;
+
+  /**
+   * ⚠️⚠️ **「哪些场次存在」以 `incoming` 为准；「每一场有哪些字段」不是。**
+   *
+   *    原来这里只有 `for (const s of incoming) byStart.set(s.start, s)` ——
+   *    stored 整个丢掉。而紧挨着的 `mergeDay` 是**反过来**的：
+   *    stored 打底、incoming 的**非空**字段覆盖，所以它**保留** stored 里有
+   *    而 incoming 没有的字段。**两个合并函数的语义正好相反，而没人发现。**
+   *
+   *    ⇒ 代价（2026-09-30 实测）：
+   *      本地那份快照 **25/25 场**都有 `hrSeries`，点数 = 时长 + 1
+   *      （44 分 → 45 点，63 分 → 64 点）；
+   *      而线上 **30 场里只剩 4 场有**，同一场（09-13 15:12 骑行 44 分）
+   *      本地 45 点、线上一！个！都！没！有。
+   *
+   *    为什么：`hrSeries` 是手机对这场运动的时间窗**单独读一次**得来的
+   *    （schema 注释自己写着 "each of which can come back empty"）。
+   *    那一次读失败时，手机发的这条**没有** `hrSeries` ——
+   *    而整表替换会把它**连同之前存好的序列一起换掉**。
+   *    **一次读失败 = 永久丢失那场的曲线**，而且没有任何报错。
+   *
+   *    ⇔ 这就是这个项目的头号形状：**「操作者收到成功回执，数据没动/少了」**。
+   *
+   *    ⚠️ 修法和 `mergeDay` **逐字对齐**（stored 打底、非空覆盖），
+   *      不是另发明一套 —— 两套语义并存正是长出这个 bug 的原因。
+   *    ⚠️ 判据是「字段在不在」，所以 `undefined` 跳过、**空数组当有值**
+   *      （和 `mergeDay` 一致；真要说「这里确实没有」就显式发空数组）。
+   */
+  const before = new Map<string, HealthSession>();
+  for (const s of stored) before.set(s.start, s);
+
   const byStart = new Map<string, HealthSession>();
-  for (const s of incoming) byStart.set(s.start, s);
+  for (const s of incoming) {
+    const prev = before.get(s.start);
+    if (!prev) {
+      byStart.set(s.start, s);
+      continue;
+    }
+    const out: Record<string, unknown> = { ...prev };
+    for (const [k, v] of Object.entries(s)) {
+      if (v === undefined || v === null) continue;
+      out[k] = v;
+    }
+    byStart.set(s.start, out as HealthSession);
+  }
   return [...byStart.values()].sort((a, b) => (a.start < b.start ? 1 : a.start > b.start ? -1 : 0));
 }
 
