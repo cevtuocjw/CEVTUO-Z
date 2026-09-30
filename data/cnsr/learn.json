@@ -3,16 +3,76 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-29T05:04+08:00",
+ "updatedAt": "2026-10-01T03:51+08:00",
  "counts": {
   "days": 5,
-  "lines": 48,
-  "hidden": 90,
+  "lines": 50,
+  "hidden": 119,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3ea09462-a4af-8167-b360-ec7962788088",
+   "date": "2026-09-29",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Spine surgeons 中文通常叫 脊柱外科医生，是专门通过手术（有时也包括非手术评估）来治疗脊柱及相关神经结构疾病的医生。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Embrace the awkwardness” 字面意思是 “拥抱尴尬”，引申为：主动接纳、允许尴尬存在，而不是逃避、掩饰或因此否定自己。它不是一个严格的学术术语，更像一句流行的心理建议、社交策略和成长口号",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "注意：咖啡豆、可可豆不是 legumes。咖啡属于茜草科，可可属于锦葵科",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "其他：羽扇豆、苜蓿、三叶草等（有些作饲料或绿肥）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "花生：虽然常被归为坚果，但植物学上它是豆科植物",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "杂豆类：绿豆、红豆、芸豆、蚕豆、豇豆、鹰嘴豆、扁豆、豌豆",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "大豆类：黄豆、黑豆、青豆、毛豆",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "“legumes”，通常指可食用的豆科种子或豆荚，包括：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "词性：它可作名词（叛徒）、动词（背叛）和形容词（叛变的）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "词源：它源自西班牙语“renegado”，最初特指中世纪放弃基督教、改信伊斯兰教的基督徒，在16世纪进入英语后，词义逐渐泛化为泛指各类“叛徒”或“变节者”。",
+     "links": []
+    }
+   ],
+   "more": 29,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3e909462-a4af-8148-8121-db3f2633d716",
    "date": "2026-09-28",
@@ -250,66 +310,6 @@
     }
    ],
    "more": 5,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e109462-a4af-80f4-96a0-ced00e0b676a",
-   "date": "2026-09-20",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "2025年，其线上收入同比增长71.49%，占比首次突破10%，而线上毛利率更是达到76.55%，几乎和线下直营店持平。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "服装行业有个默认的规则，线上渠道必然要降价走量，毛利率会远低于线下。但比音勒芬硬生生打破了这个铁律。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "比音勒芬走的是典型的微笑曲线路线，量产生产、物流配送全部外包，公司自身只攥住设计研发、品牌运营、渠道管理三个附加值最高的环节。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "沉浸式剧宿",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3db09462-a4af-80bf-a4e4-f6ae1f4d9f68",
-   "date": "2026-09-16",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "“数字无厘头”（digital memetic nonsense）。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "vibrant direction  充满活力的方向",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "silhouettes 剪影",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "sophistication 复杂",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }
