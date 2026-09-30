@@ -290,17 +290,59 @@ async function run(browser, { scheme, viewport, mobile }, tag) {
     // **a crashed page also shows no digits.** "Nothing wrong is displayed" and
     // "the right thing is displayed" are different claims, and only the pair
     // distinguishes a correctly locked page from a white screen.
+    /**
+     * ⚠️⚠️ 这一段有**两个坏掉的断言**，2026-09-30 查出来并改掉 ——
+     *    一个是「前提没了」，另一个更糟：**一直在空转**。
+     *
+     *  ① **「不带 `k` ⇒ 锁着」这个状态已经不存在了。**
+     *     读者 2026-09-29：「口令不需要，但是不要删掉这个功能，先不需要就可以」
+     *     ⇒ `platform/health-pass.ts` 里有一个 `DEFAULT_PASS`，**默认自动解开**。
+     *     实测（`/tmp/gate.mjs`）：不带 k 时页面直接显示「步数 13,268 步」+ 6 块马赛克，
+     *     **没有口令闸**。所以这条断言测的是一个**不存在**的状态。
+     *
+     *  ② ⚠️⚠️ **它旁边那条「未解锁时也不显示数字」一直在空转。**
+     *     它数的是 `.stats__value` —— 而这一页**早就不用那个类了**
+     *     （现在是 `.chc__tile`，6 块）。空列表 ⇒ 「没有数字」⇒ **绿**。
+     *     这正是这个项目最怕的那种绿：**断言绿着，而它什么都没查。**
+     *     而且它和 ① 是一对：脚本自己的注释写着「白屏也没有数字，
+     *     只有成对才分得开正确锁住的页和白屏」—— 而这一对当时**两条都空**。
+     *
+     *  ⇒ 还存在的「锁着」只有**口令是错的**那一种。
+     *    判据改用 `.chc__tile`，而且**先证明这个选择器是活的** ——
+     *    不然下次改名又会变成空转（这是第二次栽在「选择器死了而断言绿着」上）。
+     */
+    // 第一步：证明夹具是活的（解锁态下数得到块）。选择器死掉的话**这一条会红**。
     await page.goto(`${BASE}/#/pages/chealth/index`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.chc__tile', { timeout: 20000 });
+    await page.waitForTimeout(400);
+    const unlockedTiles = await page.locator('.chc__tile').count();
+    check('CHEALTH 解锁态下有数字块（夹具是活的，不是空转）', unlockedTiles > 0, `tiles=${unlockedTiles}`);
+
+    // 第二步：口令错 ⇒ 锁着
+    await page.goto(`${BASE}/#/pages/chealth/index?k=__definitely_wrong__`, {
+      waitUntil: 'domcontentloaded',
+    });
     await page.waitForSelector('.card__label', { timeout: 20000 });
     await page.waitForTimeout(600);
-    const chealthPage = await page.locator('.stats__value').allInnerTexts();
-    check('CHEALTH 页面未解锁时也不显示数字',
-          chealthPage.filter((v) => /\d/.test(v)).length === 0, JSON.stringify(chealthPage));
+    const lockedTiles = await page.locator('.chc__tile').count();
+    check('CHEALTH 锁着时不显示数字块', lockedTiles === 0, `tiles=${lockedTiles}`);
 
     const gate = await page.locator('text=需要口令').count();
-    check('未解锁时显示的是口令闸，不是白屏（白屏也没有数字，这条才分得开）', gate > 0, `gate=${gate}`);
+    check('锁着时显示的是口令闸，不是白屏', gate > 0, `gate=${gate}`);
     const cryptoErr = await page.locator('text=读不到健康数据').count();
-    check('未解锁时不应报错 —— 没有口令是正常状态，不是故障', cryptoErr === 0, `err=${cryptoErr}`);
+    // ⚠️ 这里从 `=== 0` 改成 `> 0`：**状态换了**。
+    //    原来是「没带口令」（那不是故障，所以不许報錯）；
+    //    现在是「口令不对」—— 那**必须**说一句，否则读者看到的是一个空页面。
+    check('锁着时说明了为什么（不是一片空白）', cryptoErr > 0, `err=${cryptoErr}`);
+
+    // 把那个错口令清掉，别污染后面的用例（它会写进 localStorage）
+    await page.evaluate(() => {
+      try {
+        localStorage.clear();
+      } catch {
+        /* 小程序端没有 localStorage —— 这里只是清理 */
+      }
+    });
 
     // ⚠️ 加密索引必须真的是密文。线上那份若是明文，页面上看不出区别，
     //    但数据已经泄露了 —— 所以这条查文件本身，不查页面。

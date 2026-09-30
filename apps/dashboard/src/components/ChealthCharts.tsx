@@ -448,6 +448,20 @@ export function SeriesChart({
    */
   bands?: { from: number; color: string; label: string }[];
 }) {
+  /**
+   * ⚠️⚠️ **hook 必须在任何提前 return 之前。**
+   *
+   *    我加读数的时候把 `useState` 写在了下面（`const peak = ...` 之后）——
+   *    而那行在 `if (!series || series.length < 2) return ...` **之后**。
+   *    于是「这一次渲染有几个 hook」会随数据变：
+   *    数据不足时提前返回（0 个）、数据到了再调用（1 个）
+   *    ⇒ React 抛 `Rendered more hooks than during the previous render`，
+   *      整页白屏。**而这个白屏在本地看不出来**（本地每场都有序列），
+   *      要到某一场真的没有采样点时才会炸。
+   *    ⇒ 提到最前面。`setIdx` 在下面照样在作用域里。
+   */
+  const [idx, setIdx] = useState<number | null>(null);
+
   if (!series || series.length < 2) return <Text className="chc__axis">{name}数据不足</Text>;
 
   const W = 300;
@@ -547,7 +561,6 @@ export function SeriesChart({
    *    ⚠️ 只在**换了点**时 setState：每次 pointermove 都 set 会重渲染
    *      100+ 次/秒，而掉帧正是廉价感的来源。
    */
-  const [idx, setIdx] = useState<number | null>(null);
   const pick = (clientX: number, el: SVGSVGElement) => {
     const r = el.getBoundingClientRect();
     if (!r.width) return;

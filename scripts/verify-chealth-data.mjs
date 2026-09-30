@@ -105,11 +105,29 @@ try {
 if (idx) {
   // ⚠️ 心跳和数据必须说同一天。差一天是正常的（跨零点），差几天就是链路断了。
   if (beat) {
-    check(
-      '心跳的日期与索引一致',
-      beat.to === idx.to,
-      `索引 to=${idx.to} / 心跳 to=${beat.to}`,
-    );
+    /**
+ * ⚠️⚠️ **心跳永远是线上的**（`HEARTBEAT` 写死指向 `api.cevtuogrnd.com:8443`），
+ *    而索引跟着 `BASE` 走。所以用**本地** base 跑的时候，
+ *    「索引 to」（本地那份，可能是几天前导出的）和「心跳 to」（线上的）
+ *    **本来就不该相等** —— 这不是产品的问题，是**两个来源被拿来比**。
+ *
+ *    ⇒ 本地 base 下**显式跳过并说明**，不报红。
+ *      ⚠️ 是「跳过并说明」，不是「让它通过」—— 静默通过和真的对上是两件事，
+ *        而这个项目最怕的就是这两件事长得一样。
+ */
+const LOCAL_BASE = /127\.0\.0\.1|localhost/.test(BASE);
+if (LOCAL_BASE) {
+  console.log(
+    `  SKIP  心跳的日期与索引一致  — 本地 base 下不可比（心跳取自线上的 ` +
+      `${new URL(HEARTBEAT).host}，索引取自 ${BASE}），改跑线上 base 才有意义`,
+  );
+} else {
+check(
+        '心跳的日期与索引一致',
+        beat.to === idx.to,
+        `索引 to=${idx.to} / 心跳 to=${beat.to}`,
+      );
+}
   }
 
   const sessions = idx.sessions ?? [];
