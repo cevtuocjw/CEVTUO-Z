@@ -435,13 +435,29 @@ export default function Chealth() {
   const streak = useMemo(() => (index?.to ? stepStreak(days, index.to, STEP_GOAL) : 0), [days, index]);
   const kinds = useMemo(() => typeBreakdown(sessions), [sessions]);
 
-  /** 有功率序列的场次 —— 只有它们谈得上功率分析。 */
+  /**
+   * 有**任何**功率数据的场次。
+   *
+   * ⚠️⚠️ 这里原来多一句 `.filter((x) => x.p.np > 0)`，而 `np`（标准化功率）
+   *    **只有拿到过程序列才算得出来**（`powerStats` 的注释里写着）。
+   *    于是那一句的含义变成了「只列出有功率序列的骑行」——
+   *    一句看起来像「滤掉没功率的」的代码，实际滤掉的是「只有平均值的」。
+   *
+   *    代价（读者 2026-09-30：「功率与个人记录我记得有更多的功能，补充回来」）：
+   *    服务器把序列清掉之后，`powered` **一场都不剩**，整屏只剩「个人记录」。
+   *    而数据其实在 —— 那些骑行有 `powerAvg` / `powerMax`（汇总值一直都在）。
+   *
+   *    ⚠️ `powerStats` **自己就处理了这种情况**（没有序列时回退到
+   *      `fallbackAvg`/`fallbackMax`，返回 `np: 0`）—— 那个分支一直是**死代码**，
+   *      因为调用处先把它们滤掉了。
+   *    ⇒ 去掉那句话。`powerStats` 返回 `null` 才是「这场真的没有功率数据」，
+   *      那个判断它自己做得对。
+   */
   const powered = useMemo(
     () =>
       sessions
         .map((s) => ({ s, p: powerStats(s.powerSeries, s.powerAvg, s.powerMax) }))
-        .filter((x): x is { s: ChealthSession; p: NonNullable<ReturnType<typeof powerStats>> } => x.p !== null)
-        .filter((x) => x.p.np > 0),
+        .filter((x): x is { s: ChealthSession; p: NonNullable<ReturnType<typeof powerStats>> } => x.p !== null),
     [sessions],
   );
 
@@ -1708,7 +1724,10 @@ export default function Chealth() {
                       />
                     </View>
                   ) : (
-                    <Text className="chc__note">这一场没有功率过程序列（只有汇总值）。</Text>
+                    <Text className="chc__note">
+                      这一场只有汇总值（平均 / 峰值），没有逐分钟的过程序列 ——
+                      过程序列是手机对这场运动的时间窗**单独读一次**得来的，那一次可能没读到。
+                    </Text>
                   )}
                 </View>
               ))
