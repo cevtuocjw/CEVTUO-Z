@@ -61,7 +61,14 @@
   pointer-events: none;
   // ⚠️ `transform-style: preserve-3d` + 透视 —— 少了它，`rotateX/Y`
   //    是**平面斜切**，看起来像图片被拉扯，而不是「朝你这边倒过来」。
-  transform: perspective(900px) translateY(-50%) rotateX(var(--tx)) rotateY(var(--ty));
+  //
+  // ⚠️ `rotate(var(--gal-rot))` 是**静态倾角**（每枚不同，见 `FrameSpec.rotate`），
+  //    排在 `rotateX/Y` **前面** —— 于是「朝你倒过来」的那两根轴会跟着一起转，
+  //    像真的挂在墙上、本身就歪着的一幅画。排在后面的话，
+  //    倾斜轴还是屏幕轴，歪着的画按下时会有一种说不出的别扭。
+  //    ⚠️ `rotate()` 是 `rotateZ()` 的别名（CSS Transforms 2 级）。
+  transform: perspective(900px) translateY(-50%) rotate(var(--gal-rot, 0deg)) rotateX(var(--tx))
+    rotateY(var(--ty));
   transform-origin: center;
   transition: transform 520ms cubic-bezier(0.34, 1.56, 0.5, 1);
   will-change: transform;
@@ -316,21 +323,21 @@
 // ⚠️ 让位量的**数字**不在这里 —— 它由 `gutterFor()` 从同一份 spec 算出来，
 //    写成 `.page` 上的 `--gal-gutter-wide`（自定义属性只往下继承，
 //    而 `.page` 是 `.gal` 的祖先，读不到后代身上的变量）。
-.page .section {
-  padding-left: var(--gal-gutter-left, 0px);
-}
-
-// 默认（也就是窄屏）：不让。
-.page:has(.gal--left) {
-  --gal-gutter-left: 0px;
-}
-
-// ⚠️ 宽屏那一档**必须排在上面那条之后** —— 同特异型、后写的赢。
-@media (min-width: 701px) {
-  .page:has(.gal--left) {
-    --gal-gutter-left: var(--gal-gutter-wide, 0px);
-  }
-}
+// ⚠️⚠️ **这一段原来有三条让位规则，现在一条都没有了 —— 不是漏了。**
+//
+//    读者 2026-09-30：「每页的所有的画框都应该是**可以跟内容重叠着的**，
+//    而不是占据了很多版面」。
+//    ⇒ 宽屏那份 378px 的 `--gal-gutter-left` 也删了。之前是
+//      「宽屏腾 378px、窄屏不腾」，现在**两边都不腾**，
+//      `.section` 的 `padding-left` 回到 `styles/section.scss` 自己的值。
+//
+//    ⚠️ 为什么这比「两档各写一个数」安全：**规则本身消失了**，
+//      于是「窄屏那一档排在宽屏之后」那条顺序坑在这里不可能再犯
+//      —— 这个项目为它栽过四次。
+//
+//    ⚠️ 代价：画框会压在正文上。那是读者明确要的，而且画框排在内容之下，
+//      所以读的时候字还是在最上面。**J 断言**（不许有文字在画框下面）
+//      现在是真的在每个页面上被考验，而不是在空白处空转。
 
 // ⚠️ 无障碍：`prefers-reduced-motion` 下**不做倾斜和回弹**，
 //    但按下/松开的状态照样变（和这一页其它动画同一条规矩）。
@@ -340,8 +347,13 @@
     transition-duration: 0ms;
   }
 
+  // ⚠️⚠️ 这里**必须把静态倾角再写一遍**。这一条覆盖的是 `.gal` 的整条
+  //    `transform`，只写 `translateY(-50%)` 的话，reduced-motion 下
+  //    画框会**突然变正** —— 而「变正」不是「少一个动画」，
+  //    是**换了一个样子**（读者要的是「每个的角度都不一样」）。
+  //    要关的是「动」，不是「歪」。
   .gal {
-    transform: translateY(-50%);
+    transform: translateY(-50%) rotate(var(--gal-rot, 0deg));
   }
 }
 

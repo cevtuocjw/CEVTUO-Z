@@ -166,6 +166,21 @@ const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
 await ctx.addInitScript(`window.__root = ${ROOT.toString()};`);
 const page = await ctx.newPage();
 
+/**
+ * ⚠️⚠️ `P` 的**判据**（这一条换过两次，值得写清楚为什么）：
+ *
+ *    第一版是「窄屏 padding-left ≤ 32」—— 用**魔数**。宽屏基础内边距是 48px
+ *    （`.section` 自己的），于是它在宽屏一直红，**而代码是对的**。
+ *    调阈值到 64 能变绿，但那只是把魔数挪了个位置：
+ *    下一次改版式，48 可能变成 72，这条又会莫名其妙地红。
+ *
+ *    ⇒ 真正的判据是**不变量**：内边距**不该随「这一页有没有画框」变化**。
+ *      COOF 一枚画框都没有，其余四页有 —— 五页在同一个视口下必须**一模一样**。
+ *      有让位的时候这个数会差 378px（宽屏）或 106px（窄屏），
+ *      而「无让位」时它恒等。**一个数都不用挑。**
+ */
+const padLefts = [];
+
 try {
   // ── A–D / H–P：逐页检查 ─────────────────────────────────────
   for (const P of PAGES) {
@@ -337,11 +352,7 @@ try {
      *    ⇒ 「够不够宽」和「有没有白白窄掉一条」是两件事，要两条断言。
      *      （和「让够了 / 让过头」那次同一个形状：一个数两头都能坏。）
      */
-    check(
-      `P ${P.key} 窄屏不让位（正文左边距回到基础值）`,
-      !NARROW || info.padLeft <= 32,
-      `padding-left=${info.padLeft}px${NARROW ? '' : '（宽屏不做这条）'}`,
-    );
+    padLefts.push([P.key, info.padLeft]);
 
     /**
      * ── O：主页三枚**各放一张不同的图** ──────────────────────────
@@ -359,6 +370,14 @@ try {
       );
     }
   }
+
+  // ── P：内边距不随画框变化（见上面那段）──────────────────────
+  const uniq = [...new Set(padLefts.map(([, v]) => v))];
+  check(
+    'P 正文左边距不随「这页有没有画框」变化（没有让位）',
+    uniq.length === 1,
+    padLefts.map(([k, v]) => `${k}=${v}`).join(' ') + `  → 不同值 ${uniq.length} 个`,
+  );
 
   // ── E–G：交互，在主页上做 ───────────────────────────────────
   await page.goto(`${BASE}/#/pages/home/index`, { waitUntil: 'domcontentloaded' });

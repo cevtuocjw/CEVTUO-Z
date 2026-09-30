@@ -40,7 +40,7 @@ import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { View } from '@tarojs/components';
 
 import { assetUrl, currentPage } from '../platform/background';
-import { frames, galleryFile, gutterFor, photoFile, type FrameSpec } from '../platform/gallery';
+import { frames, galleryFile, photoFile, type FrameSpec } from '../platform/gallery';
 import './GalleryFrame.scss';
 
 /**
@@ -60,29 +60,18 @@ export function GalleryFrame() {
   const page = currentPage();
   // ⚠️ `frames()` 每次调用都返回新数组，直接当依赖会让 effect 每渲染都重挂。
   const list = useMemo(() => frames(page), [page]);
-  const gutter = gutterFor(page);
 
   /** ⚠️ 拿不到 DOM 的端（小程序）会是 `null`，下面处处判空。 */
   const refs = useRef<(HTMLElement | null)[]>([]);
 
   /**
-   * ⚠️⚠️ 让位量写在 **`.page` 上**，不能写在 `.gal` 上 ——
-   *    自定义属性只往下继承，而 `.page` 是 `.gal` 的**祖先**，
-   *    祖先读不到后代身上的变量。
-   *    ⇒ 从同一份 spec（`gutterFor`）算出来，一次 `setProperty`，
-   *      **只有一个地方有数字**。
-   *    ⚠️ 卸载时要摘掉 —— 否则从内页切回主页，主页会莫名其妙左边空掉一条。
+   * ⚠️⚠️ **这里原来有一段「把让位量写到 `.page` 上」，现在没有了 —— 不是漏了。**
+   *
+   *    读者 2026-09-30：「每页的所有的画框都应该是**可以跟内容重叠着的**，
+   *    而不是占据了很多版面」。⇒ 正文永远满宽，画框永远压在它下面。
+   *    让位量恒等于 0（`gallery.ts` 的 `gutterFor`），既然恒等于 0 就没有
+   *    任何东西要写进 DOM —— 少一次副作用，也就少一个会失效的地方。
    */
-  useEffect(() => {
-    const p = document.querySelector('.page');
-    if (!p || !(p instanceof HTMLElement)) return undefined;
-    p.style.setProperty('--gal-gutter-wide', `${gutter}px`);
-    // ⚠️ 必须写成块体：`removeProperty` 返回 `string`，
-    //    表达式体的箭头函数会把它当成清理函数的返回值 ⇒ 类型错误。
-    return () => {
-      p.style.removeProperty('--gal-gutter-wide');
-    };
-  }, [gutter]);
 
   /**
    * ⚠️⚠️ 指针跟随 —— **挂在 `window` 上，按几何命中**，不挂在画框自己身上。
@@ -177,6 +166,10 @@ export function GalleryFrame() {
               '--gal-w-n': `${spec.narrow.w}px`,
               '--gal-h-n': `${spec.narrow.h}px`,
               '--gal-inset-n': `${spec.narrow.inset}px`,
+              // ⚠️ **静态倾角** —— 「这枚画当初就挂歪了」。
+              //    和指针跟随的 `--tx/--ty`（「你按上去它晃了一下」）
+              //    叠在一起才是真的：少了它，画框像用水平仪校过。
+              '--gal-rot': `${spec.rotate}deg`,
               top: `${spec.anchor}%`,
             } as CSSProperties
           }

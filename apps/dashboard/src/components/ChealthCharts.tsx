@@ -234,10 +234,31 @@ export function Spark({ points }: { points: (number | undefined)[] }) {
     .filter(Boolean)
     .join(' ');
   const area = `${d} L${W},${H} L0,${H} Z`;
+  /*
+   * ⚠️⚠️ `style={{ aspectRatio }}` 是这一条的全部重点。
+   *
+   *    `viewBox` 是 300×48，而卡片在宽屏有 **656px** 宽 ——
+   *    `preserveAspectRatio="none"` 于是把 x 方向拉了 **2.19 倍**，
+   *    曲线被**横向抻平**（每个斜率都变缓 2.19 倍），描边也被拉成
+   *    横着的椭圆。读者 2026-09-30：「变成宽屏这些曲线只是被拉伸，很不好看」。
+   *
+   *    ⇒ 把盒子的宽高比**锁成和 viewBox 一样**（`aspect-ratio: 300 / 48`），
+   *      于是缩放是**等比**的，形状不变，只是变大。
+   *      宽屏下它自己长到 105px 高 —— 那才是「一张图」，而不是一条压扁的带子。
+   *      ⚠️ 高度**不能写死**：写死就又回到「拉伸」。
+   *
+   *    ⚠️ 另外那条 `vector-effect` 见下面 `.chc__line` —— 等比缩放之后
+   *      2px 的线会跟着放大到 4.4px，`non-scaling-stroke` 让它恒为 2px。 */
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="chc__spark" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="chc__spark"
+        preserveAspectRatio="none"
+        style={{ aspectRatio: `${W} / ${H}` }}
+      >
       <path d={area} className="chc__area" />
-      <path d={d} className="chc__line" />
+      <path d={d} className="chc__line" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -377,10 +398,31 @@ export function SeriesChart({
   const area = `${d} L${W},${H} L0,${H} Z`;
   const peak = pts.reduce<[number, number]>((a, b) => (b[1] > a[1] ? b : a), pts[0] ?? [0, 0]);
 
+  /*
+   * ⚠️⚠️ `style={{ aspectRatio }}` 是这一条的全部重点。
+   *
+   *    `viewBox` 是 300×48，而卡片在宽屏有 **656px** 宽 ——
+   *    `preserveAspectRatio="none"` 于是把 x 方向拉了 **2.19 倍**，
+   *    曲线被**横向抻平**（每个斜率都变缓 2.19 倍），描边也被拉成
+   *    横着的椭圆。读者 2026-09-30：「变成宽屏这些曲线只是被拉伸，很不好看」。
+   *
+   *    ⇒ 把盒子的宽高比**锁成和 viewBox 一样**（`aspect-ratio: 300 / 48`），
+   *      于是缩放是**等比**的，形状不变，只是变大。
+   *      宽屏下它自己长到 105px 高 —— 那才是「一张图」，而不是一条压扁的带子。
+   *      ⚠️ 高度**不能写死**：写死就又回到「拉伸」。
+   *
+   *    ⚠️ 另外那条 `vector-effect` 见下面 `.chc__line` —— 等比缩放之后
+   *      2px 的线会跟着放大到 4.4px，`non-scaling-stroke` 让它恒为 2px。 */
+
   return (
     <View>
       {/* ⚠️ `style` 是对象，不是字符串 —— 原生 <svg> 上写字符串是 React #62，整页白屏。 */}
-      <svg viewBox={`0 0 ${W} ${H}`} className="chc__spark" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="chc__spark"
+        preserveAspectRatio="none"
+        style={{ aspectRatio: `${W} / ${H}` }}
+      >
         <path d={area} className="chc__area" />
         {bands?.length ? (
           // ⚠️ 逐段画 `<path>`（每段一条三次贝塞尔），不用单条大 path —— 一段一色
@@ -409,12 +451,14 @@ export function SeriesChart({
                 stroke={c}
                 strokeWidth={2}
                 strokeLinecap="round"
+                // ⚠️ 同上：等比放大后线宽会跟着变粗，这个让它恒为 2px。
+                vectorEffect="non-scaling-stroke"
                 fill="none"
               />
             );
           })
         ) : (
-          <path d={d} className="chc__line" />
+          <path d={d} className="chc__line" vectorEffect="non-scaling-stroke" />
         )}
         <circle cx={x(peak[0])} cy={y(peak[1])} r={2.5} className="chc__peak" />
       </svg>

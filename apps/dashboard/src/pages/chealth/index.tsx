@@ -1249,6 +1249,24 @@ export default function Chealth() {
                           </Text>
                         ) : null}
                       </View>
+                      {/*
+                        ⚠️⚠️ **过程就在这儿** —— 上面那一行全是汇总值，而汇总值
+                        把「前 10 分钟 90、后 10 分钟 175」显示成同一个数。
+                        读者 2026-09-30：「运动里面的过程那些数据都没有展示了」。
+
+                        ⇒ 这一场有序列就**当场画出来**，不必点开弹窗。
+                        ⚠️ 实测只有 4/30 场带心率序列（功率/踏频/速度 **0/30**），
+                          所以绝大多数卡片这里什么都不加 —— 而「没有」这件事
+                          在弹窗里有一段专门解释（见下面「这一场没有过程曲线」）。
+                      */}
+                      {sess.hrSeries && sess.hrSeries.length > 1 ? (
+                        <View className="chc__trend">
+                          <Text className="chc__note">
+                            心率过程 · 这一场的 {sess.hrSeries.length} 个采样点
+                          </Text>
+                          <Spark points={sess.hrSeries.map(([, v]) => v)} />
+                        </View>
+                      ) : null}
                     </View>
                       ))}
                     </View>
@@ -1962,6 +1980,36 @@ export default function Chealth() {
                       name="速度曲线"
                       unit=" km/h"
                     />
+                  </View>
+                ) : null}
+
+                {/*
+                  ⚠️⚠️ 一条过程曲线都没有的时候**必须说出来**，不能什么都不显示。
+
+                  读者 2026-09-30：「运动里面的过程那些数据都没有展示了」——
+                  而屏幕上「一片空白」和「这一场本来就没有序列」长得**一模一样**。
+                  这一页的规矩是「失败不可怕，不可见才可怕」。
+
+                  ⚠️ 而且要把**量出来的覆盖率**写进去：不写数字，读者会以为
+                    是页面坏了；写了数字，他才看得出来这是**手机只抓到了一部分**，
+                    是数据的事，不是页面的事。（口径写进标签，见 index.tsx 抬头。）
+                */}
+                {!(openSess.hrSeries && openSess.hrSeries.length > 1) &&
+                !(openSess.powerSeries && openSess.powerSeries.length > 1) &&
+                !(openSess.cadenceSeries && openSess.cadenceSeries.length > 1) &&
+                !(openSess.speedSeries && openSess.speedSeries.length > 1) ? (
+                  <View className="card chc__card">
+                    <Text className="chc__card-t">这一场没有过程曲线</Text>
+                    <Text className="chc__note">
+                      上面那些是汇总值（时长、均心率…），不是过程。过程要的是手机在运动
+                      中间逐分钟记下来的序列，而最近 {sessions.length} 场里只有{' '}
+                      {sessions.filter((s2) => s2.hrSeries && s2.hrSeries.length > 1).length} 场带心率序列
+                      —— 功率、踏频、速度的序列一场都没有。
+                    </Text>
+                    <Text className="chc__note">
+                      所以这不是页面坏了。想让以后多留一点：运动时把三星健康的心率测量开着，
+                      练完在 Health Sync 里确认那天的记录同步上来了。
+                    </Text>
                   </View>
                 ) : null}
 

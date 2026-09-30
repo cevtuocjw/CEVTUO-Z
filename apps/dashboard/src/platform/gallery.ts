@@ -87,6 +87,19 @@ export interface FrameSpec {
   h: number;
   inset: number;
   /**
+   * ⚠️ **静态倾角**（度）—— 挂着的那点歪。
+   *
+   *    读者 2026-09-30：「所有画框都要有一些角度，不能现在这样过正，
+   *    每个的角度都不一样才可以」。
+   *
+   *    ⚠️ 它和指针跟随的那个 `--tx/--ty` 是**两回事**：
+   *      这个是「这枚画当初就挂歪了」，那边是「你按上去它晃了一下」。
+   *      两个叠在一起才是真的 —— 少了它，画框像用水平仪校过，
+   *      一眼就是排出来的，不是挂上去的。
+   *    ⚠️ 幅度**刻意在 ±2.5° 以内**：再大就变成「贴纸没贴正」。
+   */
+  rotate: number;
+  /**
    * 这一枚里放的**是哪张**（画廊里的名字）。不给就用这一页背景那一张。
    *
    * ⚠️⚠️ 主页必须**每枚给一张不同的** —— 这是**看了图**才发现的：
@@ -127,10 +140,13 @@ const HOME_FRAMES: FrameSpec[] = [
     style: 'float',
     photo: 'g08',
     side: 'right',
+    rotate: -1.8,
     anchor: 18,
     w: 200,
     h: 210,
-    inset: 48,
+    // ⚠️ 读者 2026-09-30：「主屏幕宽屏时候的画框太贴右边了，要更靠左多一大些」。
+    //    48 → 140。同时**不再为它让位**（正文满宽，画框压在它下面）。
+    inset: 140,
     narrow: { w: 104, h: 118, inset: 60 },
   },
   {
@@ -139,10 +155,11 @@ const HOME_FRAMES: FrameSpec[] = [
     style: 'moulding',
     photo: 'g07',
     side: 'right',
+    rotate: 1.3,
     anchor: 50,
     w: 288,
     h: 320,
-    inset: 112,
+    inset: 250,
     narrow: { w: 132, h: 158, inset: 150 },
   },
   {
@@ -151,10 +168,11 @@ const HOME_FRAMES: FrameSpec[] = [
     style: 'double',
     photo: 'g09',
     side: 'right',
+    rotate: -0.9,
     anchor: 83,
     w: 216,
     h: 230,
-    inset: 40,
+    inset: 105,
     narrow: { w: 110, h: 128, inset: 150 },
   },
 ];
@@ -187,6 +205,8 @@ export function frames(page: string): FrameSpec[] {
       w: WIDE[page]?.w ?? 300,
       h: WIDE[page]?.h ?? 375,
       inset: WIDE[page]?.inset ?? 48,
+      // ⚠️ 每页一个不同的角度（读者：「每个的角度都不一样才可以」）。
+      rotate: ROT[page] ?? -1.2,
       narrow: { w: 156, h: 195, inset: -62 },
     },
   ];
@@ -208,6 +228,13 @@ const ANCHOR: Record<string, number> = {
  * 宽屏下每种做法给内页的尺寸。
  * ⚠️ 只有**一处**有数字 —— 让位量本来是从这里算出来的（见 GalleryFrame.scss）。
  */
+/** ⚠️ 每页一个**不同**的角度。重复了就等于「都一样」——见 ROT 的用法。 */
+const ROT: Record<string, number> = {
+  cnsr: -1.4,
+  paperr: 1.7,
+  chealth: -2.2,
+};
+
 const WIDE: Record<string, { w: number; h: number; inset: number }> = {
   cnsr: { w: 304, h: 380, inset: 46 },
   paperr: { w: 300, h: 375, inset: 48 },
@@ -215,40 +242,23 @@ const WIDE: Record<string, { w: number; h: number; inset: number }> = {
 };
 
 /**
- * 宽屏下正文要给**左侧**那枚画框让开多少 px。
+ * ⚠️⚠️ **没有让位量了** —— 这个函数恒返回 0，留着只是为了让「为什么没有」
+ *    有个能写注释的地方。
  *
- * ⚠️⚠️ 这是「四个数是一组、动一个要看另外三个」那条坑的解法：
- *    让位量 = 离边 + 框宽 + 间隙，**从同一份 spec 算出来**，
- *    而不是在 SCSS 里再手写一个数。
- *    这个项目栽过：两处各写一份的结果是改了一处、另一处压着正文，
- *    而**两边单独看都正常**。
+ *    读者 2026-09-30：「**每页的所有的画框都应该是可以跟内容重叠着的，
+ *    而不是占据了很多版面**」。
  *
- * ⚠️⚠️ 而**窄屏刻意不让**（读者 2026-09-30）：
- *    「在窄屏幕上，所有的内容都要压住画框，不能画框不敢被压住导致内容看不了多少位置」。
- *    ⇒ 手机上让位量是 0，正文满宽，画框在它底下。
- *    这个「窄屏不让」写在 `GalleryFrame.scss` 的媒体查询里（那边管断点）。
+ *    ⇒ 宽屏那份 `--gal-gutter-left` 一起删了。之前宽屏要腾 378px、
+ *      窄屏 0 —— 现在**两边都是 0**，正文永远满宽，画框永远压在它下面。
+ *
+ *    ⚠️ 代价是画框会**压在正文上**。那是读者明确要的
+ *      （「不怕内容压住」「在内容文字的下面」），而且它排在内容之下，
+ *      所以读的时候字还是在最上面。
  */
-export function gutterFor(page: string): number {
-  const left = frames(page).find((s) => s.side === 'left');
-  if (!left) return 0;
-  return left.inset + left.w + 30; // 30 = 正文和画框之间的间隙
+export function gutterFor(): number {
+  return 0;
 }
 
-/**
- * 哪一页用哪种做法。
- *
- * ⚠️⚠️ 读者要的是「**各个地方**的画框都不一样」，所以要**看这张表里的分配**，
- *    不是只看 SCSS 里有几种做法 —— 做法写了五种、而实际只用到四种，
- *    在页面上是**看不出来**的（每一页自己都挺好看）。
- *
- *    2026-09-30 的现场：COOF 不挂画框之后，原本给它的 `gilt` 就成了**死代码**，
- *    而 `moulding` / `double` 各被两处用到（主页与内页各一）——
- *    这一条是**核对这张表**发现的，不是看页面发现的。
- *
- *    现在的分配（六枚画框、五种做法，只有一处在主页和内页之间重了）：
- *      home-a float ・ home-b moulding ・ home-c double
- *      cnsr   double ・ paperr **gilt** ・ chealth bevel
- */
 function frameStyle(page: string): FrameStyle {
   const STYLE: Record<string, FrameStyle> = {
     cnsr: 'double',
