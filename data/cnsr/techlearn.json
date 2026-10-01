@@ -3,12 +3,12 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-29T12:22+08:00",
+ "updatedAt": "2026-10-01T12:17+08:00",
  "counts": {
   "days": 5,
-  "lines": 22,
+  "lines": 23,
   "hidden": 0,
-  "links": 2,
+  "links": 3,
   "images": 0,
   "skippedSubtrees": 0
  },
@@ -18,6 +18,18 @@
    "date": "2026-09-29",
    "title": "",
    "lines": [
+    {
+     "k": "paragraph",
+     "t": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
+     "links": [
+      {
+       "t": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
+       "href": "https://macked.app/on1-effects-mac-crack.html",
+       "title": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
+       "desc": "ON1 Effects"
+      }
+     ]
+    },
     {
      "k": "paragraph",
      "t": "电信的转型不是单点发力，而是一套完整体系。多年推进云改数转，现在升级为云改数转智惠战略，核心就是算力、平台、数据、模型、应用五位一体智能云体系",
