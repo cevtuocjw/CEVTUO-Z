@@ -1,8 +1,30 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "7b2d58c316d8",
+  "dataVersion": "495dc7da26e2",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ed09462-a4af-814c-8a55-c82cfe02bd04",
+      "mediaType": "影",
+      "note": null,
+      "order": 161,
+      "poster": "data/coof/posters/3ed09462-a4af-814c-8a55-c82cfe02bd04.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "乌泽多姆岛：清澈海景 Usedom – Der freie Blick aufs Meer",
+      "watchedAt": "2026-10-02",
+      "year": 2017
+    },
     {
       "cast": [],
       "collection": "COOF2026",

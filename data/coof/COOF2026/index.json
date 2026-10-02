@@ -2,7 +2,7 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 161,
+      "count": 162,
       "latestAt": "2026-10-02",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
@@ -46,9 +46,9 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 161
+    "total": 162
   },
-  "dataVersion": "e19037d7205b",
+  "dataVersion": "445d2a6120e2",
   "genres": [
     {
       "count": 113,
@@ -71,12 +71,12 @@
       "name": "犯罪"
     },
     {
-      "count": 14,
-      "name": "爱情"
+      "count": 15,
+      "name": "纪录片"
     },
     {
       "count": 14,
-      "name": "纪录片"
+      "name": "爱情"
     },
     {
       "count": 11,
@@ -155,27 +155,47 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "美国"
+      "德国"
     ],
     "director": [],
     "genres": [
-      "喜剧",
-      "动画",
-      "奇幻"
+      "纪录片"
     ],
-    "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
+    "id": "3ed09462-a4af-814c-8a55-c82cfe02bd04",
     "mediaType": "影",
     "note": null,
-    "order": 160,
-    "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
+    "order": 161,
+    "poster": "data/coof/posters/3ed09462-a4af-814c-8a55-c82cfe02bd04.jpg",
     "rating": null,
-    "runtimeMin": 101,
+    "runtimeMin": 95,
     "status": "watched",
-    "title": "歪心狼对阵ACME Coyote v. Acme",
+    "title": "乌泽多姆岛：清澈海景 Usedom – Der freie Blick aufs Meer",
     "watchedAt": "2026-10-02",
-    "year": 2026
+    "year": 2017
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ed09462-a4af-814c-8a55-c82cfe02bd04",
+      "mediaType": "影",
+      "note": null,
+      "order": 161,
+      "poster": "data/coof/posters/3ed09462-a4af-814c-8a55-c82cfe02bd04.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "乌泽多姆岛：清澈海景 Usedom – Der freie Blick aufs Meer",
+      "watchedAt": "2026-10-02",
+      "year": 2017
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -618,29 +638,6 @@
       "status": "watched",
       "title": "我住在凡尔赛的日子 La vie de château - Mon enfance à Versailles",
       "watchedAt": "2026-09-13",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "阿根廷"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "犯罪"
-      ],
-      "id": "3da09462-a4af-8086-8702-f59df37544b5",
-      "mediaType": "影",
-      "note": "第73届圣塞巴斯蒂安国际电影节获奖",
-      "order": 141,
-      "poster": "data/coof/posters/3da09462-a4af-8086-8702-f59df37544b5.jpg",
-      "rating": null,
-      "runtimeMin": 105,
-      "status": "watched",
-      "title": "我们是伯利恒 Belén",
-      "watchedAt": "2026-09-12",
       "year": 2025
     }
   ],
