@@ -3,16 +3,86 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-09-30T12:05+08:00",
+ "updatedAt": "2026-10-02T12:10+08:00",
  "counts": {
   "days": 5,
-  "lines": 17,
+  "lines": 23,
   "hidden": 2,
   "links": 4,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3eb09462-a4af-81d6-a607-e9b14095ec2a",
+   "date": "2026-10-01",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "澳大利亚威士忌装进汽水瓶，概念包装 Dieline 奖",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "▲英国癌症研究基金会关于budwig diet的说明：目前尚无科学证据表明布德维格疗法可以治疗或治愈癌症。同行评审的医学期刊上也未发表任何针对该疗法的临床试验研究Cancer Research UK | The world&#x27;s leading cancer charity",
+     "links": [
+      {
+       "t": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "href": "https://www.cancerresearchuk.org/",
+       "title": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "desc": "We exist to beat cancer. And we&#x27;re dedicated to saving and improving lives with our research. Will you help us transform the lives of future generations?"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "将两者混合，搅拌到油被奶酪充分吸收，就得到了巴德维奶油。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "制作这种奶油要用到两种原材料：亚麻籽油和鲜奶酪。奶酪一般是茅屋芝士或者夸克奶酪，通常会选择脱脂版本。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Budwig",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "巴德维酸奶",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "皇庭",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Joyce hk买手店",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3eb09462a4af80218923d553455a1695.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af81e3b4e3dc362bf7b483.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af812bb6a9d963d56e5472.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 3
+  },
   {
    "id": "3ea09462-a4af-8195-a953-ea951a299373",
    "date": "2026-09-29",
@@ -105,14 +175,6 @@
     {
      "src": "data/cnsr/img/3e909462a4af812fad3aca1afd44e7b3.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3e909462a4af81cc882bcf272ff6c081.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3e909462a4af8179b641d5ce974c760f.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 4
@@ -160,40 +222,8 @@
     }
    ],
    "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3e509462a4af8106ae6ef8f9c240b96c.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 2
-  },
-  {
-   "id": "3e109462-a4af-809b-9ba4-f12387f5d7d1",
-   "date": "2026-09-20",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "CENTRESTAGE ELITES 香港展会",
-     "links": []
-    },
-    {
-     "k": "bookmark",
-     "t": "KIT WAN STUDIOS",
-     "links": [
-      {
-       "t": "KIT WAN STUDIOS",
-       "href": "https://kitwanstudios.com/",
-       "title": "KIT WAN STUDIOS",
-       "desc": "Kit Wan is an Oslo-based fashion designer and visual artist from Hong Kong. Exploring manga, high-tech, sci-fi and mechanical aesthetics, Wan’s cult-like body of work navigates the contemporary world "
-      }
-     ]
-    }
-   ],
-   "more": 0,
    "images": [],
-   "imagesSeen": 0
+   "imagesSeen": 2
   }
  ]
 }

@@ -1,8 +1,79 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "84d6c23821e8",
+  "dataVersion": "2ea93c40a0dd",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3ed09462-a4af-81d7-a61a-f6ef6019a24a",
+      "mediaType": "影",
+      "note": "金球奖提名",
+      "order": 157,
+      "poster": "data/coof/posters/3ed09462-a4af-81d7-a61a-f6ef6019a24a.jpg",
+      "rating": null,
+      "runtimeMin": 124,
+      "status": "watched",
+      "title": "朗读者 The Reader",
+      "watchedAt": "2026-10-02",
+      "year": 2008
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "丹麦",
+        "德国",
+        "挪威"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ed09462-a4af-812b-8528-cc7a13ed7859",
+      "mediaType": "影",
+      "note": null,
+      "order": 156,
+      "poster": "data/coof/posters/3ed09462-a4af-812b-8528-cc7a13ed7859.jpg",
+      "rating": null,
+      "runtimeMin": null,
+      "status": "watched",
+      "title": "Mysteriet om menopausen",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作"
+      ],
+      "id": "3ed09462-a4af-8143-bd74-cfed8ad1fcdf",
+      "mediaType": "影",
+      "note": null,
+      "order": 155,
+      "poster": "data/coof/posters/3ed09462-a4af-8143-bd74-cfed8ad1fcdf.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "好景在望 Here Comes the Boom",
+      "watchedAt": "2026-10-02",
+      "year": 2012
+    },
     {
       "cast": [],
       "collection": "COOF2026",
