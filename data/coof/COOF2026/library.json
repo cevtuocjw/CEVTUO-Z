@@ -1,8 +1,79 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "2ea93c40a0dd",
+  "dataVersion": "7b2d58c316d8",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动画",
+        "奇幻"
+      ],
+      "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
+      "mediaType": "影",
+      "note": null,
+      "order": 160,
+      "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "歪心狼对阵ACME Coyote v. Acme",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作",
+        "惊悚"
+      ],
+      "id": "3ed09462-a4af-810d-b017-f1ba3e8adfba",
+      "mediaType": "影",
+      "note": "Apple tv",
+      "order": 159,
+      "poster": "data/coof/posters/3ed09462-a4af-810d-b017-f1ba3e8adfba.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "求救信号 Mayday",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "奥地利",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ed09462-a4af-817f-b331-feeec880a6f7",
+      "mediaType": "影",
+      "note": "柏林电影节 故事取材于欧洲历史上多起女扮男装的真实事件。十七世纪早期，三十年战争结束后，一个女人伪装成一名叫“罗斯”的士兵出现在一个偏僻的新教村庄，声称自己是一座荒废庄园的继承者，努力获得村民的接纳。",
+      "order": 158,
+      "poster": "data/coof/posters/3ed09462-a4af-817f-b331-feeec880a6f7.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "罗斯 Rose",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",

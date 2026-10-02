@@ -2,7 +2,7 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 158,
+      "count": 161,
       "latestAt": "2026-10-02",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
@@ -46,29 +46,29 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 158
+    "total": 161
   },
-  "dataVersion": "9ff444f34569",
+  "dataVersion": "e19037d7205b",
   "genres": [
     {
-      "count": 112,
+      "count": 113,
       "name": "剧情"
     },
     {
-      "count": 32,
+      "count": 34,
       "name": "喜剧"
     },
     {
-      "count": 24,
+      "count": 25,
       "name": "惊悚"
     },
     {
       "count": 20,
-      "name": "犯罪"
+      "name": "动作"
     },
     {
-      "count": 19,
-      "name": "动作"
+      "count": 20,
+      "name": "犯罪"
     },
     {
       "count": 14,
@@ -87,12 +87,12 @@
       "name": "科幻"
     },
     {
-      "count": 8,
-      "name": "冒险"
+      "count": 9,
+      "name": "奇幻"
     },
     {
       "count": 8,
-      "name": "奇幻"
+      "name": "冒险"
     },
     {
       "count": 7,
@@ -108,6 +108,10 @@
     },
     {
       "count": 5,
+      "name": "动画"
+    },
+    {
+      "count": 5,
       "name": "恐怖"
     },
     {
@@ -117,10 +121,6 @@
     {
       "count": 5,
       "name": "音乐"
-    },
-    {
-      "count": 4,
-      "name": "动画"
     },
     {
       "count": 4,
@@ -155,27 +155,98 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "美国",
-      "德国"
+      "美国"
     ],
     "director": [],
     "genres": [
-      "剧情",
-      "爱情"
+      "喜剧",
+      "动画",
+      "奇幻"
     ],
-    "id": "3ed09462-a4af-81d7-a61a-f6ef6019a24a",
+    "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
     "mediaType": "影",
-    "note": "金球奖提名",
-    "order": 157,
-    "poster": "data/coof/posters/3ed09462-a4af-81d7-a61a-f6ef6019a24a.jpg",
+    "note": null,
+    "order": 160,
+    "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
     "rating": null,
-    "runtimeMin": 124,
+    "runtimeMin": 101,
     "status": "watched",
-    "title": "朗读者 The Reader",
+    "title": "歪心狼对阵ACME Coyote v. Acme",
     "watchedAt": "2026-10-02",
-    "year": 2008
+    "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动画",
+        "奇幻"
+      ],
+      "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
+      "mediaType": "影",
+      "note": null,
+      "order": 160,
+      "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "歪心狼对阵ACME Coyote v. Acme",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作",
+        "惊悚"
+      ],
+      "id": "3ed09462-a4af-810d-b017-f1ba3e8adfba",
+      "mediaType": "影",
+      "note": "Apple tv",
+      "order": 159,
+      "poster": "data/coof/posters/3ed09462-a4af-810d-b017-f1ba3e8adfba.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "求救信号 Mayday",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "奥地利",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ed09462-a4af-817f-b331-feeec880a6f7",
+      "mediaType": "影",
+      "note": "柏林电影节 故事取材于欧洲历史上多起女扮男装的真实事件。十七世纪早期，三十年战争结束后，一个女人伪装成一名叫“罗斯”的士兵出现在一个偏僻的新教村庄，声称自己是一座荒废庄园的继承者，努力获得村民的接纳。",
+      "order": 158,
+      "poster": "data/coof/posters/3ed09462-a4af-817f-b331-feeec880a6f7.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "罗斯 Rose",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -569,77 +640,6 @@
       "runtimeMin": 105,
       "status": "watched",
       "title": "我们是伯利恒 Belén",
-      "watchedAt": "2026-09-12",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "意大利"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3da09462-a4af-800a-94b7-cab770e7ad87",
-      "mediaType": "影",
-      "note": "第78届洛迦诺国际电影节获奖",
-      "order": 140,
-      "poster": "data/coof/posters/3da09462-a4af-800a-94b7-cab770e7ad87.jpg",
-      "rating": null,
-      "runtimeMin": 90,
-      "status": "watched",
-      "title": "我的喜悦夏天 Gioia Mia",
-      "watchedAt": "2026-09-12",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "喜剧",
-        "动作",
-        "犯罪"
-      ],
-      "id": "3da09462-a4af-806a-885c-e2c4c5a9168a",
-      "mediaType": "影",
-      "note": "hulu",
-      "order": 139,
-      "poster": "data/coof/posters/3da09462-a4af-806a-885c-e2c4c5a9168a.jpg",
-      "rating": null,
-      "runtimeMin": 107,
-      "status": "watched",
-      "title": "Mike & Nick & Nick & Alice",
-      "watchedAt": "2026-09-12",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "加拿大",
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "动作",
-        "惊悚",
-        "犯罪"
-      ],
-      "id": "3d909462-a4af-80ef-ace0-e4ea85eb2f0e",
-      "mediaType": "影",
-      "note": null,
-      "order": 138,
-      "poster": "data/coof/posters/3d909462-a4af-80ef-ace0-e4ea85eb2f0e.jpg",
-      "rating": null,
-      "runtimeMin": 91,
-      "status": "watched",
-      "title": "替补悍警 Normal",
       "watchedAt": "2026-09-12",
       "year": 2025
     }
