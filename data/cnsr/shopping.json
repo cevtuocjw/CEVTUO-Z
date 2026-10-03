@@ -1,0 +1,229 @@
+{
+ "source": "shopping",
+ "label": "Shopping",
+ "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-02T12:10+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 23,
+  "hidden": 2,
+  "links": 4,
+  "images": 5,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "3eb09462-a4af-81d6-a607-e9b14095ec2a",
+   "date": "2026-10-01",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "澳大利亚威士忌装进汽水瓶，概念包装 Dieline 奖",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "▲英国癌症研究基金会关于budwig diet的说明：目前尚无科学证据表明布德维格疗法可以治疗或治愈癌症。同行评审的医学期刊上也未发表任何针对该疗法的临床试验研究Cancer Research UK | The world&#x27;s leading cancer charity",
+     "links": [
+      {
+       "t": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "href": "https://www.cancerresearchuk.org/",
+       "title": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "desc": "We exist to beat cancer. And we&#x27;re dedicated to saving and improving lives with our research. Will you help us transform the lives of future generations?"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "将两者混合，搅拌到油被奶酪充分吸收，就得到了巴德维奶油。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "制作这种奶油要用到两种原材料：亚麻籽油和鲜奶酪。奶酪一般是茅屋芝士或者夸克奶酪，通常会选择脱脂版本。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Budwig",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "巴德维酸奶",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "皇庭",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Joyce hk买手店",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3eb09462a4af80218923d553455a1695.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af81e3b4e3dc362bf7b483.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af812bb6a9d963d56e5472.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 3
+  },
+  {
+   "id": "3ea09462-a4af-8195-a953-ea951a299373",
+   "date": "2026-09-29",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "荣耀 HONOR Life 墨水屏阅读器 S3 上架：61g 重、磁吸设计，359 元",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e909462-a4af-8162-818e-e87d903ba221",
+   "date": "2026-09-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "letter passport case in leather 796318AADUK1000",
+     "links": [
+      {
+       "t": "letter passport case in leather 796318AADUK1000",
+       "href": "https://www.ysl.com/en-hk/pr/letter-passport-case-in-leather-796318AADUK1000.html"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "传统的木制墙面护墙板（boiserie）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "日本设计师吉冈德仁（Tokujin Yoshioka） 和法国设计师Ronan Bouroullec为意大利瓷砖品牌Mutina设计的两个陶瓷系列",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "一出好戏 | MUTINA中国首店",
+     "links": [
+      {
+       "t": "一出好戏 | MUTINA中国首店",
+       "href": "https://mp.weixin.qq.com/s/niIu259CHelpjAr0bV1Rtw",
+       "title": "一出好戏 | MUTINA中国首店",
+       "desc": "MUTINA上海空间初次亮相"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "创始人、创意总监 Charlie Hedin 曾在 Acne Studios 担任 CEO 助理，随后到巴黎从事品牌的全球传播工作。他在接受 AnOther 采访时说，自己辗转多个城市生活，却一直难以找到合适的床品和毛巾，这成为他创立 Tekla 的起点。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "2017 年成立于哥本哈根的 Tekla，是一个以床品、毛巾和睡衣为核心的生活方式品牌。它把日常织物与个人风格联系起来：纯色、格纹与条纹床品可以自由搭配，睡衣兼顾休息与日间穿着，毯子的颜色则来自建筑师对居住空间的观察。家",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta官方确认，Muse Charm是一款可放进口袋、用于与Muse实时语音交互的设备，更多细节将在今年晚些时候公布",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Galeries Lafayette、Le Bon Marché、Breuninger、Nordstrom、Free People、Anthropologie等零售商都在销售它的产品。品牌最大的市场仍然是意大利，之后是英国和德国，美国市场最近一个季度也录得双位数增长。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "品牌已与Falc集团合作，产品进入全球2500个销售点，包括Kith、Le Bon Marché等知名店铺，并推出过与Walter van Beirendonck等品牌的联名款",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Flower Mountain（山雾花野）是一个2015年成立于东京的户外潮流鞋履品牌，由中国设计师杨超和日本设计师太田圭辅共同创立，灵感源自自然与户外文化。",
+     "links": []
+    }
+   ],
+   "more": 2,
+   "images": [
+    {
+     "src": "data/cnsr/img/3e909462a4af81cdb5cecc534d278efe.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3e909462a4af812fad3aca1afd44e7b3.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 4
+  },
+  {
+   "id": "3e709462-a4af-8165-91ec-cd07f72b560a",
+   "date": "2026-09-26",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e509462-a4af-816c-871b-dc06aeac3a23",
+   "date": "2026-09-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ray-Ban Meta Audio、Ray-Ban Meta第三代、Meta Glasses新系列，从349美元到449美元，覆盖不同人群不同场景。核心点就一个，让AI眼镜变成像普通眼镜一样，人人能戴、天天能戴",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta放大招！AI眼镜阵容扩充至100款",
+     "links": [
+      {
+       "t": "Meta放大招！AI眼镜阵容扩充至100款",
+       "href": "https://mp.weixin.qq.com/s/MO_XNYGHcRqj-yX7mL2JQA",
+       "title": "Meta放大招！AI眼镜阵容扩充至100款",
+       "desc": "9月24日，Meta Connect 2026。除了VR眼镜，Meta还掏出了一大把AI眼镜，多到年底要超过100个款式。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "成立于2022年的 PANE，正在成为中国本土鞋履消费市场中一个颇为特殊的样本，品牌由男装品牌 Full Monty 创始人陈宁发起。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "据最新报道，PANE 已于今年8月完成新一轮融资，投资方为专注消费领域的上海黑蚁资本BA Capital，具体融资金额尚未披露，企查查信息显示，黑蚁资本创始人何愚已于8月19日出任 PANE 董事。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 2
+  }
+ ]
+}

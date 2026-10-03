@@ -1,0 +1,649 @@
+{
+  "collection": "COOF2022",
+  "collections": [
+    {
+      "count": 149,
+      "latestAt": "2026-09-19",
+      "name": "COOF2026",
+      "path": "data/coof/COOF2026/index.json"
+    },
+    {
+      "count": 204,
+      "latestAt": "2025-12-29",
+      "name": "COOF2025",
+      "path": "data/coof/COOF2025/index.json"
+    },
+    {
+      "count": 152,
+      "latestAt": "2024-12-31",
+      "name": "COOF2024",
+      "path": "data/coof/COOF2024/index.json"
+    },
+    {
+      "count": 145,
+      "latestAt": "2023-12-24",
+      "name": "COOF2023",
+      "path": "data/coof/COOF2023/index.json"
+    },
+    {
+      "count": 236,
+      "latestAt": "2022-12-26",
+      "name": "COOF2022",
+      "path": "data/coof/COOF2022/index.json"
+    },
+    {
+      "count": 107,
+      "latestAt": "2021-12-01",
+      "name": "COOF2021",
+      "path": "data/coof/COOF2021/index.json"
+    },
+    {
+      "count": 216,
+      "latestAt": "2020-12-30",
+      "name": "COOF2020",
+      "path": "data/coof/COOF2020/index.json"
+    }
+  ],
+  "counts": {
+    "rated": 0,
+    "total": 236
+  },
+  "dataVersion": "8b28d5527d9c",
+  "genres": [
+    {
+      "count": 147,
+      "name": "剧情"
+    },
+    {
+      "count": 63,
+      "name": "犯罪"
+    },
+    {
+      "count": 62,
+      "name": "喜剧"
+    },
+    {
+      "count": 56,
+      "name": "惊悚"
+    },
+    {
+      "count": 40,
+      "name": "动作"
+    },
+    {
+      "count": 26,
+      "name": "冒险"
+    },
+    {
+      "count": 24,
+      "name": "悬疑"
+    },
+    {
+      "count": 16,
+      "name": "科幻"
+    },
+    {
+      "count": 14,
+      "name": "爱情"
+    },
+    {
+      "count": 12,
+      "name": "动画"
+    },
+    {
+      "count": 11,
+      "name": "传记"
+    },
+    {
+      "count": 11,
+      "name": "纪录片"
+    },
+    {
+      "count": 10,
+      "name": "恐怖"
+    },
+    {
+      "count": 9,
+      "name": "奇幻"
+    },
+    {
+      "count": 8,
+      "name": "历史"
+    },
+    {
+      "count": 6,
+      "name": "战争"
+    },
+    {
+      "count": 5,
+      "name": "同性"
+    },
+    {
+      "count": 3,
+      "name": "短片"
+    },
+    {
+      "count": 3,
+      "name": "运动"
+    },
+    {
+      "count": 2,
+      "name": "喜剧片"
+    },
+    {
+      "count": 2,
+      "name": "西部"
+    },
+    {
+      "count": 2,
+      "name": "音乐"
+    },
+    {
+      "count": 1,
+      "name": "剧情片"
+    },
+    {
+      "count": 1,
+      "name": "家庭"
+    }
+  ],
+  "hero": {
+    "cast": [],
+    "collection": "COOF2022",
+    "country": [
+      "美国",
+      "英国"
+    ],
+    "director": [],
+    "genres": [
+      "剧情",
+      "爱情",
+      "奇幻"
+    ],
+    "id": "30aef757-f2a3-47de-8931-f58e50108d59",
+    "mediaType": null,
+    "note": null,
+    "order": 233,
+    "poster": "data/coof/posters/30aef757-f2a3-47de-8931-f58e50108d59.jpg",
+    "rating": null,
+    "runtimeMin": 10,
+    "status": "watched",
+    "title": "魔法觉醒 第二季",
+    "watchedAt": "2022-12-26",
+    "year": 2021
+  },
+  "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "奇幻"
+      ],
+      "id": "30aef757-f2a3-47de-8931-f58e50108d59",
+      "mediaType": null,
+      "note": null,
+      "order": 233,
+      "poster": "data/coof/posters/30aef757-f2a3-47de-8931-f58e50108d59.jpg",
+      "rating": null,
+      "runtimeMin": 10,
+      "status": "watched",
+      "title": "魔法觉醒 第二季",
+      "watchedAt": "2022-12-26",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "科幻",
+        "惊悚"
+      ],
+      "id": "69280a93-c3e0-4c7e-91ef-290182b9ccdb",
+      "mediaType": null,
+      "note": "Amazon Prime",
+      "order": 232,
+      "poster": "data/coof/posters/69280a93-c3e0-4c7e-91ef-290182b9ccdb.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "边缘世界 第一季",
+      "watchedAt": "2022-12-19",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "捷克"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "历史"
+      ],
+      "id": "2423eeb4-8115-43c0-98a6-e46b66bd0a82",
+      "mediaType": null,
+      "note": null,
+      "order": 231,
+      "poster": "data/coof/posters/2423eeb4-8115-43c0-98a6-e46b66bd0a82.jpg",
+      "rating": null,
+      "runtimeMin": 126,
+      "status": "watched",
+      "title": "中世纪",
+      "watchedAt": "2022-12-16",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "法国",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "12db7bd6-14b2-4b83-b966-694dcfe38418",
+      "mediaType": null,
+      "note": null,
+      "order": 230,
+      "poster": "data/coof/posters/12db7bd6-14b2-4b83-b966-694dcfe38418.jpg",
+      "rating": null,
+      "runtimeMin": 112,
+      "status": "watched",
+      "title": "活在当下 Rien à foutre",
+      "watchedAt": "2022-12-15",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "德国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "恐怖",
+        "历史"
+      ],
+      "id": "304954d1-42de-4a54-bdc3-98dfe52b8c07",
+      "mediaType": null,
+      "note": "Netflix",
+      "order": 229,
+      "poster": "data/coof/posters/304954d1-42de-4a54-bdc3-98dfe52b8c07.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "1899",
+      "watchedAt": "2022-12-12",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "战争"
+      ],
+      "id": "19fe62d2-f090-414d-abfd-fbabd2b67c73",
+      "mediaType": null,
+      "note": null,
+      "order": 228,
+      "poster": "data/coof/posters/19fe62d2-f090-414d-abfd-fbabd2b67c73.jpg",
+      "rating": null,
+      "runtimeMin": 126,
+      "status": "watched",
+      "title": "有史以来最棒的啤酒运送",
+      "watchedAt": "2022-12-04",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "1e4ac9ef-eda9-4e01-8aef-e7c0437c69b4",
+      "mediaType": null,
+      "note": null,
+      "order": 227,
+      "poster": "data/coof/posters/1e4ac9ef-eda9-4e01-8aef-e7c0437c69b4.jpg",
+      "rating": null,
+      "runtimeMin": 10,
+      "status": "watched",
+      "title": "Joe Pickett 第一季",
+      "watchedAt": "2022-12-03",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "c5859800-003c-4f0a-80f1-c48d5b64ad20",
+      "mediaType": null,
+      "note": null,
+      "order": 226,
+      "poster": "data/coof/posters/c5859800-003c-4f0a-80f1-c48d5b64ad20.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "风骚女子 第一季",
+      "watchedAt": "2022-11-30",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "3491b8e9-ef35-4783-81cb-2114bd2e49ea",
+      "mediaType": null,
+      "note": null,
+      "order": 225,
+      "poster": null,
+      "rating": null,
+      "runtimeMin": 4,
+      "status": "watched",
+      "title": "之前的女孩 The Girl Before",
+      "watchedAt": "2022-11-27",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "动作",
+        "科幻",
+        "惊悚"
+      ],
+      "id": "3867c7d0-c852-400b-8f7d-55b23033ffd5",
+      "mediaType": null,
+      "note": null,
+      "order": 224,
+      "poster": "data/coof/posters/3867c7d0-c852-400b-8f7d-55b23033ffd5.jpg",
+      "rating": null,
+      "runtimeMin": 2,
+      "status": "watched",
+      "title": "雪国列车 第一季 第二季",
+      "watchedAt": "2022-11-11",
+      "year": 2021
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "俄罗斯"
+      ],
+      "director": [],
+      "genres": [
+        "历史"
+      ],
+      "id": "1c45cb70-ddd5-41de-898b-c2da956c96e1",
+      "mediaType": null,
+      "note": null,
+      "order": 223,
+      "poster": "data/coof/posters/1c45cb70-ddd5-41de-898b-c2da956c96e1.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "索菲娅 София",
+      "watchedAt": "2022-11-08",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧"
+      ],
+      "id": "bed9d388-e7b1-4989-97f7-7cbb1e8e45a9",
+      "mediaType": null,
+      "note": null,
+      "order": 222,
+      "poster": "data/coof/posters/bed9d388-e7b1-4989-97f7-7cbb1e8e45a9.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "白莲花度假村第一季",
+      "watchedAt": "2022-11-06",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "墨西哥"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "悬疑"
+      ],
+      "id": "763cbbfc-d5bc-4e12-a6e6-8faf0f77263f",
+      "mediaType": null,
+      "note": "Netflix",
+      "order": 221,
+      "poster": "data/coof/posters/763cbbfc-d5bc-4e12-a6e6-8faf0f77263f.jpg",
+      "rating": null,
+      "runtimeMin": 3,
+      "status": "watched",
+      "title": "私家侦探贝拉斯科兰 Belascoarán, PI",
+      "watchedAt": "2022-10-28",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国",
+        "澳大利亚",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "68c62c09-ef6a-40bf-927d-95cef9d2e9de",
+      "mediaType": null,
+      "note": null,
+      "order": 220,
+      "poster": "data/coof/posters/68c62c09-ef6a-40bf-927d-95cef9d2e9de.jpg",
+      "rating": null,
+      "runtimeMin": 6,
+      "status": "watched",
+      "title": "游客 第一季",
+      "watchedAt": "2022-10-27",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "意大利"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "893a90ee-e852-4f0d-aad7-b98ede94b9d8",
+      "mediaType": null,
+      "note": null,
+      "order": 219,
+      "poster": "data/coof/posters/893a90ee-e852-4f0d-aad7-b98ede94b9d8.jpg",
+      "rating": null,
+      "runtimeMin": 10,
+      "status": "watched",
+      "title": "1992",
+      "watchedAt": "2022-10-26",
+      "year": 2015
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "31845f02-b153-40d8-848c-1b78a9865df0",
+      "mediaType": null,
+      "note": null,
+      "order": 218,
+      "poster": "data/coof/posters/31845f02-b153-40d8-848c-1b78a9865df0.jpg",
+      "rating": null,
+      "runtimeMin": 10,
+      "status": "watched",
+      "title": "林肯律师",
+      "watchedAt": "2022-10-24",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "剧情"
+      ],
+      "id": "ae3b429d-5b91-4eaa-a11d-bdc82069a577",
+      "mediaType": null,
+      "note": "BBC",
+      "order": 217,
+      "poster": "data/coof/posters/ae3b429d-5b91-4eaa-a11d-bdc82069a577.jpg",
+      "rating": null,
+      "runtimeMin": 3,
+      "status": "watched",
+      "title": "Ill Behaviour",
+      "watchedAt": "2022-10-19",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "西班牙"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "f9063d2b-7615-458f-9bc1-7925d3405bdb",
+      "mediaType": null,
+      "note": null,
+      "order": 216,
+      "poster": "data/coof/posters/f9063d2b-7615-458f-9bc1-7925d3405bdb.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "Intimacy",
+      "watchedAt": "2022-10-19",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "土耳其"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "4024dd7b-2333-4986-9f42-5369c50e6c93",
+      "mediaType": null,
+      "note": "Netflix",
+      "order": 215,
+      "poster": "data/coof/posters/4024dd7b-2333-4986-9f42-5369c50e6c93.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "Kus Uçusu",
+      "watchedAt": "2022-10-19",
+      "year": 2022
+    },
+    {
+      "cast": [],
+      "collection": "COOF2022",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧"
+      ],
+      "id": "ec8de4bb-dac9-4f7d-81ef-9689e832ef2f",
+      "mediaType": null,
+      "note": null,
+      "order": 214,
+      "poster": "data/coof/posters/ec8de4bb-dac9-4f7d-81ef-9689e832ef2f.jpg",
+      "rating": null,
+      "runtimeMin": 8,
+      "status": "watched",
+      "title": "尝试第二季",
+      "watchedAt": "2022-10-07",
+      "year": 2021
+    }
+  ],
+  "schemaVersion": 1
+}
