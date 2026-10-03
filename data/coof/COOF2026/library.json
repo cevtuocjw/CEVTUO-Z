@@ -1,8 +1,55 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "495dc7da26e2",
+  "dataVersion": "9baccfa297b4",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "科幻",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "3ee09462-a4af-81e4-89bf-ee75200fbf6a",
+      "mediaType": "影",
+      "note": null,
+      "order": 163,
+      "poster": "data/coof/posters/3ee09462-a4af-81e4-89bf-ee75200fbf6a.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "月影杀痕 In the Shadow of the Moon",
+      "watchedAt": "2026-10-03",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "墨西哥"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "犯罪"
+      ],
+      "id": "3ed09462-a4af-814e-81a9-cbe592d361aa",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 162,
+      "poster": "data/coof/posters/3ed09462-a4af-814e-81a9-cbe592d361aa.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "夜巡毒枭 La Captura",
+      "watchedAt": "2026-10-03",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
