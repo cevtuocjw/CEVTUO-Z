@@ -3,16 +3,66 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-03T03:45+08:00",
+ "updatedAt": "2026-10-05T02:31+08:00",
  "counts": {
   "days": 5,
-  "lines": 46,
-  "hidden": 155,
+  "lines": 44,
+  "hidden": 96,
   "links": 3,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3ef09462-a4af-816a-a159-f99a8483149c",
+   "date": "2026-10-04",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "出牌时如果明明有可出的牌却没出，就可能被对手喊 \"Crapette\" 并受到惩罚。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "下方公共区域通常按不同颜色、相邻点数叠放，例如黑桃 Q 上可以放红桃 K 或红桃 J。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "中间区域按花色从 A 开始递增叠放，例如 A、2、3……",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "每人有自己的牌区，包括手牌、弃牌堆和储备牌。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "基本玩法大致是：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "它本质上是一种\"竞争性接龙\"：两名玩家各自使用一副牌，按照规则把牌从自己的牌区移动到公共区域，先出完所有牌的一方获胜。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Crapette 是一个法语词，最常见的含义是一种双人纸牌游戏，也常被称为 Russian Bank。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "Crapette 是…",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3ed09462-a4af-8135-bf9c-d3140d5ce4f1",
    "date": "2026-10-02",
@@ -247,66 +297,6 @@
     }
    ],
    "more": 23,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e409462-a4af-81b3-acbb-d17b9e58c271",
-   "date": "2026-09-23",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "台积电自从决定进军日本市场后，日本熊本县菊阳町地价便一路飙升，许多不动产公司看好投资与自住需求，纷纷开发建造公寓。不过近期有熊本县当地房产中介表示，大楼与旅馆如雨后春笋般林立，但到了晚上却很少有灯亮着",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "台积电自从决定进军日…",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "如果你看到“Statins side effect alert”，它提醒的副作用也适用于阿托伐他汀，但是否继续吃、换药或减量，要由医生判断。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "简单说：阿托伐他汀就是立普妥，是用来降胆固醇、预防心梗和中风的一种他汀药。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "如果出现明显肌肉痛、无力，尤其伴发热或尿色变深，要尽快告诉医生",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "葡萄柚/葡萄柚汁可能影响它，大量食用要小心",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "可能和某些药物相互作用，比如部分抗真菌药、抗生素、HIV 药等",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "孕妇、哺乳期一般不建议使用",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "有活动性肝病通常不能用",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "不要自行停药，尤其是已经有心血管病的人",
-     "links": []
-    }
-   ],
-   "more": 59,
    "images": [],
    "imagesSeen": 0
   }

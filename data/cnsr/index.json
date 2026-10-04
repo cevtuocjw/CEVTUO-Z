@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-04T12:25+08:00",
+ "generatedAt": "2026-10-05T02:31+08:00",
  "sources": [
   {
    "key": "shopping",
@@ -21,11 +21,11 @@
    "label": "Learn",
    "path": "data/cnsr/learn.json",
    "window": "最近 5 个 @日期",
-   "updatedAt": "2026-10-03T03:45+08:00",
+   "updatedAt": "2026-10-05T02:31+08:00",
    "counts": {
     "days": 5,
-    "lines": 46,
-    "hidden": 155,
+    "lines": 44,
+    "hidden": 96,
     "links": 3,
     "images": 0,
     "skippedSubtrees": 0
