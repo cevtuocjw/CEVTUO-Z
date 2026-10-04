@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 164,
-      "latestAt": "2026-10-03",
+      "count": 165,
+      "latestAt": "2026-10-04",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,32 +46,32 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 164
+    "total": 165
   },
-  "dataVersion": "91ceb8c04b17",
+  "dataVersion": "a7960a315f52",
   "genres": [
     {
-      "count": 113,
+      "count": 114,
       "name": "剧情"
     },
     {
-      "count": 34,
+      "count": 33,
       "name": "喜剧"
     },
     {
-      "count": 26,
+      "count": 25,
       "name": "惊悚"
-    },
-    {
-      "count": 21,
-      "name": "动作"
     },
     {
       "count": 21,
       "name": "犯罪"
     },
     {
-      "count": 15,
+      "count": 20,
+      "name": "动作"
+    },
+    {
+      "count": 16,
       "name": "纪录片"
     },
     {
@@ -155,27 +155,69 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "美国"
+      "法国"
     ],
     "director": [],
     "genres": [
-      "科幻",
-      "悬疑",
-      "惊悚"
+      "剧情"
     ],
-    "id": "3ee09462-a4af-81e4-89bf-ee75200fbf6a",
+    "id": "3ef09462-a4af-80c6-b9bf-fe82a7feee5f",
     "mediaType": "影",
-    "note": null,
-    "order": 163,
-    "poster": "data/coof/posters/3ee09462-a4af-81e4-89bf-ee75200fbf6a.jpg",
+    "note": "Ganna",
+    "order": 165,
+    "poster": "data/coof/posters/3ef09462-a4af-80c6-b9bf-fe82a7feee5f.jpg",
     "rating": null,
-    "runtimeMin": 115,
+    "runtimeMin": 102,
     "status": "watched",
-    "title": "月影杀痕 In the Shadow of the Moon",
-    "watchedAt": "2026-10-03",
-    "year": 2019
+    "title": "阿道夫 Adolphe",
+    "watchedAt": "2026-10-04",
+    "year": 2002
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ef09462-a4af-80c6-b9bf-fe82a7feee5f",
+      "mediaType": "影",
+      "note": "Ganna",
+      "order": 165,
+      "poster": "data/coof/posters/3ef09462-a4af-80c6-b9bf-fe82a7feee5f.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "阿道夫 Adolphe",
+      "watchedAt": "2026-10-04",
+      "year": 2002
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ef09462-a4af-81b0-8277-d9d4541c3cc9",
+      "mediaType": "影",
+      "note": null,
+      "order": 164,
+      "poster": "data/coof/posters/3ef09462-a4af-81b0-8277-d9d4541c3cc9.jpg",
+      "rating": null,
+      "runtimeMin": 74,
+      "status": "watched",
+      "title": "失窃王国 Stolen Kingdom",
+      "watchedAt": "2026-10-04",
+      "year": 2025
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -266,30 +308,6 @@
       "runtimeMin": 101,
       "status": "watched",
       "title": "歪心狼对阵ACME Coyote v. Acme",
-      "watchedAt": "2026-10-02",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "喜剧",
-        "动作",
-        "惊悚"
-      ],
-      "id": "3ed09462-a4af-810d-b017-f1ba3e8adfba",
-      "mediaType": "影",
-      "note": "Apple tv",
-      "order": 159,
-      "poster": "data/coof/posters/3ed09462-a4af-810d-b017-f1ba3e8adfba.jpg",
-      "rating": null,
-      "runtimeMin": 110,
-      "status": "watched",
-      "title": "求救信号 Mayday",
       "watchedAt": "2026-10-02",
       "year": 2026
     },
@@ -618,29 +636,6 @@
       "title": "诗人 Bardo, falsa crónica de unas cuantas verdades",
       "watchedAt": "2026-09-13",
       "year": 2022
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "德国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "喜剧"
-      ],
-      "id": "3db09462-a4af-8093-bb01-f1119a157590",
-      "mediaType": "影",
-      "note": "海岛国际电影节获奖",
-      "order": 144,
-      "poster": "data/coof/posters/3db09462-a4af-8093-bb01-f1119a157590.jpg",
-      "rating": null,
-      "runtimeMin": 90,
-      "status": "watched",
-      "title": "桑格豪森的渴望 Sehnsucht in Sangerhausen",
-      "watchedAt": "2026-09-13",
-      "year": 2025
     }
   ],
   "schemaVersion": 1

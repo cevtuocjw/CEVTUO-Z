@@ -1,26 +1,26 @@
 {
   "brands": {
     "coof": {
-      "changedAt": "2026-10-03T11:53+08:00",
-      "dataVersion": "4528625c850c",
+      "changedAt": "2026-10-04T18:54+08:00",
+      "dataVersion": "ed0bc606fba4",
       "parts": {
-        "COOF2026": "91ceb8c04b17"
+        "COOF2026": "a7960a315f52"
       }
     }
   },
   "cadence": "PT5H",
-  "generatedAt": "2026-10-03T11:53+08:00",
-  "nextScheduledAt": "2026-10-03T13:00+08:00",
-  "runId": "37094665509",
+  "generatedAt": "2026-10-04T18:54+08:00",
+  "nextScheduledAt": "2026-10-04T23:00+08:00",
+  "runId": "37196862829",
   "schemaVersion": 1,
   "sources": [
     {
       "changed": true,
       "id": "notion-coof",
-      "itemsIn": 164,
-      "lastAttemptAt": "2026-10-03T11:53+08:00",
-      "lastSuccessAt": "2026-10-03T11:53+08:00",
-      "latencyMs": 7009,
+      "itemsIn": 165,
+      "lastAttemptAt": "2026-10-04T18:54+08:00",
+      "lastSuccessAt": "2026-10-04T18:54+08:00",
+      "latencyMs": 2210,
       "staleAfterHours": 15,
       "status": "ok"
     }

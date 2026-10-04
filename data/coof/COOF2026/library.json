@@ -1,8 +1,52 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "9baccfa297b4",
+  "dataVersion": "3e4fc036631b",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ef09462-a4af-80c6-b9bf-fe82a7feee5f",
+      "mediaType": "影",
+      "note": "Ganna",
+      "order": 165,
+      "poster": "data/coof/posters/3ef09462-a4af-80c6-b9bf-fe82a7feee5f.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "阿道夫 Adolphe",
+      "watchedAt": "2026-10-04",
+      "year": 2002
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ef09462-a4af-81b0-8277-d9d4541c3cc9",
+      "mediaType": "影",
+      "note": null,
+      "order": 164,
+      "poster": "data/coof/posters/3ef09462-a4af-81b0-8277-d9d4541c3cc9.jpg",
+      "rating": null,
+      "runtimeMin": 74,
+      "status": "watched",
+      "title": "失窃王国 Stolen Kingdom",
+      "watchedAt": "2026-10-04",
+      "year": 2025
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -93,30 +137,6 @@
       "runtimeMin": 101,
       "status": "watched",
       "title": "歪心狼对阵ACME Coyote v. Acme",
-      "watchedAt": "2026-10-02",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "喜剧",
-        "动作",
-        "惊悚"
-      ],
-      "id": "3ed09462-a4af-810d-b017-f1ba3e8adfba",
-      "mediaType": "影",
-      "note": "Apple tv",
-      "order": 159,
-      "poster": "data/coof/posters/3ed09462-a4af-810d-b017-f1ba3e8adfba.jpg",
-      "rating": null,
-      "runtimeMin": 110,
-      "status": "watched",
-      "title": "求救信号 Mayday",
       "watchedAt": "2026-10-02",
       "year": 2026
     },
