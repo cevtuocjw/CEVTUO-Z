@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 165,
-      "latestAt": "2026-10-04",
+      "count": 168,
+      "latestAt": "2026-10-06",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 165
+    "total": 168
   },
-  "dataVersion": "a7960a315f52",
+  "dataVersion": "5f6e1ac4f5e6",
   "genres": [
     {
-      "count": 114,
+      "count": 117,
       "name": "剧情"
     },
     {
@@ -75,7 +75,7 @@
       "name": "纪录片"
     },
     {
-      "count": 14,
+      "count": 15,
       "name": "爱情"
     },
     {
@@ -95,16 +95,20 @@
       "name": "冒险"
     },
     {
+      "count": 8,
+      "name": "悬疑"
+    },
+    {
       "count": 7,
       "name": "历史"
     },
     {
-      "count": 7,
-      "name": "悬疑"
+      "count": 6,
+      "name": "同性"
     },
     {
       "count": 6,
-      "name": "同性"
+      "name": "音乐"
     },
     {
       "count": 5,
@@ -117,10 +121,6 @@
     {
       "count": 5,
       "name": "战争"
-    },
-    {
-      "count": 5,
-      "name": "音乐"
     },
     {
       "count": 4,
@@ -159,21 +159,95 @@
     ],
     "director": [],
     "genres": [
-      "剧情"
+      "剧情",
+      "悬疑",
+      "音乐"
     ],
-    "id": "3ef09462-a4af-80c6-b9bf-fe82a7feee5f",
+    "id": "3f109462-a4af-81f2-8740-c864717f2e1e",
     "mediaType": "影",
-    "note": "Ganna",
-    "order": 165,
-    "poster": "data/coof/posters/3ef09462-a4af-80c6-b9bf-fe82a7feee5f.jpg",
+    "note": null,
+    "order": 168,
+    "poster": "data/coof/posters/3f109462-a4af-81f2-8740-c864717f2e1e.jpg",
     "rating": null,
-    "runtimeMin": 102,
+    "runtimeMin": 91,
     "status": "watched",
-    "title": "阿道夫 Adolphe",
-    "watchedAt": "2026-10-04",
-    "year": 2002
+    "title": "巴克斯泰尔，薇拉·巴克斯泰尔 Baxter, Vera Baxter",
+    "watchedAt": "2026-10-06",
+    "year": 1977
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "音乐"
+      ],
+      "id": "3f109462-a4af-81f2-8740-c864717f2e1e",
+      "mediaType": "影",
+      "note": null,
+      "order": 168,
+      "poster": "data/coof/posters/3f109462-a4af-81f2-8740-c864717f2e1e.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "巴克斯泰尔，薇拉·巴克斯泰尔 Baxter, Vera Baxter",
+      "watchedAt": "2026-10-06",
+      "year": 1977
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f109462-a4af-80c7-9524-eaf786f92502",
+      "mediaType": "影",
+      "note": null,
+      "order": 167,
+      "poster": "data/coof/posters/3f109462-a4af-80c7-9524-eaf786f92502.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "弗吉尼亚·伍尔夫的夜与日 Virginia Woolf’s Night & Day",
+      "watchedAt": "2026-10-06",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "葡萄牙",
+        "法国",
+        "美国",
+        "波兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3f109462-a4af-81fe-941c-e29df5aefb7f",
+      "mediaType": "影",
+      "note": "贾木许 监制",
+      "order": 166,
+      "poster": "data/coof/posters/3f109462-a4af-81fe-941c-e29df5aefb7f.jpg",
+      "rating": null,
+      "runtimeMin": 76,
+      "status": "watched",
+      "title": "波尔图 Porto",
+      "watchedAt": "2026-10-06",
+      "year": 2016
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -566,76 +640,6 @@
       "title": "镜的第三乐章 Miroirs No. 3",
       "watchedAt": "2026-09-19",
       "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "动作",
-        "惊悚"
-      ],
-      "id": "3e009462-a4af-80a6-972f-e17c3d344ac1",
-      "mediaType": "影",
-      "note": "一群美国前军人与政治活动家联手，将遭绑架的墨西哥帮派成员散布到各城市，企图借此引发犯罪混乱，从而为激进的政治议程争取支持",
-      "order": 147,
-      "poster": "data/coof/posters/3e009462-a4af-80a6-972f-e17c3d344ac1.jpg",
-      "rating": null,
-      "runtimeMin": 95,
-      "status": "watched",
-      "title": "边界线 Borderline",
-      "watchedAt": "2026-09-19",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "克罗地亚",
-        "德国"
-      ],
-      "director": [],
-      "genres": [
-        "动作",
-        "惊悚"
-      ],
-      "id": "3e009462-a4af-8069-a3bc-ec4d5181d9f5",
-      "mediaType": "影",
-      "note": "德国禁 elon recommend on x afd",
-      "order": 146,
-      "poster": "data/coof/posters/3e009462-a4af-8069-a3bc-ec4d5181d9f5.jpg",
-      "rating": null,
-      "runtimeMin": 89,
-      "status": "watched",
-      "title": "公民义警 Citizen Vigilante",
-      "watchedAt": "2026-09-19",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "墨西哥"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "喜剧"
-      ],
-      "id": "3db09462-a4af-804c-9180-ec150ce826da",
-      "mediaType": "影",
-      "note": "Netflix. 奥斯卡金像奖提名",
-      "order": 145,
-      "poster": "data/coof/posters/3db09462-a4af-804c-9180-ec150ce826da.jpg",
-      "rating": null,
-      "runtimeMin": 174,
-      "status": "watched",
-      "title": "诗人 Bardo, falsa crónica de unas cuantas verdades",
-      "watchedAt": "2026-09-13",
-      "year": 2022
     }
   ],
   "schemaVersion": 1
