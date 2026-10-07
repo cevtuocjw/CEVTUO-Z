@@ -15,6 +15,7 @@
 import { tv } from '../platform/prefs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
+import type { ScrollViewProps } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
 import { isMiniProgram } from '../platform/env';
@@ -750,31 +751,49 @@ export function PageStack({ count, children, apiRef, initialIndex = 0, onActiveC
     };
   }, []);
 
+  /**
+   * ⚠️⚠️ **网页上必须是空对象 —— 连"值为 `undefined` 的键"都不能有。**
+   *
+   * 判据见下面 JSX 上那段长注释：`scrollTop={undefined}` 让 Taro 的 H5
+   * `ScrollView` 把滚动位置当**受控值 0**，每次渲染写回去 ⇒ 滚上去又被吸回顶部。
+   * 实测：直写 `scrollTop=900` 立刻读到 900、**400ms 后是 0**；真滚轮同样。
+   */
+  const miniScrollProps: ScrollViewProps = isMiniProgram()
+    ? {
+        scrollTop: jumpTop ?? undefined,
+        scrollWithAnimation: true,
+        onScroll: onStackScroll as never,
+      }
+    : {};
+
   return (
     <>
       <ScrollView
         className="stack"
         scrollY
         /*
-         * ⚠️⚠️ **这三个属性只能给小程序 —— 无条件给会把网页搞成"狂闪"（2026-10-07）。**
+         * ⚠️⚠️⚠️ **网页上这三个属性必须"一个键都不出现"，不能只是值为 `undefined`。**
          *
-         * 原来我无条件传了 `scrollTop` / `scrollWithAnimation` / `onScroll`，
-         * 想法是"H5 上 Taro 会映射成等价行为"。**错**：
-         *   · H5 上这个滚动的**监听本来就有**（下面 effect 里挂的 DOM `scroll`）；
-         *   · 再加 `onScroll` ⇒ **滚动位置有了两个来源**，`setActive()` 被轮流调用；
-         *   · `active` 一变，`.section__body--enter` 就跟着加/删，
-         *     而那条类上挂的是**入场动画**`section-enter`（`fill: both`）
-         *     ⇒ **动画被反复重启 = 狂闪**。
-         * 读者的症状：CHEALTH 和 Reel 那两处**狂闪** —— 它们正是这个动画的落点。
+         * 这一条是量出来的，不是想出来的（读者 2026-10-07：「主页滑动不下去到 01COOF」）：
          *
-         * ⇒ 小程序才传（那边没有 DOM 监听，`onScroll` 是**唯一**的位置来源）；
-         *   网页什么都不传，**恢复成改动前的行为**。
-         * ⚠️ `jumpTop` 要 `undefined` 不要 `null`：Taro 会把它拼进组件属性，
-         *    `null` 在某些版本下会被序列化成字符串 "null"。
+         *   实测（本机 8126，Playwright）:
+         *     · `.stack` 的 scrollHeight=4500 / clientHeight=900 ⇒ 容器本身是对的；
+         *     · **直写 `scrollTop=900` 立刻读到 900，400ms 后读到 `0`**；
+         *     · **真滚轮滚 900，同样被吸回 `0`**。
+         *   ⇒ 不是"滚不动"，是**滚动位置被反复写回 0**。
+         *
+         *   ⚠️ 我一开始认定是 `onScroll` 让 `active` 有两个来源（"狂闪"那次），
+         *      又认定是 `section.scss` 那 5 个 `:not()`（特异型）。
+         *      **两个 A/B 都否掉了** —— 撤掉它们，照样吸回 0。
+         *   ⇒ 真因是**键的存在**：`scrollTop={undefined}` 仍然带着一个 `scrollTop` 属性，
+         *      Taro 的 H5 `ScrollView` 把它当成**受控值 0**，每次渲染都写回去。
+         *      （改动之前这里**根本没有这个属性**，所以一直是好的。）
+         *
+         * ⇒ 用**条件展开**而不是传 `undefined`：H5 上展开一个**空对象**，
+         *   属性集与历史完全一致；小程序上才带这三个键。
+         *   ⚠️ 不要写成 `{...(x as never)}` —— TS2698「展开类型必须来自对象类型」。
          */
-        scrollTop={isMiniProgram() ? (jumpTop ?? undefined) : undefined}
-        scrollWithAnimation={isMiniProgram()}
-        onScroll={isMiniProgram() ? (onStackScroll as never) : undefined}
+        {...miniScrollProps}
         // ⚠️ `ref` here reaches the ScrollView's inner element in H5. In the
         // mini program it is a Taro component instance, so the DOM listener
         // below simply never attaches and the rail stays on panel 1 — the
