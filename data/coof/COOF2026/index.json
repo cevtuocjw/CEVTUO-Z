@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 168,
-      "latestAt": "2026-10-06",
+      "count": 169,
+      "latestAt": "2026-10-07",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 168
+    "total": 169
   },
-  "dataVersion": "5f6e1ac4f5e6",
+  "dataVersion": "34f6492419c4",
   "genres": [
     {
-      "count": 117,
+      "count": 119,
       "name": "剧情"
     },
     {
@@ -59,7 +59,7 @@
       "name": "喜剧"
     },
     {
-      "count": 25,
+      "count": 26,
       "name": "惊悚"
     },
     {
@@ -72,11 +72,11 @@
     },
     {
       "count": 16,
-      "name": "纪录片"
+      "name": "爱情"
     },
     {
-      "count": 15,
-      "name": "爱情"
+      "count": 16,
+      "name": "纪录片"
     },
     {
       "count": 11,
@@ -91,12 +91,12 @@
       "name": "奇幻"
     },
     {
-      "count": 8,
-      "name": "冒险"
+      "count": 9,
+      "name": "悬疑"
     },
     {
       "count": 8,
-      "name": "悬疑"
+      "name": "冒险"
     },
     {
       "count": 7,
@@ -155,27 +155,78 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "法国"
+      "法国",
+      "波兰",
+      "英国"
     ],
     "director": [],
     "genres": [
       "剧情",
       "悬疑",
-      "音乐"
+      "惊悚"
     ],
-    "id": "3f109462-a4af-81f2-8740-c864717f2e1e",
+    "id": "3f209462-a4af-814d-b0ff-d0cbb2a6817e",
     "mediaType": "影",
     "note": null,
-    "order": 168,
-    "poster": "data/coof/posters/3f109462-a4af-81f2-8740-c864717f2e1e.jpg",
+    "order": 170,
+    "poster": "data/coof/posters/3f209462-a4af-814d-b0ff-d0cbb2a6817e.jpg",
     "rating": null,
-    "runtimeMin": 91,
+    "runtimeMin": 84,
     "status": "watched",
-    "title": "巴克斯泰尔，薇拉·巴克斯泰尔 Baxter, Vera Baxter",
-    "watchedAt": "2026-10-06",
-    "year": 1977
+    "title": "La femme du Vème",
+    "watchedAt": "2026-10-07",
+    "year": 2011
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "波兰",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "3f209462-a4af-814d-b0ff-d0cbb2a6817e",
+      "mediaType": "影",
+      "note": null,
+      "order": 170,
+      "poster": "data/coof/posters/3f209462-a4af-814d-b0ff-d0cbb2a6817e.jpg",
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "La femme du Vème",
+      "watchedAt": "2026-10-07",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3f209462-a4af-8115-ae30-ee743785f284",
+      "mediaType": "影",
+      "note": null,
+      "order": 169,
+      "poster": "data/coof/posters/3f209462-a4af-8115-ae30-ee743785f284.jpg",
+      "rating": null,
+      "runtimeMin": 150,
+      "status": "watched",
+      "title": "巴黎圣母院 The Hunchback of Notre Dame",
+      "watchedAt": "2026-10-07",
+      "year": 1982
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -592,53 +643,6 @@
       "status": "watched",
       "title": "废人 Wasteman",
       "watchedAt": "2026-09-25",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "法国",
-        "卢森堡",
-        "比利时"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "喜剧"
-      ],
-      "id": "3e609462-a4af-8181-b817-f798d20c5d29",
-      "mediaType": "影",
-      "note": "第73届圣塞巴斯蒂安国际电影节",
-      "order": 149,
-      "poster": "data/coof/posters/3e609462-a4af-8181-b817-f798d20c5d29.jpg",
-      "rating": null,
-      "runtimeMin": 94,
-      "status": "watched",
-      "title": "春中六日 Six jours, ce printemps-là",
-      "watchedAt": "2026-09-25",
-      "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "德国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3e009462-a4af-8158-9527-ea3c73ae69d7",
-      "mediaType": "影",
-      "note": null,
-      "order": 148,
-      "poster": "data/coof/posters/3e009462-a4af-8158-9527-ea3c73ae69d7.jpg",
-      "rating": null,
-      "runtimeMin": 86,
-      "status": "watched",
-      "title": "镜的第三乐章 Miroirs No. 3",
-      "watchedAt": "2026-09-19",
       "year": 2025
     }
   ],

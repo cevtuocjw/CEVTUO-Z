@@ -1,8 +1,57 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "e13abae3c0d9",
+  "dataVersion": "0e91d1c846a7",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "波兰",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "3f209462-a4af-814d-b0ff-d0cbb2a6817e",
+      "mediaType": "影",
+      "note": null,
+      "order": 170,
+      "poster": "data/coof/posters/3f209462-a4af-814d-b0ff-d0cbb2a6817e.jpg",
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "La femme du Vème",
+      "watchedAt": "2026-10-07",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3f209462-a4af-8115-ae30-ee743785f284",
+      "mediaType": "影",
+      "note": null,
+      "order": 169,
+      "poster": "data/coof/posters/3f209462-a4af-8115-ae30-ee743785f284.jpg",
+      "rating": null,
+      "runtimeMin": 150,
+      "status": "watched",
+      "title": "巴黎圣母院 The Hunchback of Notre Dame",
+      "watchedAt": "2026-10-07",
+      "year": 1982
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -3942,24 +3991,6 @@
       "title": "电锯人剧场版：蕾塞篇Gekijouban Chainsaw Man",
       "watchedAt": "2026-01-01",
       "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [],
-      "director": [],
-      "genres": [],
-      "id": "3e009462-a4af-801a-be05-d78530d3f8f2",
-      "mediaType": null,
-      "note": null,
-      "order": null,
-      "poster": null,
-      "rating": null,
-      "runtimeMin": null,
-      "status": "watched",
-      "title": "(无标题)",
-      "watchedAt": null,
-      "year": null
     }
   ]
 }

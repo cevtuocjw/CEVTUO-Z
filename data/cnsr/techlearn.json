@@ -3,7 +3,7 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-05T12:11+08:00",
+ "updatedAt": "2026-10-07T10:24+08:00",
  "counts": {
   "days": 5,
   "lines": 23,
@@ -87,11 +87,13 @@
     },
     {
      "k": "paragraph",
-     "t": "8ekbFvO4Lhw549fO4iNogA",
+     "t": "腾讯，又造了个良心App",
      "links": [
       {
-       "t": "8ekbFvO4Lhw549fO4iNogA",
-       "href": "https://mp.weixin.qq.com/s/8ekbFvO4Lhw549fO4iNogA"
+       "t": "腾讯，又造了个良心App",
+       "href": "https://mp.weixin.qq.com/s/8ekbFvO4Lhw549fO4iNogA",
+       "title": "腾讯，又造了个良心App",
+       "desc": "用起来还挺意外"
       }
      ]
     },
