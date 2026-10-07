@@ -1,0 +1,73 @@
+# CEVTUO-Z — 把同步好的数据发布到 gh-pages
+#
+# 这是那座**缺失的桥**：`sync` workflow 每 5 小时把数据 commit 到 `main`，
+# 而站点读的是 `gh-pages`。此前唯一的桥是**手工**跑 `deploy-pages.sh` ——
+# 于是「没人记得跑」就等于站点停在某一天。
+#
+# ⚠️⚠️ 2026-10-07 实测（就是加这个文件的那次）：
+#     `main:data/cnsr/learn.json`    = 2026-10-07T03:59+08:00
+#     `gh-pages:data/cnsr/learn.json` = 2026-10-05T02:31+08:00
+#     sync 每 5 小时都**成功**，读者看到的数据停在两天前。
+#     而 CHEALTH / CAPPERR 是新的 —— 它们的写入方（阿里云接入服务）
+#     直接写 gh-pages，绕过了这一跳。症状本身就把故障钉在了这里。
+#
+# ── ⚠️⚠️ 为什么**不能**用 `on: push` ────────────────────────────
+#
+# GitHub 的硬规则：**用 `GITHUB_TOKEN` 触发的事件不会启动别的 workflow。**
+# 而 `sync.yml` 正是用 `GITHUB_TOKEN` 推 main 的。
+# ⇒ `on: push: branches: [main]` 会**静默地永远不触发** ——
+#   页面全绿、日志干净、数据不动，和「没有这个文件」长得一模一样。
+#
+# 所以触发用两条：
+#   · `workflow_run`  —— 在 `sync` 跑完之后（它**不受**上面那条规则限制）
+#   · `schedule`      —— 兜底。任何别的原因改了 main 上的数据也能自愈，
+#                        不依赖「事件有没有正确冒泡」。
+
+name: publish
+
+on:
+  workflow_run:
+    workflows: ['sync']
+    types: [completed]
+  schedule:
+    # 每小时 17 分。避开整点 —— GitHub 在整点最挤。
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+# 同一个并发组 + 不取消正在跑的：手动撞上定时任务时排队，而不是互相杀掉。
+concurrency:
+  group: publish-data
+  cancel-in-progress: false
+
+# ⚠️ 必须显式声明。默认的 GITHUB_TOKEN 是只读的，写不动 gh-pages，
+#    而失败信息只说 403 —— 看起来像权限没配好，其实是这个块没写。
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # ⚠️ `workflow_run` 在 `sync` **失败**时也会到达（types 是 completed，不是
+    #    success）。失败时 main 上的数据可能是半截的 —— 不发布。
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # ⚠️ 这个脚本**只走 GitHub API**，不读检出下来的 `data/` ——
+      #    比对的两侧（main / gh-pages）都是从 API 现读的。
+      #    检出只是为了让这个脚本文件本身在。
+      - name: 发布 main 的 coof / cnsr / sync-meta → gh-pages
+        run: bun scripts/publish-data.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
