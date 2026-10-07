@@ -19,13 +19,31 @@ export default defineAppConfig({
     'pages/chealth/index',
   ],
   window: {
-    backgroundTextStyle: 'dark',
-    navigationBarBackgroundColor: '#0a0b0f',
+    /*
+     * ⚠️⚠️ **这四个值用 `@` 引用 `theme.json`，不是写死的颜色。**
+     *
+     * 原来它们是 `'#0a0b0f'` / `'white'` / `'dark'` 这样的字面量 ——
+     * 而 `themeLocation: 'theme.json'` 却指着**一个并不存在的文件**。
+     *
+     * 后果不是"少了个文件"，是**编译直接失败**，而且报错在构建流程之外：
+     *
+     *     ✖ compile_start
+     *     Error: app.json: 未找到 dist/theme.json 文件，或者文件读取失败
+     *
+     * ⚠️ 它拖到 `cli preview` 那一步才炸 —— **Taro 构建是成功的**（0 报错、
+     *    产物齐全），因为 `themeLocation` 在 Taro 眼里只是一行配置。
+     *    这个坑和这个项目其他坑同形：**"构建通过"什么都没说明。**
+     *
+     * ⇒ 补上 `src/theme.json`，并且让这四个值**真的去引用它** ——
+     *    否则那个文件只是为了让编译器闭嘴的摆设，而"能编译"和"用上了"是两回事。
+     */
+    backgroundTextStyle: '@bgTxtStyle',
+    navigationBarBackgroundColor: '@navBgColor',
     navigationBarTitleText: 'CEVTUO-Z',
-    navigationBarTextStyle: 'white',
+    navigationBarTextStyle: '@navTxtStyle',
     // The app draws its own glass nav bar, so the native one is hidden.
     navigationStyle: 'custom',
-    backgroundColor: '#0a0b0f',
+    backgroundColor: '@bgColor',
   },
   darkmode: true,
   themeLocation: 'theme.json',
