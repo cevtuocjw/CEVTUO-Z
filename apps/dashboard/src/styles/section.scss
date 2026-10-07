@@ -91,18 +91,21 @@ $gutter: t.$space-3;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 
-  // ⚠️ No nav offset. The top bar was removed when panel titles moved into the
-  // right margin — the margin title now carries the page identity, so a second
-  // masthead at the top was redundant and the offset it required was just
-  // eating a third of the fold.
-  // ⚠️ Clears the fixed top bar. The bar's height is a variable declared on
-  // `.topbar`; hardcoding 48px here as well is how the two drift and the bar
-  // starts overlapping the first line of a panel.
-  padding-top: calc(var(--safe-top) + 48px + #{t.$space-5});
-  // ⚠️ Tighter than it was. The rail only needs ~32px, and the previous values
-  // spent 40px horizontally (which cost the poster grid a whole column on a
-  // phone) and 48px vertically on empty space below the content.
-  padding-bottom: calc(var(--safe-bottom) + #{t.$space-5});
+  // ── ⚠️⚠️ 顶部让位：给字标「CEVTUO Z」让路（2026-10-05 改造）──────
+  //
+  // 原来这里写死 `48px`（旧的 `.topbar`），而注释自己在抱怨「硬编码两处
+  // 必然漂移」。现在**高度由 token 说**（`--cnw-h`，值就是字标的字号），
+  // 这里只是消费它 —— 两边不会再对不上。
+  //
+  // ⚠️ **不能写裸的 `var(--cnw-h)`**：那个变量一不存在，整条 `calc()` 就失效、
+  //    `padding-top` 被整个丢掉（静默的，见 tokens.scss 里 `--safe-top` 那段）。
+  padding-top: calc(var(--safe-top) + var(--cnw-h) + #{t.$space-4});
+  // ── ⚠️⚠️ 底部让位：给 Cnowbar 让路（2026-10-05 改造）──────────────
+  //
+  // ⚠️ 这就是 FACT 里那条「让位量必须算出来、而且是**两头**都要算」：
+  //    少了这一行，最后一块内容会被压在固定的底部条下面 —— 而截图、
+  //    「页面能打开」、「HTTP 200」全都看不出来。
+  padding-bottom: calc(var(--safe-bottom) + var(--cnb-h) + #{t.$space-4});
   padding-left: t.$space-4;
   // ⚠️ 给导轨让位的宽度。读者 2026-09-29：「窄屏下标题离那个翻页组件有点远，
   //    导致内容部分占据的有点窄……给出更宽一点给内容上，全网站都是」。
@@ -134,7 +137,12 @@ $gutter: t.$space-3;
   position: absolute;
   right: 40px;
   top: 0;
-  bottom: 0;
+  // ⚠️⚠️ **不吃 `.section` 的 padding** —— 绝对定位的 `bottom` 是相对**内边距框**
+  //    算的，所以上面给 `.section` 加的那份「给 Cnowbar 让位」的 padding-bottom
+  //    **一点都传不到这里**。2026-10-05 实测：窄屏 390 上这条竖排的
+  //    运行头（如「趋势」）落在 y=834，而底部条顶在 766 —— **被压住 68px**。
+  //    ⇒ 这里自己让一次。
+  bottom: calc(var(--cnb-h) + #{t.$space-4});
   justify-content: center;
   align-items: flex-end;
   // The panel's own padding already clears the rail; this only offsets the
@@ -278,6 +286,62 @@ $gutter: t.$space-3;
   //    `.section__body` 上，而不是只给 CHEALTH 打补丁。下一个把内容写长的
   //    页面不该再踩一次。
   overflow-y: auto;
+  /**
+   * ⚠️⚠️ **内容比盒子高时，孩子不许被压扁 —— 由这个容器滚动。**
+   *
+   * 读者 2026-10-07：「窄屏幕下更新于这个位置有问题」。量出来的真相**不是**
+   * 那一行的位置，而是**整屏内容在互相叠**（390px，主页 CHEALTH 那一屏）：
+   *
+   *     .section__body        3437..4116   clientHeight 679 / scrollHeight 772
+   *       .home-chealth       3848..4003   ← 箱子只有 155 高，而内容 ~248
+   *       .card(打开)         4027..4073
+   *       .section__updated   4089..4104   ← 被上面溢出 93px 的环卡压住
+   *
+   * 成因很朴素：这个 body 是 `flex: 1` + `min-height: 0`，而 flex 子元素默认
+   * **`flex-shrink: 1`** ⇒ 总高超出时，flex 先把**孩子的盒子**压小。
+   * 盒子压小了，**内容照样按原尺寸画出来**（这些卡片不裁切）⇒ 视觉上穿过边界，
+   * 压住下一个兄弟。而"盒子"和"看得见的东西"是两回事 ——
+   * 量 `getBoundingClientRect` 只看得到被压扁的盒子，看不到那些溢出的内容。
+   *
+   * ⚠️ 用 `:where()` 把它压成**零特异性**：这一条只是"默认值"，
+   *    任何显式写了 `flex: 1` 的规则（海报网格那种）照样赢 ✓。
+      *    写成 `.section__body >*` 是 (0,1,0)，会和 `.poster-grid { flex: 1 }`
+   *    打成平手，胜负**由两份 scss 谁先被 import 决定** ——
+   *    那种赌在这个项目里已经输过六次（见同名的纪律）。
+   */
+  /*
+      * ⚠️⚠️ **这里写的是元素选择器，不是 `>*` —— 因为 WXSS 不支持 `*`。**
+   *
+      * 原式 `:where(.section__body) >*` 在 H5 上完全正确，但小程序编译直接炸：
+   *
+   *     ✖ compile_start
+   *     wxss 编译错误: ./css/common.wxss(1:8525): error at token `*`
+   *
+   * ⚠️ 而且 `:where()` 会被压缩器**抹掉**（它当成等价变换），于是源码里的低特异性
+   *    在产物里变成 `(0,1,1)` —— 也就是说 `:where()` 那层保护**只在源码里存在**，
+   *    产物里早就没了。这个"以为是低特异性"的错觉本身也值得记一笔。
+   *
+   * ⇒ 列 Taro 在**两个平台**上实际渲染出的标签：
+   *      H5     `taro-view-core` / `taro-text-core` / …
+   *      小程序  `view` / `text` / …
+   * ⚠️ 多列的那几个在另一边永远匹配不到，是无害的（元素选择器不匹配不算错）。
+   *
+   * ⚠️ 特异性升到 `(0,1,1)`，所以**必须实测**没有压掉谁 ——
+   *    判据是 `bun scripts/verify-routes.mjs` 加 390/676 两档的重叠检查，
+   *    不是"看起来没问题"。
+   */
+  > view,
+  > text,
+  > image,
+  > button,
+  > scroll-view,
+  > taro-view-core,
+  > taro-text-core,
+  > taro-image-core,
+  > taro-button-core,
+  > taro-scroll-view-core {
+    flex-shrink: 0;
+  }
   /**
    * ⚠️⚠️ **给下滑提示让出位置** —— 它是**绝对定位浮在内容上面**的。
    *
@@ -690,8 +754,9 @@ $gutter: t.$space-3;
     rgba(0, 0, 0, 0.22) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.30);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
-  backdrop-filter: blur(8px) saturate(1.15);
+  // ⚠️ 0.4 ⇒ 20.3 × 0.4 ≈ 8px，**和迁移前一模一样**。
+  //    提示条是「实物」不是玻璃，模糊一直比卡片轻；这个比例是设计，别抹平。
+  @include g.glass-blur($factor: 0.4, $sat: true);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.55),
     inset 0 -2px 6px rgba(0, 0, 0, 0.22),
@@ -795,8 +860,8 @@ $gutter: t.$space-3;
     rgba(255, 255, 255, 0.12) 46%,
     rgba(0, 0, 0, 0.18) 100%
   );
-  -webkit-backdrop-filter: blur(6px) saturate(1.2);
-  backdrop-filter: blur(6px) saturate(1.2);
+  // ⚠️ 0.3 ⇒ ≈6px，同上（水滴态比药丸态更小更近）。
+  @include g.glass-blur($factor: 0.3, $sat: true);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.62),
     0 2px 6px rgba(0, 0, 0, 0.22);
@@ -901,8 +966,9 @@ $gutter: t.$space-3;
   // ⚠️ Translucent + blur rather than opaque. The bar sits over the page photo,
   // and a solid strip across the top cuts the image in half on the cover screen.
   background-color: rgba(10, 11, 15, 0.55);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  // ⚠️ 0.6 ⇒ ≈12px。顶栏原来**只用 blur、不加 saturate**（要压暗），
+  //    所以这里 `$sat` 保持 false。
+  @include g.glass-blur($factor: 0.6);
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: var(--divider);
@@ -998,4 +1064,143 @@ html.theme-light .topbar {
   letter-spacing: 0.06em;
   color: var(--text-tertiary);
   text-shadow: 0 1px 6px var(--text-halo);
+}
+
+// ── 窄屏：把竖排标题挪到轨道那一侧的下方，把宽度还给内容 ─────────
+//
+// 读者 2026-09-30：「把在窄屏幕下的这些标题放到一侧的点点点的位置去，
+// 例如靠近下侧的位置，注意两者不要打架互相遮挡，然后让窄屏的位置更多一些
+// 给内容，内容可以拉宽一些」。
+//
+// 量到的现状（390 视口，COOF 那一屏）：
+//     .section__body   宽 318，`padding-right: 48px` ⇒ **内容只剩 270px**
+//     .section__head   x 318–334，**纵向居中**（justify-content: center）
+//     .rail            x 350–382，**纵向居中** y 342–502
+//     ⇒ 标题和圆点**在同一高度上并排**，只差 16px 的列距。窄屏上那就是「打架」。
+//
+// 改法：
+//   · 头部从「纵向居中 + 占满整列」改成「**下半部分 + 靠底**」
+//     ⇒ 落到圆点（y 342–502）下面，两者不再同一高度
+//   · 同时贴到屏幕右边（right 从 40 收到 6），挪进圆点那条列里
+//   · 正文的 `padding-right` 从 48 收到 20 ⇒ **内容从 270 涨到 298**
+//
+// ⚠️ 为什么这样就不会盖住内容：正文的底边在 ~743，而标题落在 ~780 以下
+//    —— 它在**正文的下方**，不是旁边。读者要的「内容可以拉宽一些」正是这么来的：
+//    右边那条 48px 的带子不再是正文让出来的，而是标题挪到底部之后空出来的。
+//
+// ⚠️ 媒体查询写在文件**最后**（本项目为顺序栽过四次：媒体查询不加特异性，
+//    同特异性看源码顺序）。
+@media (max-width: 767px) {
+  .section__head {
+    right: 6px;
+    top: 55%;
+    // ⚠️⚠️ **必须是让位量，不能是 `0`**（2026-10-05 实测踩到，第六次同一个形状）。
+    //
+    //    窄屏下这条运行头是**贴到屏底**的（`justify-content: flex-end`），
+    //    而这段媒体查询在文件**最后** ⇒ 它会盖掉前面那条 `.section__head`
+    //    的 `bottom`（同特异型，看顺序）。于是底部 Cnowbar 一加，
+    //    竖排的页面标题（「趋势」「书架」）就正好落在**条底下 68px**。
+    //
+    //    ⚠️ 修法是**改这一条**，不是把前面那条搬到后面 ——
+    //       「顺序决定胜负」正是这条纪律本身，挪来挪去只会把坑埋起来。
+    bottom: calc(var(--cnb-h) + #{t.$space-4});
+    justify-content: flex-end;
+    padding-right: 0;
+    padding-bottom: 10px;
+  }
+
+  .section__body {
+    padding-right: 20px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 进场动画 —— 「每一屏滚进视口时，body 的直接子元素按顺序浮起」。
+//
+// 读者 2026-10-04：「整个网站所有地方进入的时候都需要有顺序的渐动的动画效果，
+// 每个组件」。做在 `Section` 里 = 一次覆盖五个页面（理由写在 Section.tsx）。
+//
+// ⚠️⚠️ **起始态挂在 `--enter` 这个由 JS 加上的类上** —— 所以
+//    「JS 没跑 / 没有 IntersectionObserver / 脚本挂了」的时候内容是**照常显示**的。
+//    ⚠️ 反过来写（默认隐藏、JS 去显示）就会出现「先亮一下再消失」，
+//      那比没有动画更像坏了 —— `platform/reveal.ts` 头上记着这一条。
+//
+// ⚠️ `:not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn)` 把 `useReveal` 点名过的元素**让出去**：
+//    那一套还顺手驱动图表内部（柱子从基线长出来）的动画，两套叠在同一个元素上
+//    只会互相覆盖。判据必须是 CSS 的 `:not()`，不能在 JS 里读 class（见 Section.tsx）。
+// ─────────────────────────────────────────────────────────────
+/**
+ * ⚠️⚠️ **只动 `opacity`，绝不动 `transform`**（2026-10-04 实测后定的）。
+ *
+ *    第一版是 `translateY(18px) → none`，看起来更"有进场感" ——
+ *    但它**当场弄坏了一个弹窗**：`verify-chealth-ui` 报
+ *    「六个图标入口都能开出铺满视口的弹窗 → zones:**面板跑到视口外**」。
+ *
+ *    真因是 CSS 那条老规矩：**带 `transform` 的祖先会成为 `position: fixed`
+ *    后代的包含块**。这一条下面挂着的是**整页的内容**，而弹窗
+ *    （`.sheet`）、角菜单、页脚 logo 都是 `fixed` —— 只要动画还在跑，
+ *    它们就按"那一格"定位而不是按视口。验证器把入口滚进视口时，
+ *    那一格有一部分在视口上方 ⇒ 弹窗的面板 top 变成负数 ⇒ 判定"跑到视口外"。
+ *
+ *    ⚠️ 这一条和 `CornerMenu.scss` / `Brand/Splash.tsx` 里记的那条
+ *      （"带 backdrop-filter 的祖先会成为 fixed 后代的包含块"）是**同一族** ——
+ *      那次是 `backdrop-filter`，这次是 `transform`。凡是想给容器加
+ *      "位移/缩放/滤镜"之前，先问一句：**它里面有没有 `fixed` 的东西**。
+ *
+ *    ⚠️ 而且读者要的本来就是"**闪现进来**"（淡入），不是"滑进来"。
+ */
+@keyframes section-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.section__body--enter >view :not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn):not(.reel__card):not(.reel__t) {
+  animation: section-enter 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+// ⚠️ 阶梯延迟用 `nth-child` 写，不在 JS 里逐个设 `animationDelay`：
+//    元素是**异步**长出来的（数据到位才渲染），逐个设要配 MutationObserver，
+//    而 `nth-child` 天然覆盖后来才出现的那些。
+//    70ms 一档、封顶 11 档（第 12 个之后同延迟）—— 再长读者会等它。
+@for $i from 1 through 12 {
+    .section__body--enter >view :nth-child(#{$i}):not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn):not(.reel__card):not(.reel__t) {
+    animation-delay: #{($i - 1) * 70}ms;
+  }
+}
+
+// ⚠️ 关了动效**不是跳过动画，是直接给终态** —— 起始帧是 `opacity: 0`，
+//    只写 `animation: none` 会让读者看到**一片空白**。
+@media (prefers-reduced-motion: reduce) {
+    .section__body--enter >view :not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn):not(.reel__card):not(.reel__t) {
+    animation: none;
+    animation-delay: 0ms;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/**
+ * ⚠️ `--pending`：**"还没轮到动"**。
+ *
+ *    起始态用**静态声明**（不是动画的首帧 + `both`）——因为它是**第一次渲染就带上的类**，
+ *    所以它在"应用画出来的第一帧"上就已经生效，**没有"先亮一下再消失"可发生**。
+ *    这正是读者 2026-10-04 那句「我只需要**开始没有，然后闪现进来**」。
+ *
+ *    ⚠️ 排除名单必须和上面 `--enter` 那条**一字不差** ——
+ *      两处不一致 = 某些块被**永久藏住**（`--pending` 挂着、却永远等不到 `--enter`
+ *      里那条把它救回来的规则）。这类"两份名单漂移"本项目有硬规矩。
+ */
+.section__body--pending >view :not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn):not(.reel__card):not(.reel__t) {
+  opacity: 0;
+}
+
+// ⚠️ 关了动效**不是跳过动画，是直接给终态** —— 否则 `--pending` 会把内容永久藏住。
+@media (prefers-reduced-motion: reduce) {
+    .section__body--pending >view :not(.reveal):not(.pc-reveal):not(.panel-gif):not(.hero-orn):not(.reel__card):not(.reel__t) {
+    opacity: 1;
+  }
 }
