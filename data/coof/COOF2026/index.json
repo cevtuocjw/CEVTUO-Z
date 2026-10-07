@@ -2,7 +2,7 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 170,
+      "count": 171,
       "latestAt": "2026-10-07",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 170
+    "total": 171
   },
-  "dataVersion": "f49650d35cbd",
+  "dataVersion": "cef301eb4b42",
   "genres": [
     {
-      "count": 120,
+      "count": 121,
       "name": "剧情"
     },
     {
@@ -155,25 +155,49 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "日本"
+      "美国",
+      "英国"
     ],
     "director": [],
     "genres": [
       "剧情"
     ],
-    "id": "3f209462-a4af-812b-97b9-d59207b417ff",
+    "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
     "mediaType": "影",
     "note": null,
-    "order": 171,
-    "poster": "data/coof/posters/3f209462-a4af-812b-97b9-d59207b417ff.jpg",
+    "order": 172,
+    "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
     "rating": null,
-    "runtimeMin": 95,
+    "runtimeMin": 108,
     "status": "watched",
-    "title": "富士子 Fujiko",
+    "title": "弗洛伊德的最后一会 Freud's Last Session",
     "watchedAt": "2026-10-07",
-    "year": 2026
+    "year": 2023
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
+      "mediaType": "影",
+      "note": null,
+      "order": 172,
+      "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "弗洛伊德的最后一会 Freud's Last Session",
+      "watchedAt": "2026-10-07",
+      "year": 2023
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -616,29 +640,6 @@
       "title": "孤独地貌 Geographies of Solitude",
       "watchedAt": "2026-09-26",
       "year": 2022
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "加拿大"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "喜剧"
-      ],
-      "id": "3e609462-a4af-8133-af8d-ca7c3a0777a4",
-      "mediaType": "影",
-      "note": "第72届戛纳电影节获奖名单",
-      "order": 151,
-      "poster": "data/coof/posters/3e609462-a4af-8133-af8d-ca7c3a0777a4.jpg",
-      "rating": null,
-      "runtimeMin": 117,
-      "status": "watched",
-      "title": "哥哥的爱人 La femme de mon frère",
-      "watchedAt": "2026-09-25",
-      "year": 2019
     }
   ],
   "schemaVersion": 1

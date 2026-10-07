@@ -1,8 +1,31 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "41ba5e0ebf11",
+  "dataVersion": "614604ca059c",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
+      "mediaType": "影",
+      "note": null,
+      "order": 172,
+      "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "弗洛伊德的最后一会 Freud's Last Session",
+      "watchedAt": "2026-10-07",
+      "year": 2023
+    },
     {
       "cast": [],
       "collection": "COOF2026",
