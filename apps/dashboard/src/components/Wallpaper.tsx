@@ -13,7 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Image, View } from '@tarojs/components';
-import { useDidShow } from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 
 import { applyBackground, backgroundUrl } from '../platform/background';
 import { isMiniProgram } from '../platform/env';
@@ -45,6 +45,15 @@ export function Wallpaper() {
   useEffect(() => {
     if (!isMiniProgram()) return undefined;
     return onGalleryReroll(() => setEpoch((n) => n + 1));
+  }, []);
+
+  /*
+   * ⚠️ 临时探针（量完即删）：**用一圈荧光边框把元素的真实位置画出来**。
+   *    ⚠️ 比弹几何数字更直接 —— 边框画在哪、多大，截图一眼就看到。
+   */
+  useEffect(() => {
+    if (!isMiniProgram()) return undefined;
+    return undefined;
   }, []);
 
   useEffect(() => {
