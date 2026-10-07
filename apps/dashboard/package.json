@@ -12,7 +12,7 @@
   "scripts": {
     "dev:weapp": "taro build --type weapp --watch",
     "dev:h5": "taro build --type h5 --watch",
-    "build:weapp": "taro build --type weapp",
+    "build:weapp": "taro build --type weapp && bun ../../scripts/wxss-strip-unsupported.mjs dist-weapp/css",
     "build:h5": "taro build --type h5 && cp -R static/. dist/static/",
     "typecheck": "tsc --noEmit"
   },

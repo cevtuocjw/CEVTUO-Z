@@ -1,13 +1,13 @@
 {
-  "miniprogramRoot": "dist/",
+  "miniprogramRoot": "dist-weapp/",
   "projectname": "CEVTUO-Z",
   "description": "CEVTUO-Z — personal data dashboard",
   "appid": "wxacb804a3afd41113",
   "setting": {
     "urlCheck": false,
-    "es6": false,
-    "enhance": false,
-    "postcss": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
     "preloadBackgroundData": false,
     "minified": false,
     "newFeature": true,
@@ -39,7 +39,8 @@
     "minifyWXML": true,
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
-    "ignoreUploadUnusedFiles": true
+    "ignoreUploadUnusedFiles": true,
+    "es7": true
   },
   "compileType": "miniprogram",
   "condition": {},
