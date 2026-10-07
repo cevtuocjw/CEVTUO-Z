@@ -1,0 +1,89 @@
+// 品牌动画（APNG，带真 alpha）。
+//
+// ⚠️ 这里**没有遮罩了**。第一版靠 `mask-mode: luminance` + `currentColor`
+//    抠黑底，代价是整个动画变成单色 —— 读者要的是「有颜色、只是黑底没了」。
+//    现在透明是**素材自带的**（`scripts/prep-brand-gifs.mjs` 离线抠好），
+//    CSS 只管摆放。
+
+.bgif {
+  display: block;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  // ⚠️ 淡出要**慢一点**（.6s）。这批动画的尾巴本身就是渐隐的，
+  //    用 .2s 收会看起来像「卡掉」而不是「结束」。
+  transition: opacity 0.6s ease;
+}
+
+/**
+ * ⚠️⚠️ **两个类名都写上，是故意的**（2026-10-04）。
+ *
+ *    原来这里是单个 `.bgif--gone`，而 `pages/home/index.scss` 里
+ *    `.hero-orn, .panel-gif { opacity: 0.85 }` —— **同特异型（0,1,0）**，
+ *    于是谁赢只看**导入顺序**，而页面样式排在组件样式**之后** ⇒
+ *    `opacity: 0` **从来没生效过**。
+ *
+ *    症状是**静默的**：APNG 播完一次、类也加上了、断言全绿，
+ *    而它停在最后一帧以 0.85 的不透明**一直盖在那一屏上**。
+ *    读者看到的正是这个（「最后一屏……最后又有一个全糊」），
+ *    我看到的是一张很糊的白色字标压在拍立得画框上。
+ *
+ *    ⇒ 修法是**把特异型提上去**（`.bgif.bgif--gone` = 0,2,0），
+ *      **不是** `!important`，也**不是**去调导入顺序 ——
+ *      顺序是这个项目栽过四次的坑（同特异型靠顺序决定），不能再押第五次。
+ */
+.bgif.bgif--gone {
+  opacity: 0;
+  // ⚠️ 一起把指针也关掉：它是装饰，不该在任何时候挡住底下的内容。
+  pointer-events: none;
+}
+
+// ⚠️ **透明底 + 黑墨** 的那一枚（`rose-mark`）在深色主题下要翻白。
+//    它和上面那批不一样：黑是**画本身**，不是背景。
+.theme-dark .bgif--ink {
+  filter: invert(1);
+}
+
+// ⚠️ reduced-motion 下**没法让 APNG 停住**（帧是浏览器在推进的）。
+//    能做的：淡出改成瞬时，到点就走，和 `once` 的语义一致。
+@media (prefers-reduced-motion: reduce) {
+  .bgif {
+    transition: none;
+  }
+}
+
+// ── 内页那一枚（常驻循环）────────────────────────────────────────
+//
+// ⚠️ 位置**和主页那几件刻意不同**（读者：「排列不要太正，要尽量错开」）——
+//    主页那枚在右下，内页这枚放左下。
+// ⚠️ 「循环 vs 只播一次」**不在样式里**，只在调用点传不传 `once`。
+//
+// ⚠️⚠️ `z-index: -1` 和主屏那枚页脚 logo 是**同一个手法**：
+//    在层叠里退到内容之下（但仍在壁纸之上，因为它在 DOM 里排在壁纸**之后**）。
+//    这样和内容重叠时，**点到的永远是内容**。
+.page-gif {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.8;
+  left: 4%;
+  bottom: 16%;
+  width: min(21vw, 190px);
+  aspect-ratio: 1 / 1;
+}
+
+@media (max-width: 767px) {
+  .page-gif {
+    left: 3%;
+    bottom: 20%;
+    width: 32vw;
+  }
+}
+
+/* ⚠️ 小程序：`.bgif__img` 是那个铺满容器的 `<Image>`（见 BrandGif.tsx）。
+   WXSS 的 `background-image` 不渲染网络图片，所以那边必须用 `<Image src>` ——
+   而它的宽高得自己给：容器有尺寸，图铺满它。 */
+.bgif__img {
+  width: 100%;
+  height: 100%;
+}

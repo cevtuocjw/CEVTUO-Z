@@ -27,7 +27,22 @@
   // ⚠️ Must stay negative. `.page` is a plain unpositioned flex column, so a
   // positioned layer at `z-index: 0` would paint ABOVE the whole page and hide
   // the panels behind it.
-  z-index: -1;
+  //
+  // ⚠️⚠️ **从 `-1` 改成 `-3`**（读者 2026-10-04：「画框抬上来」）。
+  //
+  //    负 z-index 这一段里，**谁在上面完全由数值决定，DOM 顺序只影响同值之间**。
+  //    加绿玻璃（`.cgh`）之前，壁纸 / 画框 / 各种背投层**全是 -1**，
+  //    于是「画框在壁纸之上」靠的是 `Wallpaper` 里 `<GalleryFrame />` 排在后面 ——
+  //    而玻璃层排在**更后面**，就把画框盖住了，还把它糊成一团。
+  //
+  //    ⇒ 给这一段**分层**，一共三档，含义固定：
+  //         -3  壁纸（最底）
+  //         -2  绿玻璃等各种"铺满一屏的背投"
+  //         -1  画框 / 页脚 logo / 页面字标（要压在玻璃之上、内容之下）
+  //      三档都在 0 以下 ⇒ 全部仍在内容之下，原来的保证一条没丢。
+  //    ⚠️ 改这一个数会同时动五个页面 —— 所以三档的含义写在这里，
+  //      新增背投层时按档位挑，别再随手写 -1。
+  z-index: -3;
   pointer-events: none;
 
   background-repeat: no-repeat;
@@ -118,6 +133,27 @@
 // leak onto the page: `.cevtuo-wallpaper` is `position: fixed; z-index: -1`,
 // which makes it a stacking context. Without that it would blend with the
 // document behind it and tint the panels.
+/**
+ * ── 小程序：壁纸照片那一层（2026-10-07）──────────────────────────────
+ *
+ * ⚠️⚠️ **WXSS 的 `background-image` 不渲染网络图片**（只认包内相对路径和 base64）
+ *    ⇒ 网页那套「把照片写进 `background-image`」在小程序里**整张是空的**。
+ *
+ *    判据就在同一个屏幕上：**带画框的图正常，壁纸和品牌动画是空的** ——
+ *    差别正是前者走 `<Image src>`、后者走 `background-image`。
+ *
+ * ⚠️ 铺法和 `.cevtuo-wallpaper` 保持一致：不吃指针事件；**不写 `z-index`** ——
+ *    它和 `.cevtuo-glass` 本来就是同一个父层里的先后关系（DOM 顺序决定），
+ *    写死一个数字就要跟着 glass 那层一起维护。
+ */
+.cevtuo-wallpaper__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .cevtuo-glass {
   position: absolute;
   // ⚠️ Larger than the parent, or the drifting blooms show a hard edge as they
@@ -125,11 +161,28 @@
   inset: -30%;
   pointer-events: none;
   background:
-    radial-gradient(38% 32% at 22% 28%, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0) 68%),
-    radial-gradient(34% 40% at 78% 62%, rgba(196, 224, 255, 0.44) 0%, rgba(196, 224, 255, 0) 70%),
-    radial-gradient(42% 34% at 58% 12%, rgba(255, 238, 214, 0.34) 0%, rgba(255, 238, 214, 0) 66%),
-    radial-gradient(30% 30% at 40% 88%, rgba(226, 214, 255, 0.30) 0%, rgba(226, 214, 255, 0) 70%);
-  filter: blur(30px) saturate(1.08);
+    radial-gradient(38% 32% at 22% 28%, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0) 86%),
+    radial-gradient(34% 40% at 78% 62%, rgba(196, 224, 255, 0.44) 0%, rgba(196, 224, 255, 0) 88%),
+    radial-gradient(42% 34% at 58% 12%, rgba(255, 238, 214, 0.34) 0%, rgba(255, 238, 214, 0) 84%),
+    radial-gradient(30% 30% at 40% 88%, rgba(226, 214, 255, 0.30) 0%, rgba(226, 214, 255, 0) 88%);
+  /**
+   * ⚠️⚠️ **这里原来是一条 `filter: blur(30px) saturate(1.08)` —— 2026-10-04 拿掉了。**
+   *
+   *    读者：「动画只有几帧，完全不流畅」「我也认为有可能是玻璃的问题」。
+   *    先用 **LoAF** 排掉 JS：全站 `blockingDuration = 0`、脚本时间 ≈ 0，
+   *    而 6 秒只出 49 帧 ⇒ **瓶颈在合成/光栅，不在计算**。
+   *    再一刀一刀关（主页，6 秒帧数）：现状 49 → 关掉全部 `backdrop-filter` 53
+   *    → **藏掉这一层 81**（+28）→ 再关 WebGL canvas **139**（+58）。
+   *
+   *    ⇒ 这一层一个人吃掉约三分之一。它是 **2304×1440 像素上的一条 30px 模糊**
+   *      （`inset: -30%` ⇒ 160% 视口），而 `mix-blend-mode: soft-light` 要求
+   *      **每帧和底重新合成** —— 上面那句"只动 transform 就不会重光栅化"**是错的**，
+   *      混合模式让这一层每帧都要重来一遍。
+   *
+   *    ⚠️ 拿掉它**几乎不损失观感**：这层的背景是**四个本来就很大的柔渐变**，
+   *      30px 模糊对它几乎没有作用。补偿的办法是把停靠点拉长
+   *      （68/70/66/70% → 86/88/84/88%），柔度从渐变本身来。
+   */
   mix-blend-mode: soft-light;
   // ⚠️ Animates `transform` ONLY. Animating `background-position` would
   // re-rasterise a very large blur every frame and drop the frame rate on a

@@ -12,8 +12,10 @@
  * runs in the mini program and the browser alike, so it feature-detects.
  */
 
+import { tv } from '../platform/prefs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 
 // ⚠️ Required. Taro only bundles a stylesheet that some module imports, and
 // nothing else pulls this one in — without this line the panels, the rail and
@@ -64,6 +66,14 @@ function statSize(value: string): string {
 export interface SectionProps {
   /** Zero-based position, rendered as "01", "02" in the margin. */
   index: number;
+  /**
+   * 不渲染序号（标题照常）。
+   *
+   * ⚠️ 首页最前面多了一屏 hero，它**不是**四个类别之一 —— 给它编「01」会让
+   *    COOF 变成「02」，而读者认的编号是「COOF 是第一个」。
+   *    ⇒ 那一屏不编号，序号从 COOF 起算 01。
+   */
+  noIndex?: boolean;
   /** Margin title. Kept short — it is set vertically and must not wrap. */
   title: string;
   lede?: string;
@@ -101,6 +111,35 @@ export interface SectionProps {
    * `--tile-min: 190px` gives 4 columns, which is what the user objected to.
    */
   wide?: boolean;
+  /**
+   * A full-panel layer painted **behind everything in this panel**.
+   *
+   * ⚠️ It is a sibling of `.section__body`, not a child, and that is the whole
+   * point: `.section__body` is a flex column that scrolls, and it carries the
+   * panel's padding. A backdrop dropped in there would be clipped to the
+   * content column and would scroll with the text — which is exactly what a
+   * backdrop must not do.
+   *
+   * ⚠️ It also must not be placed with `z-index: 0`. `.section__body` is
+   * unpositioned, so a positioned `z-index: 0` sibling paints ON TOP of it —
+   * covering every word in the panel while every rect and colour still reads
+   * correct. The layer is responsible for its own `z-index: -1`; see
+   * `HeroBackdrop.scss`.
+   */
+  backdrop?: React.ReactNode;
+  /**
+   * 这一屏**不参与进场动画**，内容一上来就是终态。
+   *
+   * ⚠️⚠️ 和 `backdrop` **不是一个东西**，别合并。
+   *    第一版我把这条判据写成「有 `backdrop` 就跳过」，于是给 CHEALTH 那一屏
+   *    加上背投玻璃（`ChealthGlass`）之后，它**顺带丢掉了进场动画** ——
+   *    而这两件事本来毫无关系。
+   *    ⇒ 要跳过就**明写** `noReveal`。
+   *
+   * 现在有两处要：主页第一屏、CNSR 第一屏 —— 读者要它们「**直接就出现**」，
+   * 而它们自己的构图各有各的动画。
+   */
+  noReveal?: boolean;
   /**
    * The scroll cue's wording. Defaults to a bare "下滑".
    *
@@ -169,7 +208,7 @@ const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
  * page you left. This is the cheapest thing that makes a destination read as a
  * destination: a welcome line and the brand's name set large.
  */
-export function PageHero({ brand, welcome = '欢迎来到' }: { brand: string; welcome?: string }) {
+export function PageHero({ brand, welcome = tv("欢迎来到", "Welcome to") }: { brand: string; welcome?: string }) {
   return (
     <View className="hero">
       <Text className="hero__welcome">{welcome}</Text>
@@ -187,6 +226,7 @@ export function PageHero({ brand, welcome = '欢迎来到' }: { brand: string; w
  */
 export function Section({
   index,
+  noIndex = false,
   title,
   subtitle,
   onSubtitlePress,
@@ -196,12 +236,14 @@ export function Section({
   showCue = true,
   onPress,
   wide = false,
-  cueText = '下滑',
+  cueText = tv("下滑", "Scroll"),
   footnote,
   hero,
   compact = false,
   statsAside,
   dense = false,
+  backdrop,
+  noReveal = false,
 }: SectionProps) {
   const statsClass = `stats${compact ? ' stats--compact' : ''}${dense ? ' stats--dense' : ''}`;
   const statBlocks = stats?.length ? (
@@ -231,6 +273,116 @@ export function Section({
   const bodyRef = useRef<HTMLElement | null>(null);
   const [scrollCue, setScrollCue] = useState('');
 
+  /**
+   * ⚠️⚠️ **进场动画：这一屏滚进视口时，body 的直接子元素按顺序渐入。**
+   *
+   *    读者 2026-10-04：「整个网站所有地方**进入的时候都需要有顺序的渐动的
+   *    动画效果，每个组件**」。
+   *
+   * ── 为什么做在这里，而不是每个页面各写一遍 ────────────────────
+   *
+   *    `Section` 是**五个页面每一屏都在用**的那个组件 —— 在这里做一次，
+   *    五页全覆盖；抄五份的结果是**有一页忘了**，而那一页的症状是"没有动画"，
+   *    看起来只是"这页比较素"。
+   *
+   * ── ⚠️ 它和已有的 `useReveal`（platform/reveal.ts）**不是同一套**，别合并 ──
+   *
+   *    `useReveal` 是**按选择器点名**的，而且它顺手驱动图表内部那些
+   *    「柱子从基线长出来」的动画（`.pc-reveal--in .pc-bars__bar`）。
+   *    这一套是**兜底**：凡是没被点名过的直接子元素，都按 `nth-child` 错开浮起。
+   *
+   *    ⇒ 样式里用 `:not(.reveal):not(.pc-reveal)` 把点过名的让出去。
+   *      ⚠️ 判据必须是 CSS 的 `:not()`，**不能在 JS 里读 class** ——
+   *        `useReveal` 在**页面组件**里调，而它是 `Section` 的父级，
+   *        React 的布局副作用**子先父后** ⇒ 这里跑的时候那些类还没加上。
+   *        读 class 会稳定读到"没有"，于是两套动画叠在同一个元素上。
+   *
+   * ── ⚠️ 极性：**没有这个类 = 可见** ────────────────────────────
+   *
+   *    起始态（`opacity: 0`）挂在 `--enter` 这个**由 JS 加上**的类上。
+   *    所以 JS 没跑、IO 不存在、脚本挂了的时候，内容是**照常显示**的。
+   *    （`useReveal` 那套正好相反 —— 它的隐藏态写在基础类里，
+   *      所以它必须自己带一条"没有 IO 就全部显示"的兜底。）
+   *
+   * ⚠️ 有 `backdrop` 的那两屏（主页第一屏、CNSR 第一屏）**不参与**：
+   *    读者要的是那两屏「**直接就出现**」，而它们自己的构图也各有动画。
+   */
+  const sectionRef = useRef<HTMLElement | null>(null);
+  /**
+   * ⚠️⚠️ **"藏起来"写进第一次渲染，不写进 effect —— 这才是那个闪的正解。**
+   *
+   *    读者 2026-10-04：「刷新的时候它这个块**先有了然后又重新闪现进来**，
+   *    我只需要**开始没有，然后闪现进来**」。
+   *
+   *    真因：隐藏态挂在"由 JS 加上"的类上，而那个类是**绘制之后**才挂的
+   *    ⇒ 顺序变成「先画一遍（看得见）→ 类挂上 → 动画从 opacity 0 重跑」。
+   *
+   *    ⚠️ 我试过两条错路，都留在这里：
+   *      ① `useLayoutEffect` + **"这一屏在不在视口里"的快路径**（同步 setState）。
+   *         它确实不闪了，但**当场弄坏了一个弹窗**：`verify-chealth-ui` 报
+   *         「六个图标入口都能开出铺满视口的弹窗 → zones: 面板跑到视口外」。
+   *         二分两次才定到是**这一条** —— 不是 `transform`、也不是折射
+   *         （那两处都做过负向对照，都排除了）。
+   *      ② 把进场动画改成只动 `opacity`（见 `section.scss`）—— 那是个改进，
+   *         但**没有**修掉上面那条。
+   *
+   *    ⇒ 正解是**根本不管时序**：`--pending` 是**第一次渲染就带上的类**，
+   *      所以它一定在"应用画出来的第一帧"上 —— 没有"先亮一下"可发生。
+   *      ⚠️ 而且它**不依赖 JS 有没有跑过**：类是这个组件自己渲染出来的；
+   *        组件没渲染就没有 `.section__body`，也就没有东西可藏。
+   *
+   *    ⚠️ 没有 IntersectionObserver ⇒ 直接给"已完成"（**内容照常可见，只是没动画**）。
+   *      「少一个动画是遗憾，一个永远看不见的组件是 bug」—— `reveal.ts` 头上同一条。
+   */
+  const canReveal = !noReveal && typeof IntersectionObserver !== 'undefined';
+  const [entered, setEntered] = useState(!canReveal);
+
+  /**
+   * ⚠️⚠️ **`useLayoutEffect`，不是 `useEffect` —— 这一条就是读者报的那个 bug。**
+   *
+   *    读者 2026-10-04：「刷新的时候它这个块**先有了然后又重新闪现进来**，
+   *    动画不对，我只需要**开始没有，然后闪现进来**」。
+   *
+   *    真因：`useEffect` 跑在**首帧绘制之后**。而"起始态"（`opacity: 0`）
+   *    是挂在 `--enter` 这个**由 JS 加上**的类上的 ⇒ 顺序变成
+   *      **先画一遍（看得见）→ 类挂上 → 动画从 opacity 0 重跑**
+   *    ⇒ 一次肉眼可见的"亮一下又没了"，正是「先有了然后又闪现进来」。
+   *
+   *    ⇒ 两处都要改：
+   *      ① 用 `useLayoutEffect`：`setEntered` 在**绘制之前**同步冲刷，
+   *         类在首帧就已经在了 ⇒ 第一次画出来就是 `opacity: 0`。
+   *      ② **首帧之前就问一次"这一屏现在在不在视口里"** ——
+   *         在的话立刻 `entered = true`（也就是"一上来就播"），
+   *         不靠 IntersectionObserver 那颗"挂载之后才来"的回调。
+   *         （IO 在挂载后**异步**回调，用它做"首屏"就是慢一帧＝闪一下。）
+   *
+   *    ⚠️ 判据用 `rootMargin` 提前**35% 视口**触发，不是 `threshold`：
+   *      滚动容器一屏一屏地跳，等 15% 露出来才挂类，读者会先看到一小条真的内容
+   *      再看着它消失重播 —— 同一个"闪一下"，只是短一点。
+   *
+   *    ⚠️ 没有 IntersectionObserver ⇒ **什么都不做**（内容照常可见，只是没有动画）。
+   *      「少一个动画是遗憾，一个永远看不见的组件是 bug」—— `reveal.ts` 头上同一条。
+   */
+  useEffect(() => {
+    if (!canReveal || entered) return undefined;
+    const el = sectionRef.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          setEntered(true);
+          io.disconnect();
+        }
+      },
+      // ⚠️ `rootMargin` 提前**35% 视口**触发，不是 `threshold`：滚动容器一屏一屏
+      //    地跳，等露出一点才挂类，读者会先看到一小条真的内容再看着它消失重播。
+      { threshold: 0, rootMargin: '0px 0px 35% 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [canReveal, entered]);
+
   // ⚠️ 故意**不写依赖数组** —— 内容变高变矮（切筛选器、展开会话卡片）
   //    都不会触发 scroll 事件，只在挂载时算一次会永远停在一个错的答案上。
   //    每轮渲染重算一次的代价是读一个 scrollHeight；而 setState 同值时
@@ -242,7 +394,7 @@ export function Section({
       // ⚠️ 4px 容差：亚像素取整会让「已经到底」也算成还剩一点，
       //    于是提示永远停在「还有内容」，而那等于没说。
       const more = el.scrollHeight - el.clientHeight - el.scrollTop;
-      setScrollCue(more > 4 ? '本屏还有内容' : '');
+      setScrollCue(more > 4 ? tv("本屏还有内容", "More on this screen") : '');
     };
     sync();
     el.addEventListener('scroll', sync, { passive: true });
@@ -250,13 +402,18 @@ export function Section({
   });
 
   return (
-    <View className="section">
+    <View className="section" ref={sectionRef as never}>
+      {/* ⚠️ 背景层在 DOM 里**排最前**：它和壁纸同在根层叠上下文里（见
+          `HeroBackdrop.scss` 那段 `z-index: -1`），同层之间谁后画谁在上，
+          所以「排在壁纸之后、排在正文之前」这个顺序本身就是它的定位机制。 */}
+      {backdrop}
+
       {/* ⚠️ Order matters for screen readers and for the visual stack: the
           margin title is absolutely positioned, so it must come first only if
           the body should read after it. It is decorative framing, so it goes
           first and the body carries the meaning. */}
       <View className="section__head">
-        <Text className="section__index">{pad2(index + 1)}</Text>
+        {noIndex ? null : <Text className="section__index">{pad2(index + 1)}</Text>}
         <Text className="section__title">{title}</Text>
         {subtitle ? (
           <Text
@@ -273,7 +430,7 @@ export function Section({
         ref={bodyRef}
         className={`section__body${onPress ? ' section__body--pressable' : ''}${
           wide ? ' section__body--wide' : ''
-        }`}
+        }${entered ? ' section__body--enter' : canReveal ? ' section__body--pending' : ''}`}
         onClick={onPress}
       >
         {hero}
@@ -357,6 +514,25 @@ export interface PageStackProps {
    * brand they just left, not to the top of the index.
    */
   initialIndex?: number;
+  /**
+   * 当前在第几屏 —— 每次变化都报一次。
+   *
+   * ⚠️ 给**底部 Cnowbar** 用的：高亮哪一项必须跟着**滚动**走，
+   *    不能只在点的时候记一个数（读者手动滑一屏，高亮就骗人了）。
+   *
+   * ⚠️⚠️ 下面用 ref 存回调、**不是**加进那个大 effect 的依赖：
+   *    那个 effect 里带着 `initialIndex` 的跳转，多一个依赖会让它在
+   *    父组件每次重渲染时重跑一遍 —— 读者会被**拽回**初始那一屏。
+   */
+  onActiveChange?: (index: number) => void;
+  /**
+   * 拿到滚动句柄（和 `apiRef` 同一样东西，这里用回调给）。
+   *
+   * ⚠️ 存在的理由：几个页面**没有** `useRef`（它们的 react import 里就没有），
+   *    而底部条要 `scrollTo(i)`。加一个回调省掉「每页都去改 import」。
+   *    ⚠️ 和 `apiRef` **可以同时用**：内部分别赋值，互不干扰。
+   */
+  onReady?: (api: PageStackApi) => void;
 }
 
 /**
@@ -367,28 +543,87 @@ export interface PageStackProps {
  * tall, so the arithmetic is exact, and it survives the panel list changing
  * length without re-measuring anything.
  */
-export function PageStack({ count, children, apiRef, initialIndex = 0 }: PageStackProps) {
+export function PageStack({ count, children, apiRef, initialIndex = 0, onActiveChange, onReady }: PageStackProps) {
   const [active, setActive] = useState(0);
   const containerRef = useRef<HTMLElement | null>(null);
   const height = useRef(1);
+
+  /**
+   * ⚠️ **小程序专用：跳转只能靠受控 props。**
+   *
+   * 小程序里 `containerRef.current` 是 **Taro 组件实例**，不是 DOM 节点 ——
+   * 没有 `addEventListener`、也没有可写的 `scrollTop`。上面 `ref` 那段注释
+   * 早就写了"the rail stays on panel 1"，但**同一条 ref 也是跳转的入口**：
+   * 点底部条的分区、点字标回顶、点返回落回某一屏 —— **在手机上全都不动**，
+   * 而且一句错都不报（读者原话：「点击导航滑动页面还是跳转不了」）。
+   *
+   * ⇒ 没有 DOM 时改走 `ScrollView` 的 `scrollTop` 受控属性 + `onScroll` 回读。
+   * ⚠️ 判据是**能力探测**（有没有 `scrollTop`/`addEventListener`），不是平台名 ——
+   *    不新增一个平台判断，也不会因为 Taro 改了 ref 语义就失准。
+   */
+  const [jumpTop, setJumpTop] = useState<number | null>(null);
+
+  /**
+   * 一屏多高。
+   * ⚠️ 小程序里量不到 `clientHeight`（容器不是 DOM 节点）⇒ 退回系统窗口高。
+   */
+  const measure = useCallback(() => {
+    const el = containerRef.current as unknown as HTMLElement | null;
+    const h = el && typeof el.clientHeight === 'number' ? el.clientHeight : 0;
+    if (h > 1) {
+      height.current = h;
+      return;
+    }
+    try {
+      height.current = Taro.getSystemInfoSync().windowHeight || 1;
+    } catch {
+      height.current = 1;
+    }
+  }, []);
+
+  /** 跳到第 i 屏。**两条路**：有 DOM 直接写；没有（小程序）走受控 props。 */
+  const goTo = useCallback(
+    (i: number, smooth: boolean) => {
+      measure();
+      const top = i * height.current;
+      const el = containerRef.current as unknown as HTMLElement | null;
+      if (el && typeof el.scrollTo === 'function') {
+        el.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+        return;
+      }
+      if (el && typeof el.scrollTop === 'number') {
+        el.scrollTop = top;
+        return;
+      }
+      setJumpTop(top); // 小程序
+    },
+    [measure],
+  );
+
+  // ⚠️ 回调走 ref（见 props 上那段）：加进依赖会让 `initialIndex` 的跳转重跑。
+  const activeCb = useRef(onActiveChange);
+  useEffect(() => {
+    activeCb.current = onActiveChange;
+  }, [onActiveChange]);
+
+  const readyCb = useRef(onReady);
+  useEffect(() => {
+    readyCb.current = onReady;
+  }, [onReady]);
 
   // ⚠️ Smooth, unlike the rail's own jump. The rail is a position indicator you
   // nudge; this handle is called by a button whose label PROMISES a journey
   // ("查看 COOF2026"), and teleporting after a promise of movement reads as the
   // sheet having closed onto nothing.
   useEffect(() => {
-    if (!apiRef) return undefined;
-    apiRef.current = {
-      scrollTo: (i: number) => {
-        const el = containerRef.current;
-        if (!el) return;
-        const top = i * height.current;
-        if (typeof el.scrollTo === 'function') el.scrollTo({ top, behavior: 'smooth' });
-        else el.scrollTop = top;
-      },
+    const api: PageStackApi = {
+      scrollTo: (i: number) => goTo(i, true),
     };
+    if (apiRef) apiRef.current = api;
+    // ⚠️ 没有 apiRef 的页面靠这条拿到句柄（见 props 上 `onReady` 那段）。
+    readyCb.current?.(api);
     return () => {
-      apiRef.current = null;
+      if (apiRef) apiRef.current = null;
     };
   }, [apiRef]);
 
@@ -396,35 +631,100 @@ export function PageStack({ count, children, apiRef, initialIndex = 0 }: PageSta
   // `scrollTo` is called on the DOM node directly because Taro's `pageScrollTo`
   // targets the WINDOW, and our scroller is a `ScrollView` — a different
   // element entirely, and the window never moves.
-  const scrollTo = useCallback((i: number) => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.scrollTop = i * height.current;
-  }, []);
+  const scrollTo = useCallback((i: number) => goTo(i, false), [goTo]);
+
+  /**
+   * ⚠️ 滚动事件**两边都要用**：
+   *   · H5 —— DOM 监听已经在做同一件事，这里重复一次是幂等的（同一个算式）；
+   *   · 小程序 —— 这是**唯一**能拿到滚动位置的路（那边没有 DOM 监听）。
+   */
+  const onStackScroll = useCallback(
+    (e: { detail?: { scrollTop?: number } }) => {
+      const st = e?.detail?.scrollTop;
+      if (typeof st !== 'number') return;
+      // ⚠️ 到达目标后把受控值清掉 —— 否则再点**同一屏**时值没变，不会触发跳转。
+      if (jumpTop !== null && Math.abs(st - jumpTop) <= 2) setJumpTop(null);
+      measure();
+      const i = Math.round(st / height.current);
+      setActive(i);
+      activeCb.current?.(i);
+    },
+    [jumpTop, measure],
+  );
 
   useEffect(() => {
     const el = containerRef.current as unknown as HTMLElement | null;
     if (!el) return;
 
-    const measure = () => {
-      height.current = el.clientHeight || 1;
-    };
+    /*
+     * ⚠️⚠️ **小程序：这个 ref 不是 DOM 节点**（是 Taro 组件实例）——
+     *    没有 `addEventListener`，`scrollTop` 也写不进去。
+     *    下面整套「挂监听 + 命令式跳转」在手机上一步都跑不了，
+     *    而且 `el.addEventListener` 那一行会**直接抛**。
+     * ⇒ 提前返回。位置改由 `ScrollView` 的 `onScroll` 报（见 `onStackScroll`），
+     *    跳转走 `goTo`（它自己会挑受控 props 那条路）。
+     */
+    if (typeof el.addEventListener !== 'function') {
+      measure();
+      if (initialIndex > 0) {
+        setActive(initialIndex);
+        activeCb.current?.(initialIndex);
+        goTo(initialIndex, false);
+      }
+      return;
+    }
+
     measure();
 
     // ⚠️ Jump instantly, and BEFORE the scroll listener is attached.
     // A smooth scroll here would animate the index from the top panel down
     // every time someone pressed back out of a brand page — a journey the
     // reader did not ask for and has already taken once.
-    if (initialIndex > 0) {
+    /**
+     * ⚠️⚠️ **偶发不生效，2026-10-04 抓到的，补一次下一帧的重跳。**
+     *
+     *    实测：同一段代码连跑三次，有一次 `scrollTop` 停在 **0**（页面留在第一屏），
+     *    另外两次是 3600。而"回品牌页"那条路（`homePanelUrl`）走的就是这里 ——
+     *    读者会看到**点返回有时候落在封面上**。
+     *
+     *    真因是这一行：
+     *        `height.current = el.clientHeight || 1`
+     *    布局还没量准（`clientHeight` 读到 **0**）时它退化成 **1**，
+     *    于是这一跳只滚 `5 × 1 = 5px` —— 而 `.stack` 是
+     *    `scroll-snap-type: y mandatory`，**5px 被吸回 0**，
+     *    看起来就和"没跳"一模一样，而且不报任何错。
+     *
+     *    ⇒ `jump()` 是幂等的（直接写 `scrollTop`），多跳一次没有副作用；
+     *      下一帧布局一定已经稳定，那一次必然是对的。
+     *      ⚠️ 不用定时器：`requestAnimationFrame` 和绘制同一帧节奏，
+     *        而定时器会在这段空隙里让读者看到第一屏闪一下。
+     *
+     * ⚠️⚠️ **如实记：这一行没有验证过。**
+     *    放回去（`requestAnimationFrame(jump)` 注释掉）跑 6 次、留着跑 6 次，
+     *    **12 次全部是 3600** —— 那个偶发一次都没再出现。
+     *    ⇒ 它是**无害的防守**（针对 `clientHeight || 1` 那个退化分支：
+     *      `clientHeight` 真的是 0 时这一跳只滚 5px，会被 scroll-snap 吸回 0），
+     *      **不是"已修好的 bug"**。哪天它再出现，先来这里量 `clientHeight`。
+     */
+    const jump = () => {
+      measure();
       el.scrollTop = initialIndex * height.current;
+    };
+    if (initialIndex > 0) {
+      jump();
       setActive(initialIndex);
+      activeCb.current?.(initialIndex);
+      requestAnimationFrame(jump);
     }
 
     const onScroll = () => {
       // Guard against a zero height during the first paint, which would make
       // this a division by zero and pin the rail to the last panel.
       if (height.current <= 1) measure();
-      setActive(Math.round(el.scrollTop / height.current));
+      const i = Math.round(el.scrollTop / height.current);
+      setActive(i);
+      // ⚠️ 一起报出去 —— 底部 Cnowbar 的高亮跟着**滚动**走（见 props 上那段）。
+      activeCb.current?.(i);
     };
 
     el.addEventListener('scroll', onScroll, { passive: true });
@@ -453,6 +753,15 @@ export function PageStack({ count, children, apiRef, initialIndex = 0 }: PageSta
       <ScrollView
         className="stack"
         scrollY
+        /*
+         * ⚠️ **小程序唯一能用的跳转入口。** H5 上 Taro 把这两个属性映射成
+         *    `scrollTop` 赋值/平滑滚动，和原来手写的行为等价，所以无条件给。
+         * ⚠️ `jumpTop` 必须是 `undefined` 而不是 `null` —— Taro 会把它拼进
+         *    组件属性，`null` 在某些版本下会被序列化成字符串 "null"。
+         */
+        scrollTop={jumpTop ?? undefined}
+        scrollWithAnimation
+        onScroll={onStackScroll as never}
         // ⚠️ `ref` here reaches the ScrollView's inner element in H5. In the
         // mini program it is a Taro component instance, so the DOM listener
         // below simply never attaches and the rail stays on panel 1 — the

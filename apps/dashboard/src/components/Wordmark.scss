@@ -81,6 +81,23 @@
   transform: translate(-50%, -50%);
 }
 
+/**
+ * ── 小程序：不走反色混合，退回普通墨色（2026-10-07）──────────────────
+ *
+ * ⚠️ 小程序里 `mix-blend-mode` 不生效，而字是**纯白** ⇒ 浅色背景上
+ *    **白字压白底、整个字标看不见**（真模拟器截图实测：首屏本该有
+ *    「CEVTUO Z」的地方是空的）。
+ *
+ * ⚠️ 这里只是**退回**，不是把 H5 也改掉 —— 网页上逐像素反色照旧。
+ */
+.wordmark__text--plain {
+  mix-blend-mode: normal;
+  color: var(--text-primary);
+  // ⚠️ 反色那套里 `text-shadow` 是**故意去掉**的（它会被一起反色成一坨）。
+  //    退回普通墨色之后，浅底/深底都可能碰到，所以把字晕加回来。
+  text-shadow: 0 1px 10px var(--text-halo);
+}
+
 .wordmark__text:active {
   opacity: 0.66;
 }
