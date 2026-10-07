@@ -1,0 +1,429 @@
+@use '../styles/glass.scss' as g;
+
+// ── Cnowbar：底部导航条（2026-10-05 读者要的）─────────────────────
+//
+// 读者原话：「在页面底部标题栏……也做一个返回键在这个里面最左边，另外要给一个名字的
+//           UO 按钮位置占位，那其余的位置都是这一页的各个功能页面……要有动画效果」。
+//
+// 2026-10-07 读者追加：「要做成胶囊的感觉」「尤其关心在窄屏幕上的视觉效果」
+//                      「触摸要有反馈」「更强烈的视觉效果和语言」。
+//
+// ⚠️⚠️ 玻璃只在这里声明一次，并且走 `glass-blur()` —— 这是仓库里**唯一**
+//     允许写 `backdrop-filter` 的入口（见 `styles/glass.scss` 的注释）。
+//
+// ── 质感：三件事叠出"一条实体"而不是"一个半透明条" ──────────────
+//   ① 两层背景：本色（够实）+ 自上而下的白色渐变（顶亮底暗，光从上面来）
+//   ② `inset 0 1px 0` 的**边光** —— 真实材质都有一条顶边高光
+//   ③ 两层投影：一层大而软（离开页面）、一层小而紧（贴住边缘）
+//   ⚠️ 本色**必须够实**。压在壁纸上时 `.62` 已经是下限，再淡就是"没画"。
+
+.cnowbar {
+  // ── 一个旋钮：圆盘直径。窄屏调小它，全条跟着收 ──────────────
+  // ⚠️ 这就是"窄屏塞不下"的解药。此前圆盘写死成 `calc(var(--cnb-h) - 20px)`，
+  //    390px 上五个分区 + 展开的标签**正好差一点**，于是最后一个圆盘
+  //    被条的圆端切掉一半 —— 而 `.cnb__items` 是横向滚动容器，
+  //    `scrollWidth - clientWidth` 量出来是 **0**，那个数**看不见这个错**。
+  --cnb-disc: 40px;
+
+  position: fixed;
+  left: 50%;
+  // ⚠️ 动画用 `transform`，不是 `left` —— 合成属性，不触发布局。
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  z-index: 130; // 同层契约：内容 0 < overlay 100 < chrome 130
+
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  box-sizing: border-box;
+  height: var(--cnb-h);
+  padding: 6px;
+  max-width: calc(100vw - 20px);
+
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, var(--cnb-hi), transparent 60%),
+    var(--cnb-bg);
+  border: 1px solid var(--cnb-edge);
+  box-shadow:
+    inset 0 1px 0 var(--cnb-edge-hi),
+    0 14px 34px -12px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.32);
+
+  // ⚠️ 0.6 ⇒ 约 12px（`--glass-blur = 6 + gi×22`）。和旧的顶栏同一个量级。
+  @include g.glass-blur(0.6, true);
+
+  // 触摸时不要系统那层灰色高亮 —— 我们自己的反馈更准（见 `:active`）。
+  -webkit-tap-highlight-color: transparent;
+}
+
+// 主题色。⚠️ 只在**这一个元素**上换值，不写两套规则 —— 换主题时不会漏掉某一条。
+.cnowbar {
+  --cnb-bg: rgba(16, 18, 23, 0.74);
+  --cnb-hi: rgba(255, 255, 255, 0.11);
+  --cnb-edge: rgba(255, 255, 255, 0.15);
+  --cnb-edge-hi: rgba(255, 255, 255, 0.2);
+  --cnb-disc-bg: rgba(255, 255, 255, 0.1);
+  --cnb-disc-edge: rgba(255, 255, 255, 0.16);
+  // 选中的药丸：**两个主题都是深色**（照参考图）。它在两种主题下都读得出来，
+  // 而且它表达的是「选中」这个状态，不该跟着主题翻。
+  --cnb-on-bg: rgba(8, 9, 12, 0.92);
+  --cnb-on-ink: #fff;
+  --cnb-ink: var(--text-secondary);
+}
+
+html.theme-light .cnowbar {
+  --cnb-bg: rgba(250, 248, 245, 0.84);
+  --cnb-hi: rgba(255, 255, 255, 0.95);
+  --cnb-edge: rgba(0, 0, 0, 0.09);
+  --cnb-edge-hi: rgba(255, 255, 255, 0.95);
+  --cnb-disc-bg: rgba(0, 0, 0, 0.055);
+  --cnb-disc-edge: rgba(0, 0, 0, 0.08);
+  --cnb-ink: var(--text-secondary);
+}
+
+// ── 窄屏：把整条按比例收下来 ────────────────────────────────
+// ⚠️ 阈值不是猜的：390px 上 5 个分区 + 展开的标签需要约 322px，
+//    而可用宽度是 `100vw - 20 - 12`。380 以下开始收，340 以下再收一档。
+@media (max-width: 400px) {
+  .cnowbar {
+    --cnb-disc: 36px;
+    padding: 5px;
+    gap: 1px;
+  }
+}
+
+@media (max-width: 340px) {
+  .cnowbar {
+    --cnb-disc: 32px;
+  }
+}
+
+// ── 一个按钮 ────────────────────────────────────────────────
+.cnb__btn {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: calc(var(--cnb-h) - 12px);
+  padding: 0 4px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--cnb-ink);
+  cursor: pointer;
+  // ⚠️⚠️ **裁剪到药丸内**（2026-10-05 读者报「超出去了」）。
+  //    圆盘是 50% 的圆，而它比按钮矮 8px、水平方向只留 4px 内边距 ——
+  //    只要有一处让圆盘超过按钮，它就会**画到药丸外面**，而 flex 默认**不裁剪**。
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  // ⚠️ 只过渡**颜色**；尺寸的变化交给里面的两段（药丸底 + 标签宽度），
+  //    否则 flex 布局会跟着抖。`transform` 单独留给按压缩放。
+  transition:
+    background-color 0.28s ease,
+    color 0.28s ease,
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// ⚠️ **触摸反馈**（读者 2026-10-07：「触摸要有反馈」「更强烈的视觉效果」）。
+//    按下去整颗按钮**缩一点**、并且立刻回弹 —— 用短暂的过渡时长，
+//    松手时那段 0.28s 的曲线负责"弹回来"。
+//    ⚠️ 往**小**缩：往大缩会顶出药丸（`scale(1.04)` 那个方向当年就是溢出源）。
+.cnb__btn:active {
+  transform: scale(0.92);
+  transition-duration: 0.08s;
+}
+
+.cnb__btn[data-on='true'] {
+  background: var(--cnb-on-bg);
+  color: var(--cnb-on-ink);
+  // 选中的那颗**轻轻浮起来**一点，和按压缩放同一个属性、不同时刻。
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 4px 12px -4px rgba(0, 0, 0, 0.55);
+}
+
+// ── 标签：**收起来的时候宽度是 0，不是 `display: none`** ─────────
+//
+// ⚠️⚠️ `display` 天生不可过渡（见 kinetic-web 那条）——
+//    用 `display: none` 换标签就是「两帧之间换了个东西」，那就是**切**。
+.cnb__label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition:
+    max-width 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    padding 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cnb__btn[data-on='true'] .cnb__label {
+  max-width: 180px;
+  opacity: 1;
+  padding: 0 10px 0 14px;
+}
+
+// ⚠️ 窄屏上把展开的标签**收窄**，把宽度让给圆盘 —— 标签截断了仍读得出，
+//    而圆盘被切掉就是"这个功能没了"。
+@media (max-width: 440px) {
+  .cnb__btn[data-on='true'] .cnb__label {
+    max-width: 64px;
+    padding: 0 5px 0 11px;
+    font-size: 13px;
+  }
+}
+
+// ── 圆盘（图标底）────────────────────────────────────────────
+.cnb__disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // ⚠️ UO 那两个字形是**叠在一起**的（交叉淡入，见 `.cnb__glyph`），
+  //    所以这个圆盘要当它们的定位上下文。
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--cnb-disc);
+  height: var(--cnb-disc);
+  border-radius: 50%;
+  background: var(--cnb-disc-bg);
+  // ⚠️ 描边 + 顶边内高光 —— 这样它是一颗"珠子"，不是一个"色块"。
+  border: 1px solid var(--cnb-disc-edge);
+  box-shadow: inset 0 1px 0 var(--cnb-edge-hi);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    background-color 0.28s ease,
+    color 0.28s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// ⚠️ 图标比字母要**大一点**才"看起来一样大"：同样 1em 时，一个笔画规整的
+//    SVG 比一个 13px 的字形显小。1.4em 是眼睛量出来的那个数。
+.cnb__disc svg {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.cnb__btn[data-on='true'] .cnb__disc {
+  background: #fff;
+  border-color: transparent;
+  box-shadow: none;
+  color: #101114;
+  // ⚠️ **放大 1.04 那条删了** —— 它让圆盘超出自己的布局盒（实测 45.8 > 44）。
+  //    选中态靠**底色 + 标签展开**表达就够了。
+  transform: none;
+}
+
+.cnb__btn:active .cnb__disc {
+  // 按压反馈改成**内缩**，朝里收，永远不会顶出药丸。
+  transform: scale(0.9);
+}
+
+// ── 固定两头：返回 / UO ──────────────────────────────────────
+//
+// ⚠️ 返回和 UO **不参与"选中"**（它们不是分区），所以不受 `[data-on]` 影响。
+//    返回在主页（root）上不渲染 —— 主页上没有"上面"。
+.cnb__btn--back .cnb__disc,
+.cnb__btn--uo .cnb__disc {
+  background: var(--cnb-disc-bg);
+}
+
+.cnb__btn--uo .cnb__disc {
+  // 「UO」两个字母比一个字形宽，字号收一点。
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+// ── UO ↔ ✕：**两个字形同时在 DOM 里**，交叉淡入 ──────────────────
+//
+// ⚠️ 不是把 `textContent` 从「UO」换成「✕」—— 那是在两帧之间换了个字形，
+//    那就是**切**（kinetic-web 那条总则：「没有一帧是切过去的」）。
+.cnb__glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  transition:
+    opacity 0.2s ease,
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cnb__glyph--x {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.cnb__btn--uo[data-open='true'] .cnb__glyph--uo {
+  opacity: 0;
+  // 「UO 就写小一些」—— 往**小**缩，不会顶出圆盘。
+  transform: scale(0.58);
+}
+
+.cnb__btn--uo[data-open='true'] .cnb__glyph--x {
+  opacity: 1;
+  transform: none;
+}
+
+.cnb__btn--uo[data-open='true'] .cnb__disc {
+  transform: scale(0.9);
+  background: var(--cnb-on-bg);
+  border-color: transparent;
+  color: var(--cnb-on-ink);
+  box-shadow: none;
+}
+
+// ── 折叠的那一摞（第 6 个起）────────────────────────────────────
+.cnb__btn--more {
+  padding-right: 5px;
+}
+
+.cnb__stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  width: 6px;
+  margin-right: 3px;
+  overflow: hidden;
+  transition:
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cnb__stack-layer {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--cnb-disc-bg);
+  border: 1px solid var(--cnb-disc-edge);
+}
+
+.cnb__btn--more[data-open='true'] .cnb__stack {
+  width: 0;
+  margin-right: 0;
+  opacity: 0;
+}
+
+// ⚠️ `chev` 本身朝**下**（`M6 9.5 12 15.5l6-6`）。收起时转成朝**右**（还有东西在
+//    右边），展开时转成朝**左**（点一下收回去）。同一个字形靠 CSS 转 ——
+//    换字形就是"两帧之间换了个东西"，那正是"切"。
+.cnb__chev {
+  transform: rotate(-90deg);
+  transition: transform 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cnb__btn--more[data-open='true'] .cnb__chev {
+  transform: rotate(90deg);
+}
+
+// ⚠️ 摊开的宽度用 `max-width` 过渡，**不是 `display`**。
+.cnb__more-body {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  /*
+   * ⚠️⚠️ **`flex: 0 0 auto` 是这里的关键，漏了它"可拖动"根本没用（2026-10-07）。**
+   *
+   * 不写 `flex` ⇒ 默认 `flex: 0 1 auto` ⇒ 它**允许被压缩**。
+   * 于是条放不下的时候，摊开的那些分区不是"溢出到右边被切"，
+   * 而是**被挤扁塞在容器里**（它自己的 `overflow: hidden` 把内容裁掉）。
+   *
+   * ⚠️⚠️ 而这让"被遮挡"**量不出来**：`scrollWidth - clientWidth` 读数是 **0**
+   *    —— 因为它没溢出，是缩小了。
+   *    实测：5 个页面 × 300/340/390 三个宽度全部读到 `溢出 0px`，
+   *    而读者看得见右边确实缺了一块。
+   *    ⇒ 这是「**量具在骗人**」的又一种：`scrollWidth` 判不出
+   *      "一个允许收缩的 flex 孩子把内容裁掉了"。
+   *
+   * ⇒ 写成 `0 0 auto` 之后才是"溢出" ⇒ `.cnb__items` 的 `overflow-x`
+   *   才有了可滚的东西，鼠标/手指拖动才够得着右边。
+   */
+  flex: 0 0 auto;
+  transition:
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.26s ease;
+}
+
+.cnb__more-body:not(:empty) {
+  max-width: 460px;
+  opacity: 1;
+}
+
+// 视觉上把「分区」那一段和左边两个按钮分开，但**不是一条竖线** ——
+// 参考图里没有分隔线，靠间距就够了。
+.cnb__split {
+  flex: 0 0 auto;
+  width: 6px;
+}
+
+.cnb__items {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  /*
+   * ── 横向可拖动（读者 2026-10-07）────────────────────────────────
+   *
+   * 读者原话：「下边的导航栏，可以用鼠标和手指拖动来回查看，这样才能看到
+   *           右边的被遮挡的内容」。
+   *
+   * ⚠️ 这**推翻了 2026-10-05 的一条决定**。当时是 `overflow: hidden`，理由是：
+   *    「被切掉的圆盘既看不见、也量不出来 —— 少了一个功能和条短了一点
+   *      长得一模一样」。那条担心**依然成立**，所以这次不是把隐患丢掉，
+   *      而是**换成一条新的判据**：
+   *        · 旧判据问的是「装得下吗」（`scrollWidth - clientWidth`）；
+   *        · 新判据要问「**读者够得着吗**」—— 能不能滚到、滚动范围有多宽。
+   *      `scripts/verify-cnowbar.mjs` 里对应那条要跟着换成后者，
+   *      否则收紧成"装得下"就再也没人看得见右边被切了。
+   *
+   * ⚠️ `touch-action: pan-x`：**手指那一半交给浏览器原生滚动**（惯性、回弹、
+   *    系统手势屏蔽都由它负责，比我手写的好）；它同时禁止了纵向手势 ——
+   *    在一条横向可滚的条上，那正是想要的。
+   * ⚠️ `overscroll-behavior-x: contain`：滚到头不要把整页的手势链带走。
+   * ⚠️ **不要写 `scroll-behavior: smooth`** —— 鼠标拖动是**每帧改 `scrollLeft`**，
+   *    平滑会把它变成"拖着拖着才追上来"。
+   */
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  // 滚动条本身不要（条只有 56px 高，一根滚动条会把圆盘压变形）。
+  scrollbar-width: none;
+}
+
+.cnb__items::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 400px) {
+  .cnb__items {
+    gap: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  // ⚠️ 「不走过去」= 时长压到最小，**不是删掉过渡**：删掉的话状态会"啪"地跳过去，
+  //    而那正是我们要避免的那种切。
+  .cnb__btn,
+  .cnb__label,
+  .cnb__disc,
+  .cnb__glyph,
+  .cnb__stack,
+  .cnb__more-body {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
+}

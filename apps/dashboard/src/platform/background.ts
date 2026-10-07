@@ -77,7 +77,8 @@ const LIGHT_SCRIM =
  *      想换回某一张，把 `gallery.ts` 里那张的路径指过去就行。
  *      （它们是 900px 左右的老图，画质比新的画廊低一档。）
  */
-import { PAGE_ORDER, galleryFile } from './gallery';
+import { cdnImage } from './cdn';
+import { PAGE_ORDER, galleryFile, onGalleryReroll } from './gallery';
 
 const DEFAULT_PAGE = 'home';
 
@@ -91,13 +92,51 @@ const DEFAULT_PAGE = 'home';
  */
 export function currentPage(): string {
   if (typeof location === 'undefined') return DEFAULT_PAGE;
-  const m = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
-  const key = m?.[1];
-  // ⚠️ 判据从「在不在 BACKGROUNDS 里」改成「在不在 PAGE_ORDER 里」——
-  //    那张表搬走了（见上面那段）。**仍然要判**：不判的话任何
-  //    `/pages/<什么>/index` 都会被当成一个已知页面，于是画框和背景
-  //    都拿到兜底图，而 `gallerySide` 也会按「内页」处理。
-  return key && (PAGE_ORDER as readonly string[]).includes(key) ? key : DEFAULT_PAGE;
+
+  /*
+   * ⚠️⚠️⚠️ **页面名在 `pathname` 里，不在 `hash` 里（2026-10-07 路由改成 browser）。**
+   *
+   * 原来只读 hash ⇒ `currentPage()` **永远返回 `home`**。后果是**两处**，
+   * 而且都不报错、都"看起来正常"：
+   *   ① `backgroundUrl()` 永远给主页那张 ⇒ **每一页的背景都一样**
+   *      （读者 2026-10-07：「进入 CHEALTH 等页面的时候我希望的是更换另一个背景
+   *        要是不同的，这样感觉明白我是在主页还是不是在主页」）；
+   *   ② `GalleryFrame` 也以为自己在主页 ⇒ 内页挂的是**主页那三枚画框**
+   *      （右侧、三枚），而不是内页该有的那一枚。
+   *
+   * ⚠️ 这一段要认 **四种** URL，因为站点同时存在它们：
+   *    · `/chealth`                      —— browser 路由的干净 URL（线上主用）
+   *    · `/`                              —— 主页
+   *    · `/pages/chealth/index`          —— Taro 的原始页名（旧深链、探针在用）
+   *    · `#/pages/chealth/index`         —— 更早的 hash 路由（老书签；
+   *                                          `index.html` 里那段改写脚本会把它换掉，
+   *                                          但它跑之前仍然可能被读到）
+   *
+   * ⚠️ 判据仍然是「**在不在 `PAGE_ORDER` 里**」：不判的话任何一段路径
+   *    （`index.html`、`z`…）都会被算成一个已知页面，于是背景和画框
+   *    都静默地退到兜底那一张。
+   */
+  const known = (s: string | undefined): string | undefined =>
+    s && (PAGE_ORDER as readonly string[]).includes(s) ? s : undefined;
+
+  const path = location.pathname || '';
+
+  // ① `/pages/<name>/index` —— 原始页名
+  const mPath = /\/pages\/([a-z]+)\/index/.exec(path);
+  const fromPath = known(mPath?.[1]);
+  if (fromPath) return fromPath;
+
+  // ② `/chealth`、`/CEVTUO-Z/chealth` —— 干净 URL 的最后一段
+  const lastSeg = path.replace(/\/+$/, '').split('/').pop();
+  const fromSeg = known(lastSeg);
+  if (fromSeg) return fromSeg;
+
+  // ③ 旧的 hash 路由
+  const mHash = /#\/pages\/([a-z]+)\//.exec(location.hash || '');
+  const fromHash = known(mHash?.[1]);
+  if (fromHash) return fromHash;
+
+  return DEFAULT_PAGE;
 }
 
 /**
@@ -127,11 +166,27 @@ export function assetUrl(rel: string): string {
   // unreachable there, but returning a bare relative path beats throwing.
   if (typeof location === 'undefined') return rel;
 
-  const path = location.pathname || '/';
-  // `#/pages/x/index` never reaches pathname (it is the hash), so this is the
-  // mount directory: '/' at a root deploy, '/z/' or '/CEVTUO-Z/' otherwise.
-  const base = path.slice(0, path.lastIndexOf('/') + 1);
-  return `${location.origin}${base}${rel}`;
+  /*
+   * ⚠️⚠️ **基准恒为 `/`（根），不再从 `pathname` 推。**
+   *
+   * 原来那行靠"`#/pages/x/index` 永远进不了 pathname"来保证 pathname 就是挂载点。
+   * 而 2026-10-07 路由改成了 **browser** ⇒ pathname **就是路由** ⇒
+   * 在 `/pages/home/index` 上推出 `/pages/home/`，壁纸和图片全变成
+   * `/pages/home/static/...` ⇒ **404**（表现是壁纸不见了，而页面不报错）。
+   *
+   * 现在 `publicPath` 是 `/`、站点根挂载（三处生产入口都是根），所以基准就是 `/`。
+   * ⚠️ 这条和 `platform/data.ts` 里那份 `assetUrl` 是**同一个决定**，要改一起改。
+   */
+  return `${location.origin}/${rel.replace(/^\/+/, '')}`;
+}
+
+/**
+ * 图片专用：能走国内镜像就走，否则**原样**走本域。
+ *
+ * ⚠️ 为什么不是直接改 `assetUrl` —— 它也喂 `data/...`（见 `cdn.ts` 里的三条判据）。
+ */
+export function imageUrl(rel: string): string {
+  return cdnImage(rel) ?? assetUrl(rel);
 }
 
 export function backgroundUrl(): string {
@@ -141,7 +196,8 @@ export function backgroundUrl(): string {
   //    ⚠️ `galleryFile` 自己带兜底（任何没配的页面拿第一张），
   //      所以这里不需要再兜一层。
   const file = galleryFile(currentPage());
-  return assetUrl(file);
+  // ⚠️ 背景是图片 ⇒ 走 `imageUrl`（国内那台机器），不是 `assetUrl`
+  return imageUrl(file);
 }
 
 /**
@@ -151,6 +207,38 @@ export function backgroundUrl(): string {
  * between pages, so without the `hashchange` listener the background would stay
  * on whichever image the visitor landed on first.
  */
+/**
+ * ⚠️⚠️ **browser 路由下，`hashchange` 和 `popstate` 都不够。**
+ *
+ *   · `hashchange` —— 路由改 browser 之后 **hash 根本不变**，它一次都不触发；
+ *   · `popstate`   —— 只在**前进/后退**时触发；
+ *   · Taro 的 `navigateTo`（点分区、点返回键）走的是 **`history.pushState`**，
+ *     ⚠️ **它不触发任何事件**。
+ *
+ * ⇒ 不把 `pushState`/`replaceState` 包一层，换页时壁纸就**纹丝不动** ——
+ *    而它和"背景本来就该是这张"长得一模一样，一句报错都没有。
+ *
+ * ⚠️ 只包**一次**（模块级），不从 effect 里包：`Wallpaper` 每页挂一个，
+ *    包多次会把 history 套成好几层，而且卸载时没法还原。
+ */
+const ROUTE_EVT = 'cevtuo:route';
+let routePatched = false;
+
+function patchHistoryOnce(): void {
+  if (routePatched || typeof window === 'undefined' || !window.history) return;
+  routePatched = true;
+  for (const name of ['pushState', 'replaceState'] as const) {
+    const orig = window.history[name];
+    if (typeof orig !== 'function') continue;
+    window.history[name] = function (this: History, ...args: unknown[]) {
+      const r = (orig as (...a: unknown[]) => unknown).apply(this, args);
+      // ⚠️ 先改完 URL 再发事件 —— 监听者要读的是**新的** `location.pathname`。
+      window.dispatchEvent(new Event(ROUTE_EVT));
+      return r;
+    } as typeof window.history[typeof name];
+  }
+}
+
 export function applyBackground(el: HTMLElement | null): () => void {
   if (!el || typeof location === 'undefined') return () => {};
 
@@ -159,7 +247,11 @@ export function applyBackground(el: HTMLElement | null): () => void {
   // applyRootClasses(), so the class is the single source of truth — and it is
   // the thing the rest of the stylesheet keys off. Asking the media query
   // instead would let the photo's scrim disagree with the palette around it.
-  const isLight = document.documentElement.classList.contains('theme-light');
+  //
+  // ⚠️ 这一读从「effect 建立时读一次」挪进了 `paint()` —— 因为 `paint` 现在
+  //    还会在**换页**时被调用，而主题可能在那之后变过（系统切深/浅色）。
+  //    读一次的话，换页会把旧主题的 scrim 又刷回去。
+  //    （原来是 `const isLight = …` 写在函数体里，`paint` 闭包捕获它。）
 
   // ⚠️ Sets the WHOLE `background-image`, photo AND scrim, in one declaration.
   //
@@ -180,11 +272,36 @@ export function applyBackground(el: HTMLElement | null): () => void {
   // duplicated deliberately: the alternative is a stylesheet rule that silently
   // does nothing, which is what this replaces.
   const paint = () => {
+    const isLight = document.documentElement.classList.contains('theme-light');
     const scrim = isLight ? LIGHT_SCRIM : DARK_SCRIM;
     el.style.backgroundImage = `${scrim}, url("${backgroundUrl()}")`;
   };
   paint();
 
+  /*
+   * ⚠️ 三个都要挂，缺一就有一整类导航换不动背景：
+   *    · `hashchange` —— 老路由 / 老书签；
+   *    · `popstate`   —— 前进、后退；
+   *    · `ROUTE_EVT`  —— Taro 的 `pushState`（见 `patchHistoryOnce`）。
+   */
+  patchHistoryOnce();
   window.addEventListener('hashchange', paint);
-  return () => window.removeEventListener('hashchange', paint);
+  window.addEventListener('popstate', paint);
+  window.addEventListener(ROUTE_EVT, paint);
+  /**
+   * ⚠️⚠️ 换一批（`rerollGallery`）之后**必须重画**，否则「下拉刷新换一批」
+   *    只换画框不换壁纸 —— 而它们本该是**同一张画**（`gallery.ts` 那张表）。
+   *
+   *    读者 2026-10-04：「下边的**背景和画框**要每次点击刷新键才会（变）」。
+   *    画框那半边早就接了（`GalleryFrame` 的 `epoch`），壁纸这半边漏了 ——
+   *    因为壁纸是这里**命令式**写上去的一整条 `background-image`，
+   *    React 重渲染碰不到它。两套机制、一个事件，所以要有这个订阅。
+   */
+  const off = onGalleryReroll(paint);
+  return () => {
+    window.removeEventListener('hashchange', paint);
+    window.removeEventListener('popstate', paint);
+    window.removeEventListener(ROUTE_EVT, paint);
+    off();
+  };
 }

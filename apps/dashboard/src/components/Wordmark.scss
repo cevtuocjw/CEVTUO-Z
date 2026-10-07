@@ -1,0 +1,92 @@
+// ── 字标：CEVTUO Z（2026-10-05 读者要的）─────────────────────────
+//
+// 读者原话：「用这个字体作为整个网站的标题字体，但是要写成 CEVTUO Z 中间要空一个；
+//           大小要大，完全没有背景，一直存在，点击就回到主页最上边去。居中放置」
+
+// ⚠️⚠️ **`@font-face` 不在这里，在 `Wordmark.tsx` 里用 JS 注入。**
+//
+//   原因：这个站点的静态资源**全部**走 `assetUrl()`（`platform/data.ts`）在运行时
+//   拼前缀 —— 因为站点可能挂在子路径（`/z/`）下，也可能走国内镜像
+//   （`https://z.cevtuo.com`）。而 CSS 里的 `url()` 由 webpack 解析、
+//   Taro 的 `staticDirectory` 拷贝又不走 webpack，两边对不上 ⇒
+//   写死 `/static/...` 在子路径或镜像上都是 404，而且**是静默的**
+//   （字体加载失败会回落到下一个 family，页面看起来只是"字体不对"）。
+
+// ⚠️⚠️ **外层不能有 `position: fixed` / `z-index`。**
+//
+//    `mix-blend-mode` 是拿元素和**它所在层叠上下文**里已经画过的东西混色。
+//    而 `position: fixed` **无论有没有 z-index 都会创建层叠上下文** ——
+//    一旦外层是 fixed，字就只跟"外层里那些东西"（空的）混色，**反色完全失效**，
+//    而且失效是静默的：字照样显示，只是永远是一个颜色。
+//    ⇒ 所以 fixed + z-index + 混色**全在同一层**（`.wordmark__text`）上，
+//      外层退化成 `display: contents`（不生成盒子、不生成层叠上下文）。
+.wordmark {
+  display: contents;
+}
+
+.wordmark__text {
+  position: fixed;
+  top: calc(var(--safe-top) + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  // 和旧的 `.topbar` 同层 —— 层叠契约：内容 0 < overlay 100 < chrome 130。
+  z-index: 130;
+  cursor: pointer;
+  font-family: 'Ela Sans', Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  // ⚠️⚠️ **`--cnw-h` 是行盒高，不是字号。** 字号 = 盒高 / 1.25，行高也是 1.25 ⇒
+  //    盒子正好是 `--cnw-h`，而字形比盒子矮一档 —— 上伸部/斜体伸出都不会被裁。
+  //    （第一版 `font-size: var(--cnw-h)` + `line-height: 1`，实测**顶部被裁**。）
+  //    `.section` 的 padding-top 消费的是**同一个** `--cnw-h`，所以字变大变小，
+  //    让位量自动跟着走，不会漂移。
+  font-size: calc(var(--cnw-h) / 1.25);
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  // 「完全没有背景」：底、描边、卡片**一律没有**。
+  background: none;
+  border: 0;
+  // ⚠️⚠️ **逐像素反色**（读者 2026-10-05）：
+  //    「不需要一成不变的黑或者白，而是反色 —— 遇到背景浅它就深，遇到深它就浅，
+  //      甚至单个字母的各处都可以色不同」。
+  //    这正是 `difference` 的定义：结果 = |底 − 字|，**逐像素**算，
+  //    所以一个字母压在明暗交界上时，它自己内部就会一半深一半浅。
+  //
+  //    ⇒ 底色写**纯白**，混出来的就是背景的反色；`color` 不再跟主题走
+  //      （跟主题走会在浅色主题下变成深色字压深色壁纸，那正是上一版的毛病）。
+  //    ⇒ **字晕（text-shadow）必须去掉**：它也会被一起反色，那圈光晕会变成一坨。
+  mix-blend-mode: difference;
+  color: #fff;
+  user-select: none;
+  // 点下去有一点反馈，但**不做位移动画**（字标是稳定物，不该跟着动）。
+  // ⚠️ 但"主页第一屏居中"这个切换**要走过去**，不能是"两帧之间跳一下"。
+  transition: opacity 0.18s ease, top 0.36s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.36s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/**
+ * ── 主页第一屏：**居中偏上**（读者 2026-10-07）──────────────────────
+ *
+ * 其余页面、以及主页上滚过第一屏之后 —— **原样不动**（「其余的不变」）。
+ *
+ * ⚠️ 只是 `top` + `transform` 两行，颜色/混合那一套一个字没动：
+ *    它仍然是 `mix-blend-mode: difference` 的逐像素反色。
+ *
+ * ⚠️ **46% 而不是 50%**（读者 2026-10-07：「居中稍微偏上一些，大小不变」）。
+ *    只改 `top`，`font-size` / `--cnw-h` 一个字没动 ⇒ **大小不变**。
+ *    `transform` 仍然是 `-50%` ⇒ 动的只是整体位置，不是基线。
+ */
+.wordmark__text[data-hero='true'] {
+  top: 46%;
+  transform: translate(-50%, -50%);
+}
+
+.wordmark__text:active {
+  opacity: 0.66;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordmark__text {
+    transition: none;
+  }
+}

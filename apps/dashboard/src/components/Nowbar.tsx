@@ -145,17 +145,36 @@ function localNet(): string | null {
   }
 }
 
+type PhoneStatus = {
+  batteryPct?: number;
+  charging?: boolean;
+  net?: string;
+  watchBatteryPct?: number;
+  watchCharging?: boolean;
+  at?: string;
+};
+
+/**
+ * ⚠️⚠️ **一份模块级的"上次取到的东西"** —— 让 UO **任何一次点击都立刻有内容**。
+ *
+ * 读者 2026-10-07：「我需要的 UO 在任何点击立刻就出现内容」。
+ *
+ * ⚠️ 为什么必须是**模块级**而不是组件 state：
+ *    每个页面挂的是**自己的** `Cnowbar` / `Nowbar`。从主页走到 CHEALTH 时，
+ *    新实例的 state 是空的 —— 点开就是几百毫秒的"读取中"
+ *    （而 CHEALTH 那次还要加一段纯 JS 的 AES 解密）。
+ *    模块级变量活在整个进程里，所以新实例**第一帧**就有东西可画。
+ *
+ * ⚠️ 它**不是**"数据源"，是"先给读者看一眼"的那一份：挂载时的预热照跑，
+ *    取回来照样 `setFeed` 覆盖它。所以它永远不会让内容停在旧版本上。
+ */
+let snapshot: { items: FeedItem[]; missing: string[]; phone: PhoneStatus | null } | null = null;
+
 export function Nowbar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [phone, setPhone] = useState<{
-    batteryPct?: number;
-    charging?: boolean;
-    net?: string;
-    watchBatteryPct?: number;
-    watchCharging?: boolean;
-    at?: string;
-  } | null>(null);
-  const [feed, setFeed] = useState<FeedItem[] | null>(null);
-  const [missing, setMissing] = useState<string[]>([]);
+  // ⚠️ 初值从快照来 —— 有快照 ⇒ 第一帧就有内容，不会有"读取中"那一下。
+  const [phone, setPhone] = useState<PhoneStatus | null>(() => snapshot?.phone ?? null);
+  const [feed, setFeed] = useState<FeedItem[] | null>(() => snapshot?.items ?? null);
+  const [missing, setMissing] = useState<string[]>(() => snapshot?.missing ?? []);
   const stageRef = useRef<HTMLElement | null>(null);
   /**
    * ⚠️ 上次**成功取到**数据的时刻 —— 打开时用它判断"值不值得再取一次"。
@@ -163,7 +182,7 @@ export function Nowbar({ open, onClose }: { open: boolean; onClose: () => void }
    */
   const loadedAt = useRef(0);
   /** ⚠️ 手上到底有没有内容 —— 判断"能不能跳过重取"的是**它**，不是时间。 */
-  const hasData = useRef(false);
+  const hasData = useRef(snapshot !== null);
   /** ⚠️ 已经有一次在飞了就别叠 —— 不然打开时会重复取两份。 */
   const inflight = useRef(false);
   /**
@@ -252,6 +271,8 @@ export function Nowbar({ open, onClose }: { open: boolean; onClose: () => void }
     void (async () => {
       const items: FeedItem[] = [];
       const miss: string[] = [];
+      /** ⚠️ 手机状态也要带进快照 —— 它是同一个 `fetch` 回来的，分开存会不一致。 */
+      let phoneSeen: PhoneStatus | null = null;
       const since = openedAt - WINDOW_MS;
       const inWindow = (iso: string | null | undefined) => {
         if (!iso) return false;
@@ -262,6 +283,9 @@ export function Nowbar({ open, onClose }: { open: boolean; onClose: () => void }
       try {
         const idx = await fetchChealthIndex(readPass());
         if (!aliveRef.current) return;
+        // ⚠️ 记在**外面**那个变量里 —— `idx` 出了这个 `try` 就没了，而写快照
+        //    要等到两份数据都取完（见下面 `snapshot = …`）。
+        phoneSeen = idx.deviceStatus ?? null;
         setPhone(idx.deviceStatus ?? null);
         for (const s of idx.sessions ?? []) {
           if (!inWindow(s.start)) continue;
@@ -405,6 +429,12 @@ export function Nowbar({ open, onClose }: { open: boolean; onClose: () => void }
       // ⚠️ 这两行必须在 `setFeed` **之后** —— 它们记的是"手上真有内容了"。
       hasData.current = true;
       loadedAt.current = openedAt;
+      /*
+       * ⚠️ 快照**只在这里写**（两份都取完、已经 `setFeed` 之后）。
+       *    写在取之前或者写在 `catch` 里，就会拿半份/空的东西去喂下一个实例 ——
+       *    而"面板里有内容"和"面板里有正确的"在截图里长得一模一样。
+       */
+      snapshot = { items, missing: miss, phone: phoneSeen };
     })()
       /*
        * ⚠️⚠️ **`inflight` 必须在 `finally` 里落，不能在成功分支里落。**
