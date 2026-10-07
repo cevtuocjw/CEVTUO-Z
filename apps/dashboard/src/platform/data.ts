@@ -13,6 +13,8 @@
 
 // App-local copy of the shared path contract — see ./paths.ts for why it is
 // not imported, and ./paths.contract.ts for the guard that keeps them in sync.
+import { tv } from '../platform/prefs';
+import { cdnImage } from './cdn';
 import { DATA_PATHS } from './paths';
 import { openSealed } from './health-crypto';
 
@@ -109,10 +111,39 @@ function base(): string {
   //    "加载失败: Failed to fetch" while the local server logged a clean 200 for
   //    the identical URL. Feature-detecting the runtime is both simpler and
   //    immune to whatever the bundler chooses to inline.
-  if (typeof location !== 'undefined' && location.origin) {
-    // `/z/index.html` -> `/z`, `/` -> '' — then the caller's leading slash
-    // supplies the separator, so there is never a doubled or missing one.
-    return (location.pathname || '/').replace(/\/[^/]*$/, '');
+  /*
+   * ⚠️⚠️ **"这是不是网页"的判据，只能拿实测出来的那个差别（2026-10-07）。**
+   *
+   * 试过两个都**不行**的判据：
+   *   · `typeof location !== 'undefined'` —— 小程序里 Taro 垫了一个 `location`（带 origin）；
+   *   · `typeof document !== 'undefined'` —— 小程序里 Taro 也实现了自己的 DOM。
+   *   两个都会把小程序误判成网页 ⇒ 返回 `''` ⇒ `assetUrl` 给出**相对路径**
+   *   `/data/paperr/index.json` ⇒ `wx.request` 只收绝对 URL，直接回
+   *       request:fail invalid url "/data/paperr/index.json"
+   *   ⇒ **小程序上所有数据静默为空**（页面照样渲染，只是每块都停在「读取中…」）。
+   *
+   * ✅ 探针在真模拟器里量到的差别只有一个：**`fetch` 存在与否**。
+   *    所以判据就是它 —— 网页有 `fetch`，小程序只有 `wx.request`。
+   *    ⚠️ 这条和上面 `httpGet` 选路用的是**同一个事实**，改一处要改两处。
+   */
+  const isMini = typeof fetch !== 'function';
+  if (!isMini && typeof location !== 'undefined' && location.origin) {
+    /*
+     * ⚠️⚠️ **`''`（根），不再是"按 pathname 去掉最后一段"。**
+     *
+     * 原来那行 `/z/index.html` → `/z`、`/` → `''` 在 **hash 路由**下是对的：
+     * pathname 永远停在挂载点（`/z/index.html`），路由住在 `#` 里。
+     *
+     * 但 2026-10-07 路由改成了 browser ⇒ **pathname 就是路由本身** ⇒
+     * 在 `/pages/home/index` 上它算出 `/pages/home`，于是
+     * `assetUrl('static/fonts/…')` 变成 `/pages/home/static/fonts/…` ⇒ **404**。
+     * 实测到的症状：字标回落成系统字体、画廊图全裂，而**页面看上去正常**。
+     *
+     * 现在 `publicPath` 是 `/`（见 `config/index.ts` 那段），站点**根挂载** ——
+     * 三处生产入口（`z.cevtuo.com` / `z.cevtuogrnd.com` / 国内镜像 `ROOT`）
+     * 本来也都是根。所以基准就是 `''`，调用方那个前导斜杠负责分隔符。
+     */
+    return '';
   }
 
   // 3. Mini-program: no DOM, so no location. This origin is still wrong — pages
@@ -123,6 +154,14 @@ function base(): string {
 
 export const assetUrl = (relPath: string): string =>
   `${base()}/${relPath.replace(/^\/+/, '')}`;
+
+/**
+ * 图片专用：能走国内镜像就走（判据在 `platform/cdn.ts`，**只有那一份**）。
+ * ⚠️ 这个文件里的 `assetUrl` 和 `platform/background.ts` 里那份是**两份实现**，
+ *    所以判据必须是共用的 —— 复制进两份就一定会改一处漏一处。
+ */
+export const imageUrl = (relPath: string): string =>
+  cdnImage(relPath) ?? assetUrl(relPath);
 
 /**
  * Payload shapes are **re-exported from the schema**, not re-declared.
@@ -151,6 +190,65 @@ export type {
   SyncMeta,
 };
 
+/**
+ * ── ⚠️⚠️ **小程序里没有 `fetch`（2026-10-07 实测）** ─────────────────
+ *
+ * 探针实测（在真模拟器里弹 modal 读出来的）：`fetch = undefined`、
+ * `wx.request = function`。
+ *
+ * 本文件原来断言「`fetch` 在小程序基础库 ≥2.18 上是原生的」——**那条是错的**。
+ * 它的后果**不是报错**，而是每个数据块**静默地**停在「读取中…」/「—」：
+ * 列表空着、UO 面板永远读取中、CHEALTH 解不开 —— 而页面**看上去完全正常**
+ * （骨架、分区标题、导航条都在）。
+ *
+ * ⚠️ 为什么不直接换成 `Taro.request`：下面 `getJson` 那段注释记着，
+ *    H5 上它要求 window 上有全局 `Taro`，而本构建没有 ⇒ 每次调用都抛。
+ * ⇒ 所以是**按能力选路**，不是二选一。
+ */
+type MiniRequest = (o: {
+  url: string;
+  method?: string;
+  header?: Record<string, string>;
+  success?: (r: { statusCode: number; data: unknown }) => void;
+  fail?: (e: { errMsg?: string }) => void;
+}) => void;
+
+/** `fetch` 的响应里我们真正用到的那一小块。 */
+interface Reply {
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+  text: () => Promise<string>;
+}
+
+async function httpGet(url: string, init?: RequestInit): Promise<Reply> {
+  if (typeof fetch === 'function') {
+    const res = await fetch(url, init);
+    return { ok: res.ok, status: res.status, json: () => res.json(), text: () => res.text() };
+  }
+
+  const wx = (globalThis as unknown as { wx?: { request?: MiniRequest } }).wx;
+  if (!wx?.request) throw new Error('no fetch and no wx.request in this runtime');
+
+  return new Promise<Reply>((resolve, reject) => {
+    wx.request!({
+      url,
+      method: 'GET',
+      success: (r) => {
+        resolve({
+          ok: r.statusCode >= 200 && r.statusCode < 300,
+          status: r.statusCode,
+          json: async () => r.data,
+          // ⚠️ `wx.request` 会**自动**把 JSON 解析成对象 ⇒ `text()` 得能反着
+          //    序列化回去（CHEALTH 那条走 `text()` 再解密）。
+          text: async () => (typeof r.data === 'string' ? r.data : JSON.stringify(r.data)),
+        });
+      },
+      fail: (e) => reject(new Error(e.errMsg || 'wx.request failed')),
+    });
+  });
+}
+
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
   const url = assetUrl(path);
 
@@ -161,13 +259,13 @@ async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
   // throws `Cannot read properties of undefined (reading 'request')` and the page
   // renders "加载失败: Failed to fetch" while the network shows a clean 200.
   //
-  // `fetch` is implemented natively on both targets we ship to (mini-program
-  // base library ≥2.18 and every WebView we support), so it is the smaller
-  // surface. If a target ever lacks it, add the adapter there rather than
-  // reintroducing the global dependency here.
-  const res = await fetch(url, init);
+  // ⚠️⚠️ **下面这句原来的断言是错的**（2026-10-07 在真模拟器里实测推翻）：
+  //    原文写「`fetch` 在小程序基础库 ≥2.18 上是原生的」——
+  //    实测 `fetch = undefined`、`wx.request = function`。
+  //    ⇒ 走 `httpGet`（按能力选路，见上面那个函数）。
+  const res = await httpGet(url, init);
   if (!res.ok) {
-    throw new Error(`加载失败 HTTP ${res.status}：${path}`);
+    throw new Error(tv(`加载失败 HTTP ${res.status}：${path}`, `Load failed HTTP ${res.status}: ${path}`));
   }
   return (await res.json()) as T;
 }
@@ -293,6 +391,30 @@ export interface ChealthSession {
   cadenceSeries?: [number, number][];
   /** ⚠️ `[minutesSinceStart, m/s]`, ≤120 points. */
   speedSeries?: [number, number][];
+  /**
+   * ⚠️⚠️ 跳绳的**个数** / 健腹轮的**次数**（读者 2026-09-30 点名要的）。
+   *
+   *    这是**只有小米有**的一项 —— 三星健康那边根本没有这个字段，
+   *    所以它和 `hrAvg` 正好相反：**心率用三星的，个数只能用小米的**。
+   *
+   *    ⚠️ 它没有单位歧义（就是个计数），但有**口径**问题：
+   *      一次「跳绳」小米可能记的是**总次数**也可能只是**最长一组**，
+   *      接进来看见明显偏小的值要怀疑这个，而不是怀疑解析。
+   */
+  count?: number;
+  /**
+   * ⚠️ **每分钟多少次**。
+   *
+   *    ⚠️⚠️ 页面上的标签写「平均频率」，因为**这个数常常是我们自己算的**
+   *      （`count / minutes`），而设备直接给的那种是**整场的峰值频率**。
+   *      两者不是一个东西，混着叫「频率」会让读者以为自己在看同一个量
+   *      —— 这个项目为「口径说不清」栽过一次（`speedAvgMps` 被叫成「平均速度」）。
+   */
+  rateAvg?: number;
+  /** ⚠️ 设备直接给的峰值频率（次/分）。没有就不显示，**不要拿 rateAvg 顶上**。 */
+  rateMax?: number;
+  /** ⚠️ `[minutesSinceStart, 次/分]`，≤120 点。有它才画得出过程曲线。 */
+  rateSeries?: [number, number][];
   /** ⚠️ Which app measured the HR — the watch and MyWhoosh disagree, and the
    *  phone deliberately does not average them. */
   hrSource?: string;
@@ -335,6 +457,45 @@ export interface ChealthDay {
   respRate?: number;
   weightKg?: number;
   exerciseCount?: number;
+  /**
+   * ⚠️ 2026-10-02 接上三星 SDK 之后新增的一批。
+   *    ⚠️ 服务端 `DaySchema` 是**唯一**的准绳 —— `z.object` 会静默丢掉
+   *      没列在那里的键，所以这里少写一个，症状是「手机推了、页面上是 undefined」，
+   *      两边都不报错。
+   */
+  bodyFatPct?: number;
+  skeletalMuscleKg?: number;
+  bmi?: number;
+  basalKcal?: number;
+  energyScore?: number;
+  skinTempC?: number;
+  /** ⚠️ 体温（不是 `skinTempC` 皮肤温度）—— 先量覆盖，0 天就不做界面。 */
+  bodyTempC?: number;
+  /**
+   * **睡眠分期** —— `[[距入睡第几分钟, 持续几分钟, 'AWAKE'|'LIGHT'|'DEEP'|'REM'|'UNDEFINED'], …]`。
+   *
+   * ⚠️ 三星睡眠页的主角。我们此前只有 `sleepSeconds` 一个总数，
+   *    而「一夜之间深浅几轮」是另一个东西，只能从分段画出来。
+   * ⚠️ 相对分钟不是时间戳：跨午夜的一夜用绝对时间画，横轴会从 23:12 跳回 00:05。
+   */
+  sleepStages?: [number, number, string][];
+  sleepStart?: string;
+  sleepEnd?: string;
+  sleepScore?: number;
+  /** 各段之和（分钟）。和 `sleepSeconds` 对不上就说明有段没读全。 */
+  sleepStageCoveredMin?: number;
+  /**
+   * ⚠️ **读者自己在三星健康里设的目标**，不是我们定的。
+   *    手机端把「当前设定」挂在**最新那一天**上（见 `SamsungDaily.dailyTotals`）。
+   *    读的时候要取「最后一个有它的那天」，不是取今天 —— 今天可能还没同步。
+   */
+  stepsGoal?: number;
+  activeKcalGoal?: number;
+  activeMinutesGoal?: number;
+  waterGoalL?: number;
+  /** `"23:30"` 这种，不带秒。 */
+  bedTime?: string;
+  wakeTime?: string;
 }
 
 export interface ChealthIndex {
@@ -351,6 +512,25 @@ export interface ChealthIndex {
   /** ⚠️ `false` means "not detected", never "definitely not riding" — it is
    *  `false` whenever the usage-access permission is missing. Render accordingly. */
   ridingNow: boolean;
+  /**
+   * ⚠️ **手机自己的状态**（电量/充电/网络）+ 它上报的时刻。
+   *    来自手机端 `SyncWorker.deviceStatus()` —— **不走 Health Connect**。
+   *    ⚠️ 老索引里没有这个键（2026-10-05 才加）⇒ 一律按可选处理，
+   *      读不到就显示「—」，**不要编一个数**。
+   */
+  deviceStatus?: {
+    batteryPct?: number;
+    charging?: boolean;
+    net?: string;
+    at?: string;
+    /**
+     * ⚠️ 手表电量 —— 三星的健康 SDK **不提供**（`javap` 读过 aar，`Device` 里
+     *    没有 battery 字段）。手机端改走 `BluetoothDevice.getBatteryLevel()`
+     *    （手机跟手表是配对的蓝牙设备）。拿不到就是 `undefined`，
+     *    界面写「—」——**不编一个数**。
+     */
+    watchBatteryPct?: number;
+  } | null;
   origins: Record<string, ChealthOrigin>;
   totals: {
     stepsToday: number | null;
@@ -369,6 +549,21 @@ export interface ChealthIndex {
     hrv7d: number | null;
     spo2_7d: number | null;
     weightKgLatest: number | null;
+    /**
+     * ⚠️ 2026-10-02 接上 **Samsung Health Data SDK** 之后新增的三项。
+     *
+     *    ⚠️ 它们**不是「换了个来源」**，是 Health Connect 那条路上**取不到**的量：
+     *      `floors`（楼层）在 HC 里 0/31 天、皮温同样 0/31，
+     *      而「活力分数」是三星自己的算法（掺了睡眠阶段、HRV、血氧、呼吸），
+     *      HC 里根本没有这个概念。实测接入后有数了：2 / 2 / 1 天。
+     *
+     * ⚠️ 天数很少是**真的少**（读者很少量皮温、也不天天看活力分数），
+     *    所以页面上经常是 `—` —— 那是诚实，别拿别的量去填。
+     *    ⚠️ `floors7d` 是**合计**，另两个是**均值**：楼层是计数，加总才有意义。
+     */
+    floors7d: number;
+    skinTemp7d: number | null;
+    energy7d: number | null;
   };
 }
 
@@ -407,8 +602,22 @@ export async function fetchChealthIndex(passphrase: string): Promise<ChealthInde
   // 一个**看起来完全正常的空状态**，而服务器上三条骑行好好躺着。
   //
   // 教训不是「记得加 no-store」，是**同一个项目里已经付过学费的结论要跟着新代码走**。
-  const res = await fetch(DATA_PATHS.chealthSealed, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`读不到加密索引 HTTP ${res.status}`);
+  /*
+   * ⚠️⚠️ **必须过 `assetUrl`，不能直接把那个相对路径丢给 `fetch`。**
+   *
+   * 2026-10-07 路由从 hash 改成 browser 之后实测到的：相对 URL 解析的基准是
+   * **文档地址**，而在 `/pages/home/index` 上 `'data/chealth/index.json'`
+   * 变成了 `/pages/home/data/chealth/index.json` ⇒ **404**。
+   *
+   * 它在 hash 时代一直是对的，因为那时 `location.pathname` 永远停在挂载点
+   * （`/` 或 `/z/index.html`）—— 也就是说这条 bug **一直都在**，只是被
+   * "pathname 不会变"这个前提盖住了。
+   *
+   * ⚠️ 用 `assetUrl`（**不是** `imageUrl`）：`data/` 必须走本地、绝不改写到 CDN，
+   *    判据在 `platform/cdn.ts` 那三条里写着，新鲜度靠这个。
+   */
+  const res = await httpGet(assetUrl(DATA_PATHS.chealthSealed), { cache: 'no-store' });
+  if (!res.ok) throw new Error(tv(`读不到加密索引 HTTP ${res.status}`, `Cannot read sealed index HTTP ${res.status}`));
   // ⚠️ openSealed 现在是**同步**的（纯 JS，不用 WebCrypto）——
   //    见 health-crypto.ts 顶部那段：站点没有 HTTPS，crypto.subtle 是 undefined。
   const plain = openSealed(await res.text(), passphrase);
@@ -450,8 +659,30 @@ export interface ChealthHeartbeat {
  * literals once already — including a fifth copy inside
  * `scripts/verify-paperr-ui.mjs`, which is why that suite asserts against the
  * page's own network traffic rather than a URL typed out again.
+ *
+ * ⚠️⚠️ **2026-10-05：备案落地了，所以搬了 —— 见下面那段。**
  */
-export const INGEST_ORIGIN = 'https://api.cevtuogrnd.com:8443';
+export const INGEST_ORIGIN = (() => {
+  // ⚠️ 心跳现在**走备案域名 `z.cevtuo.com`**（备案 / 443 / 深圳）。
+  //
+  // 原来钉死在 `https://api.cevtuogrnd.com:8443`（一张没备案的证书 + 非标准端口）。
+  // 小程序要求**所有请求域名都备案 + 443**，接口留在旧域名上将来一定会被微信拒。
+  //
+  // ⭐ **按页面所在的主机选 base，优先同源**：
+  //   · **镜像**（`z.cevtuo.com`，以及直接打 IP 的 8081/8082/443）**自己就把
+  //     `/api/*` 反代到接入服务 8789**（见 `scripts/mirror-server.mjs`）⇒
+  //     **同源 ⇒ 一次跨域都没有，也就压根不经过 `ALLOWED_ORIGINS` 那张表。**
+  //     这是有代价才学到的：跨域那一跳的代理**必须转发 `Origin`**，漏了就是
+  //     **静默**丢掉 CORS 头、页面上只显示一个「—」（通用纪律 14）。
+  //   · **GitHub Pages**（`z.cevtuogrnd.com` / `*.github.io`）是别人的静态主机，
+  //     **没有 `/api` 代理** ⇒ 退回 `https://z.cevtuo.com`；跨域那一跳由
+  //     `ALLOWED_ORIGINS` 放行（两个域名都在表里）。
+  //   · 小程序里没有 `location` ⇒ 直接给绝对域名（备案 + 443）。
+  if (typeof location === 'undefined') return 'https://z.cevtuo.com';
+  const host = location.hostname;
+  if (host === 'z.cevtuo.com' || host === '120.77.27.128') return location.origin;
+  return 'https://z.cevtuo.com';
+})();
 
 export const CHEALTH_HEARTBEAT_URL = `${INGEST_ORIGIN}/api/chealth/heartbeat.json`;
 
@@ -459,7 +690,7 @@ export const CHEALTH_HEARTBEAT_URL = `${INGEST_ORIGIN}/api/chealth/heartbeat.jso
  *  worse than one that shows a dash — same rule as the reading heartbeat. */
 export async function fetchChealthHeartbeat(): Promise<ChealthHeartbeat | null> {
   try {
-    const res = await fetch(CHEALTH_HEARTBEAT_URL);
+    const res = await httpGet(CHEALTH_HEARTBEAT_URL);
     if (!res.ok) return null;
     return (await res.json()) as ChealthHeartbeat;
   } catch {
@@ -491,7 +722,7 @@ export const PARRER_HEARTBEAT_URL = `${INGEST_ORIGIN}/api/paperr/heartbeat.json`
 
 export async function fetchPaperrHeartbeat(): Promise<PaperrHeartbeat | null> {
   try {
-    const res = await fetch(PARRER_HEARTBEAT_URL);
+    const res = await httpGet(PARRER_HEARTBEAT_URL);
     if (!res.ok) return null;
     return (await res.json()) as PaperrHeartbeat;
   } catch {
@@ -519,11 +750,11 @@ export function formatAgo(iso: string, now: Date = new Date()): string {
   const then = new Date(iso).getTime();
   if (!Number.isFinite(then)) return '';
   const days = Math.floor((now.getTime() - then) / 86_400_000);
-  if (days <= 0) return '今天';
-  if (days === 1) return '昨天';
-  if (days < 30) return `${days} 天前`;
-  if (days < 365) return `${Math.floor(days / 30)} 个月前`;
-  return `${Math.floor(days / 365)} 年前`;
+  if (days <= 0) return tv("今天", "Today");
+  if (days === 1) return tv("昨天", "Yesterday");
+  if (days < 30) return tv(`${days} 天前`, `${days} days ago`);
+  if (days < 365) return tv(`${Math.floor(days / 30)} 个月前`, `${Math.floor(days / 30)} months ago`);
+  return tv(`${Math.floor(days / 365)} 年前`, `${Math.floor(days / 365)} years ago`);
 }
 
 export const fetchCnsrIndex = (): Promise<CnsrSourcesIndex> =>
@@ -547,9 +778,36 @@ export function calendarKeys(index: CoofIndex): string[] {
     .map((c) => c.name);
 }
 
+/**
+ * COOF 的**类型名**（剧情 / 科幻 / 动作 …）→ 英文。
+ *
+ * ⚠️ 它们是**数据**（来自 Notion 的词表，躺在 `data/coof/…/index.json` 里），
+ *    但**同时也是标签** —— 和运动类型（`health-analysis.ts` 那张表）是同一类东西：
+ *    **封闭词表，读者期望看到自己的语言**。
+ *    ⇒ 所以不能靠"它在 data/ 里"就放过它，也不能去改数据（那是源，改了下次同步就回来了）。
+ *    正解和运动类型一样：**在渲染那一刻换**。
+ *
+ * ⚠️ 查不到的原样返回 —— 项目规矩：「没映射到的**原样显示**，不要去猜」。
+ */
+const GENRE_EN: Record<string, string> = {
+  剧情: 'Drama', 科幻: 'Sci-Fi', 动作: 'Action', 喜剧: 'Comedy', 恐怖: 'Horror',
+  动画: 'Animation', 歌舞剧: 'Musical', 爱情: 'Romance', 冒险: 'Adventure',
+  犯罪: 'Crime', 惊悚: 'Thriller', 传记: 'Biography', 纪录片: 'Documentary',
+  悬疑: 'Mystery', 战争: 'War', 奇幻: 'Fantasy', 家庭: 'Family', 历史: 'History',
+  音乐: 'Music', 运动: 'Sport', 西部: 'Western', 黑色电影: 'Film-Noir',
+  短片: 'Short', 真人秀: 'Reality-TV', 脱口秀: 'Talk-Show', 新闻: 'News',
+  儿童: 'Kids', 武侠: 'Martial arts', 情色: 'Erotic', 同性: 'LGBTQ',
+  灾难: 'Disaster', 鬼怪: 'Supernatural', 惊栗: 'Suspense', 戏曲: 'Opera',
+  犯罪片: 'Crime', 传记片: 'Biography', 歌舞: 'Musical', 纪实: 'Documentary',
+};
+export const genreLabel = (zh: string | undefined | null): string =>
+  !zh ? '' : tv(zh, GENRE_EN[zh] ?? zh);
+
 export function formatRuntime(min: number | null): string | null {
   if (!min || min <= 0) return null;
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return h > 0 ? `${h}小时${m > 0 ? `${m}分` : ''}` : `${m}分钟`;
+  return h > 0
+    ? tv(`${h}小时${m > 0 ? `${m}分` : ''}`, `${h}h${m > 0 ? ` ${m}m` : ''}`)
+    : tv(`${m}分钟`, `${m} min`);
 }
