@@ -1,0 +1,184 @@
+{
+ "source": "techai",
+ "label": "TECH-AI",
+ "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-05T20:03+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 15,
+  "hidden": 47,
+  "links": 5,
+  "images": 0,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "3ed09462-a4af-808c-b7af-d2c06329ebb6",
+   "date": "2026-10-02",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Kitesurf a cloud-based browser built specifically for ai agents",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e509462-a4af-8172-b332-d1720da7cdb3",
+   "date": "2026-09-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ray-Ban Meta Audio，纯听歌的AI眼镜这是Meta第一款纯音频眼镜，没有摄像头，主打听歌和AI语音交互。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e109462-a4af-81c8-aa5d-c43cfebfd4bf",
+   "date": "2026-09-20",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e009462-a4af-808b-bbb2-f8f447ce5c52",
+   "date": "2026-09-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+     "links": [
+      {
+       "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "href": "https://mp.weixin.qq.com/s/u3oTtbEFuTUAPWsEYZSXkw?version=5.0.10.70716&platform=mac&from=industrynews#rd",
+       "title": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "desc": "Claude Code 变开放了。"
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3df09462-a4af-805b-930c-f7c7b5cfc116",
+   "date": "2026-09-18",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Yinsen：所以我是创业者，他只能做投资人。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "我希望Cherry Studio就是最后的交互界面。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "人类不需要再面对无数后台，只需要一个交互界面。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Yinsen：如果变成这种场景的时候，人跟AI的交互界面就会变得极其简单。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "沐秋：这跟今天的Cherry Studio有啥关系？",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "如果这个方向盘交到了AI手里，AI接管了这件事情的话，吞噬世界的可能就Agent。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "软件吞噬一切的基础里面有一个核心的生产要素是人，因为所有代码是人写的，方向盘还在人手里",
+     "links": []
+    },
+    {
+     "k": "callout",
+     "t": "Yinsen：Agent吞噬一切。",
+     "links": []
+    },
+    {
+     "k": "bookmark",
+     "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+     "links": [
+      {
+       "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+       "href": "https://m.aitntnews.com/newDetail.html?newId=23114",
+       "title": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
+       "desc": "「套壳伟大🍒」 这波AI创业浪潮里，Cherry Studio和他的创始人Yinsen绝对算是异类。 Cherry Studio发源于开源社区，和大部分吹的天花乱坠但实际是套壳的应用不同，Cherry"
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "2004383882104038519",
+     "links": [
+      {
+       "t": "2004383882104038519",
+       "href": "https://zhuanlan.zhihu.com/p/2004383882104038519"
+      }
+     ]
+    }
+   ],
+   "more": 47,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3d509462-a4af-800e-a1e6-c69be1c802c3",
+   "date": "2026-09-08",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
+     "links": [
+      {
+       "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "href": "https://mistral.ai/news/mistral-makes-sovereign-open-weight-ai-to-frontier/",
+       "title": "Making sovereign, open-weight AI the technology frontier | Mistral",
+       "desc": "Mistral today announced that it has raised €3 billion in a Series D funding round at a post-money valuation of more than €21 billion."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "UAE AI model tops 50 million monthly downloads",
+     "links": [
+      {
+       "t": "UAE AI model tops 50 million monthly downloads",
+       "href": "https://www.middleeastainews.com/p/uae-ai-model-tops-50-million-monthly",
+       "title": "UAE AI model tops 50 million monthly downloads",
+       "desc": "Falcons AI&#x27;s NSFW classifier ranks among top global open-source models"
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}

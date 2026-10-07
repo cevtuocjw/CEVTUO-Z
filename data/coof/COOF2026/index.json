@@ -1,0 +1,646 @@
+{
+  "collection": "COOF2026",
+  "collections": [
+    {
+      "count": 171,
+      "latestAt": "2026-10-07",
+      "name": "COOF2026",
+      "path": "data/coof/COOF2026/index.json"
+    },
+    {
+      "count": 204,
+      "latestAt": "2025-12-29",
+      "name": "COOF2025",
+      "path": "data/coof/COOF2025/index.json"
+    },
+    {
+      "count": 152,
+      "latestAt": "2024-12-31",
+      "name": "COOF2024",
+      "path": "data/coof/COOF2024/index.json"
+    },
+    {
+      "count": 145,
+      "latestAt": "2023-12-24",
+      "name": "COOF2023",
+      "path": "data/coof/COOF2023/index.json"
+    },
+    {
+      "count": 236,
+      "latestAt": "2022-12-26",
+      "name": "COOF2022",
+      "path": "data/coof/COOF2022/index.json"
+    },
+    {
+      "count": 107,
+      "latestAt": "2021-12-01",
+      "name": "COOF2021",
+      "path": "data/coof/COOF2021/index.json"
+    },
+    {
+      "count": 216,
+      "latestAt": "2020-12-30",
+      "name": "COOF2020",
+      "path": "data/coof/COOF2020/index.json"
+    }
+  ],
+  "counts": {
+    "rated": 0,
+    "total": 171
+  },
+  "dataVersion": "cef301eb4b42",
+  "genres": [
+    {
+      "count": 121,
+      "name": "剧情"
+    },
+    {
+      "count": 33,
+      "name": "喜剧"
+    },
+    {
+      "count": 26,
+      "name": "惊悚"
+    },
+    {
+      "count": 21,
+      "name": "犯罪"
+    },
+    {
+      "count": 20,
+      "name": "动作"
+    },
+    {
+      "count": 16,
+      "name": "爱情"
+    },
+    {
+      "count": 16,
+      "name": "纪录片"
+    },
+    {
+      "count": 11,
+      "name": "传记"
+    },
+    {
+      "count": 11,
+      "name": "科幻"
+    },
+    {
+      "count": 9,
+      "name": "奇幻"
+    },
+    {
+      "count": 9,
+      "name": "悬疑"
+    },
+    {
+      "count": 8,
+      "name": "冒险"
+    },
+    {
+      "count": 7,
+      "name": "历史"
+    },
+    {
+      "count": 6,
+      "name": "同性"
+    },
+    {
+      "count": 6,
+      "name": "音乐"
+    },
+    {
+      "count": 5,
+      "name": "动画"
+    },
+    {
+      "count": 5,
+      "name": "恐怖"
+    },
+    {
+      "count": 5,
+      "name": "战争"
+    },
+    {
+      "count": 4,
+      "name": "短片"
+    },
+    {
+      "count": 2,
+      "name": "家庭"
+    },
+    {
+      "count": 2,
+      "name": "情色"
+    },
+    {
+      "count": 2,
+      "name": "歌舞"
+    },
+    {
+      "count": 2,
+      "name": "运动"
+    },
+    {
+      "count": 1,
+      "name": "歌舞剧"
+    },
+    {
+      "count": 1,
+      "name": "舞蹈"
+    }
+  ],
+  "hero": {
+    "cast": [],
+    "collection": "COOF2026",
+    "country": [
+      "美国",
+      "英国"
+    ],
+    "director": [],
+    "genres": [
+      "剧情"
+    ],
+    "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
+    "mediaType": "影",
+    "note": null,
+    "order": 172,
+    "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
+    "rating": null,
+    "runtimeMin": 108,
+    "status": "watched",
+    "title": "弗洛伊德的最后一会 Freud's Last Session",
+    "watchedAt": "2026-10-07",
+    "year": 2023
+  },
+  "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
+      "mediaType": "影",
+      "note": null,
+      "order": 172,
+      "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
+      "rating": null,
+      "runtimeMin": 108,
+      "status": "watched",
+      "title": "弗洛伊德的最后一会 Freud's Last Session",
+      "watchedAt": "2026-10-07",
+      "year": 2023
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-812b-97b9-d59207b417ff",
+      "mediaType": "影",
+      "note": null,
+      "order": 171,
+      "poster": "data/coof/posters/3f209462-a4af-812b-97b9-d59207b417ff.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "富士子 Fujiko",
+      "watchedAt": "2026-10-07",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "波兰",
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "3f209462-a4af-814d-b0ff-d0cbb2a6817e",
+      "mediaType": "影",
+      "note": null,
+      "order": 170,
+      "poster": "data/coof/posters/3f209462-a4af-814d-b0ff-d0cbb2a6817e.jpg",
+      "rating": null,
+      "runtimeMin": 84,
+      "status": "watched",
+      "title": "La femme du Vème",
+      "watchedAt": "2026-10-07",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3f209462-a4af-8115-ae30-ee743785f284",
+      "mediaType": "影",
+      "note": null,
+      "order": 169,
+      "poster": "data/coof/posters/3f209462-a4af-8115-ae30-ee743785f284.jpg",
+      "rating": null,
+      "runtimeMin": 150,
+      "status": "watched",
+      "title": "巴黎圣母院 The Hunchback of Notre Dame",
+      "watchedAt": "2026-10-07",
+      "year": 1982
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "悬疑",
+        "音乐"
+      ],
+      "id": "3f109462-a4af-81f2-8740-c864717f2e1e",
+      "mediaType": "影",
+      "note": null,
+      "order": 168,
+      "poster": "data/coof/posters/3f109462-a4af-81f2-8740-c864717f2e1e.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "巴克斯泰尔，薇拉·巴克斯泰尔 Baxter, Vera Baxter",
+      "watchedAt": "2026-10-06",
+      "year": 1977
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f109462-a4af-80c7-9524-eaf786f92502",
+      "mediaType": "影",
+      "note": null,
+      "order": 167,
+      "poster": "data/coof/posters/3f109462-a4af-80c7-9524-eaf786f92502.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "弗吉尼亚·伍尔夫的夜与日 Virginia Woolf’s Night & Day",
+      "watchedAt": "2026-10-06",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "葡萄牙",
+        "法国",
+        "美国",
+        "波兰"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3f109462-a4af-81fe-941c-e29df5aefb7f",
+      "mediaType": "影",
+      "note": "贾木许 监制",
+      "order": 166,
+      "poster": "data/coof/posters/3f109462-a4af-81fe-941c-e29df5aefb7f.jpg",
+      "rating": null,
+      "runtimeMin": 76,
+      "status": "watched",
+      "title": "波尔图 Porto",
+      "watchedAt": "2026-10-06",
+      "year": 2016
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ef09462-a4af-80c6-b9bf-fe82a7feee5f",
+      "mediaType": "影",
+      "note": "Ganna",
+      "order": 165,
+      "poster": "data/coof/posters/3ef09462-a4af-80c6-b9bf-fe82a7feee5f.jpg",
+      "rating": null,
+      "runtimeMin": 102,
+      "status": "watched",
+      "title": "阿道夫 Adolphe",
+      "watchedAt": "2026-10-04",
+      "year": 2002
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ef09462-a4af-81b0-8277-d9d4541c3cc9",
+      "mediaType": "影",
+      "note": null,
+      "order": 164,
+      "poster": "data/coof/posters/3ef09462-a4af-81b0-8277-d9d4541c3cc9.jpg",
+      "rating": null,
+      "runtimeMin": 74,
+      "status": "watched",
+      "title": "失窃王国 Stolen Kingdom",
+      "watchedAt": "2026-10-04",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "科幻",
+        "悬疑",
+        "惊悚"
+      ],
+      "id": "3ee09462-a4af-81e4-89bf-ee75200fbf6a",
+      "mediaType": "影",
+      "note": null,
+      "order": 163,
+      "poster": "data/coof/posters/3ee09462-a4af-81e4-89bf-ee75200fbf6a.jpg",
+      "rating": null,
+      "runtimeMin": 115,
+      "status": "watched",
+      "title": "月影杀痕 In the Shadow of the Moon",
+      "watchedAt": "2026-10-03",
+      "year": 2019
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "墨西哥"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "犯罪"
+      ],
+      "id": "3ed09462-a4af-814e-81a9-cbe592d361aa",
+      "mediaType": "影",
+      "note": "netflix",
+      "order": 162,
+      "poster": "data/coof/posters/3ed09462-a4af-814e-81a9-cbe592d361aa.jpg",
+      "rating": null,
+      "runtimeMin": 91,
+      "status": "watched",
+      "title": "夜巡毒枭 La Captura",
+      "watchedAt": "2026-10-03",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ed09462-a4af-814c-8a55-c82cfe02bd04",
+      "mediaType": "影",
+      "note": null,
+      "order": 161,
+      "poster": "data/coof/posters/3ed09462-a4af-814c-8a55-c82cfe02bd04.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "乌泽多姆岛：清澈海景 Usedom – Der freie Blick aufs Meer",
+      "watchedAt": "2026-10-02",
+      "year": 2017
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动画",
+        "奇幻"
+      ],
+      "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
+      "mediaType": "影",
+      "note": null,
+      "order": 160,
+      "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "歪心狼对阵ACME Coyote v. Acme",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "奥地利",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3ed09462-a4af-817f-b331-feeec880a6f7",
+      "mediaType": "影",
+      "note": "柏林电影节 故事取材于欧洲历史上多起女扮男装的真实事件。十七世纪早期，三十年战争结束后，一个女人伪装成一名叫“罗斯”的士兵出现在一个偏僻的新教村庄，声称自己是一座荒废庄园的继承者，努力获得村民的接纳。",
+      "order": 158,
+      "poster": "data/coof/posters/3ed09462-a4af-817f-b331-feeec880a6f7.jpg",
+      "rating": null,
+      "runtimeMin": 94,
+      "status": "watched",
+      "title": "罗斯 Rose",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国",
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "id": "3ed09462-a4af-81d7-a61a-f6ef6019a24a",
+      "mediaType": "影",
+      "note": "金球奖提名",
+      "order": 157,
+      "poster": "data/coof/posters/3ed09462-a4af-81d7-a61a-f6ef6019a24a.jpg",
+      "rating": null,
+      "runtimeMin": 124,
+      "status": "watched",
+      "title": "朗读者 The Reader",
+      "watchedAt": "2026-10-02",
+      "year": 2008
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "丹麦",
+        "德国",
+        "挪威"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3ed09462-a4af-812b-8528-cc7a13ed7859",
+      "mediaType": "影",
+      "note": null,
+      "order": 156,
+      "poster": "data/coof/posters/3ed09462-a4af-812b-8528-cc7a13ed7859.jpg",
+      "rating": null,
+      "runtimeMin": null,
+      "status": "watched",
+      "title": "Mysteriet om menopausen",
+      "watchedAt": "2026-10-02",
+      "year": 2026
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "喜剧",
+        "动作"
+      ],
+      "id": "3ed09462-a4af-8143-bd74-cfed8ad1fcdf",
+      "mediaType": "影",
+      "note": null,
+      "order": 155,
+      "poster": "data/coof/posters/3ed09462-a4af-8143-bd74-cfed8ad1fcdf.jpg",
+      "rating": null,
+      "runtimeMin": 105,
+      "status": "watched",
+      "title": "好景在望 Here Comes the Boom",
+      "watchedAt": "2026-10-02",
+      "year": 2012
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "Lebanon/France"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3e709462-a4af-81b2-9dbf-d3e818c6aff1",
+      "mediaType": "影",
+      "note": null,
+      "order": 154,
+      "poster": "data/coof/posters/3e709462-a4af-81b2-9dbf-d3e818c6aff1.jpg",
+      "rating": null,
+      "runtimeMin": 98,
+      "status": "watched",
+      "title": "贝鲁特酒店 Beyrouth hôtel",
+      "watchedAt": "2026-09-26",
+      "year": 2011
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国",
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "爱情",
+        "传记"
+      ],
+      "id": "3e709462-a4af-81f8-a1d4-d61513af9d77",
+      "mediaType": "影",
+      "note": "第98届奥斯卡金像奖 最佳影片(提名) 史蒂文·斯皮尔伯格 / 尼可拉斯·冈达 / 丽萨·马歇尔 / 皮帕·哈里斯 / 萨姆·门德斯\n第83届金球奖 电影类 最佳剧情片\n第79届英国电影学院奖 电影奖 最佳影片(提名)",
+      "order": 153,
+      "poster": "data/coof/posters/3e709462-a4af-81f8-a1d4-d61513af9d77.jpg",
+      "rating": null,
+      "runtimeMin": 125,
+      "status": "watched",
+      "title": "哈姆奈特 Hamnet",
+      "watchedAt": "2026-09-26",
+      "year": 2025
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "纪录片"
+      ],
+      "id": "3e709462-a4af-814c-911a-c34460cad617",
+      "mediaType": "影",
+      "note": "第37届马德普拉塔电影节获奖 《孤独地貌》是由加拿大导演杰奎琳·米尔斯执导的纪录片，记录了自然学家佐伊·卢卡斯在偏远的塞布尔岛长达40余年的生活与环保实践。影片通过科学与电影的融合，探讨人类活动对自然环境的影响，并以十六毫米胶片拍摄，呈现了岛屿独特的地貌生态。",
+      "order": 152,
+      "poster": "data/coof/posters/3e709462-a4af-814c-911a-c34460cad617.jpg",
+      "rating": null,
+      "runtimeMin": 103,
+      "status": "watched",
+      "title": "孤独地貌 Geographies of Solitude",
+      "watchedAt": "2026-09-26",
+      "year": 2022
+    }
+  ],
+  "schemaVersion": 1
+}

@@ -1,0 +1,262 @@
+{
+ "source": "shopping",
+ "label": "Shopping",
+ "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-06T12:59+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 29,
+  "hidden": 4,
+  "links": 5,
+  "images": 5,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "3ed09462-a4af-8113-88bd-f85c3f9b0151",
+   "date": "2026-10-02",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Ralph Lauren",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "ASHISH",
+     "links": []
+    },
+    {
+     "k": "bookmark",
+     "t": "jennypackham.com",
+     "links": [
+      {
+       "t": "jennypackham.com",
+       "href": "https://www.jennypackham.com/?srsltid=AU7gw4Wv-cRmAZsSdty8MBFx_VEegYCTMx6jWzj2gCpAKxYmrK7rT6hp"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "用配饰点睛：加入 黑色 或 白色 的配饰（如包、鞋、墨镜）来点缀，能有效提亮整体造型，避免沉闷。银色金属饰品也是不错的选择\nGroutfit 一直伴随着两种截然不同的评价。一方面，它被一些人视为 懒散、缺乏创意 的代表，像是“随便套了件运动服就出门”。另一方面，它又被时尚界拥抱，认为它体现了 极简、舒适与高级感 的平衡，尤其契合当代人追求实用与风格并存的生活态度",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "廓形与剪裁：选择有设计感的剪裁，比如 Oversized 西装、垂坠感强的阔腿裤 或 利落的收腰大衣，能让全灰造型显得更有力量和风格。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "注重材质碰撞：用不同质感的面料来增加趣味。例如，柔软的针织衫 搭配 挺括的西装裤，或是 毛呢大衣 内搭 光滑的丝质裙，即使颜色统一，材质对比也能让造型富有变化。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "玩转灰色层次：不要只穿一种灰色。将 浅灰、中灰、炭灰、银灰 等不同深浅的灰色单品混搭，利用色阶差异自然形成视觉层次，这是最核心的穿搭法则。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Groutfit 的精髓在于 “用层次打破单调” 。想要避免穿得像一套睡衣或制服，关键在于以下技巧：",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "Groutfit\nGroutfit 是 “Grey（灰色）” 和 “Outfit（服装）” 的合成词，指从头到脚全身都以灰色为主色调的穿搭风格，中文常被称为“格雷系”或“全灰穿搭",
+     "links": []
+    },
+    {
+     "k": "bookmark",
+     "t": "lagence.com",
+     "links": [
+      {
+       "t": "lagence.com",
+       "href": "https://lagence.com/"
+      }
+     ]
+    }
+   ],
+   "more": 2,
+   "images": [
+    {
+     "src": "data/cnsr/img/3ed09462a4af81a9b62bd5c3478c357c.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3ed09462a4af80029e23f4823207e31e.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 2
+  },
+  {
+   "id": "3eb09462-a4af-81d6-a607-e9b14095ec2a",
+   "date": "2026-10-01",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "澳大利亚威士忌装进汽水瓶，概念包装 Dieline 奖",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "▲英国癌症研究基金会关于budwig diet的说明：目前尚无科学证据表明布德维格疗法可以治疗或治愈癌症。同行评审的医学期刊上也未发表任何针对该疗法的临床试验研究Cancer Research UK | The world&#x27;s leading cancer charity",
+     "links": [
+      {
+       "t": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "href": "https://www.cancerresearchuk.org/",
+       "title": "Cancer Research UK | The world&#x27;s leading cancer charity",
+       "desc": "We exist to beat cancer. And we&#x27;re dedicated to saving and improving lives with our research. Will you help us transform the lives of future generations?"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "将两者混合，搅拌到油被奶酪充分吸收，就得到了巴德维奶油。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "制作这种奶油要用到两种原材料：亚麻籽油和鲜奶酪。奶酪一般是茅屋芝士或者夸克奶酪，通常会选择脱脂版本。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Budwig",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "巴德维酸奶",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "皇庭",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Joyce hk买手店",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3eb09462a4af80218923d553455a1695.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af81e3b4e3dc362bf7b483.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3eb09462a4af812bb6a9d963d56e5472.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 3
+  },
+  {
+   "id": "3ea09462-a4af-8195-a953-ea951a299373",
+   "date": "2026-09-29",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "荣耀 HONOR Life 墨水屏阅读器 S3 上架：61g 重、磁吸设计，359 元",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3e909462-a4af-8162-818e-e87d903ba221",
+   "date": "2026-09-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "letter passport case in leather 796318AADUK1000",
+     "links": [
+      {
+       "t": "letter passport case in leather 796318AADUK1000",
+       "href": "https://www.ysl.com/en-hk/pr/letter-passport-case-in-leather-796318AADUK1000.html"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "传统的木制墙面护墙板（boiserie）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "日本设计师吉冈德仁（Tokujin Yoshioka） 和法国设计师Ronan Bouroullec为意大利瓷砖品牌Mutina设计的两个陶瓷系列",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "一出好戏 | MUTINA中国首店",
+     "links": [
+      {
+       "t": "一出好戏 | MUTINA中国首店",
+       "href": "https://mp.weixin.qq.com/s/niIu259CHelpjAr0bV1Rtw",
+       "title": "一出好戏 | MUTINA中国首店",
+       "desc": "MUTINA上海空间初次亮相"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "创始人、创意总监 Charlie Hedin 曾在 Acne Studios 担任 CEO 助理，随后到巴黎从事品牌的全球传播工作。他在接受 AnOther 采访时说，自己辗转多个城市生活，却一直难以找到合适的床品和毛巾，这成为他创立 Tekla 的起点。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "2017 年成立于哥本哈根的 Tekla，是一个以床品、毛巾和睡衣为核心的生活方式品牌。它把日常织物与个人风格联系起来：纯色、格纹与条纹床品可以自由搭配，睡衣兼顾休息与日间穿着，毯子的颜色则来自建筑师对居住空间的观察。家",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Meta官方确认，Muse Charm是一款可放进口袋、用于与Muse实时语音交互的设备，更多细节将在今年晚些时候公布",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Galeries Lafayette、Le Bon Marché、Breuninger、Nordstrom、Free People、Anthropologie等零售商都在销售它的产品。品牌最大的市场仍然是意大利，之后是英国和德国，美国市场最近一个季度也录得双位数增长。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "品牌已与Falc集团合作，产品进入全球2500个销售点，包括Kith、Le Bon Marché等知名店铺，并推出过与Walter van Beirendonck等品牌的联名款",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Flower Mountain（山雾花野）是一个2015年成立于东京的户外潮流鞋履品牌，由中国设计师杨超和日本设计师太田圭辅共同创立，灵感源自自然与户外文化。",
+     "links": []
+    }
+   ],
+   "more": 2,
+   "images": [],
+   "imagesSeen": 4
+  },
+  {
+   "id": "3e709462-a4af-8165-91ec-cd07f72b560a",
+   "date": "2026-09-26",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}

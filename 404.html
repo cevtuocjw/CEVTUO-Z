@@ -1,0 +1,317 @@
+<!doctype html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="format-detection" content="telephone=no,address=no"/><meta name="theme-color" content="#0a0b0f"/><link rel="preconnect" href="https://z.cevtuo.com" crossorigin/><link rel="dns-prefetch" href="https://z.cevtuo.com"/><title>CEVTUO-Z</title><link rel="icon" type="image/png" sizes="32x32" href="static/brand/favicon-32.png"/><link rel="icon" type="image/png" sizes="16x16" href="static/brand/favicon-16.png"/><link rel="apple-touch-icon" sizes="180x180" href="static/brand/favicon-180.png"/><style>/*
+        One background image per page, published as a custom property.
+
+        ⚠️ The image is NOT applied to `body` any more. `html` and `body` both
+        carry `overflow: hidden` (the scroll lives in `.stack`), and Chrome
+        refuses to paint a `background-attachment: fixed` background on a box
+        with clipped overflow — the images silently vanished. Publishing the URL
+        as a variable lets a `position: fixed` layer paint it instead, which is
+        immune to that rule and costs nothing extra.
+
+        ⚠️ Declared here rather than in a stylesheet because this document is the
+        site root, so `static/...` resolves correctly at any mount depth. The
+        same URL written in CSS resolves against the STYLESHEET's directory and
+        404s — that bug has already cost two rounds.
+      */
+      html {
+        --page-bg: url('static/home.jpg');
+        // ⚠️ 这是**挂载前的兜底色**，按主题分两种 —— 原来是写死的深色，
+        //    于是浅色主题下首帧会闪一下深底再变浅。
+        //    `theme-light` / `theme-dark` 由上面那段内联脚本在**首帧之前**盖好，
+        //    所以这里读得到。
+        background-color: #2b2830;
+      }
+      html.theme-light {
+        background-color: #eef0f5;
+      }
+      html[data-page='coof'] {
+        --page-bg: url('static/coof.jpg');
+      }
+      html[data-page='cnsr'] {
+        --page-bg: url('static/cnsr.jpg');
+      }
+      html[data-page='paperr'] {
+        --page-bg: url('static/paperr.jpg');
+      }
+      html[data-page='chealth'] {
+        --page-bg: url('static/chealth.jpg');
+      }
+
+      /* ⚠️ There is deliberately no `html.theme-light body` rule. Light mode is
+         handled by the scrim in styles/wallpaper.scss. A body-level overlap
+         would win or lose against the per-page rules above purely by source
+         order (equal specificity), which is not a stable way to decide a theme. */</style><script>// Runs before first paint so the wallpaper/theme is correct immediately.
+      // The authoritative tier detection re-runs in app.tsx via Taro APIs; this
+      // only prevents a flash of the wrong theme.
+      (function () {
+        try {
+          var mql = window.matchMedia('(prefers-color-scheme: light)');
+          // ⚠️ 读者**手动选过**就以他选的为准（`platform/prefs.ts` 的 KEY_THEME）。
+          //    这里必须在**首帧之前**读 —— 交给 React 做的话，
+          //    第一帧会画成系统主题再跳过去，而这个项目为"闪一下"专门修过一次。
+          var stored = null;
+          try {
+            stored = window.localStorage.getItem('cevtuo.theme');
+          } catch (e) {}
+          if (stored !== 'light' && stored !== 'dark') stored = null;
+
+          var apply = function () {
+            var light = stored ? stored === 'light' : mql.matches;
+            document.documentElement.classList.toggle('theme-light', light);
+            document.documentElement.classList.toggle('theme-dark', !light);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', light ? '#eef0f5' : '#0a0b0f');
+          };
+          apply();
+          // ⚠️ 手动选过之后**不再跟系统** —— 否则系统一进入浅色就把读者的选择覆盖掉，
+          //    而那个症状是"我明明选了深色，它自己变回去了"。
+          if (!stored) {
+            mql.addEventListener
+              ? mql.addEventListener('change', apply)
+              : mql.addListener && mql.addListener(apply);
+          }
+
+          // 语言：同一个道理，也要在首帧之前定好（否则先闪一下中文再变英文）。
+          var lang = null;
+          try {
+            lang = window.localStorage.getItem('cevtuo.lang');
+          } catch (e) {}
+          var en = lang === 'en';
+          document.documentElement.setAttribute('lang', en ? 'en' : 'zh-CN');
+          document.documentElement.classList.toggle('lang-en', en);
+        } catch (e) {}
+      })();
+
+      /*
+        Glass tier — stamped BEFORE first paint.
+
+        ⚠️⚠️ 这是读者 2026-10-02 报的
+        「弹窗……有时候在前面加载会灰黑的，后面时间才进入到玻璃质感」的**根因**。
+
+        权威检测在 `components/glass/tier.ts`，而它跑在 `app.tsx` 的
+        `useLaunch` 里 —— 那是**首帧之后**。在那之前根元素上没有任何 `tier-*`
+        类，而 `styles/glass.scss` 的 `@mixin glass` 把三档效果**全部**写成
+        `.tier-x &` 的后代选择器 ⇒ **一档都不匹配** ⇒ 既没有 `backdrop-filter`、
+        也没有 C 档那个实底 ⇒ 只剩一层很淡的 tint，**深色壁纸直接透出来**
+        —— 就是那一下「灰黑」。等 JS 起来盖上 `tier-a`，模糊才补上。
+
+        ⇒ 把检测提到首帧之前（和 theme / data-page 同一个位置），
+          这一下就根本不会发生。
+        ⚠️ `app.tsx` 那份**仍然保留** —— 它读的是小程序的 Taro API，
+          而且系统主题会在后台切换，需要在 `useDidShow` 重盖。
+
+        ⚠️ 判据必须和 `tier.ts` 的 `detectGlassTier()` **逐条一致**：
+            多函数列表 = A   只有单函数 = B   证明不了 = C
+          ⚠️ 「证明不了算 C」是有意为之（那边文件头写着 "Fail opaque"）——
+             一个悄悄不生效的 `backdrop-filter` 会让卡片变成一层几乎全透的纱，
+             比一块实底难看得多。
+        ⚠️ 这两处**会分叉**（一个用 Taro API，一个只能用 `CSS.supports`），
+          改动时两处一起看。
+      */
+      (function () {
+        try {
+          var sup = function (v) {
+            if (!window.CSS || typeof CSS.supports !== 'function') return false;
+            return CSS.supports('backdrop-filter', v) || CSS.supports('-webkit-backdrop-filter', v);
+          };
+          var tier = 'c';
+          if (sup('blur(1px)')) tier = sup('blur(1px) saturate(1.2)') ? 'a' : 'b';
+          document.documentElement.classList.add('tier-' + tier);
+        } catch (e) {}
+      })();
+
+      /*
+        Page identity, so the stylesheet above can pick the background image.
+
+        ⚠️ Derived from the hash rather than set by the page component. Setting
+        it from React would mean the background only appears after hydration —
+        the first panel of every navigation would paint the PREVIOUS page's
+        image and then swap. Reading the hash here means the right image is
+        requested as the document parses.
+
+        ⚠️ `hashchange` is required, not optional. Taro's H5 router is
+        hash-based and does not reload the document between pages, so without
+        this listener the background would freeze on whichever page was loaded
+        first.
+
+        ⚠️ The route is `#/pages/<name>/index`. Anything that does not match
+        (an empty hash on first load, a stray anchor) leaves `data-page` unset,
+        and the default image on `body` applies.
+      */
+      (function () {
+        try {
+          /*
+           * 「地址栏该长什么样」的**唯一一份表**。
+           *
+           * ⚠️⚠️ **左列两种写法都要有，因为 Taro 自己写出来的往往是页面原名。**
+           *    实测：从主页点「打开」进 COOF，地址栏是 `/pages/coof/index`
+           *    —— 而直连同一个页面是 `/coof`。**同一个页面两个地址**，
+           *    分享出去的链接就长得难看，而且读者会以为进了别的地方。
+           *
+           * ⚠️ 这个归一是**推迟**跑的（见下面 `pushState`/`replaceState` 那段），
+           *    而且**必须带 `history.state`** —— 这两条都是踩出来的，别动。
+           */
+          var CLEAN = {
+            '/home': '/',
+            '/pages/home/index': '/',
+            '/pages/coof/index': '/coof',
+            '/pages/cnsr/index': '/cnsr',
+            '/pages/paperr/index': '/paperr',
+            '/pages/chealth/index': '/chealth',
+          };
+          var apply = function () {
+            /*
+             * ⚠️ **按 `pathname` 读，不再按 `hash` 读**（2026-10-07 路由改 browser）。
+             *
+             *    原来这里是 `/#\/pages\/([a-z]+)\//.exec(location.hash)`，而
+             *    browser 模式下**根本没有哈希** ⇒ 一条都匹配不上 ⇒ `data-page`
+             *    永远不设 ⇒ **全站壁纸永远是默认那张**。
+             *    而它是静默的：图还在、页面正常、只是每页一个样。
+             */
+            /*
+             * ⚠️ `/home` 归一到 `/` —— 读者要的是「主页就只是 z.cevtuo.com」。
+             *
+             * ⚠️⚠️ **必须等应用挂载之后再做**（判据是 `.taro_page` 在不在）。
+             *
+             *    理由：主页在路由表里是 `/home`（见 `config/index.ts` —— `/` 那条
+             *    Taro 认不出来）。所以**启动时 URL 必须还是 `/home`**，否则第一次
+             *    匹配就落空、主页整屏空白。而挂载之后再改成 `/`，读者看到的才是
+             *    干干净净的 `z.cevtuo.com` —— 这时 Taro 已经记住了"我在主页"，
+             *    它不需要再从地址栏读路径。
+             *
+             * ⚠️ 改完还会再进来一次（我们包了 `replaceState`），此时
+             *    `pathname` 已经是 `/`、不匹配 ⇒ **不会递归**。
+             */
+            /*
+             * ⚠️⚠️ **两个都要认**：`/home` 是路由表里那条自定义路径，
+             *    `/pages/home/index` 是 **Taro 自己生成**的（实测：站内点返回
+             *    之后地址栏写的就是这个）。只认前者的话，读者从内页返回主页
+             *    会看到一个 `/pages/home/index?panel=0` 这样的地址 ——
+             *    而读者 2026-10-07 的原话是「主页就只是 z.cevtuo.com」。
+             */
+            var to = CLEAN[location.pathname];
+            if (to && document.querySelector('.taro_page')) {
+              /*
+               * ⚠️⚠️ **不要把 `?panel=0` 去掉 —— 它不是一个"多余的参数"。**
+               *
+               * 我上一轮写的是「`?panel=0` 就是第一屏，和没有参数是同一个地方 ⇒ 去掉」。
+               * **那是错的，而且错得很安静。**
+               *
+               * 主页面板的编号**不包含主屏**（主屏是 `panel === 0` 那条特例）：
+               *     COOF=0   CNSR=1   CAPPERR=2   CHEALTH=3
+               * 所以 `?panel=0` 指的是 **COOF 那一块**，不是封面。
+               *
+               * ⇒ 去掉它 = 把 COOF 的返回目标删掉。实测（线上，四个内页各点一次返回）：
+               *
+               *     内页      返回后落在主页第几屏
+               *     COOF      第 0 屏（封面）   ✗  ← 只有它错，因为它的 panel 是 0
+               *     CNSR      第 2 屏          ✓
+               *     CAPPERR   第 3 屏          ✓
+               *     CHEALTH   第 4 屏          ✓
+               *
+               * 三个对、一个错，而且错的那个看起来"参数本来就该省" ——
+               * 这种"看起来合理的优化"正是最难抓的一类。
+               */
+              var qs = location.search;
+              /*
+               * ⚠️⚠️ **必须把 `history.state` 原样带过去 —— 传 `null` 会把 Taro 的路由栈冲掉。**
+               *
+               * 读者 2026-10-07 报的：「点击返回或者点击 logo，回不去主页，
+               *    地址栏确实变成 z.cevtuo.com 了，但页面回不去」。
+               * 实测（Playwright 读 `history.state`）：
+               *
+               *     在 COOF：  path=/coof   state={"idx":0}      ← Taro 自己的路由状态
+               *     点返回后： path=/       state=null           ← 被这一行抹掉了
+               *               而页面文字**还是 COOF**，`.taro_page` 仍然只有 1 个
+               *               ⇒ Taro 的导航**根本没发生**
+               *
+               * ⇒ 一行 `replaceState(null, …)` = 把导航系统的心跳拔了。
+               *   地址栏看起来对、控制台一个字不报，而页面不动 ——
+               *   这正是这个项目最怕的那一类：**看起来成功了**。
+               */
+              history.replaceState(history.state, '', to + qs);
+              return;
+            }
+            var m = /^\/([a-z]+)\/?$/.exec(location.pathname);
+            if (m && m[1] !== 'home') document.documentElement.setAttribute('data-page', m[1]);
+            else document.documentElement.removeAttribute('data-page');
+          };
+          apply();
+          window.addEventListener('hashchange', apply);
+          window.addEventListener('popstate', apply);
+          /*
+           * ⚠️⚠️ **`pushState` / `replaceState` 不派发任何事件** —— 这一点是
+           *    "换路由方式"时最容易漏的地方：`hashchange` 那条照样在，看起来
+           *    没动过，只是再也收不到通知了。所以自己包一层。
+           */
+          /*
+           * ⚠️⚠️ **`apply()` 不能在这里同步跑 —— 推迟几拍。**
+           *
+           * 读者 2026-10-07 报：「点击返回或者点击 logo 回不去主页，
+           *    地址栏确实变成 z.cevtuo.com 了，但页面回不去」。
+           *
+           * 实测（Playwright 读 `history.state` 和 `.taro_page` 个数）：
+           *   · 归一同步跑时：`state` 在递进（Taro 的栈走了），而
+           *     **`.taro_page` 始终只有 1 个、页面文字还是上一页** ⇒ 新页根本没渲染。
+           *   · 把归一整个关掉：`pages` 1→2→3，页面正常换 ✓
+           *
+           * 成因：Taro 的 browser 路由在 `pushState` 之后**按 `location.pathname`
+           * 解析要渲染哪一页**。我们在同一个同步任务里就把路径改成了 `/` ——
+           * 它看到的是「没有匹配的路由」，于是什么都不渲染。
+           * ⚠️ 而症状是**最坏的那种**：地址栏对、`state` 在动、控制台一个字不报。
+           *
+           * ⇒ 挪到 `setTimeout` 里，并且**补几拍**（120 / 400ms）——
+           *    Taro 的渲染是异步的（React），只补一拍可能还是太早。
+           */
+          ['pushState', 'replaceState'].forEach(function (k) {
+            var orig = history[k];
+            history[k] = function () {
+              var r = orig.apply(this, arguments);
+              setTimeout(apply, 0);
+              setTimeout(apply, 120);
+              setTimeout(apply, 400);
+              return r;
+            };
+          });
+          /*
+           * ⚠️ 上面那次 `apply()` 跑在**应用挂载之前**，而 `/home` → `/` 那条
+           *    要等挂载（判据是 `.taro_page`）⇒ 它当时不成立。
+           *    实测：直接打开 `/` 时，Taro 启动后自己把地址写成了
+           *    `/pages/home/index`，而那时我们没再跑过一次。
+           *
+           * ⇒ 启动后**追赶几次**。⚠️ 次数有上限（4 秒），不是常驻定时器 ——
+           *   一个永远在跑的 interval 会在每次导航时都多一次无谓的 `apply`。
+           */
+          var tries = 0;
+          (function tick() {
+            apply();
+            if (++tries < 40) setTimeout(tick, 100);
+          })();
+        } catch (e) {}
+      })();</script><script>(function () {
+        try {
+          var PAGES = { home: 1, coof: 1, cnsr: 1, paperr: 1, chealth: 1 };
+          var m = /#\/pages\/([a-z]+)/.exec(location.hash || '');
+          if (m && PAGES[m[1]]) {
+            var q = (location.hash.split('?')[1] || '');
+            history.replaceState(null, '', (m[1] === 'home' ? '/' : '/' + m[1]) + (q ? '?' + q : ''));
+          } else if (
+            location.pathname.length > 1 &&
+            location.pathname.slice(-1) === '/' &&
+            PAGES[location.pathname.replace(/\/+$/, '').replace(/^\//, '')]
+          ) {
+            /*
+             * ⚠️⚠️ **只削"已知路由"的尾斜杠，不要无脑削。**
+             *
+             * 无脑削会把**部署的挂载点**一起削掉：站点挂在子路径时地址是
+             * `/z/`，削成 `/z` 之后相对基准从 `/z/` 变成 `/`，
+             * 于是 `./js/app.js` 请求到了 `/js/app.js` —— 全站 404、白屏。
+             * （本地预览就是这个形状，实测踩到。）
+             *
+             * ⇒ 判据是"**去掉斜杠之后是不是一个路由名**"：`/coof/` 是，
+             *    `/z/` 不是。前者削、后者留。
+             */
+            history.replaceState(null, '', location.pathname.replace(/\/+$/, '') + location.search + location.hash);
+          }
+        } catch (e) {}
+      })();</script><script defer="defer" src="/js/625.863b01a9.js"></script><script defer="defer" src="/js/app.863b01a9.js"></script><link href="/css/app.863b01a9484461c5dc61.css" rel="stylesheet"></head><body><div id="app"></div></body></html>
