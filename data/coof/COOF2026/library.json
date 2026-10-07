@@ -1,8 +1,30 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "0e91d1c846a7",
+  "dataVersion": "41ba5e0ebf11",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-812b-97b9-d59207b417ff",
+      "mediaType": "影",
+      "note": null,
+      "order": 171,
+      "poster": "data/coof/posters/3f209462-a4af-812b-97b9-d59207b417ff.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "富士子 Fujiko",
+      "watchedAt": "2026-10-07",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",

@@ -2,7 +2,7 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 169,
+      "count": 170,
       "latestAt": "2026-10-07",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 169
+    "total": 170
   },
-  "dataVersion": "34f6492419c4",
+  "dataVersion": "f49650d35cbd",
   "genres": [
     {
-      "count": 119,
+      "count": 120,
       "name": "剧情"
     },
     {
@@ -155,29 +155,47 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "法国",
-      "波兰",
-      "英国"
+      "日本"
     ],
     "director": [],
     "genres": [
-      "剧情",
-      "悬疑",
-      "惊悚"
+      "剧情"
     ],
-    "id": "3f209462-a4af-814d-b0ff-d0cbb2a6817e",
+    "id": "3f209462-a4af-812b-97b9-d59207b417ff",
     "mediaType": "影",
     "note": null,
-    "order": 170,
-    "poster": "data/coof/posters/3f209462-a4af-814d-b0ff-d0cbb2a6817e.jpg",
+    "order": 171,
+    "poster": "data/coof/posters/3f209462-a4af-812b-97b9-d59207b417ff.jpg",
     "rating": null,
-    "runtimeMin": 84,
+    "runtimeMin": 95,
     "status": "watched",
-    "title": "La femme du Vème",
+    "title": "富士子 Fujiko",
     "watchedAt": "2026-10-07",
-    "year": 2011
+    "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "日本"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3f209462-a4af-812b-97b9-d59207b417ff",
+      "mediaType": "影",
+      "note": null,
+      "order": 171,
+      "poster": "data/coof/posters/3f209462-a4af-812b-97b9-d59207b417ff.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "富士子 Fujiko",
+      "watchedAt": "2026-10-07",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -621,29 +639,6 @@
       "title": "哥哥的爱人 La femme de mon frère",
       "watchedAt": "2026-09-25",
       "year": 2019
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "英国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "犯罪"
-      ],
-      "id": "3e609462-a4af-812b-8ed9-d87b8a8cd32c",
-      "mediaType": "影",
-      "note": "第28届英国独立电影奖获奖",
-      "order": 150,
-      "poster": "data/coof/posters/3e609462-a4af-812b-8ed9-d87b8a8cd32c.jpg",
-      "rating": null,
-      "runtimeMin": 90,
-      "status": "watched",
-      "title": "废人 Wasteman",
-      "watchedAt": "2026-09-25",
-      "year": 2025
     }
   ],
   "schemaVersion": 1
