@@ -17,6 +17,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 
+import { isMiniProgram } from '../platform/env';
+
 // ⚠️ Required. Taro only bundles a stylesheet that some module imports, and
 // nothing else pulls this one in — without this line the panels, the rail and
 // the cue all render completely unstyled, with no build error to say so.
@@ -754,14 +756,25 @@ export function PageStack({ count, children, apiRef, initialIndex = 0, onActiveC
         className="stack"
         scrollY
         /*
-         * ⚠️ **小程序唯一能用的跳转入口。** H5 上 Taro 把这两个属性映射成
-         *    `scrollTop` 赋值/平滑滚动，和原来手写的行为等价，所以无条件给。
-         * ⚠️ `jumpTop` 必须是 `undefined` 而不是 `null` —— Taro 会把它拼进
-         *    组件属性，`null` 在某些版本下会被序列化成字符串 "null"。
+         * ⚠️⚠️ **这三个属性只能给小程序 —— 无条件给会把网页搞成"狂闪"（2026-10-07）。**
+         *
+         * 原来我无条件传了 `scrollTop` / `scrollWithAnimation` / `onScroll`，
+         * 想法是"H5 上 Taro 会映射成等价行为"。**错**：
+         *   · H5 上这个滚动的**监听本来就有**（下面 effect 里挂的 DOM `scroll`）；
+         *   · 再加 `onScroll` ⇒ **滚动位置有了两个来源**，`setActive()` 被轮流调用；
+         *   · `active` 一变，`.section__body--enter` 就跟着加/删，
+         *     而那条类上挂的是**入场动画**`section-enter`（`fill: both`）
+         *     ⇒ **动画被反复重启 = 狂闪**。
+         * 读者的症状：CHEALTH 和 Reel 那两处**狂闪** —— 它们正是这个动画的落点。
+         *
+         * ⇒ 小程序才传（那边没有 DOM 监听，`onScroll` 是**唯一**的位置来源）；
+         *   网页什么都不传，**恢复成改动前的行为**。
+         * ⚠️ `jumpTop` 要 `undefined` 不要 `null`：Taro 会把它拼进组件属性，
+         *    `null` 在某些版本下会被序列化成字符串 "null"。
          */
-        scrollTop={jumpTop ?? undefined}
-        scrollWithAnimation
-        onScroll={onStackScroll as never}
+        scrollTop={isMiniProgram() ? (jumpTop ?? undefined) : undefined}
+        scrollWithAnimation={isMiniProgram()}
+        onScroll={isMiniProgram() ? (onStackScroll as never) : undefined}
         // ⚠️ `ref` here reaches the ScrollView's inner element in H5. In the
         // mini program it is a Taro component instance, so the DOM listener
         // below simply never attaches and the rail stays on panel 1 — the
