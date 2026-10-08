@@ -3,16 +3,45 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-06T12:59+08:00",
+ "updatedAt": "2026-10-08T12:37+08:00",
  "counts": {
   "days": 5,
-  "lines": 29,
-  "hidden": 4,
-  "links": 5,
+  "lines": 20,
+  "hidden": 2,
+  "links": 3,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3f309462-a4af-81fa-93f0-c8aea1a759fd",
+   "date": "2026-10-08",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Rokid定于10月27日发布第二代带显示AI眼镜，迭代升级硬件与交互能力；极米旗下MemoMind One国庆期间登陆全国56家线下门店，产品摒弃摄像头设计，依托Micro-LED光波导技术，主打翻译、录音转写、提词、导航等实用办公功能；",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f109462-a4af-8179-b8d8-e77e3d0e123a",
+   "date": "2026-10-06",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3f109462a4af810bbbb1c46638e6aec6.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 1
+  },
   {
    "id": "3ed09462-a4af-8113-88bd-f85c3f9b0151",
    "date": "2026-10-02",
@@ -154,10 +183,6 @@
     {
      "src": "data/cnsr/img/3eb09462a4af81e3b4e3dc362bf7b483.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3eb09462a4af812bb6a9d963d56e5472.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 3
@@ -173,87 +198,6 @@
      "links": []
     }
    ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e909462-a4af-8162-818e-e87d903ba221",
-   "date": "2026-09-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "letter passport case in leather 796318AADUK1000",
-     "links": [
-      {
-       "t": "letter passport case in leather 796318AADUK1000",
-       "href": "https://www.ysl.com/en-hk/pr/letter-passport-case-in-leather-796318AADUK1000.html"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "传统的木制墙面护墙板（boiserie）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "日本设计师吉冈德仁（Tokujin Yoshioka） 和法国设计师Ronan Bouroullec为意大利瓷砖品牌Mutina设计的两个陶瓷系列",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "一出好戏 | MUTINA中国首店",
-     "links": [
-      {
-       "t": "一出好戏 | MUTINA中国首店",
-       "href": "https://mp.weixin.qq.com/s/niIu259CHelpjAr0bV1Rtw",
-       "title": "一出好戏 | MUTINA中国首店",
-       "desc": "MUTINA上海空间初次亮相"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "创始人、创意总监 Charlie Hedin 曾在 Acne Studios 担任 CEO 助理，随后到巴黎从事品牌的全球传播工作。他在接受 AnOther 采访时说，自己辗转多个城市生活，却一直难以找到合适的床品和毛巾，这成为他创立 Tekla 的起点。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "2017 年成立于哥本哈根的 Tekla，是一个以床品、毛巾和睡衣为核心的生活方式品牌。它把日常织物与个人风格联系起来：纯色、格纹与条纹床品可以自由搭配，睡衣兼顾休息与日间穿着，毯子的颜色则来自建筑师对居住空间的观察。家",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Meta官方确认，Muse Charm是一款可放进口袋、用于与Muse实时语音交互的设备，更多细节将在今年晚些时候公布",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Galeries Lafayette、Le Bon Marché、Breuninger、Nordstrom、Free People、Anthropologie等零售商都在销售它的产品。品牌最大的市场仍然是意大利，之后是英国和德国，美国市场最近一个季度也录得双位数增长。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "品牌已与Falc集团合作，产品进入全球2500个销售点，包括Kith、Le Bon Marché等知名店铺，并推出过与Walter van Beirendonck等品牌的联名款",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Flower Mountain（山雾花野）是一个2015年成立于东京的户外潮流鞋履品牌，由中国设计师杨超和日本设计师太田圭辅共同创立，灵感源自自然与户外文化。",
-     "links": []
-    }
-   ],
-   "more": 2,
-   "images": [],
-   "imagesSeen": 4
-  },
-  {
-   "id": "3e709462-a4af-8165-91ec-cd07f72b560a",
-   "date": "2026-09-26",
-   "title": "",
-   "lines": [],
    "more": 0,
    "images": [],
    "imagesSeen": 0
