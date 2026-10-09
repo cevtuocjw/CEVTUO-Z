@@ -3,16 +3,163 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-08T04:25+08:00",
+ "updatedAt": "2026-10-10T03:59+08:00",
  "counts": {
   "days": 5,
-  "lines": 15,
-  "hidden": 47,
-  "links": 5,
+  "lines": 24,
+  "hidden": 103,
+  "links": 1,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3f409462-a4af-8188-b867-c3c4da90a4c2",
+   "date": "2026-10-09",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "光波导决定眼镜的厚度和视场角，Micro-LED决定亮度和功耗，两者是AI眼镜能否日常佩戴的核心瓶颈。了解JBD、鲲游光电等供应商格局，能帮你判断Rokid、Meta等产品的迭代节奏。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "【C4emem 推荐 · 缺口】AI眼镜的光波导与Micro-LED供应链",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "（by cevtuo c4emem AI）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "光波导决定眼镜的厚度和视场角，Micro-LED决定亮度和功耗，两者是AI眼镜能否日常佩戴的核心瓶颈。了解JBD、鲲游光电等供应商格局，能帮你判断Rokid、Meta等产品的迭代节奏。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "【C4emem 推荐 · 缺口】AI眼镜的光波导与Micro-LED供应链",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "（by cevtuo c4emem AI）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Rokid Glasses二代主打单绿Micro-LED光波导显示，支持翻译、导航、提词等场景。发布后首批用户反馈集中在重量分布、户外亮度可视性和续航表现上，值得对照极米MemoMind的无摄像头路线做取舍判断。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "【C4emem 推荐 · 延伸】Rokid Glasses二代发布后实测反馈",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "（by cevtuo c4emem AI）",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f409462-a4af-8109-a7e6-d735c8730164",
+   "date": "2026-10-09",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Rokid Glasses二代主打单绿Micro-LED光波导显示，支持翻译、导航、提词等场景。发布后首批用户反馈集中在重量分布、户外亮度可视性和续航表现上，值得对照极米MemoMind的无摄像头路线做取舍判断。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "【C4emem 推荐 · 延伸】Rokid Glasses二代发布后实测反馈",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "（by cevtuo c4emem AI）",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f309462-a4af-81b3-897f-f6931677c0a9",
+   "date": "2026-10-08",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+     "links": [
+      {
+       "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "href": "https://mp.weixin.qq.com/s/u3oTtbEFuTUAPWsEYZSXkw?version=5.0.10.70716&platform=mac&from=industrynews#rd",
+       "title": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
+       "desc": "Claude Code 变开放了。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "你来排应该用什么作为主药的开源项目的切入点，要用哪些模型来涉入来整合完成我们的这个工作，另外看看有没有其他的什么好建议，我们的这个是否足够独特，我希望产品非常独特\n现在plaud硬件产品，我们是否可以同步也用一个硬件产品专门安装我们的这个助手\n另外给出来我们的这个产品还有哪些值得的切入点，你推荐一些让它非常有门槛和独特",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "我需要一个macos端端AI语音助手，能够帮我做如下的事情\n我的notion中有很多笔记，以及我的企业微信中有很多的邮件，我需要它把这两个作为知识库，一个是工作一个是生活学习区\n我的notion中有很多的是英文单词，它需要获取到这些内容，如果我想问询它一些单词作为灵感，它应该能做到\n知识时间机器功能要做到\n而且要主动式只是推送在macos上能够做到，帮我构想一些场景，我什么时候需要\n我的notion主要学习的页面是tech-ai, tech-learn, shopping 和learn页面，\n每两个@时间中间的内容就是这一天的\n\nAR/VR你需要帮我想这个，目前暂时需要的是未来接入三星galaxy glasses语音眼镜\n除了主动式，被动式也要给。除了语音，手动输入的窗口也要给\n你来设计这个软件的思路\n另外未来也需要移植做到android手机上和眼镜上，所以部署和其他的部分你需要思考\n另外模型使用的是可以本地接入模型也可以API接模型，在线查询和本地都需要有",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "如果你的 AI 助手是基于 Khoj 或自建 RAG 系统，可以定时调用 mail_search 拉取新邮件列表，再用 mail_get 获取正文，然后将提取的文本写入你的向量数据库，让 AI 助手通过 RAG 检索来“学习”邮件内容。API 返回的正文是 Markdown 格式，保留了标题、列表、表格等语义结构，非常适合直接用于知识库。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "方式 B：自己调用 API 构建 RAG 管线",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "企业微信官方推出了 CLI 套件（wecom-unified） 和 MCP Server，AI Agent 可以通过简单的命令直接操作邮件，例如搜索、读取正文等。你只需要在 AI Agent 中安装对应的 Skill，就能让它原生地“看到”企业微信邮件，无需自己搭建中间层。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "方式 A：通过 CLI/MCP 让 Agent 直接调用",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "与 AI 助手集成的两种方式：",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "media_download：下载邮件附件或内嵌图片到本地。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "mail_get：通过邮件 ID 获取邮件详情（正文、附件、内嵌图片）。",
+     "links": []
+    }
+   ],
+   "more": 103,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3ed09462-a4af-808c-b7af-d2c06329ebb6",
    "date": "2026-10-02",
@@ -48,134 +195,6 @@
    "date": "2026-09-20",
    "title": "",
    "lines": [],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e009462-a4af-808b-bbb2-f8f447ce5c52",
-   "date": "2026-09-20",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
-     "links": [
-      {
-       "t": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
-       "href": "https://mp.weixin.qq.com/s/u3oTtbEFuTUAPWsEYZSXkw?version=5.0.10.70716&platform=mac&from=industrynews#rd",
-       "title": "Anthropic接受OpenAI标准，智能体从此共用一份AGENTS.md",
-       "desc": "Claude Code 变开放了。"
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3df09462-a4af-805b-930c-f7c7b5cfc116",
-   "date": "2026-09-18",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Yinsen：所以我是创业者，他只能做投资人。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "我希望Cherry Studio就是最后的交互界面。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "人类不需要再面对无数后台，只需要一个交互界面。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Yinsen：如果变成这种场景的时候，人跟AI的交互界面就会变得极其简单。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "沐秋：这跟今天的Cherry Studio有啥关系？",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "如果这个方向盘交到了AI手里，AI接管了这件事情的话，吞噬世界的可能就Agent。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "软件吞噬一切的基础里面有一个核心的生产要素是人，因为所有代码是人写的，方向盘还在人手里",
-     "links": []
-    },
-    {
-     "k": "callout",
-     "t": "Yinsen：Agent吞噬一切。",
-     "links": []
-    },
-    {
-     "k": "bookmark",
-     "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
-     "links": [
-      {
-       "t": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
-       "href": "https://m.aitntnews.com/newDetail.html?newId=23114",
-       "title": "一个山东套壳AI如何上桌｜对话Cherry Studio创始人",
-       "desc": "「套壳伟大🍒」 这波AI创业浪潮里，Cherry Studio和他的创始人Yinsen绝对算是异类。 Cherry Studio发源于开源社区，和大部分吹的天花乱坠但实际是套壳的应用不同，Cherry"
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "2004383882104038519",
-     "links": [
-      {
-       "t": "2004383882104038519",
-       "href": "https://zhuanlan.zhihu.com/p/2004383882104038519"
-      }
-     ]
-    }
-   ],
-   "more": 47,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3d509462-a4af-800e-a1e6-c69be1c802c3",
-   "date": "2026-09-08",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
-     "links": [
-      {
-       "t": "Making sovereign, open-weight AI the technology frontier | Mistral",
-       "href": "https://mistral.ai/news/mistral-makes-sovereign-open-weight-ai-to-frontier/",
-       "title": "Making sovereign, open-weight AI the technology frontier | Mistral",
-       "desc": "Mistral today announced that it has raised €3 billion in a Series D funding round at a post-money valuation of more than €21 billion."
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "UAE AI model tops 50 million monthly downloads",
-     "links": [
-      {
-       "t": "UAE AI model tops 50 million monthly downloads",
-       "href": "https://www.middleeastainews.com/p/uae-ai-model-tops-50-million-monthly",
-       "title": "UAE AI model tops 50 million monthly downloads",
-       "desc": "Falcons AI&#x27;s NSFW classifier ranks among top global open-source models"
-      }
-     ]
-    }
-   ],
    "more": 0,
    "images": [],
    "imagesSeen": 0
