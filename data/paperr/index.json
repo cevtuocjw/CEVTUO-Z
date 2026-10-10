@@ -4,16 +4,31 @@
       "authors": "cjw",
       "estFinishedAt": "2026-10-12",
       "highlights": 0,
+      "id": "62",
+      "lastOpen": "2026-10-10T19:59+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-10-04",
+      "pages": 174,
+      "progressPct": 36.7816091954023,
+      "series": null,
+      "title": "news37 (ART＆FASHION · 2026-10-04)",
+      "totalReadPages": 52,
+      "totalReadTime": 954
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-11",
+      "highlights": 0,
       "id": "61",
-      "lastOpen": "2026-10-10T17:33+08:00",
+      "lastOpen": "2026-10-10T18:21+08:00",
       "notes": 0,
       "originalTitle": "ART＆FASHION · 2026-10-05",
       "pages": 153,
-      "progressPct": 4.57516339869281,
+      "progressPct": 100,
       "series": null,
       "title": "news36 (ART＆FASHION · 2026-10-05)",
-      "totalReadPages": 5,
-      "totalReadTime": 41
+      "totalReadPages": 51,
+      "totalReadTime": 1251
     },
     {
       "authors": "cjw",
@@ -272,7 +287,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-13",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "42",
       "lastOpen": "2026-09-28T12:31+08:00",
@@ -422,7 +437,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-11",
       "highlights": 0,
       "id": "33",
       "lastOpen": "2026-09-11T11:59+08:00",
@@ -827,7 +842,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-12-02",
+      "estFinishedAt": "2026-11-29",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -845,16 +860,16 @@
     "authors": "cjw",
     "estFinishedAt": "2026-10-12",
     "highlights": 0,
-    "id": "61",
-    "lastOpen": "2026-10-10T17:33+08:00",
+    "id": "62",
+    "lastOpen": "2026-10-10T19:59+08:00",
     "notes": 0,
-    "originalTitle": "ART＆FASHION · 2026-10-05",
-    "pages": 153,
-    "progressPct": 4.57516339869281,
+    "originalTitle": "ART＆FASHION · 2026-10-04",
+    "pages": 174,
+    "progressPct": 36.7816091954023,
     "series": null,
-    "title": "news36 (ART＆FASHION · 2026-10-05)",
-    "totalReadPages": 5,
-    "totalReadTime": 41
+    "title": "news37 (ART＆FASHION · 2026-10-04)",
+    "totalReadPages": 52,
+    "totalReadTime": 954
   },
   "daily": [
     {
@@ -984,11 +999,11 @@
     },
     {
       "d": "2026-10-10",
-      "p": 60,
-      "s": 1415
+      "p": 159,
+      "s": 3579
     }
   ],
-  "dataVersion": "cc0f68afdffd",
+  "dataVersion": "d558d11d4749",
   "hourly": [
     {
       "h": 0,
@@ -1060,15 +1075,15 @@
     },
     {
       "h": 17,
-      "s": 5808
+      "s": 6195
     },
     {
       "h": 18,
-      "s": 11750
+      "s": 13390
     },
     {
       "h": 19,
-      "s": 1587
+      "s": 1724
     },
     {
       "h": 20,
@@ -1096,15 +1111,15 @@
     },
     {
       "m": "2026-10",
-      "p": 960,
-      "s": 23999
+      "p": 1059,
+      "s": 26163
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 3,
-    "booksStarted": 56,
-    "pagesTurned": 4033,
-    "readSeconds": 101087
+    "booksStarted": 57,
+    "pagesTurned": 4131,
+    "readSeconds": 103251
   }
 }
