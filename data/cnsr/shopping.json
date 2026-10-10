@@ -3,10 +3,10 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-08T12:37+08:00",
+ "updatedAt": "2026-10-10T13:27+08:00",
  "counts": {
   "days": 5,
-  "lines": 20,
+  "lines": 21,
   "hidden": 2,
   "links": 3,
   "images": 5,
@@ -18,6 +18,11 @@
    "date": "2026-10-08",
    "title": "",
    "lines": [
+    {
+     "k": "paragraph",
+     "t": "Copenn手工塔香 thailand",
+     "links": []
+    },
     {
      "k": "paragraph",
      "t": "Rokid定于10月27日发布第二代带显示AI眼镜，迭代升级硬件与交互能力；极米旗下MemoMind One国庆期间登陆全国56家线下门店，产品摒弃摄像头设计，依托Micro-LED光波导技术，主打翻译、录音转写、提词、导航等实用办公功能；",
