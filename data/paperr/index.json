@@ -2,6 +2,21 @@
   "books": [
     {
       "authors": "cjw",
+      "estFinishedAt": "2026-10-12",
+      "highlights": 0,
+      "id": "61",
+      "lastOpen": "2026-10-10T17:33+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-10-05",
+      "pages": 153,
+      "progressPct": 4.57516339869281,
+      "series": null,
+      "title": "news36 (ART＆FASHION · 2026-10-05)",
+      "totalReadPages": 5,
+      "totalReadTime": 41
+    },
+    {
+      "authors": "cjw",
       "estFinishedAt": "2026-10-11",
       "highlights": 0,
       "id": "60",
@@ -828,18 +843,18 @@
   ],
   "current": {
     "authors": "cjw",
-    "estFinishedAt": "2026-10-11",
+    "estFinishedAt": "2026-10-12",
     "highlights": 0,
-    "id": "60",
-    "lastOpen": "2026-10-10T17:17+08:00",
+    "id": "61",
+    "lastOpen": "2026-10-10T17:33+08:00",
     "notes": 0,
-    "originalTitle": "未分类 · 2026-10-05",
-    "pages": 117,
-    "progressPct": 98.29059829059828,
+    "originalTitle": "ART＆FASHION · 2026-10-05",
+    "pages": 153,
+    "progressPct": 4.57516339869281,
     "series": null,
-    "title": "news35 (未分类 · 2026-10-05)",
-    "totalReadPages": 30,
-    "totalReadTime": 787
+    "title": "news36 (ART＆FASHION · 2026-10-05)",
+    "totalReadPages": 5,
+    "totalReadTime": 41
   },
   "daily": [
     {
@@ -969,11 +984,11 @@
     },
     {
       "d": "2026-10-10",
-      "p": 55,
-      "s": 1374
+      "p": 60,
+      "s": 1415
     }
   ],
-  "dataVersion": "6daba1f1e613",
+  "dataVersion": "cc0f68afdffd",
   "hourly": [
     {
       "h": 0,
@@ -1045,7 +1060,7 @@
     },
     {
       "h": 17,
-      "s": 5767
+      "s": 5808
     },
     {
       "h": 18,
@@ -1081,15 +1096,15 @@
     },
     {
       "m": "2026-10",
-      "p": 955,
-      "s": 23958
+      "p": 960,
+      "s": 23999
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 3,
-    "booksStarted": 55,
-    "pagesTurned": 4028,
-    "readSeconds": 101046
+    "booksStarted": 56,
+    "pagesTurned": 4033,
+    "readSeconds": 101087
   }
 }
