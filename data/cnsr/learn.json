@@ -3,16 +3,76 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-09T04:30+08:00",
+ "updatedAt": "2026-10-10T23:43+08:00",
  "counts": {
   "days": 5,
   "lines": 44,
-  "hidden": 96,
+  "hidden": 123,
   "links": 3,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3f509462-a4af-81cc-9718-e8888f7dfc6e",
+   "date": "2026-10-10",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Rei 与 Liz：分别带了 Jane Austen 的 《Pride and Prejudice》（傲慢与偏见）和 Cynthia Kadohata 的 《Kira-Kira》（闪闪发光）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "IVE 成员",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Lorenzo Zurzolo：Pier Paolo Pasolini 的 《Ragazzi di vita》（生命之子）——他表示这是自己最喜欢的作家之一，故事发生在故乡罗马，关于友谊、自由与成长",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Z",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Anna Wintour（Vogue 主编）：Jane Austen 的 《Pride and Prejudice》（傲慢与偏见）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Samara Weaving：Oisín McKenna 的 《Evenings and Weekends》（夜晚与周末）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Naomi Watts：Charlotte Brontë 的 《Jane Eyre》（简·爱）——她称这本书是她的“初恋”",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "W",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Alexander Skarsgård：瑞典语版冰岛传说集（《Isländska Sagor》） ——他称其为“北欧文化中的《伊利亚特》”",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Vanessa Scalera：Fyodor Dostoevsky 的 《Notes from Underground》（地下室手记）",
+     "links": []
+    }
+   ],
+   "more": 50,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3ef09462-a4af-816a-a159-f99a8483149c",
    "date": "2026-10-04",
@@ -237,66 +297,6 @@
     }
    ],
    "more": 29,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e909462-a4af-8148-8121-db3f2633d716",
-   "date": "2026-09-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "clique 本身是一个法语阴性名词，带有轻微的贬义色彩，意为 “帮派”、“小集团”或“派系”。例如，“une clique de politiciens”指的就是“一个政客小集团”。在社会学和心理学中，它特指一个关系紧密、有排他性的小圈子",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Airtel Money 是印度电信运营商 Bharti Airtel 旗下的移动支付和数字金融服务平台。它在不同市场的业务重心有所不同，主要分为印度和非洲两大板块",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "大约 2～7 年发生一次，每次可能持续 9～12 个月，有时更长。科学家通常用 Niño 3.4 区海温异常、ONI 指数等来监测。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "发生规律",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "秘鲁沿岸上升流受抑制，鱼类减少，影响渔业。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "全球：可能推高平均气温，影响台风、风暴路径、农业和渔业。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "东南亚、澳大利亚、印尼：容易干旱。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "南美西海岸、秘鲁一带：降水增多，甚至洪涝。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "厄尔尼诺会改变全球大气环流，常导致：",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "主要影响",
-     "links": []
-    }
-   ],
-   "more": 23,
    "images": [],
    "imagesSeen": 0
   }
