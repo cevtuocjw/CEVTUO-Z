@@ -2,22 +2,67 @@
   "books": [
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-13",
       "highlights": 0,
-      "id": "62",
-      "lastOpen": "2026-10-10T19:59+08:00",
+      "id": "65",
+      "lastOpen": "2026-10-11T18:45+08:00",
       "notes": 0,
-      "originalTitle": "ART＆FASHION · 2026-10-04",
-      "pages": 174,
-      "progressPct": 36.7816091954023,
+      "originalTitle": "未分类 · 2026-10-02",
+      "pages": 265,
+      "progressPct": 50.18867924528302,
       "series": null,
-      "title": "news37 (ART＆FASHION · 2026-10-04)",
-      "totalReadPages": 52,
-      "totalReadTime": 954
+      "title": "news40 (未分类 · 2026-10-02)",
+      "totalReadPages": 98,
+      "totalReadTime": 1450
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
+      "highlights": 0,
+      "id": "64",
+      "lastOpen": "2026-10-11T18:18+08:00",
+      "notes": 0,
+      "originalTitle": "COUNTRY · 2026-10-04",
+      "pages": 68,
+      "progressPct": 100,
+      "series": null,
+      "title": "news39 (COUNTRY · 2026-10-04)",
+      "totalReadPages": 52,
+      "totalReadTime": 958
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-12",
+      "highlights": 0,
+      "id": "63",
+      "lastOpen": "2026-10-10T21:08+08:00",
+      "notes": 0,
+      "originalTitle": "未分类 · 2026-10-04",
+      "pages": 174,
+      "progressPct": 100,
+      "series": null,
+      "title": "news38 (未分类 · 2026-10-04)",
+      "totalReadPages": 111,
+      "totalReadTime": 1385
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-12",
+      "highlights": 0,
+      "id": "62",
+      "lastOpen": "2026-10-10T20:13+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-10-04",
+      "pages": 174,
+      "progressPct": 100,
+      "series": null,
+      "title": "news37 (ART＆FASHION · 2026-10-04)",
+      "totalReadPages": 92,
+      "totalReadTime": 1680
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "61",
       "lastOpen": "2026-10-10T18:21+08:00",
@@ -32,7 +77,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "60",
       "lastOpen": "2026-10-10T17:17+08:00",
@@ -47,7 +92,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "59",
       "lastOpen": "2026-10-10T16:55+08:00",
@@ -62,7 +107,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "58",
       "lastOpen": "2026-10-10T16:46+08:00",
@@ -77,7 +122,7 @@
     },
     {
       "authors": "cev",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "57",
       "lastOpen": "2026-10-09T13:59+08:00",
@@ -92,7 +137,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-13",
+      "estFinishedAt": "2026-10-14",
       "highlights": 1,
       "id": "56",
       "lastOpen": "2026-10-08T11:03+08:00",
@@ -107,7 +152,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 1,
       "id": "55",
       "lastOpen": "2026-10-05T12:46+08:00",
@@ -122,7 +167,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-14",
+      "estFinishedAt": "2026-10-15",
       "highlights": 0,
       "id": "54",
       "lastOpen": "2026-10-05T12:19+08:00",
@@ -137,7 +182,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "53",
       "lastOpen": "2026-10-02T07:37+08:00",
@@ -152,7 +197,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "52",
       "lastOpen": "2026-10-01T18:22+08:00",
@@ -167,7 +212,7 @@
     },
     {
       "authors": "Cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "51",
       "lastOpen": "2026-10-01T09:21+08:00",
@@ -182,7 +227,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "50",
       "lastOpen": "2026-09-30T17:59+08:00",
@@ -197,7 +242,7 @@
     },
     {
       "authors": "Cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "49",
       "lastOpen": "2026-09-30T12:16+08:00",
@@ -212,7 +257,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "48",
       "lastOpen": "2026-09-29T17:21+08:00",
@@ -227,7 +272,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "47",
       "lastOpen": "2026-09-29T16:15+08:00",
@@ -242,7 +287,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "46",
       "lastOpen": "2026-09-29T10:09+08:00",
@@ -257,7 +302,7 @@
     },
     {
       "authors": "Cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "45",
       "lastOpen": "2026-09-29T10:09+08:00",
@@ -272,7 +317,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "44",
       "lastOpen": "2026-09-28T12:52+08:00",
@@ -287,7 +332,7 @@
     },
     {
       "authors": "Cow",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-13",
       "highlights": 0,
       "id": "42",
       "lastOpen": "2026-09-28T12:31+08:00",
@@ -302,7 +347,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "43",
       "lastOpen": "2026-09-28T12:08+08:00",
@@ -317,7 +362,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "41",
       "lastOpen": "2026-09-28T11:35+08:00",
@@ -332,7 +377,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "40",
       "lastOpen": "2026-09-22T10:43+08:00",
@@ -362,7 +407,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "37",
       "lastOpen": "2026-09-14T18:04+08:00",
@@ -377,7 +422,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "39",
       "lastOpen": "2026-09-14T17:43+08:00",
@@ -407,7 +452,7 @@
     },
     {
       "authors": "Philippa Roxby\nChloe Hayward\nElla Whelan\nRory Poulter\nDan Ayers\nElizabeta Ranxburgaj\nCharlotte Smith\nAlastair Fee\nDawn Limbu\nGruber, Andreas J.\nOlsen, André V.\nHernando, Barbara",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "35",
       "lastOpen": "2026-09-14T11:00+08:00",
@@ -422,7 +467,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "34",
       "lastOpen": "2026-09-14T09:29+08:00",
@@ -437,7 +482,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "33",
       "lastOpen": "2026-09-11T11:59+08:00",
@@ -467,7 +512,7 @@
     },
     {
       "authors": "Tom Robbins\nIan Smith\nDavid Keohane\nLeo Lewis\nRamsay Hodgson\nCalum Kapoor\nCarola Long\nRobert Shrimsley\nDaniel Tudor\nNic Fildes\nJoe Leahy\nKana Inagaki",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "31",
       "lastOpen": "2026-09-10T18:08+08:00",
@@ -482,7 +527,7 @@
     },
     {
       "authors": "Steven Morris\nHannah Banks-Walker\nKristen Talman\nJames Landale\nBBC News\nDaniel Windham\nHeather Carrick\nAlaina Demopoulos\nGiles Richards\nDavid Blair\nAdrienne Klasa\nHans van Leeuwen",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "24",
       "lastOpen": "2026-09-10T12:17+08:00",
@@ -497,7 +542,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "30",
       "lastOpen": "2026-09-10T08:45+08:00",
@@ -527,7 +572,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-13",
       "highlights": 0,
       "id": "28",
       "lastOpen": "2026-09-09T16:15+08:00",
@@ -557,7 +602,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "26",
       "lastOpen": "2026-09-09T08:28+08:00",
@@ -572,7 +617,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "25",
       "lastOpen": "2026-09-08T18:25+08:00",
@@ -587,7 +632,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-13",
       "highlights": 0,
       "id": "22",
       "lastOpen": "2026-09-08T17:48+08:00",
@@ -602,7 +647,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "23",
       "lastOpen": "2026-09-08T13:59+08:00",
@@ -617,7 +662,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "21",
       "lastOpen": "2026-09-07T14:00+08:00",
@@ -632,7 +677,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-12",
+      "estFinishedAt": "2026-10-13",
       "highlights": 0,
       "id": "16",
       "lastOpen": "2026-09-07T13:54+08:00",
@@ -647,7 +692,7 @@
     },
     {
       "authors": "Benjamin Mueller\nGlenn Thrush\nJonathan Swan\nAdam Entous\nMaggie Haberman\nEric Schmitt\nIvan Nechepurenko\nFrancisco Rodríguez\nJim Tankersley\nTatiana Firsova\nChristopher F. Schuetze\nStephen Castle",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "20",
       "lastOpen": "2026-09-07T13:45+08:00",
@@ -662,7 +707,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "19",
       "lastOpen": "2026-09-07T10:21+08:00",
@@ -677,7 +722,7 @@
     },
     {
       "authors": "Kim Bunermann\nLouise Parry\nKatie Martin\nRobert Booth\nElla Risbridger\nChris Taylor\nHeather Carrick\nJohn McLellan\nJames C. Reynolds\nElaine Blackburne\nLaura Zilincanova\nBenedict Smith",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "18",
       "lastOpen": "2026-09-06T12:25+08:00",
@@ -692,7 +737,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "17",
       "lastOpen": "2026-09-06T11:23+08:00",
@@ -707,7 +752,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "15",
       "lastOpen": "2026-09-05T23:51+08:00",
@@ -722,7 +767,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "13",
       "lastOpen": "2026-09-05T21:17+08:00",
@@ -737,7 +782,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "14",
       "lastOpen": "2026-09-05T20:36+08:00",
@@ -752,7 +797,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "12",
       "lastOpen": "2026-09-04T22:20+08:00",
@@ -767,7 +812,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "11",
       "lastOpen": "2026-09-04T19:11+08:00",
@@ -782,7 +827,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "8",
       "lastOpen": "2026-09-04T16:48+08:00",
@@ -827,7 +872,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-10-11",
+      "estFinishedAt": "2026-10-12",
       "highlights": 0,
       "id": "7",
       "lastOpen": "2026-09-04T16:11+08:00",
@@ -842,7 +887,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-11-29",
+      "estFinishedAt": "2026-11-22",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -858,18 +903,18 @@
   ],
   "current": {
     "authors": "cjw",
-    "estFinishedAt": "2026-10-12",
+    "estFinishedAt": "2026-10-13",
     "highlights": 0,
-    "id": "62",
-    "lastOpen": "2026-10-10T19:59+08:00",
+    "id": "65",
+    "lastOpen": "2026-10-11T18:45+08:00",
     "notes": 0,
-    "originalTitle": "ART＆FASHION · 2026-10-04",
-    "pages": 174,
-    "progressPct": 36.7816091954023,
+    "originalTitle": "未分类 · 2026-10-02",
+    "pages": 265,
+    "progressPct": 50.18867924528302,
     "series": null,
-    "title": "news37 (ART＆FASHION · 2026-10-04)",
-    "totalReadPages": 52,
-    "totalReadTime": 954
+    "title": "news40 (未分类 · 2026-10-02)",
+    "totalReadPages": 98,
+    "totalReadTime": 1450
   },
   "daily": [
     {
@@ -999,11 +1044,16 @@
     },
     {
       "d": "2026-10-10",
-      "p": 159,
-      "s": 3579
+      "p": 354,
+      "s": 6208
+    },
+    {
+      "d": "2026-10-11",
+      "p": 124,
+      "s": 1890
     }
   ],
-  "dataVersion": "d558d11d4749",
+  "dataVersion": "707d0ef866f5",
   "hourly": [
     {
       "h": 0,
@@ -1079,19 +1129,19 @@
     },
     {
       "h": 18,
-      "s": 13390
+      "s": 15280
     },
     {
       "h": 19,
-      "s": 1724
+      "s": 1778
     },
     {
       "h": 20,
-      "s": 1135
+      "s": 2967
     },
     {
       "h": 21,
-      "s": 1761
+      "s": 2504
     },
     {
       "h": 22,
@@ -1111,15 +1161,15 @@
     },
     {
       "m": "2026-10",
-      "p": 1059,
-      "s": 26163
+      "p": 1378,
+      "s": 30682
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 3,
-    "booksStarted": 57,
-    "pagesTurned": 4131,
-    "readSeconds": 103251
+    "booksStarted": 60,
+    "pagesTurned": 4432,
+    "readSeconds": 107770
   }
 }
