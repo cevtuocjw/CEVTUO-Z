@@ -1,8 +1,37 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "614604ca059c",
+  "dataVersion": "762925b15763",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国",
+        "意大利",
+        "西班牙",
+        "英国",
+        "美国",
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "惊悚"
+      ],
+      "id": "3f709462-a4af-814f-8624-cb402b724c38",
+      "mediaType": "影",
+      "note": null,
+      "order": 173,
+      "poster": "data/coof/posters/3f709462-a4af-814f-8624-cb402b724c38.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "蔷薇修剪术 Rosebush Pruning",
+      "watchedAt": "2026-10-12",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",

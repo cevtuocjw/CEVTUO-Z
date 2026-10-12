@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 171,
-      "latestAt": "2026-10-07",
+      "count": 172,
+      "latestAt": "2026-10-12",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,20 +46,20 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 171
+    "total": 172
   },
-  "dataVersion": "cef301eb4b42",
+  "dataVersion": "4be1b25fe78e",
   "genres": [
     {
-      "count": 121,
+      "count": 122,
       "name": "剧情"
     },
     {
-      "count": 33,
+      "count": 34,
       "name": "喜剧"
     },
     {
-      "count": 26,
+      "count": 27,
       "name": "惊悚"
     },
     {
@@ -155,26 +155,61 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
+      "德国",
+      "意大利",
+      "西班牙",
+      "英国",
       "美国",
-      "英国"
+      "加拿大"
     ],
     "director": [],
     "genres": [
-      "剧情"
+      "剧情",
+      "喜剧",
+      "惊悚"
     ],
-    "id": "3f209462-a4af-81b0-a4ca-cc06c9e4a0e6",
+    "id": "3f709462-a4af-814f-8624-cb402b724c38",
     "mediaType": "影",
     "note": null,
-    "order": 172,
-    "poster": "data/coof/posters/3f209462-a4af-81b0-a4ca-cc06c9e4a0e6.jpg",
+    "order": 173,
+    "poster": "data/coof/posters/3f709462-a4af-814f-8624-cb402b724c38.jpg",
     "rating": null,
-    "runtimeMin": 108,
+    "runtimeMin": 95,
     "status": "watched",
-    "title": "弗洛伊德的最后一会 Freud's Last Session",
-    "watchedAt": "2026-10-07",
-    "year": 2023
+    "title": "蔷薇修剪术 Rosebush Pruning",
+    "watchedAt": "2026-10-12",
+    "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国",
+        "意大利",
+        "西班牙",
+        "英国",
+        "美国",
+        "加拿大"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "喜剧",
+        "惊悚"
+      ],
+      "id": "3f709462-a4af-814f-8624-cb402b724c38",
+      "mediaType": "影",
+      "note": null,
+      "order": 173,
+      "poster": "data/coof/posters/3f709462-a4af-814f-8624-cb402b724c38.jpg",
+      "rating": null,
+      "runtimeMin": 95,
+      "status": "watched",
+      "title": "蔷薇修剪术 Rosebush Pruning",
+      "watchedAt": "2026-10-12",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -618,28 +653,6 @@
       "title": "哈姆奈特 Hamnet",
       "watchedAt": "2026-09-26",
       "year": 2025
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "加拿大"
-      ],
-      "director": [],
-      "genres": [
-        "纪录片"
-      ],
-      "id": "3e709462-a4af-814c-911a-c34460cad617",
-      "mediaType": "影",
-      "note": "第37届马德普拉塔电影节获奖 《孤独地貌》是由加拿大导演杰奎琳·米尔斯执导的纪录片，记录了自然学家佐伊·卢卡斯在偏远的塞布尔岛长达40余年的生活与环保实践。影片通过科学与电影的融合，探讨人类活动对自然环境的影响，并以十六毫米胶片拍摄，呈现了岛屿独特的地貌生态。",
-      "order": 152,
-      "poster": "data/coof/posters/3e709462-a4af-814c-911a-c34460cad617.jpg",
-      "rating": null,
-      "runtimeMin": 103,
-      "status": "watched",
-      "title": "孤独地貌 Geographies of Solitude",
-      "watchedAt": "2026-09-26",
-      "year": 2022
     }
   ],
   "schemaVersion": 1
