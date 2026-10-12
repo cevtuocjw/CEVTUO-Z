@@ -1,6 +1,66 @@
 {
   "books": [
     {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-14",
+      "highlights": 0,
+      "id": "70",
+      "lastOpen": "2026-10-12T11:14+08:00",
+      "notes": 0,
+      "originalTitle": "未分类 · 2026-10-10",
+      "pages": 202,
+      "progressPct": 25.742574257425744,
+      "series": null,
+      "title": "news42 (未分类 · 2026-10-10)",
+      "totalReadPages": 5,
+      "totalReadTime": 30
+    },
+    {
+      "authors": "N/A",
+      "estFinishedAt": "2026-10-13",
+      "highlights": 0,
+      "id": "69",
+      "lastOpen": "2026-10-12T11:13+08:00",
+      "notes": 0,
+      "originalTitle": "18bc36b7-cace-4940-ac2e-c630a961cbf9",
+      "pages": 1,
+      "progressPct": null,
+      "series": null,
+      "title": "unknown9 (18bc36b7-cace-4940-ac2e-c630a961cbf9)",
+      "totalReadPages": 0,
+      "totalReadTime": 0
+    },
+    {
+      "authors": "cev",
+      "estFinishedAt": "2026-10-13",
+      "highlights": 0,
+      "id": "68",
+      "lastOpen": "2026-10-12T11:12+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 142,
+      "progressPct": 97.88732394366197,
+      "series": null,
+      "title": "Cev2-1012-26",
+      "totalReadPages": 67,
+      "totalReadTime": 1454
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-18",
+      "highlights": 0,
+      "id": "67",
+      "lastOpen": "2026-10-12T10:42+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-10-10",
+      "pages": 731,
+      "progressPct": 0.13679890560875513,
+      "series": null,
+      "title": "news41 (ART＆FASHION · 2026-10-10)",
+      "totalReadPages": 1,
+      "totalReadTime": 6
+    },
+    {
       "authors": "cev",
       "estFinishedAt": "2026-10-13",
       "highlights": 0,
@@ -512,7 +572,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-16",
+      "estFinishedAt": "2026-10-15",
       "highlights": 0,
       "id": "32",
       "lastOpen": "2026-09-11T09:59+08:00",
@@ -902,7 +962,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-11-26",
+      "estFinishedAt": "2026-11-24",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -917,19 +977,19 @@
     }
   ],
   "current": {
-    "authors": "cev",
-    "estFinishedAt": "2026-10-13",
+    "authors": "cjw",
+    "estFinishedAt": "2026-10-14",
     "highlights": 0,
-    "id": "66",
-    "lastOpen": "2026-10-12T10:41+08:00",
+    "id": "70",
+    "lastOpen": "2026-10-12T11:14+08:00",
     "notes": 0,
-    "originalTitle": null,
-    "pages": 133,
-    "progressPct": 100,
+    "originalTitle": "未分类 · 2026-10-10",
+    "pages": 202,
+    "progressPct": 25.742574257425744,
     "series": null,
-    "title": "Cev1-1012-26",
-    "totalReadPages": 71,
-    "totalReadTime": 1302
+    "title": "news42 (未分类 · 2026-10-10)",
+    "totalReadPages": 5,
+    "totalReadTime": 30
   },
   "daily": [
     {
@@ -1069,11 +1129,11 @@
     },
     {
       "d": "2026-10-12",
-      "p": 112,
-      "s": 2246
+      "p": 187,
+      "s": 3736
     }
   ],
-  "dataVersion": "dfd284fb8390",
+  "dataVersion": "c96cce72d752",
   "hourly": [
     {
       "h": 0,
@@ -1117,11 +1177,11 @@
     },
     {
       "h": 10,
-      "s": 8034
+      "s": 8842
     },
     {
       "h": 11,
-      "s": 11489
+      "s": 12171
     },
     {
       "h": 12,
@@ -1181,15 +1241,15 @@
     },
     {
       "m": "2026-10",
-      "p": 1490,
-      "s": 32928
+      "p": 1565,
+      "s": 34418
     }
   ],
   "schemaVersion": 1,
   "totals": {
-    "booksFinished": 3,
-    "booksStarted": 61,
-    "pagesTurned": 4542,
-    "readSeconds": 110016
+    "booksFinished": 4,
+    "booksStarted": 65,
+    "pagesTurned": 4615,
+    "readSeconds": 111506
   }
 }
