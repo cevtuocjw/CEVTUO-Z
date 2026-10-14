@@ -2,18 +2,48 @@
   "books": [
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-15",
+      "estFinishedAt": "2026-10-16",
+      "highlights": 0,
+      "id": "72",
+      "lastOpen": "2026-10-13T18:24+08:00",
+      "notes": 0,
+      "originalTitle": "ART＆FASHION · 2026-10-13",
+      "pages": 369,
+      "progressPct": 2.168021680216802,
+      "series": null,
+      "title": "news43 (ART＆FASHION · 2026-10-13)",
+      "totalReadPages": 7,
+      "totalReadTime": 242
+    },
+    {
+      "authors": "cev",
+      "estFinishedAt": "2026-10-14",
+      "highlights": 0,
+      "id": "71",
+      "lastOpen": "2026-10-13T18:18+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 114,
+      "progressPct": 100,
+      "series": null,
+      "title": "Cev1-101326",
+      "totalReadPages": 78,
+      "totalReadTime": 2735
+    },
+    {
+      "authors": "cjw",
+      "estFinishedAt": "2026-10-14",
       "highlights": 0,
       "id": "70",
-      "lastOpen": "2026-10-13T12:22+08:00",
+      "lastOpen": "2026-10-13T13:53+08:00",
       "notes": 0,
       "originalTitle": "未分类 · 2026-10-10",
       "pages": 202,
-      "progressPct": 98.51485148514851,
+      "progressPct": 100,
       "series": null,
       "title": "news42 (未分类 · 2026-10-10)",
-      "totalReadPages": 69,
-      "totalReadTime": 1475
+      "totalReadPages": 72,
+      "totalReadTime": 1662
     },
     {
       "authors": "N/A",
@@ -77,7 +107,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-15",
+      "estFinishedAt": "2026-10-14",
       "highlights": 0,
       "id": "65",
       "lastOpen": "2026-10-12T10:15+08:00",
@@ -962,7 +992,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-11-29",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -978,18 +1008,18 @@
   ],
   "current": {
     "authors": "cjw",
-    "estFinishedAt": "2026-10-15",
+    "estFinishedAt": "2026-10-16",
     "highlights": 0,
-    "id": "70",
-    "lastOpen": "2026-10-13T12:22+08:00",
+    "id": "72",
+    "lastOpen": "2026-10-13T18:24+08:00",
     "notes": 0,
-    "originalTitle": "未分类 · 2026-10-10",
-    "pages": 202,
-    "progressPct": 98.51485148514851,
+    "originalTitle": "ART＆FASHION · 2026-10-13",
+    "pages": 369,
+    "progressPct": 2.168021680216802,
     "series": null,
-    "title": "news42 (未分类 · 2026-10-10)",
-    "totalReadPages": 69,
-    "totalReadTime": 1475
+    "title": "news43 (ART＆FASHION · 2026-10-13)",
+    "totalReadPages": 7,
+    "totalReadTime": 242
   },
   "daily": [
     {
@@ -1134,11 +1164,11 @@
     },
     {
       "d": "2026-10-13",
-      "p": 65,
-      "s": 1445
+      "p": 157,
+      "s": 4609
     }
   ],
-  "dataVersion": "d0352f519e3a",
+  "dataVersion": "1eec9b7663ea",
   "hourly": [
     {
       "h": 0,
@@ -1194,11 +1224,11 @@
     },
     {
       "h": 13,
-      "s": 9595
+      "s": 10110
     },
     {
       "h": 14,
-      "s": 2982
+      "s": 3961
     },
     {
       "h": 15,
@@ -1206,7 +1236,7 @@
     },
     {
       "h": 16,
-      "s": 7982
+      "s": 8760
     },
     {
       "h": 17,
@@ -1214,7 +1244,7 @@
     },
     {
       "h": 18,
-      "s": 15280
+      "s": 16172
     },
     {
       "h": 19,
@@ -1246,15 +1276,15 @@
     },
     {
       "m": "2026-10",
-      "p": 1630,
-      "s": 35863
+      "p": 1722,
+      "s": 39027
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
-    "booksStarted": 65,
-    "pagesTurned": 4679,
-    "readSeconds": 112951
+    "booksStarted": 67,
+    "pagesTurned": 4767,
+    "readSeconds": 116115
   }
 }
