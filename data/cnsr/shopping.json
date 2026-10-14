@@ -3,16 +3,140 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-12T12:27+08:00",
+ "updatedAt": "2026-10-14T11:38+08:00",
  "counts": {
   "days": 5,
-  "lines": 21,
-  "hidden": 2,
-  "links": 3,
-  "images": 5,
+  "lines": 17,
+  "hidden": 20,
+  "links": 2,
+  "images": 2,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3f909462-a4af-815d-b9b9-fbfa72895e01",
+   "date": "2026-10-14",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "这是一款以济州岛扁柏（Hinoki Cypress）水为唯一成分的除臭喷雾，主打从根源分解异味，而非用香味掩盖",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "💧 产品核心：The Spray",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "hinok 是一个源于韩国济州岛的可持续生活品牌，核心理念是“永远与绿色同行”，致力于从自然中寻找答案，为日常生活提供清洁、卫生的方案。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "🌿 品牌简介：hinok",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "指的是韩国品牌 hinok（희녹） 旗下名为 “The Spray” 的织物与空间除臭喷雾。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "指的是韩国品牌 hi…",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "ICP (International Cosmetic Products) 的时期。ICP 是一家专注于奢侈品香水的分销公司，由 Saujet 家族运营",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Thomas Saujet 是法国奢侈品与香水行业的企业家，以其在香水分销领域的深厚资历，以及近期创立的新型品牌孵化模式而闻名。他是家族企业 Saujet Holdings 的成员，目前正通过其新公司 Saujet Fragrances Group (SFG) 重塑奢华小众香水的品牌构建方式",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "LYMA Youth System / PRO Youth System：将激光仪、补充剂和护肤品打包为抗衰系统，售价在 $3,092 至 $6,920 之",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "🎁 组合系统",
+     "links": []
+    }
+   ],
+   "more": 20,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f809462-a4af-81a2-98d2-c7b9095a3ce6",
+   "date": "2026-10-13",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "HUION（中文品牌名：绘王）是一家来自中国的数字绘写设备品牌，专注于研发、生产和销售数位板（绘图板）、数位屏（绘图屏）等原笔迹手写输入设备及解决方案",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f709462-a4af-8147-ac21-e65389af265d",
+   "date": "2026-10-12",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "无需手柄、靠 AI 摄像头追踪身体动作的家庭体感游戏主机 Nex Playground",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "从Sol de Janeiro，看“直觉型”品牌的崛起",
+     "links": [
+      {
+       "t": "从Sol de Janeiro，看“直觉型”品牌的崛起",
+       "href": "https://mp.weixin.qq.com/s/MU-oC64-v21-PcD-VkthLg",
+       "title": "从Sol de Janeiro，看“直觉型”品牌的崛起",
+       "desc": "年销12亿美元背后，“重做”身体护理。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "Sol de Janeiro的成长速度却堪称惊人：2025年已是丝芙兰销量第一的护理品牌，同时也是德国Douglas与澳洲Mecca排名第一的护肤品牌",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
+     "links": [
+      {
+       "t": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
+       "href": "https://www.ebel.com/",
+       "title": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
+       "desc": "Offical site of Ebel Watches. Luxury Swiss watches Manufacturer since 1911. Ebel Watches for Women and Men."
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3f709462a4af81cb91acdbc192681bbc.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 1
+  },
   {
    "id": "3f309462-a4af-81fa-93f0-c8aea1a759fd",
    "date": "2026-10-08",
@@ -46,166 +170,6 @@
     }
    ],
    "imagesSeen": 1
-  },
-  {
-   "id": "3ed09462-a4af-8113-88bd-f85c3f9b0151",
-   "date": "2026-10-02",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Ralph Lauren",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "ASHISH",
-     "links": []
-    },
-    {
-     "k": "bookmark",
-     "t": "jennypackham.com",
-     "links": [
-      {
-       "t": "jennypackham.com",
-       "href": "https://www.jennypackham.com/?srsltid=AU7gw4Wv-cRmAZsSdty8MBFx_VEegYCTMx6jWzj2gCpAKxYmrK7rT6hp"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "用配饰点睛：加入 黑色 或 白色 的配饰（如包、鞋、墨镜）来点缀，能有效提亮整体造型，避免沉闷。银色金属饰品也是不错的选择\nGroutfit 一直伴随着两种截然不同的评价。一方面，它被一些人视为 懒散、缺乏创意 的代表，像是“随便套了件运动服就出门”。另一方面，它又被时尚界拥抱，认为它体现了 极简、舒适与高级感 的平衡，尤其契合当代人追求实用与风格并存的生活态度",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "廓形与剪裁：选择有设计感的剪裁，比如 Oversized 西装、垂坠感强的阔腿裤 或 利落的收腰大衣，能让全灰造型显得更有力量和风格。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "注重材质碰撞：用不同质感的面料来增加趣味。例如，柔软的针织衫 搭配 挺括的西装裤，或是 毛呢大衣 内搭 光滑的丝质裙，即使颜色统一，材质对比也能让造型富有变化。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "玩转灰色层次：不要只穿一种灰色。将 浅灰、中灰、炭灰、银灰 等不同深浅的灰色单品混搭，利用色阶差异自然形成视觉层次，这是最核心的穿搭法则。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Groutfit 的精髓在于 “用层次打破单调” 。想要避免穿得像一套睡衣或制服，关键在于以下技巧：",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "Groutfit\nGroutfit 是 “Grey（灰色）” 和 “Outfit（服装）” 的合成词，指从头到脚全身都以灰色为主色调的穿搭风格，中文常被称为“格雷系”或“全灰穿搭",
-     "links": []
-    },
-    {
-     "k": "bookmark",
-     "t": "lagence.com",
-     "links": [
-      {
-       "t": "lagence.com",
-       "href": "https://lagence.com/"
-      }
-     ]
-    }
-   ],
-   "more": 2,
-   "images": [
-    {
-     "src": "data/cnsr/img/3ed09462a4af81a9b62bd5c3478c357c.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3ed09462a4af80029e23f4823207e31e.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 2
-  },
-  {
-   "id": "3eb09462-a4af-81d6-a607-e9b14095ec2a",
-   "date": "2026-10-01",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "澳大利亚威士忌装进汽水瓶，概念包装 Dieline 奖",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "▲英国癌症研究基金会关于budwig diet的说明：目前尚无科学证据表明布德维格疗法可以治疗或治愈癌症。同行评审的医学期刊上也未发表任何针对该疗法的临床试验研究Cancer Research UK | The world&#x27;s leading cancer charity",
-     "links": [
-      {
-       "t": "Cancer Research UK | The world&#x27;s leading cancer charity",
-       "href": "https://www.cancerresearchuk.org/",
-       "title": "Cancer Research UK | The world&#x27;s leading cancer charity",
-       "desc": "We exist to beat cancer. And we&#x27;re dedicated to saving and improving lives with our research. Will you help us transform the lives of future generations?"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "将两者混合，搅拌到油被奶酪充分吸收，就得到了巴德维奶油。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "制作这种奶油要用到两种原材料：亚麻籽油和鲜奶酪。奶酪一般是茅屋芝士或者夸克奶酪，通常会选择脱脂版本。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Budwig",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "巴德维酸奶",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "皇庭",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Joyce hk买手店",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3eb09462a4af80218923d553455a1695.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3eb09462a4af81e3b4e3dc362bf7b483.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 3
-  },
-  {
-   "id": "3ea09462-a4af-8195-a953-ea951a299373",
-   "date": "2026-09-29",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "荣耀 HONOR Life 墨水屏阅读器 S3 上架：61g 重、磁吸设计，359 元",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
   }
  ]
 }
