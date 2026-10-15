@@ -3,16 +3,31 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-13T13:34+08:00",
+ "updatedAt": "2026-10-15T11:18+08:00",
  "counts": {
   "days": 5,
-  "lines": 23,
+  "lines": 22,
   "hidden": 0,
-  "links": 3,
+  "links": 2,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3f809462-a4af-8184-9256-e1363d6d36c7",
+   "date": "2026-10-13",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "ysl en official 有 Akamai",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3ea09462-a4af-8196-b122-d934f3839251",
    "date": "2026-09-29",
@@ -166,43 +181,6 @@
      "k": "paragraph",
      "t": "Andromeld rabbit",
      "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3cf09462-a4af-80b1-a865-d4d29f0f64f8",
-   "date": "2026-09-10",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Seeed Studio矽递科技\nMicroduck由深圳的矽递科技（Seeed Studio）制造。这家开源硬件厂商也是Hugging Face上一代桌面机器人Reachy Mini的代工方，鸭子身上的主控芯片则采用瑞芯微RK3566方案，8月31日，瑞芯微A股涨停，“机器鸭概念”跟着刷屏。9月1日瑞芯微开盘后继续大涨。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3ca09462-a4af-806c-8a2f-ef2d39fd929e",
-   "date": "2026-08-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "EpubKit",
-     "links": [
-      {
-       "t": "EpubKit",
-       "href": "https://epubkit.app/",
-       "title": "EpubKit",
-       "desc": "EpubKit is the best tool to convert web pages to EPUB"
-      }
-     ]
     }
    ],
    "more": 0,
