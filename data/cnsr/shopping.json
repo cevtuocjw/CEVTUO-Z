@@ -3,12 +3,12 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-14T11:38+08:00",
+ "updatedAt": "2026-10-16T11:14+08:00",
  "counts": {
   "days": 5,
   "lines": 17,
-  "hidden": 20,
-  "links": 2,
+  "hidden": 21,
+  "links": 3,
   "images": 2,
   "skippedSubtrees": 0
  },
@@ -18,6 +18,16 @@
    "date": "2026-10-14",
    "title": "",
    "lines": [
+    {
+     "k": "paragraph",
+     "t": "trmnl x",
+     "links": [
+      {
+       "t": "trmnl x",
+       "href": "https://shop.trmnl.com/products/trmnl-x?srsltid=AU7gw4WVyFUh0xfd5UFpWjtvdKAk5vU9wGGZKPgZa7Z7CvZTmETe_nJI"
+      }
+     ]
+    },
     {
      "k": "paragraph",
      "t": "这是一款以济州岛扁柏（Hinoki Cypress）水为唯一成分的除臭喷雾，主打从根源分解异味，而非用香味掩盖",
@@ -62,14 +72,9 @@
      "k": "paragraph",
      "t": "LYMA Youth System / PRO Youth System：将激光仪、补充剂和护肤品打包为抗衰系统，售价在 $3,092 至 $6,920 之",
      "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "🎁 组合系统",
-     "links": []
     }
    ],
-   "more": 20,
+   "more": 21,
    "images": [],
    "imagesSeen": 0
   },
