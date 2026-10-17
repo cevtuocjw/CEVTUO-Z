@@ -1,8 +1,53 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "762925b15763",
+  "dataVersion": "395d37168c25",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "意大利",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "历史"
+      ],
+      "id": "3fc09462-a4af-81d7-8de9-e7d7659d2578",
+      "mediaType": "影",
+      "note": "第56届意大利大卫奖获奖名单",
+      "order": 175,
+      "poster": "data/coof/posters/3fc09462-a4af-81d7-8de9-e7d7659d2578.jpg",
+      "rating": null,
+      "runtimeMin": 204,
+      "status": "watched",
+      "title": "我们相信 Noi credevamo",
+      "watchedAt": "2026-10-17",
+      "year": 2010
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3fc09462-a4af-815f-b629-e043d3163167",
+      "mediaType": "影",
+      "note": "黑塞",
+      "order": 174,
+      "poster": "data/coof/posters/3fc09462-a4af-815f-b629-e043d3163167.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "纳尔齐斯与歌尔德蒙 Narziss und Goldmund",
+      "watchedAt": "2026-10-17",
+      "year": 2020
+    },
     {
       "cast": [],
       "collection": "COOF2026",

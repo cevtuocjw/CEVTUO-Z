@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 172,
-      "latestAt": "2026-10-12",
+      "count": 174,
+      "latestAt": "2026-10-17",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 172
+    "total": 174
   },
-  "dataVersion": "4be1b25fe78e",
+  "dataVersion": "47b387da18e6",
   "genres": [
     {
-      "count": 122,
+      "count": 123,
       "name": "剧情"
     },
     {
@@ -99,7 +99,7 @@
       "name": "冒险"
     },
     {
-      "count": 7,
+      "count": 8,
       "name": "历史"
     },
     {
@@ -155,32 +155,71 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "德国",
       "意大利",
-      "西班牙",
-      "英国",
-      "美国",
-      "加拿大"
+      "法国"
     ],
     "director": [],
     "genres": [
-      "剧情",
-      "喜剧",
-      "惊悚"
+      "历史"
     ],
-    "id": "3f709462-a4af-814f-8624-cb402b724c38",
+    "id": "3fc09462-a4af-81d7-8de9-e7d7659d2578",
     "mediaType": "影",
-    "note": null,
-    "order": 173,
-    "poster": "data/coof/posters/3f709462-a4af-814f-8624-cb402b724c38.jpg",
+    "note": "第56届意大利大卫奖获奖名单",
+    "order": 175,
+    "poster": "data/coof/posters/3fc09462-a4af-81d7-8de9-e7d7659d2578.jpg",
     "rating": null,
-    "runtimeMin": 95,
+    "runtimeMin": 204,
     "status": "watched",
-    "title": "蔷薇修剪术 Rosebush Pruning",
-    "watchedAt": "2026-10-12",
-    "year": 2026
+    "title": "我们相信 Noi credevamo",
+    "watchedAt": "2026-10-17",
+    "year": 2010
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "意大利",
+        "法国"
+      ],
+      "director": [],
+      "genres": [
+        "历史"
+      ],
+      "id": "3fc09462-a4af-81d7-8de9-e7d7659d2578",
+      "mediaType": "影",
+      "note": "第56届意大利大卫奖获奖名单",
+      "order": 175,
+      "poster": "data/coof/posters/3fc09462-a4af-81d7-8de9-e7d7659d2578.jpg",
+      "rating": null,
+      "runtimeMin": 204,
+      "status": "watched",
+      "title": "我们相信 Noi credevamo",
+      "watchedAt": "2026-10-17",
+      "year": 2010
+    },
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "德国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "3fc09462-a4af-815f-b629-e043d3163167",
+      "mediaType": "影",
+      "note": "黑塞",
+      "order": 174,
+      "poster": "data/coof/posters/3fc09462-a4af-815f-b629-e043d3163167.jpg",
+      "rating": null,
+      "runtimeMin": 110,
+      "status": "watched",
+      "title": "纳尔齐斯与歌尔德蒙 Narziss und Goldmund",
+      "watchedAt": "2026-10-17",
+      "year": 2020
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -606,53 +645,6 @@
       "title": "好景在望 Here Comes the Boom",
       "watchedAt": "2026-10-02",
       "year": 2012
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "Lebanon/France"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3e709462-a4af-81b2-9dbf-d3e818c6aff1",
-      "mediaType": "影",
-      "note": null,
-      "order": 154,
-      "poster": "data/coof/posters/3e709462-a4af-81b2-9dbf-d3e818c6aff1.jpg",
-      "rating": null,
-      "runtimeMin": 98,
-      "status": "watched",
-      "title": "贝鲁特酒店 Beyrouth hôtel",
-      "watchedAt": "2026-09-26",
-      "year": 2011
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "英国",
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "爱情",
-        "传记"
-      ],
-      "id": "3e709462-a4af-81f8-a1d4-d61513af9d77",
-      "mediaType": "影",
-      "note": "第98届奥斯卡金像奖 最佳影片(提名) 史蒂文·斯皮尔伯格 / 尼可拉斯·冈达 / 丽萨·马歇尔 / 皮帕·哈里斯 / 萨姆·门德斯\n第83届金球奖 电影类 最佳剧情片\n第79届英国电影学院奖 电影奖 最佳影片(提名)",
-      "order": 153,
-      "poster": "data/coof/posters/3e709462-a4af-81f8-a1d4-d61513af9d77.jpg",
-      "rating": null,
-      "runtimeMin": 125,
-      "status": "watched",
-      "title": "哈姆奈特 Hamnet",
-      "watchedAt": "2026-09-26",
-      "year": 2025
     }
   ],
   "schemaVersion": 1
