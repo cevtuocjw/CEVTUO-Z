@@ -3,16 +3,36 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-15T22:40+08:00",
+ "updatedAt": "2026-10-17T21:28+08:00",
  "counts": {
   "days": 5,
-  "lines": 21,
+  "lines": 23,
   "hidden": 100,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3fb09462-a4af-8186-a50f-eae81476c917",
+   "date": "2026-10-16",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Digital marketing expert Cris Tolomia appears to be making heavy use of AI.",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Quartz website mainly produced by one AI-assisted reporter writing 50+ stories per day",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3f409462-a4af-8188-b867-c3c4da90a4c2",
    "date": "2026-10-09",
@@ -164,15 +184,6 @@
      "links": []
     }
    ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e109462-a4af-81c8-aa5d-c43cfebfd4bf",
-   "date": "2026-09-20",
-   "title": "",
-   "lines": [],
    "more": 0,
    "images": [],
    "imagesSeen": 0
