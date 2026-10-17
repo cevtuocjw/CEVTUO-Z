@@ -3,16 +3,36 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-15T11:18+08:00",
+ "updatedAt": "2026-10-17T11:05+08:00",
  "counts": {
   "days": 5,
-  "lines": 22,
+  "lines": 23,
   "hidden": 0,
   "links": 2,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3fb09462-a4af-81fb-93e6-c92ac2796b11",
+   "date": "2026-10-16",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "REA 全称 Reverse Engineer Anything，仓库是 morluto/rea",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "开源项目REA总星数突破11万。该工具通过MCP协议封装专业逆向软件，使开发者能用自然语言驱动AI进行逆向分析。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3f809462-a4af-8184-9256-e1363d6d36c7",
    "date": "2026-10-13",
@@ -165,21 +185,6 @@
     {
      "k": "paragraph",
      "t": "量子信息：2026年多路线突破与产业化加速",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3d709462-a4af-8019-aa38-e7e854f61c9c",
-   "date": "2026-09-10",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Andromeld rabbit",
      "links": []
     }
    ],
