@@ -2,18 +2,33 @@
   "books": [
     {
       "authors": "cev",
+      "estFinishedAt": "2026-10-21",
+      "highlights": 0,
+      "id": "78",
+      "lastOpen": "2026-10-19T18:01+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 129,
+      "progressPct": 4.651162790697675,
+      "series": null,
+      "title": "Cev2-1019",
+      "totalReadPages": 5,
+      "totalReadTime": 259
+    },
+    {
+      "authors": "cev",
       "estFinishedAt": "2026-10-20",
       "highlights": 0,
       "id": "77",
-      "lastOpen": "2026-10-19T14:56+08:00",
+      "lastOpen": "2026-10-19T17:05+08:00",
       "notes": 0,
       "originalTitle": null,
       "pages": 98,
-      "progressPct": 23.46938775510204,
+      "progressPct": 100,
       "series": null,
       "title": "Cev1-101626",
-      "totalReadPages": 17,
-      "totalReadTime": 508
+      "totalReadPages": 71,
+      "totalReadTime": 2643
     },
     {
       "authors": "cjw",
@@ -677,7 +692,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-24",
+      "estFinishedAt": "2026-10-23",
       "highlights": 0,
       "id": "32",
       "lastOpen": "2026-09-11T09:59+08:00",
@@ -1067,7 +1082,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-12-18",
+      "estFinishedAt": "2026-12-15",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -1083,18 +1098,18 @@
   ],
   "current": {
     "authors": "cev",
-    "estFinishedAt": "2026-10-20",
+    "estFinishedAt": "2026-10-21",
     "highlights": 0,
-    "id": "77",
-    "lastOpen": "2026-10-19T14:56+08:00",
+    "id": "78",
+    "lastOpen": "2026-10-19T18:01+08:00",
     "notes": 0,
     "originalTitle": null,
-    "pages": 98,
-    "progressPct": 23.46938775510204,
+    "pages": 129,
+    "progressPct": 4.651162790697675,
     "series": null,
-    "title": "Cev1-101626",
-    "totalReadPages": 17,
-    "totalReadTime": 508
+    "title": "Cev2-1019",
+    "totalReadPages": 5,
+    "totalReadTime": 259
   },
   "daily": [
     {
@@ -1259,11 +1274,11 @@
     },
     {
       "d": "2026-10-19",
-      "p": 19,
-      "s": 534
+      "p": 79,
+      "s": 2928
     }
   ],
-  "dataVersion": "bd8f2355e295",
+  "dataVersion": "1fe51e994f92",
   "hourly": [
     {
       "h": 0,
@@ -1327,15 +1342,15 @@
     },
     {
       "h": 15,
-      "s": 2309
+      "s": 2855
     },
     {
       "h": 16,
-      "s": 8760
+      "s": 10224
     },
     {
       "h": 17,
-      "s": 6195
+      "s": 6579
     },
     {
       "h": 18,
@@ -1371,15 +1386,15 @@
     },
     {
       "m": "2026-10",
-      "p": 2147,
-      "s": 50526
+      "p": 2207,
+      "s": 52920
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
-    "booksStarted": 72,
-    "pagesTurned": 5177,
-    "readSeconds": 127614
+    "booksStarted": 73,
+    "pagesTurned": 5236,
+    "readSeconds": 130008
   }
 }
