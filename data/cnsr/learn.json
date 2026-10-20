@@ -3,16 +3,48 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-18T21:46+08:00",
+ "updatedAt": "2026-10-20T22:41+08:00",
  "counts": {
   "days": 5,
-  "lines": 48,
+  "lines": 43,
   "hidden": 106,
-  "links": 0,
+  "links": 1,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3fe09462-a4af-813c-a775-fc8a008bb2a2",
+   "date": "2026-10-19",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "减肥针微剂量流行起来了",
+     "links": [
+      {
+       "t": "减肥针微剂量流行起来了",
+       "href": "https://mp.weixin.qq.com/s/3CTD0Uao5Q6oq-8ek6wXAQ",
+       "title": "减肥针微剂量流行起来了",
+       "desc": "约每七名正在使用注射类GLP-1药物的人中，就有一名尝试过「微剂量」。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "Noom、Hims & Hers、Found、Midi、Alloy和AgelessRx已经相继推出微剂量服务。其共同模式不是单卖药物，而是把复配GLP-1、远程问诊、剂量调整、代谢检测、营养指导和健康教练打包成订阅产品。对平台而言，微剂量带来三重增量：把客户从肥胖患者扩大至低BMI和早期代谢风险人群；以更低价格和更少不良反应的预期降低首次使用门槛；在减重结束后，以维持治疗延长付费周期。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Noom推出面向BMI不低于21人群的Proactive Health项目，将微剂量GLP-1与居家检测结合，跟踪血糖、血脂和高敏C反应蛋白等指标。女性健康平台Midi和Alloy则把微剂量嵌入更年期体重管理，强调缓慢减重、减少胃肠道反应，并与激素治疗、营养和肌肉保护结合。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3fb09462-a4af-81e1-a35a-e3c723e45628",
    "date": "2026-10-16",
@@ -250,56 +282,6 @@
     }
    ],
    "more": 50,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3ef09462-a4af-816a-a159-f99a8483149c",
-   "date": "2026-10-04",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "出牌时如果明明有可出的牌却没出，就可能被对手喊 \"Crapette\" 并受到惩罚。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "下方公共区域通常按不同颜色、相邻点数叠放，例如黑桃 Q 上可以放红桃 K 或红桃 J。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "中间区域按花色从 A 开始递增叠放，例如 A、2、3……",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "每人有自己的牌区，包括手牌、弃牌堆和储备牌。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "基本玩法大致是：",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "它本质上是一种\"竞争性接龙\"：两名玩家各自使用一副牌，按照规则把牌从自己的牌区移动到公共区域，先出完所有牌的一方获胜。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Crapette 是一个法语词，最常见的含义是一种双人纸牌游戏，也常被称为 Russian Bank。",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "Crapette 是…",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }
