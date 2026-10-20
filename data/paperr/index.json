@@ -5,15 +5,15 @@
       "estFinishedAt": "2026-10-21",
       "highlights": 0,
       "id": "78",
-      "lastOpen": "2026-10-19T18:01+08:00",
+      "lastOpen": "2026-10-19T18:35+08:00",
       "notes": 0,
       "originalTitle": null,
       "pages": 129,
-      "progressPct": 4.651162790697675,
+      "progressPct": 5.426356589147287,
       "series": null,
       "title": "Cev2-1019",
-      "totalReadPages": 5,
-      "totalReadTime": 259
+      "totalReadPages": 6,
+      "totalReadTime": 507
     },
     {
       "authors": "cev",
@@ -752,7 +752,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-27",
+      "estFinishedAt": "2026-10-26",
       "highlights": 0,
       "id": "29",
       "lastOpen": "2026-09-09T18:08+08:00",
@@ -872,7 +872,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-10-22",
+      "estFinishedAt": "2026-10-21",
       "highlights": 0,
       "id": "16",
       "lastOpen": "2026-09-07T13:54+08:00",
@@ -1101,15 +1101,15 @@
     "estFinishedAt": "2026-10-21",
     "highlights": 0,
     "id": "78",
-    "lastOpen": "2026-10-19T18:01+08:00",
+    "lastOpen": "2026-10-19T18:35+08:00",
     "notes": 0,
     "originalTitle": null,
     "pages": 129,
-    "progressPct": 4.651162790697675,
+    "progressPct": 5.426356589147287,
     "series": null,
     "title": "Cev2-1019",
-    "totalReadPages": 5,
-    "totalReadTime": 259
+    "totalReadPages": 6,
+    "totalReadTime": 507
   },
   "daily": [
     {
@@ -1274,11 +1274,11 @@
     },
     {
       "d": "2026-10-19",
-      "p": 79,
-      "s": 2928
+      "p": 83,
+      "s": 3176
     }
   ],
-  "dataVersion": "1fe51e994f92",
+  "dataVersion": "310d6a25d19b",
   "hourly": [
     {
       "h": 0,
@@ -1354,7 +1354,7 @@
     },
     {
       "h": 18,
-      "s": 18060
+      "s": 18308
     },
     {
       "h": 19,
@@ -1386,15 +1386,15 @@
     },
     {
       "m": "2026-10",
-      "p": 2207,
-      "s": 52920
+      "p": 2211,
+      "s": 53168
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
     "booksStarted": 73,
-    "pagesTurned": 5236,
-    "readSeconds": 130008
+    "pagesTurned": 5237,
+    "readSeconds": 130256
   }
 }
