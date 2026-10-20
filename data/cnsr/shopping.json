@@ -3,16 +3,100 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-18T11:08+08:00",
+ "updatedAt": "2026-10-20T11:30+08:00",
  "counts": {
   "days": 5,
-  "lines": 17,
-  "hidden": 21,
-  "links": 3,
-  "images": 2,
+  "lines": 27,
+  "hidden": 72,
+  "links": 4,
+  "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "3fe09462-a4af-8130-9358-e1e6891f9500",
+   "date": "2026-10-19",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "东莞跑出「电子皮肤」黑马，大疆教父、200亿具身大厂都投了",
+     "links": [
+      {
+       "t": "东莞跑出「电子皮肤」黑马，大疆教父、200亿具身大厂都投了",
+       "href": "https://mp.weixin.qq.com/s/RFjxMrJvjDOTKd1tqhKCLw",
+       "title": "东莞跑出「电子皮肤」黑马，大疆教父、200亿具身大厂都投了",
+       "desc": "这家不碰大模型、不造本体，只做“数据采集工具”的公司，凭什么卡住产业咽喉？"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "Torre di Civita",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Yashica官方的发货计划，全新的Y16 Pocket相机，将会在11月30日所在的那一周正式开始向全球用户发货。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "总的来说，墨现科技的产品为个人开发者打开了一扇通往“高级触觉交互”的窗，但你需要以“小型B端客户”或“研究者”的心态去接洽。从一颗指腹传感器模组开始，围绕“力控”和“触觉可视化”做文章，是最现实也最容易出彩的路径。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "结合成熟开源生态：在软件端，可以积极利用现有的手势识别、VR开发（Unity/Unreal）和机器人仿真工具。硬件上，也可以关注搜索结果中提到的eFlesh等开源触觉皮肤项目作为补充或对比。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "做好“数据接口”的功课：其手套产品能同步输出“手部位姿+全掌触觉压力分布”。购买前务必确认传感器模组的输出接口（是模拟电压、I2C、SPI还是USB？）和数据协议。如果官方不提供SDK，你可能需要自己用单片机（如ESP32）或数据采集卡来读取原始数据。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "先明确采购目标：个人开发不建议直接瞄准数采手套。首选目标是“指腹压力传感器模组”或小面积柔性传感器片，这是成本可控、又能体现其核心技术的切入点。直接联系墨现科技，说明你是个人开发者/研究者，询问是否有单件或小批量的销售渠道及相应的数据接口文档。",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "📝 给你的开发建议",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "项目构想：触觉“膝跳反射”演示。在机械臂末端安装传感器，当检测到突然的、尖锐的碰撞（通过压力变化率判断）时，触发一个极低延迟的“缩回”动作，而不是等待主控电脑处理。这可以演示边缘计算在触觉反馈中的价值。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "呼应创始人提到的“给机器人建立物理世界的条件反射通路”的理念。",
+     "links": []
+    }
+   ],
+   "more": 51,
+   "images": [
+    {
+     "src": "data/cnsr/img/3fe09462a4af81f6a8f7cb9c69e9fe2b.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3fe09462a4af81d08dfed5d2e86f7c64.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3fe09462a4af8057b222fb117f2bdd33.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3fe09462a4af81928844d0aa16a13ffa.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 4
+  },
   {
    "id": "3f909462-a4af-815d-b9b9-fbfa72895e01",
    "date": "2026-10-14",
@@ -161,20 +245,6 @@
    "more": 0,
    "images": [],
    "imagesSeen": 0
-  },
-  {
-   "id": "3f109462-a4af-8179-b8d8-e77e3d0e123a",
-   "date": "2026-10-06",
-   "title": "",
-   "lines": [],
-   "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3f109462a4af810bbbb1c46638e6aec6.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 1
   }
  ]
 }
