@@ -3,21 +3,66 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-19T11:22+08:00",
+ "updatedAt": "2026-10-21T11:24+08:00",
  "counts": {
   "days": 5,
-  "lines": 17,
+  "lines": 10,
   "hidden": 0,
-  "links": 3,
+  "links": 5,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
   {
+   "id": "3ff09462-a4af-813a-9912-d42e2ff52c6b",
+   "date": "2026-10-20",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
    "id": "3fe09462-a4af-817a-8a85-dfabc8edd45c",
    "date": "2026-10-19",
    "title": "",
    "lines": [
+    {
+     "k": "bookmark",
+     "t": "Duda Lima",
+     "links": [
+      {
+       "t": "Duda Lima",
+       "href": "https://www.duda.works/",
+       "title": "Duda Lima",
+       "desc": ""
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "SWSH - Awwwards Honorable Mention",
+     "links": [
+      {
+       "t": "SWSH - Awwwards Honorable Mention",
+       "href": "https://www.awwwards.com/sites/swsh",
+       "title": "SWSH - Awwwards Honorable Mention",
+       "desc": "SWSH is the fan engagement platform for live events. Shared albums collect fan content, deliver them instantly with opt-in facial recognition, and turn..."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+     "links": [
+      {
+       "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+       "href": "https://www.serus.ai/protection/?referer_url=https%3A%2F%2Fwww.awwwards.com%2F",
+       "title": "Serus Protection: Find and Remove Your Exposed Personal Data",
+       "desc": "Map what"
+      }
+     ]
+    },
     {
      "k": "bookmark",
      "t": "NEW",
@@ -95,73 +140,6 @@
     {
      "k": "paragraph",
      "t": "电信的转型不是单点发力，而是一套完整体系。多年推进云改数转，现在升级为云改数转智惠战略，核心就是算力、平台、数据、模型、应用五位一体智能云体系",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e909462-a4af-8171-91af-c64af320f8b6",
-   "date": "2026-09-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "没了（交接预过这一点），项目里也没有 gradlew。找 gradle。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "/tmp/gradle-path",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "~15 类型 × 30 天 = 450 次，和失败数吻合。修法：每次只回读最近 3 天，其余靠服务器累积（代码注释本来就写了\"服务器会累积，30 天窗口只是填缺口\"）。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "分布式视听，普通人听上去比较模糊，简单点说，政府、公共交通、能源等等，这些领域的指挥控制中心，都需要海量音视频信号实时调度到大屏幕上，从而实现精准调控。魅视科技所做的，正是这项业务。2015年，魅视科技在业内率先推出基于类区块链技术的无中心服务器、完全去中心化分布式系统，此后经过不断迭代和创新，逐步发展成为国内一流的AI边缘计算&智能分布式视听解决方案提供商",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "洛图科技 9 月 27 日发布的月度追踪报告显示，2026 年 8 月中国笔记本电脑线上全渠道（不含企业官方平台）销量为 122.3 万台，同比下降 20.8%；销额同比下降 11.1%。当月成交均价为 7885 元，同比上涨 12.3%。洛图认为，成交结构向中高端产品移动，拉大了销量与销额跌幅的差距。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "在路由器上安装 udpxy 和 luci-app-udpxy 插件后，通常需要配置 IPTV 接口（获取组播数据）、设置防火墙规则，并启动 udpxy 服务。配置成功后，即可将原来的组播地址转换为 HTTP 地址进行播放",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "典型配置示例（以 OpenWrt 为例）：",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "udpxy 是一个轻量级的 UDP-to-HTTP 组播流量中继守护进程。它的核心作用是作为“协议转换器”，将运营商提供的、只能在特定网络内传播的 IPTV 组播流，转换成普通设备（如手机、电脑、智能电视）可以访问的 HTTP 单播流。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "腾讯，又造了个良心App",
-     "links": [
-      {
-       "t": "腾讯，又造了个良心App",
-       "href": "https://mp.weixin.qq.com/s/8ekbFvO4Lhw549fO4iNogA",
-       "title": "腾讯，又造了个良心App",
-       "desc": "用起来还挺意外"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "Chatterfly 腾讯 微信",
      "links": []
     }
    ],
