@@ -3,16 +3,91 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-20T04:22+08:00",
+ "updatedAt": "2026-10-21T22:52+08:00",
  "counts": {
   "days": 5,
-  "lines": 23,
-  "hidden": 100,
+  "lines": 32,
+  "hidden": 122,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40009462-a4af-81b3-94d7-ddec76d2fc97",
+   "date": "2026-10-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "“算力即命运”的口号喊得很响，但现实是，如果没有廉价的资金和顺利的施工，算力只能是个画饼",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "AI 实验室（OpenAI、Anthropic）用严苛的合同条款把风险转嫁给了基建商。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "英伟达的黄仁勋依然在伦敦为 Nscale 站台，夸赞它是“英国过去 10 年最有价值的初创公司”；而华尔街和债券投资者却开始用脚投票，重新定价风险。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "全美有 1000 多个社区试图推出禁令或限制 AI 基础设施。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "社会与监管大山：物理极限与公众抵制",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Nscale 的窘境：文章特别点名了 Nscale。它计划在纽交所 IPO 估值 350 亿美元，但在当前市场环境下很难。更关键的是，截至 8 月，Nscale 只有 25,000 块先进 AI 芯片上线，而它的目标是 50 万块。如果达不到交付时间表，Anthropic 有权退出这笔 450 亿美元的巨额合同。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "成本超支：Cipher 为了延期，不得不吞下 3.59 亿美元的超支成本，甚至还要去发可转债融资。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "时间就是生命：AI 实验室在合同里留了后手。如果数据中心交付延期，AI 实验室有权直接“走人”（Walk away）。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "工程与交付大山：项目延误与“对赌”失败",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "巨大的资金缺口：软银旗下的 SB Energy 还没建完一个数据中心，却面临 1740 亿美元的资金缺口；Nebius 的 CEO 直言建 5GW 产能需要 2500 亿美元，而他们目前只筹集了 20%。",
+     "links": []
+    }
+   ],
+   "more": 22,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3ff09462-a4af-81d2-8fb3-c8827b66053d",
+   "date": "2026-10-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Muse 和 Grok Bot",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3fb09462-a4af-8186-a50f-eae81476c917",
    "date": "2026-10-16",
@@ -155,36 +230,6 @@
     }
    ],
    "more": 100,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3ed09462-a4af-808c-b7af-d2c06329ebb6",
-   "date": "2026-10-02",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Kitesurf a cloud-based browser built specifically for ai agents",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3e509462-a4af-8172-b332-d1720da7cdb3",
-   "date": "2026-09-24",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Ray-Ban Meta Audio，纯听歌的AI眼镜这是Meta第一款纯音频眼镜，没有摄像头，主打听歌和AI语音交互。",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }
