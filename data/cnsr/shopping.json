@@ -3,16 +3,85 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-20T11:30+08:00",
+ "updatedAt": "2026-10-22T11:23+08:00",
  "counts": {
   "days": 5,
-  "lines": 27,
+  "lines": 26,
   "hidden": 72,
-  "links": 4,
+  "links": 2,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40109462-a4af-8196-9c4f-d6af6a946d62",
+   "date": "2026-10-22",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "涂鸦插座",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40009462-a4af-817e-9adb-dc667a33e3d2",
+   "date": "2026-10-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "M42 卡口老镜头（比如八羽怪 Helios 44-2，带旋转焦外）或者任何几十年前的老玻璃镜头。老镜头的镀膜和眩光，能立刻给你的照片注入这种“脏、糊、暗”的艺术感。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3ff09462-a4af-814e-96f7-c5b21da22ddb",
+   "date": "2026-10-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "它长得完完全全就是一枚35mm胶卷暗盒，但剥开复古外壳，里面是一台实打实的数码相机——Escura SnapRoll。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "过去，处方药营销的重心是医生、医院和支付方；LillyDirect出现后，礼来可以同时触达患者，提供问诊入口、保险支持、自费优惠和配送服务。药企与消费者之间原本漫长的链条正在缩短。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Vogue World在米兰举行。官方活动手册显示，礼来与ALO、eBay、Meta Glasses并列为四家首席赞助商。减重药的竞争由此出现一个新变化：礼来争夺的不再只是医生手里的处方，也包括高消费女性花在身材、健康和自我管理上的预算。礼来开始抢时尚圈的流量礼来并非只在现场挂上Logo。Vogue与其共同制作品牌短片《Portrait of Progress》，将健康与创造力、自我表达联系起来；Vogue Café还引入礼来健康体验路线，覆盖咖啡馆、健身中心和营养场所。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Willow：把“养植物靠经验”变成“养植物靠数据”Willow是一个来自澳大利亚的园艺科技品牌，由一群植物爱好者和工程师创立。它专注于解决“植物杀手”的困扰，通过传感器和植物数据库，让普通用户也能科学地养护植物",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/3ff09462a4af80748050f6a386ce6e2b.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/3ff09462a4af812a88d2fe23ee46f821.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 2
+  },
   {
    "id": "3fe09462-a4af-8130-9358-e1e6891f9500",
    "date": "2026-10-19",
@@ -89,10 +158,6 @@
     {
      "src": "data/cnsr/img/3fe09462a4af8057b222fb117f2bdd33.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3fe09462a4af81928844d0aa16a13ffa.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 4
@@ -159,90 +224,6 @@
     }
    ],
    "more": 21,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f809462-a4af-81a2-98d2-c7b9095a3ce6",
-   "date": "2026-10-13",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "HUION（中文品牌名：绘王）是一家来自中国的数字绘写设备品牌，专注于研发、生产和销售数位板（绘图板）、数位屏（绘图屏）等原笔迹手写输入设备及解决方案",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f709462-a4af-8147-ac21-e65389af265d",
-   "date": "2026-10-12",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "无需手柄、靠 AI 摄像头追踪身体动作的家庭体感游戏主机 Nex Playground",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "从Sol de Janeiro，看“直觉型”品牌的崛起",
-     "links": [
-      {
-       "t": "从Sol de Janeiro，看“直觉型”品牌的崛起",
-       "href": "https://mp.weixin.qq.com/s/MU-oC64-v21-PcD-VkthLg",
-       "title": "从Sol de Janeiro，看“直觉型”品牌的崛起",
-       "desc": "年销12亿美元背后，“重做”身体护理。"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "Sol de Janeiro的成长速度却堪称惊人：2025年已是丝芙兰销量第一的护理品牌，同时也是德国Douglas与澳洲Mecca排名第一的护肤品牌",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
-     "links": [
-      {
-       "t": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
-       "href": "https://www.ebel.com/",
-       "title": "Ebel | Official Ebel Website | Fine Swiss Luxury Watches",
-       "desc": "Offical site of Ebel Watches. Luxury Swiss watches Manufacturer since 1911. Ebel Watches for Women and Men."
-      }
-     ]
-    }
-   ],
-   "more": 0,
-   "images": [
-    {
-     "src": "data/cnsr/img/3f709462a4af81cb91acdbc192681bbc.jpg",
-     "caption": ""
-    }
-   ],
-   "imagesSeen": 1
-  },
-  {
-   "id": "3f309462-a4af-81fa-93f0-c8aea1a759fd",
-   "date": "2026-10-08",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Copenn手工塔香 thailand",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Rokid定于10月27日发布第二代带显示AI眼镜，迭代升级硬件与交互能力；极米旗下MemoMind One国庆期间登陆全国56家线下门店，产品摒弃摄像头设计，依托Micro-LED光波导技术，主打翻译、录音转写、提词、导航等实用办公功能；",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }

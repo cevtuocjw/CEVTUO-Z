@@ -1,17 +1,17 @@
 {
- "generatedAt": "2026-10-21T22:52+08:00",
+ "generatedAt": "2026-10-22T11:23+08:00",
  "sources": [
   {
    "key": "shopping",
    "label": "Shopping",
    "path": "data/cnsr/shopping.json",
    "window": "最近 5 个 @日期",
-   "updatedAt": "2026-10-20T11:30+08:00",
+   "updatedAt": "2026-10-22T11:23+08:00",
    "counts": {
     "days": 5,
-    "lines": 27,
+    "lines": 26,
     "hidden": 72,
-    "links": 4,
+    "links": 2,
     "images": 5,
     "skippedSubtrees": 0
    }
