@@ -3,16 +3,167 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-20T22:41+08:00",
+ "updatedAt": "2026-10-22T22:53+08:00",
  "counts": {
   "days": 5,
   "lines": 43,
-  "hidden": 106,
-  "links": 1,
+  "hidden": 138,
+  "links": 6,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40109462-a4af-813e-bd73-e0d22d0d495b",
+   "date": "2026-10-22",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Jeff Mills首",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "10月20日，葛兰素史克宣布其慢性乙肝功能性治愈药物贝普若韦生获美国FDA批准上市，该药为全球首个此类药物。此前今年8月，该药已在日本获批。国内目前正处上市审评阶段，由正大天晴负责销售。临床试验显示，治疗6个月后19%总体患者实现功能性治愈。‌‌",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "核心用途：它的主要用途就是作为佐餐酱（Accompaniment）。你可以用它来蘸印度薄饼（Pappadums），或者在吃辛辣的咖喱时加一勺，以“冷却”口腔、平衡辣味",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "主要成分：以低脂酸奶为主（占比约54%），并含有黄瓜（约11%）和薄荷（约1%）。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "风味与定位：这是一款酸奶基底的蘸酱，混合了黄瓜粒和薄荷，口感清凉、薄荷味突出。它的辣度评级极低（Chilli rating - 1），完全是为了提供清爽的“降温”体验。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "你提到的“cooling sauce”（冷却酱），在印度菜中通常指的是Raita。Patak's也生产这种产品，它的作用正是平衡和缓解咖喱的辛辣感。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "🥣 “冷却酱”的真身：Raita（酸奶黄瓜酱）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "用途：它主要用于烹饪。你只需将肉类（如鸡肉）或蔬菜煎炒后，倒入这款酱汁炖煮几分钟，就能快速做出一道餐厅水准的Tikka Masala菜肴。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "核心成分：主要成分包括水、番茄（约22%）、酸奶、单倍奶油以及香料（如孜然、芫荽）等。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "风味与口感：这是一种以番茄、酸奶和奶油为基础的酱汁，融合了多种印度香料。它的辣度通常被标注为中等（Medium），口感浓郁顺滑，味道平衡，不会过于刺激。",
+     "links": []
+    }
+   ],
+   "more": 51,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40009462-a4af-81b0-9118-da7e828d8bcb",
+   "date": "2026-10-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "对普通人而言，最不该做的事是拿自己的自拍去套用某个类似模型，然后据此焦虑或推断病情；这类工具的意义在于临床风险分层，而不是个人命运预测。 usatoday",
+     "links": [
+      {
+       "t": "usatoday",
+       "href": "https://www.usatoday.com/story/life/health-wellness/2026/10/20/ai-photo-tool-age-cancer-survival-study/92343146007/"
+      }
+     ]
+    },
+    {
+     "k": "quote",
+     "t": "在研究环境中，FAHR-FaceSurvival 能把癌症患者划分为不同死亡风险层级；高风险组在 90 天内死亡的比例显著更高，因此未来可能成为医生评估治疗耐受性和预后的辅助工具。 How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+     "links": [
+      {
+       "t": "How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+       "href": "https://www.cnn.com/2026/10/20/health/ai-models-cancer-survival-biological-age",
+       "title": "How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+       "desc": "A simple selfie could hold surprising clues to your overall health and longevity, especially among people with cancer."
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "但更稳妥的表述不是“AI 能用自拍预测你会不会死于癌症”，而是：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这篇研究真正证明的是：面部照片中确实存在可被 AI 捕捉、并与癌症患者短期死亡风险显著相关的信号。这是“数字表型 / AI 生物标志物”方向的一次重要进展。 Can AI predict whether you’ll die from cancer from just an image of your face?",
+     "links": [
+      {
+       "t": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "href": "https://www.scientificamerican.com/article/can-ai-predict-whether-youll-die-from-cancer-from-just-an-image-of-your-face/",
+       "title": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "desc": "Researchers tasked an algorithm with predicting cancer patients’ risk of dying. For some people, it was shockingly accurate"
+      }
+     ]
+    },
+    {
+     "k": "heading_3",
+     "t": "最准确的解读",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "需要前瞻性临床试验：目前主要是回顾性建模和验证；要进入临床，还需证明它在真实诊疗流程中能改善决策和患者结局。 usatoday",
+     "links": [
+      {
+       "t": "usatoday",
+       "href": "https://www.usatoday.com/story/life/health-wellness/2026/10/20/ai-photo-tool-age-cancer-survival-study/92343146007/"
+      }
+     ]
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "伦理与隐私风险极高：面部属于强生物识别信息；若被保险公司、雇主或非医疗平台滥用，可能造成歧视、拒保、定价不公等问题。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "无法替代临床判断：癌症预后还取决于肿瘤类型、分期、基因突变、治疗反应、器官功能、营养和并发症；一张照片不可能覆盖这些信息。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "可能编码偏差：照片质量、光线、化妆、种族、性别、社会经济状况、医疗可及性、拍摄时间点，都可能被模型无意中当作风险信号。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "相关不等于因果：AI 找到的是面部特征与死亡风险的统计关联，并不能证明“脸老导致死亡”，也不能解释全部机制。 Can AI predict whether you’ll die from cancer from just an image of your face?",
+     "links": [
+      {
+       "t": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "href": "https://www.scientificamerican.com/article/can-ai-predict-whether-youll-die-from-cancer-from-just-an-image-of-your-face/",
+       "title": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "desc": "Researchers tasked an algorithm with predicting cancer patients’ risk of dying. For some people, it was shockingly accurate"
+      }
+     ]
+    }
+   ],
+   "more": 32,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3fe09462-a4af-813c-a775-fc8a008bb2a2",
    "date": "2026-10-19",
@@ -162,126 +313,6 @@
     }
    ],
    "more": 3,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f709462-a4af-816b-a329-ea068a177a99",
-   "date": "2026-10-12",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "FT私募资本峰会观点：Permira联合CEO Dipan Patel称当前环境类似互联网泡沫破裂和金融危机后，低估值、竞争减少，PE能做成史上最佳交易之一，当前vintage可能进入更好梯队，前四分位基金将有exceptional returns；但PE过去几年很艰难，IPO难、高利率使出售难达理想估值，许多基金在超低利率时高估值买入，又不愿低价卖出，导致对LP现金回报减少；Patel认为低利率环境才是问题，高利率环境下“睁大眼睛”反而不可怕，因为会转化为交易定价；Carlyle联合总裁John Redett说金融危机后的“免费钱”和长期扩张让行业自满，大家靠multiple expansion赚钱，不真正关注价值创造，但未投资现金减少后仍有吸引人的机会，如国防公司和大型集团不受欢迎的部门；AI disruption也会创造机会，比如软件，软件曾是PE最爱，但ChatGPT后AI agents给传统商业模式带来不确定性，交易一度停滞，软件从overcapitalised变成undercapitalised，Permira曾最高30%投资活动在软件，ChatGPT后三年没做软件交易，但Patel警告没有行业免疫AI，以为其他行业安全会导致更多资本追逐更少资产，是个陷阱；Hg执行主席Nic Humphries说只有投资于在组合公司使用AI并能规模化内部能力的机构才能生存，“什么都不做——死”；Sixth Street联合总裁Julian Salisbury说“pig in the python”——卡在buyout组合里的公司，会给能提供混合股债定制投资的投资者带来吸引人的机会，因为PE需要solutions providers帮它们向投资者回收现金、提供增量资本继续增长、提供增量融资以便再融资和延长持有资产；最后要批判性看，这些观点来自行业高管，Permira说当前vintage好有利于募资，Hg强调AI能力符合其软件专注定位，Sixth Street强调卡住资产需要资本解决方案符合其私人信贷业务，所以这段话既反映真实趋势，也有行业自我推销成分。",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "FT私募资本峰会观点… PE情况",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "AI招聘工具可能偏爱AI生成的简历，尤其求职者和招聘方用同一类LLM时，会出现“AI偏好AI”的自我偏好偏差，导致筛选失真。案例是Addleshaw Goddard律所招聘HR部门IT岗，收到178份申请，用Copilot做AI agent筛选，人类也筛，结果不一致；AI更青睐那些“好得不真实”、疑似AI代写的简历。HR猜测可能是AI让简历定制更容易，也可能agent把“简历有AI痕迹”误判为“具备AI能力”，甚至纯粹因为简历由AI生成而加分。研究引用一篇仍在修订的工作论文：模拟24个职位招聘，使用与招聘方相同LLM的候选人进入短名单概率高23%到60%，商业岗位差异最大，农业汽车最小。机制可能是AI文本风格相似、信号混淆、统计偏好、反馈循环。证据有局限：案例是轶事，论文未正式发表，模拟不等同真实招聘，偏差程度受岗位、模型、提示词影响。启示：招聘方应让模型忽略简历来源、只看内容，并用多个模型稀释偏见，但AI只能辅助，人类判断仍重要；求职者别完全依赖AI写“完美简历”，保留真实经历和可验证成果。Addleshaw最终录用的是人类选择，而非AI排名最高者，说明目前人类判断仍不可替代",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "治疗家族性高胆固醇血症：用于10岁及以上杂合子型或纯合子型家族性高胆固醇血症患者。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "治疗高脂血症：作为饮食控制的辅助手段，用于成人原发性高脂血症患者。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "降低心血管事件风险：用于有冠心病多种风险因素但无明确冠心病证据的成人，以及有明确冠心病的成人，以降低心肌梗死、卒中、血管重建术和心绞痛的风险。也用于2型糖尿病合并冠心病风险因素的成人。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "根据美国FDA批准的适应症，阿托伐他汀主要用于以下方面：",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "主要用途",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "它属于他汀类药物，是3-羟基-3-甲基戊二酰辅酶A（HMG-CoA）还原酶的抑制剂，这是胆固醇合成过程中的限速步骤。其核心作用是降低低密度脂蛋白胆固醇（LDL-C），同时也能在一定程度上降低甘油三酯和升高高密度脂蛋白胆固醇。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "阿托伐他汀（Atorvastatin）是一种他汀类降脂处方药，通过抑制肝脏胆固醇合成来降低血液中的“坏胆固醇”水平，并用于预防心血管事件。",
-     "links": []
-    }
-   ],
-   "more": 1,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f509462-a4af-81cc-9718-e8888f7dfc6e",
-   "date": "2026-10-10",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Rei 与 Liz：分别带了 Jane Austen 的 《Pride and Prejudice》（傲慢与偏见）和 Cynthia Kadohata 的 《Kira-Kira》（闪闪发光）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "IVE 成员",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Lorenzo Zurzolo：Pier Paolo Pasolini 的 《Ragazzi di vita》（生命之子）——他表示这是自己最喜欢的作家之一，故事发生在故乡罗马，关于友谊、自由与成长",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Z",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Anna Wintour（Vogue 主编）：Jane Austen 的 《Pride and Prejudice》（傲慢与偏见）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Samara Weaving：Oisín McKenna 的 《Evenings and Weekends》（夜晚与周末）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Naomi Watts：Charlotte Brontë 的 《Jane Eyre》（简·爱）——她称这本书是她的“初恋”",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "W",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Alexander Skarsgård：瑞典语版冰岛传说集（《Isländska Sagor》） ——他称其为“北欧文化中的《伊利亚特》”",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Vanessa Scalera：Fyodor Dostoevsky 的 《Notes from Underground》（地下室手记）",
-     "links": []
-    }
-   ],
-   "more": 50,
    "images": [],
    "imagesSeen": 0
   }
