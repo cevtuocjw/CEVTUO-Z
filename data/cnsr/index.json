@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23T11:28+08:00",
+ "generatedAt": "2026-10-23T22:40+08:00",
  "sources": [
   {
    "key": "shopping",
@@ -51,11 +51,11 @@
    "label": "TECH-AI",
    "path": "data/cnsr/techai.json",
    "window": "最近 5 个 @日期",
-   "updatedAt": "2026-10-21T22:52+08:00",
+   "updatedAt": "2026-10-23T22:40+08:00",
    "counts": {
     "days": 5,
-    "lines": 32,
-    "hidden": 122,
+    "lines": 17,
+    "hidden": 22,
     "links": 0,
     "images": 0,
     "skippedSubtrees": 0
