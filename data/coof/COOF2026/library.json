@@ -1,8 +1,31 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "395d37168c25",
+  "dataVersion": "539b3921952e",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "瑞士",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "40209462-a4af-8102-83c8-d88afdc07b83",
+      "mediaType": "影",
+      "note": null,
+      "order": 176,
+      "poster": "data/coof/posters/40209462-a4af-8102-83c8-d88afdc07b83.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "工作的人 Ceux qui travaillent",
+      "watchedAt": "2026-10-23",
+      "year": 2018
+    },
     {
       "cast": [],
       "collection": "COOF2026",
