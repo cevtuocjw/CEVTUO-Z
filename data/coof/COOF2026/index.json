@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 174,
-      "latestAt": "2026-10-17",
+      "count": 175,
+      "latestAt": "2026-10-23",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 174
+    "total": 175
   },
-  "dataVersion": "47b387da18e6",
+  "dataVersion": "5998a8a09b9f",
   "genres": [
     {
-      "count": 123,
+      "count": 124,
       "name": "剧情"
     },
     {
@@ -155,26 +155,49 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "意大利",
-      "法国"
+      "瑞士",
+      "比利时"
     ],
     "director": [],
     "genres": [
-      "历史"
+      "剧情"
     ],
-    "id": "3fc09462-a4af-81d7-8de9-e7d7659d2578",
+    "id": "40209462-a4af-8102-83c8-d88afdc07b83",
     "mediaType": "影",
-    "note": "第56届意大利大卫奖获奖名单",
-    "order": 175,
-    "poster": "data/coof/posters/3fc09462-a4af-81d7-8de9-e7d7659d2578.jpg",
+    "note": null,
+    "order": 176,
+    "poster": "data/coof/posters/40209462-a4af-8102-83c8-d88afdc07b83.jpg",
     "rating": null,
-    "runtimeMin": 204,
+    "runtimeMin": 101,
     "status": "watched",
-    "title": "我们相信 Noi credevamo",
-    "watchedAt": "2026-10-17",
-    "year": 2010
+    "title": "工作的人 Ceux qui travaillent",
+    "watchedAt": "2026-10-23",
+    "year": 2018
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "瑞士",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情"
+      ],
+      "id": "40209462-a4af-8102-83c8-d88afdc07b83",
+      "mediaType": "影",
+      "note": null,
+      "order": 176,
+      "poster": "data/coof/posters/40209462-a4af-8102-83c8-d88afdc07b83.jpg",
+      "rating": null,
+      "runtimeMin": 101,
+      "status": "watched",
+      "title": "工作的人 Ceux qui travaillent",
+      "watchedAt": "2026-10-23",
+      "year": 2018
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -622,29 +645,6 @@
       "title": "Mysteriet om menopausen",
       "watchedAt": "2026-10-02",
       "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "喜剧",
-        "动作"
-      ],
-      "id": "3ed09462-a4af-8143-bd74-cfed8ad1fcdf",
-      "mediaType": "影",
-      "note": null,
-      "order": 155,
-      "poster": "data/coof/posters/3ed09462-a4af-8143-bd74-cfed8ad1fcdf.jpg",
-      "rating": null,
-      "runtimeMin": 105,
-      "status": "watched",
-      "title": "好景在望 Here Comes the Boom",
-      "watchedAt": "2026-10-02",
-      "year": 2012
     }
   ],
   "schemaVersion": 1
