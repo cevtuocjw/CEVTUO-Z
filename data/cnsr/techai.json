@@ -3,16 +3,56 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-21T22:52+08:00",
+ "updatedAt": "2026-10-23T22:40+08:00",
  "counts": {
   "days": 5,
-  "lines": 32,
-  "hidden": 122,
+  "lines": 17,
+  "hidden": 22,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40209462-a4af-81a2-aaf0-dd5e7f805469",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "2025年11月，张源创立了丘脑智能，成为目前国内唯一做AI多模态长记忆的公司。成立半年后，2026年5月，丘脑智能联合英伟达研究院、香港科技大学、香港中文大学发布全球首个多模态长记忆Benchmark——MEMLENS。在全球最大开源AI社区与模型平台Hugging Face AI中，MEMLENS在Daily Paper中跻身前三。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40109462-a4af-81a6-9a2a-fea56af91c74",
+   "date": "2026-10-22",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "DeepSeek此次发布的并不是一套完整的推理技术栈。其文档提到，要构建完整的服务，还需要KV缓存系统、Prefill/Decode解耦，以及在数据并行副本之间进行负载均衡等功能，这些内容并未完全包含在此次开源项目中。不过，大部分核心的解耦功能已经实现",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "该框架是DeepSeek在面临美国尖端芯片出口限制下，确保大模型紧追美国顶尖AI模型的核心。推理框架负责管理模型如何使用计算资源来处理用户请求，其设计会影响延迟、吞吐量以及运行模型所需的硬件，因此是影响AI运营成本的重要因素",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "10月20日，DeepSeek宣布开源内部生产级推理框架DeepInfer。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40009462-a4af-81b3-94d7-ddec76d2fc97",
    "date": "2026-10-21",
@@ -105,131 +145,6 @@
     }
    ],
    "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f409462-a4af-8188-b867-c3c4da90a4c2",
-   "date": "2026-10-09",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "光波导决定眼镜的厚度和视场角，Micro-LED决定亮度和功耗，两者是AI眼镜能否日常佩戴的核心瓶颈。了解JBD、鲲游光电等供应商格局，能帮你判断Rokid、Meta等产品的迭代节奏。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "【C4emem 推荐 · 缺口】AI眼镜的光波导与Micro-LED供应链（by cevtuo c4emem AI）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "（by cevtuo c4emem AI）",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Rokid Glasses二代主打单绿Micro-LED光波导显示，支持翻译、导航、提词等场景。发布后首批用户反馈集中在重量分布、户外亮度可视性和续航表现上，值得对照极米MemoMind的无摄像头路线做取舍判断。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "【C4emem 推荐 · 延伸】Rokid Glasses二代发布后实测反馈",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "（by cevtuo c4emem AI）",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f409462-a4af-8109-a7e6-d735c8730164",
-   "date": "2026-10-09",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Rokid Glasses二代主打单绿Micro-LED光波导显示，支持翻译、导航、提词等场景。发布后首批用户反馈集中在重量分布、户外亮度可视性和续航表现上，值得对照极米MemoMind的无摄像头路线做取舍判断。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "【C4emem 推荐 · 延伸】Rokid Glasses二代发布后实测反馈",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "（by cevtuo c4emem AI）",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f309462-a4af-81b3-897f-f6931677c0a9",
-   "date": "2026-10-08",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "如果你的 AI 助手是基于 Khoj 或自建 RAG 系统，可以定时调用 mail_search 拉取新邮件列表，再用 mail_get 获取正文，然后将提取的文本写入你的向量数据库，让 AI 助手通过 RAG 检索来“学习”邮件内容。API 返回的正文是 Markdown 格式，保留了标题、列表、表格等语义结构，非常适合直接用于知识库。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "方式 B：自己调用 API 构建 RAG 管线",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "企业微信官方推出了 CLI 套件（wecom-unified） 和 MCP Server，AI Agent 可以通过简单的命令直接操作邮件，例如搜索、读取正文等。你只需要在 AI Agent 中安装对应的 Skill，就能让它原生地“看到”企业微信邮件，无需自己搭建中间层。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "方式 A：通过 CLI/MCP 让 Agent 直接调用",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "与 AI 助手集成的两种方式：",
-     "links": []
-    },
-    {
-     "k": "bulleted_list_item",
-     "t": "media_download：下载邮件附件或内嵌图片到本地。",
-     "links": []
-    },
-    {
-     "k": "bulleted_list_item",
-     "t": "mail_get：通过邮件 ID 获取邮件详情（正文、附件、内嵌图片）。",
-     "links": []
-    },
-    {
-     "k": "bulleted_list_item",
-     "t": "mail_search：支持按关键词、发件人、收件人、时间范围、文件夹等条件搜索邮件列表。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "核心接口能力：",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "企业微信已经开放了邮件能力的 API，允许应用或机器人代替成员读取邮件。这是让 AI 助手实时访问邮件的最优雅方式。",
-     "links": []
-    }
-   ],
-   "more": 100,
    "images": [],
    "imagesSeen": 0
   }
