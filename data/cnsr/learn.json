@@ -3,16 +3,43 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-22T22:53+08:00",
+ "updatedAt": "2026-10-24T21:50+08:00",
  "counts": {
   "days": 5,
-  "lines": 43,
-  "hidden": 138,
-  "links": 6,
+  "lines": 35,
+  "hidden": 135,
+  "links": 7,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40209462-a4af-811a-a628-f81bafeef4b2",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "unheimlich（令人生畏的）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+     "links": [
+      {
+       "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+       "href": "https://www.rmit.edu.au/news/all-news/2026/oct/coffee-waste-architecture",
+       "title": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+       "desc": ""
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40109462-a4af-813e-bd73-e0d22d0d495b",
    "date": "2026-10-22",
@@ -253,66 +280,6 @@
     }
    ],
    "more": 52,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f909462-a4af-8182-95de-d49976ede42a",
-   "date": "2026-10-14",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "“schismatic deployment of distortion”指的是在音乐创作中，将吉他失真音色作为一种造成分裂（schism）的手段来使用，以此表达神学或伦理上的张力",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "传统上，口头诽谤通常需要证明实际经济损失；但若属于“本身可诉的诽谤”（如指控犯罪、传染病、职业无能等），可能不需要。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Slander（口头诽谤）：以口头、临时性的言语传播。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Libel（书面诽谤）：以书面、印刷、视频、网络帖子等相对永久的形式发布。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "常见两种类型",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Defamation 中文通常翻译为 “诽谤” 或 “名誉毁损”，指的是发表虚假陈述，损害他人名誉，导致第三方对某人评价降低的行为。它既可能是民事侵权，也可能在严重情况下构成刑事犯罪。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "a lung nodule 就是 肺结节",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "IRL 最常见的含义是 “In Real Life” 的缩写",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Lempriere Wells 是一家总部位于澳大利亚墨尔本的精品投资银行，专注于为消费、美妆和健康领域的创始人主导型企业提供并购（M&A）和资本募集服务。2026年10月，随着美容品牌 ELEMIS 联合创始人的加入，它已正式更名为 Lempriere Wells Harrington (LWH)，并开始向美国市场扩张。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "“Heaux”的来源：这个词最早由美国黑人/克里奥尔社区创造，作为“hoe”的另一种拼写，后来在社交媒体上逐渐流行起来。它的含义比较灵活，既可以用来调侃或自嘲那些在约会中表现得很主动、爱调情或“恋爱脑”的人，也可以在亲密朋友之间作为一种亲昵的称呼。",
-     "links": []
-    }
-   ],
-   "more": 3,
    "images": [],
    "imagesSeen": 0
   }
