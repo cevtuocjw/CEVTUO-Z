@@ -3,16 +3,53 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-22T11:23+08:00",
+ "updatedAt": "2026-10-24T11:23+08:00",
  "counts": {
   "days": 5,
-  "lines": 26,
-  "hidden": 72,
+  "lines": 21,
+  "hidden": 51,
   "links": 2,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40209462-a4af-8178-a343-f5f86ceff55b",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "动态保暖材料Polartec Alpha",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "你的风格极度依赖“慢门（比如 1/15s 或 1/30s）”和“高感（ISO 3200 甚至更高）”。Sigma 的机内色彩模式（如 Teal and Orange 或者 Powder Blue）稍微调一下对比度和饱和度，直出就能有这种质感。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "discover our jewelry for men",
+     "links": [
+      {
+       "t": "discover our jewelry for men",
+       "href": "https://legramme.com/en",
+       "title": "discover our jewelry for men",
+       "desc": "Le Gramme is a men's jewelry brand. All creations, named after their weight in grams, are made in France. Free shipping. Free returns and exchanges."
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/40209462a4af81e886cde07f528c5207.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 1
+  },
   {
    "id": "40109462-a4af-8196-9c4f-d6af6a946d62",
    "date": "2026-10-22",
@@ -20,13 +57,28 @@
    "lines": [
     {
      "k": "paragraph",
+     "t": "超过75%的受访者愿意在未来使用可穿戴设备。消费者对身体数据的关注，正在从营养保健品、运动和睡眠延伸到饮食、体重与代谢管理。个人呼吸代谢检测，正是这一赛道中的细分品类。主要玩家包括Breezing、LEVL、Keyto等。而在这其中，表现最亮眼的就是以色列的品牌——Lumen。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Fabrique",
+     "links": []
+    },
+    {
+     "k": "paragraph",
      "t": "涂鸦插座",
      "links": []
     }
    ],
    "more": 0,
-   "images": [],
-   "imagesSeen": 0
+   "images": [
+    {
+     "src": "data/cnsr/img/40109462a4af817eb6f1c1bc6234b4e1.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 1
   },
   {
    "id": "40009462-a4af-817e-9adb-dc667a33e3d2",
@@ -150,82 +202,9 @@
     {
      "src": "data/cnsr/img/3fe09462a4af81f6a8f7cb9c69e9fe2b.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3fe09462a4af81d08dfed5d2e86f7c64.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/3fe09462a4af8057b222fb117f2bdd33.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 4
-  },
-  {
-   "id": "3f909462-a4af-815d-b9b9-fbfa72895e01",
-   "date": "2026-10-14",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "trmnl x",
-     "links": [
-      {
-       "t": "trmnl x",
-       "href": "https://shop.trmnl.com/products/trmnl-x?srsltid=AU7gw4WVyFUh0xfd5UFpWjtvdKAk5vU9wGGZKPgZa7Z7CvZTmETe_nJI"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "这是一款以济州岛扁柏（Hinoki Cypress）水为唯一成分的除臭喷雾，主打从根源分解异味，而非用香味掩盖",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "💧 产品核心：The Spray",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "hinok 是一个源于韩国济州岛的可持续生活品牌，核心理念是“永远与绿色同行”，致力于从自然中寻找答案，为日常生活提供清洁、卫生的方案。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "🌿 品牌简介：hinok",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "指的是韩国品牌 hinok（희녹） 旗下名为 “The Spray” 的织物与空间除臭喷雾。",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "指的是韩国品牌 hi…",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "ICP (International Cosmetic Products) 的时期。ICP 是一家专注于奢侈品香水的分销公司，由 Saujet 家族运营",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Thomas Saujet 是法国奢侈品与香水行业的企业家，以其在香水分销领域的深厚资历，以及近期创立的新型品牌孵化模式而闻名。他是家族企业 Saujet Holdings 的成员，目前正通过其新公司 Saujet Fragrances Group (SFG) 重塑奢华小众香水的品牌构建方式",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "LYMA Youth System / PRO Youth System：将激光仪、补充剂和护肤品打包为抗衰系统，售价在 $3,092 至 $6,920 之",
-     "links": []
-    }
-   ],
-   "more": 21,
-   "images": [],
-   "imagesSeen": 0
   }
  ]
 }
