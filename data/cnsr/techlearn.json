@@ -3,16 +3,76 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-23T11:28+08:00",
+ "updatedAt": "2026-10-25T11:18+08:00",
  "counts": {
   "days": 5,
-  "lines": 10,
-  "hidden": 0,
-  "links": 5,
+  "lines": 18,
+  "hidden": 21,
+  "links": 4,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40209462-a4af-81aa-b806-f02a5bce8f60",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "总结一下：为 Camelot 添加“现场实时生成式 AI”风险远大于收益，没有必要。 但将 AI 作为演出前的智能编配助手，或作为可加载的 AI 插件来丰富它的音色与效果库，则是完全可行且富有前景的方向。这能让你在享受 Camelot 极致稳定性的同时，也能利用到 AI 的创造力。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "将 AI 用在“演出前”的准备环节：在 Camelot 之外，使用 AI 工具来帮助你规划 Setlist、设计音色搭配、生成或改编分轨（Stem），然后将最终确定的素材导入 Camelot 进行现场表演的编排。这是目前风险最低、收益最直接的 AI 应用方式。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "智能混音/母带类：很多现代 AI 母带插件（如 iZotope Ozone 系列）都可以作为 VST 在 Camelot 中加载。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "人声/音色类：类似 ACE Studio 的 AI 人声/乐器插件。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "编曲/生成类：可以关注像 TapeOp Composer（AI 驱动的 MIDI 生成，集成在 Ableton Live 中）或 OBSIDIAN Neural（实时 AI 音乐生成插件）这类思路的插件，在 Camelot 里用来丰富你的音色库或生成背景织体。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "走“AI 插件宿主”的路线：这是最符合 Camelot 定位的做法。你可以寻找或开发AI 驱动的 VST/AU 插件，然后在 Camelot 中像使用任何普通插件一样加载它们。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "不要尝试修改 Camelot 本身：它是一个闭源商业软件，没有官方 API 支持 AI 深度集成。强行修改（尤其是使用破解版）风险极高，极不稳定。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "如果你真的想在 Camelot 生态里融入 AI，最稳妥、最能发挥其价值的路径是：",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "💎 给你的具体建议",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这些案例的共同点是：AI 是“被调用”的能力，而不是“接管”宿主的核心逻辑。Camelot 作为宿主，更应该保持其“稳定中枢”的纯粹性，而将 AI 能力通过 VST/AU 插件的形式引入。",
+     "links": []
+    }
+   ],
+   "more": 21,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "3ff09462-a4af-813a-9912-d42e2ff52c6b",
    "date": "2026-10-20",
@@ -113,33 +173,6 @@
     {
      "k": "paragraph",
      "t": "ysl en official 有 Akamai",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3ea09462-a4af-8196-b122-d934f3839251",
-   "date": "2026-09-29",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
-     "links": [
-      {
-       "t": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
-       "href": "https://macked.app/on1-effects-mac-crack.html",
-       "title": "ON1 Effects 2026.5.1 破解版 - AI蒙版智能特效插件 | MacKed - 专注于Mac破解资源的分享与下载",
-       "desc": "ON1 Effects"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "电信的转型不是单点发力，而是一套完整体系。多年推进云改数转，现在升级为云改数转智惠战略，核心就是算力、平台、数据、模型、应用五位一体智能云体系",
      "links": []
     }
    ],

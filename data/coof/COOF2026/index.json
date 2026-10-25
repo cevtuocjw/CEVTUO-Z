@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 175,
-      "latestAt": "2026-10-23",
+      "count": 176,
+      "latestAt": "2026-10-25",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 175
+    "total": 176
   },
-  "dataVersion": "5998a8a09b9f",
+  "dataVersion": "7b7f3a818a60",
   "genres": [
     {
-      "count": 124,
+      "count": 125,
       "name": "剧情"
     },
     {
@@ -59,7 +59,7 @@
       "name": "喜剧"
     },
     {
-      "count": 27,
+      "count": 28,
       "name": "惊悚"
     },
     {
@@ -155,26 +155,59 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "瑞士",
-      "比利时"
+      "罗马尼亚",
+      "法国",
+      "挪威",
+      "丹麦",
+      "芬兰",
+      "瑞典"
     ],
     "director": [],
     "genres": [
-      "剧情"
+      "剧情",
+      "惊悚"
     ],
-    "id": "40209462-a4af-8102-83c8-d88afdc07b83",
+    "id": "40409462-a4af-813a-ae41-e26aea3c3e7e",
     "mediaType": "影",
     "note": null,
-    "order": 176,
-    "poster": "data/coof/posters/40209462-a4af-8102-83c8-d88afdc07b83.jpg",
+    "order": 177,
+    "poster": "data/coof/posters/40409462-a4af-813a-ae41-e26aea3c3e7e.jpg",
     "rating": null,
-    "runtimeMin": 101,
+    "runtimeMin": 146,
     "status": "watched",
-    "title": "工作的人 Ceux qui travaillent",
-    "watchedAt": "2026-10-23",
-    "year": 2018
+    "title": "峡湾 Fjord",
+    "watchedAt": "2026-10-25",
+    "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "罗马尼亚",
+        "法国",
+        "挪威",
+        "丹麦",
+        "芬兰",
+        "瑞典"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "40409462-a4af-813a-ae41-e26aea3c3e7e",
+      "mediaType": "影",
+      "note": null,
+      "order": 177,
+      "poster": "data/coof/posters/40409462-a4af-813a-ae41-e26aea3c3e7e.jpg",
+      "rating": null,
+      "runtimeMin": 146,
+      "status": "watched",
+      "title": "峡湾 Fjord",
+      "watchedAt": "2026-10-25",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -621,30 +654,6 @@
       "title": "朗读者 The Reader",
       "watchedAt": "2026-10-02",
       "year": 2008
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "丹麦",
-        "德国",
-        "挪威"
-      ],
-      "director": [],
-      "genres": [
-        "纪录片"
-      ],
-      "id": "3ed09462-a4af-812b-8528-cc7a13ed7859",
-      "mediaType": "影",
-      "note": null,
-      "order": 156,
-      "poster": "data/coof/posters/3ed09462-a4af-812b-8528-cc7a13ed7859.jpg",
-      "rating": null,
-      "runtimeMin": null,
-      "status": "watched",
-      "title": "Mysteriet om menopausen",
-      "watchedAt": "2026-10-02",
-      "year": 2026
     }
   ],
   "schemaVersion": 1

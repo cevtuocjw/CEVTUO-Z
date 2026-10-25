@@ -1,8 +1,36 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "539b3921952e",
+  "dataVersion": "5123b914bbcb",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "罗马尼亚",
+        "法国",
+        "挪威",
+        "丹麦",
+        "芬兰",
+        "瑞典"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "惊悚"
+      ],
+      "id": "40409462-a4af-813a-ae41-e26aea3c3e7e",
+      "mediaType": "影",
+      "note": null,
+      "order": 177,
+      "poster": "data/coof/posters/40409462-a4af-813a-ae41-e26aea3c3e7e.jpg",
+      "rating": null,
+      "runtimeMin": 146,
+      "status": "watched",
+      "title": "峡湾 Fjord",
+      "watchedAt": "2026-10-25",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
