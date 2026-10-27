@@ -3,16 +3,78 @@
  "label": "TECH-AI",
  "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-25T22:06+08:00",
+ "updatedAt": "2026-10-28T03:49+08:00",
  "counts": {
   "days": 5,
-  "lines": 17,
+  "lines": 24,
   "hidden": 22,
-  "links": 0,
+  "links": 1,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40609462-a4af-8125-8abb-fb0c7a0bb7ce",
+   "date": "2026-10-27",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "人均一万美金 Token，用 Manus 改造 Manus",
+     "links": [
+      {
+       "t": "人均一万美金 Token，用 Manus 改造 Manus",
+       "href": "https://mp.weixin.qq.com/s/Q-wPQLUg7v35pW5-pMmZrw",
+       "title": "人均一万美金 Token，用 Manus 改造 Manus",
+       "desc": "打造 AI Native 组织的实践与思考。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 完成端到端验证。验证成为新的耗时环节后，我们让 Mono 用测试账号走一遍真实流程，在浏览器和手机模拟器里检查结果。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 走完发布流程。针对发布中容易卡住的环节，我们继续补齐 AI 的操作能力，但审批权仍在人这里。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 排查线上问题。在权限控制下，Mono 可以读取线上日志、配置和异常记录，拿到排查 Bug 所需的信息。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 在本地验证。过去每次改代码，推到测试环境要等 5-10 分钟。现在，完整的 Manus 可以跑在本地电脑上，验证只需几秒。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 看见全局。补齐独立仓库之外的业务知识，让跨仓库协作成为可能，再通过 Git worktree 支持并行开发。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Mono 是一步步成长起来的，每一步都在解决上一步暴露的问题：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "我们做了一个叫 Manus-mono 的代码仓库，下文简称 Mono。它没有把代码合并到一起，而是提供一个统一入口，配上一本给 AI 看的说明书：每个仓库做什么、彼此怎么配合、研发按什么规范工作。AI 要改哪部分，就去拉对应的仓库。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "我们做了一个叫 Ma…",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40209462-a4af-81a2-aaf0-dd5e7f805469",
    "date": "2026-10-23",
@@ -121,26 +183,6 @@
     {
      "k": "paragraph",
      "t": "Muse 和 Grok Bot",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3fb09462-a4af-8186-a50f-eae81476c917",
-   "date": "2026-10-16",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Digital marketing expert Cris Tolomia appears to be making heavy use of AI.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Quartz website mainly produced by one AI-assisted reporter writing 50+ stories per day",
      "links": []
     }
    ],
