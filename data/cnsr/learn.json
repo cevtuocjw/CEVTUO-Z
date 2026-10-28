@@ -1,0 +1,242 @@
+{
+ "source": "learn",
+ "label": "Learn",
+ "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-27T04:18+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 26,
+  "hidden": 83,
+  "links": 7,
+  "images": 0,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "40509462-a4af-8193-93c7-ff49b3950f24",
+   "date": "2026-10-26",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "“Fraud”在中文里通常译为 “欺诈”或“诈骗”",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40209462-a4af-811a-a628-f81bafeef4b2",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "unheimlich（令人生畏的）\n白川乡 日本",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+     "links": [
+      {
+       "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+       "href": "https://www.rmit.edu.au/news/all-news/2026/oct/coffee-waste-architecture",
+       "title": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
+       "desc": ""
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40109462-a4af-813e-bd73-e0d22d0d495b",
+   "date": "2026-10-22",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Jeff Mills首",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "10月20日，葛兰素史克宣布其慢性乙肝功能性治愈药物贝普若韦生获美国FDA批准上市，该药为全球首个此类药物。此前今年8月，该药已在日本获批。国内目前正处上市审评阶段，由正大天晴负责销售。临床试验显示，治疗6个月后19%总体患者实现功能性治愈。‌‌",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "核心用途：它的主要用途就是作为佐餐酱（Accompaniment）。你可以用它来蘸印度薄饼（Pappadums），或者在吃辛辣的咖喱时加一勺，以“冷却”口腔、平衡辣味",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "主要成分：以低脂酸奶为主（占比约54%），并含有黄瓜（约11%）和薄荷（约1%）。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "风味与定位：这是一款酸奶基底的蘸酱，混合了黄瓜粒和薄荷，口感清凉、薄荷味突出。它的辣度评级极低（Chilli rating - 1），完全是为了提供清爽的“降温”体验。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "你提到的“cooling sauce”（冷却酱），在印度菜中通常指的是Raita。Patak's也生产这种产品，它的作用正是平衡和缓解咖喱的辛辣感。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "🥣 “冷却酱”的真身：Raita（酸奶黄瓜酱）",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "用途：它主要用于烹饪。你只需将肉类（如鸡肉）或蔬菜煎炒后，倒入这款酱汁炖煮几分钟，就能快速做出一道餐厅水准的Tikka Masala菜肴。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "核心成分：主要成分包括水、番茄（约22%）、酸奶、单倍奶油以及香料（如孜然、芫荽）等。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "风味与口感：这是一种以番茄、酸奶和奶油为基础的酱汁，融合了多种印度香料。它的辣度通常被标注为中等（Medium），口感浓郁顺滑，味道平衡，不会过于刺激。",
+     "links": []
+    }
+   ],
+   "more": 51,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40009462-a4af-81b0-9118-da7e828d8bcb",
+   "date": "2026-10-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "对普通人而言，最不该做的事是拿自己的自拍去套用某个类似模型，然后据此焦虑或推断病情；这类工具的意义在于临床风险分层，而不是个人命运预测。 usatoday",
+     "links": [
+      {
+       "t": "usatoday",
+       "href": "https://www.usatoday.com/story/life/health-wellness/2026/10/20/ai-photo-tool-age-cancer-survival-study/92343146007/"
+      }
+     ]
+    },
+    {
+     "k": "quote",
+     "t": "在研究环境中，FAHR-FaceSurvival 能把癌症患者划分为不同死亡风险层级；高风险组在 90 天内死亡的比例显著更高，因此未来可能成为医生评估治疗耐受性和预后的辅助工具。 How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+     "links": [
+      {
+       "t": "How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+       "href": "https://www.cnn.com/2026/10/20/health/ai-models-cancer-survival-biological-age",
+       "title": "How a photo of a person’s face could help predict whether they’ll survive cancer treatment | CNN",
+       "desc": "A simple selfie could hold surprising clues to your overall health and longevity, especially among people with cancer."
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "但更稳妥的表述不是“AI 能用自拍预测你会不会死于癌症”，而是：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这篇研究真正证明的是：面部照片中确实存在可被 AI 捕捉、并与癌症患者短期死亡风险显著相关的信号。这是“数字表型 / AI 生物标志物”方向的一次重要进展。 Can AI predict whether you’ll die from cancer from just an image of your face?",
+     "links": [
+      {
+       "t": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "href": "https://www.scientificamerican.com/article/can-ai-predict-whether-youll-die-from-cancer-from-just-an-image-of-your-face/",
+       "title": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "desc": "Researchers tasked an algorithm with predicting cancer patients’ risk of dying. For some people, it was shockingly accurate"
+      }
+     ]
+    },
+    {
+     "k": "heading_3",
+     "t": "最准确的解读",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "需要前瞻性临床试验：目前主要是回顾性建模和验证；要进入临床，还需证明它在真实诊疗流程中能改善决策和患者结局。 usatoday",
+     "links": [
+      {
+       "t": "usatoday",
+       "href": "https://www.usatoday.com/story/life/health-wellness/2026/10/20/ai-photo-tool-age-cancer-survival-study/92343146007/"
+      }
+     ]
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "伦理与隐私风险极高：面部属于强生物识别信息；若被保险公司、雇主或非医疗平台滥用，可能造成歧视、拒保、定价不公等问题。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "无法替代临床判断：癌症预后还取决于肿瘤类型、分期、基因突变、治疗反应、器官功能、营养和并发症；一张照片不可能覆盖这些信息。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "可能编码偏差：照片质量、光线、化妆、种族、性别、社会经济状况、医疗可及性、拍摄时间点，都可能被模型无意中当作风险信号。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "相关不等于因果：AI 找到的是面部特征与死亡风险的统计关联，并不能证明“脸老导致死亡”，也不能解释全部机制。 Can AI predict whether you’ll die from cancer from just an image of your face?",
+     "links": [
+      {
+       "t": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "href": "https://www.scientificamerican.com/article/can-ai-predict-whether-youll-die-from-cancer-from-just-an-image-of-your-face/",
+       "title": "Can AI predict whether you’ll die from cancer from just an image of your face?",
+       "desc": "Researchers tasked an algorithm with predicting cancer patients’ risk of dying. For some people, it was shockingly accurate"
+      }
+     ]
+    }
+   ],
+   "more": 32,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3fe09462-a4af-813c-a775-fc8a008bb2a2",
+   "date": "2026-10-19",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "减肥针微剂量流行起来了",
+     "links": [
+      {
+       "t": "减肥针微剂量流行起来了",
+       "href": "https://mp.weixin.qq.com/s/3CTD0Uao5Q6oq-8ek6wXAQ",
+       "title": "减肥针微剂量流行起来了",
+       "desc": "约每七名正在使用注射类GLP-1药物的人中，就有一名尝试过「微剂量」。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "Noom、Hims & Hers、Found、Midi、Alloy和AgelessRx已经相继推出微剂量服务。其共同模式不是单卖药物，而是把复配GLP-1、远程问诊、剂量调整、代谢检测、营养指导和健康教练打包成订阅产品。对平台而言，微剂量带来三重增量：把客户从肥胖患者扩大至低BMI和早期代谢风险人群；以更低价格和更少不良反应的预期降低首次使用门槛；在减重结束后，以维持治疗延长付费周期。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Noom推出面向BMI不低于21人群的Proactive Health项目，将微剂量GLP-1与居家检测结合，跟踪血糖、血脂和高敏C反应蛋白等指标。女性健康平台Midi和Alloy则把微剂量嵌入更年期体重管理，强调缓慢减重、减少胃肠道反应，并与激素治疗、营养和肌肉保护结合。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}

@@ -1,0 +1,184 @@
+{
+ "source": "techlearn",
+ "label": "tech-learn",
+ "notionId": "045f87789ebd4741a0059c898a9089d4",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-27T11:48+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 18,
+  "hidden": 22,
+  "links": 4,
+  "images": 0,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "40209462-a4af-81aa-b806-f02a5bce8f60",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Amadeus has been revealed as the supplier for biometric gates that will allow travellers returning to the UK to clear border checks using a completely contactless process. that skips showing a passport",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "总结一下：为 Camelot 添加“现场实时生成式 AI”风险远大于收益，没有必要。 但将 AI 作为演出前的智能编配助手，或作为可加载的 AI 插件来丰富它的音色与效果库，则是完全可行且富有前景的方向。这能让你在享受 Camelot 极致稳定性的同时，也能利用到 AI 的创造力。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "将 AI 用在“演出前”的准备环节：在 Camelot 之外，使用 AI 工具来帮助你规划 Setlist、设计音色搭配、生成或改编分轨（Stem），然后将最终确定的素材导入 Camelot 进行现场表演的编排。这是目前风险最低、收益最直接的 AI 应用方式。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "智能混音/母带类：很多现代 AI 母带插件（如 iZotope Ozone 系列）都可以作为 VST 在 Camelot 中加载。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "人声/音色类：类似 ACE Studio 的 AI 人声/乐器插件。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "编曲/生成类：可以关注像 TapeOp Composer（AI 驱动的 MIDI 生成，集成在 Ableton Live 中）或 OBSIDIAN Neural（实时 AI 音乐生成插件）这类思路的插件，在 Camelot 里用来丰富你的音色库或生成背景织体。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "走“AI 插件宿主”的路线：这是最符合 Camelot 定位的做法。你可以寻找或开发AI 驱动的 VST/AU 插件，然后在 Camelot 中像使用任何普通插件一样加载它们。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "不要尝试修改 Camelot 本身：它是一个闭源商业软件，没有官方 API 支持 AI 深度集成。强行修改（尤其是使用破解版）风险极高，极不稳定。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "如果你真的想在 Camelot 生态里融入 AI，最稳妥、最能发挥其价值的路径是：",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "💎 给你的具体建议",
+     "links": []
+    }
+   ],
+   "more": 22,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3ff09462-a4af-813a-9912-d42e2ff52c6b",
+   "date": "2026-10-20",
+   "title": "",
+   "lines": [],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3fe09462-a4af-817a-8a85-dfabc8edd45c",
+   "date": "2026-10-19",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Duda Lima",
+     "links": [
+      {
+       "t": "Duda Lima",
+       "href": "https://www.duda.works/",
+       "title": "Duda Lima",
+       "desc": ""
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "SWSH - Awwwards Honorable Mention",
+     "links": [
+      {
+       "t": "SWSH - Awwwards Honorable Mention",
+       "href": "https://www.awwwards.com/sites/swsh",
+       "title": "SWSH - Awwwards Honorable Mention",
+       "desc": "SWSH is the fan engagement platform for live events. Shared albums collect fan content, deliver them instantly with opt-in facial recognition, and turn..."
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+     "links": [
+      {
+       "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+       "href": "https://www.serus.ai/protection/?referer_url=https%3A%2F%2Fwww.awwwards.com%2F",
+       "title": "Serus Protection: Find and Remove Your Exposed Personal Data",
+       "desc": "Map what"
+      }
+     ]
+    },
+    {
+     "k": "bookmark",
+     "t": "NEW",
+     "links": [
+      {
+       "t": "NEW",
+       "href": "https://www.new-creators.club/",
+       "title": "NEW",
+       "desc": "「NEW」 は、2021年に活動を開始したクリエイターズクラブです。さまざまな専門性と飽くなき探究心をもった多彩なクリエイターが集まっています。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "NEW Creators Club 是 2019 年设立、2021 年正式注册的日本跨领域创意团队，由坂本俊太等四位多元背景创作者联合创立。团队以平面设计为基底，融合产品设计、编程开发、化学应用等能力，秉持 “贴近人类情感的实用创意” 理念，打破专业壁垒跨界创作。作品斩获 JAGDA 新人奖、D&AD、GOOD DESIGN AWARD 等权威奖项，代表项目有纸扣包装、塗紙 - NURIKAMI，是日本新生代创意力量的标杆。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3fb09462-a4af-81fb-93e6-c92ac2796b11",
+   "date": "2026-10-16",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "REA 全称 Reverse Engineer Anything，仓库是 morluto/rea",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "开源项目REA总星数突破11万。该工具通过MCP协议封装专业逆向软件，使开发者能用自然语言驱动AI进行逆向分析。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3f809462-a4af-8184-9256-e1363d6d36c7",
+   "date": "2026-10-13",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "ysl en official 有 Akamai",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}

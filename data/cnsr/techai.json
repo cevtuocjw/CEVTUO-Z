@@ -1,0 +1,194 @@
+{
+ "source": "techai",
+ "label": "TECH-AI",
+ "notionId": "fc17863a1b8543c6ad0288dc80e3bb22",
+ "window": "最近 5 个 @日期",
+ "updatedAt": "2026-10-28T03:49+08:00",
+ "counts": {
+  "days": 5,
+  "lines": 24,
+  "hidden": 22,
+  "links": 1,
+  "images": 0,
+  "skippedSubtrees": 0
+ },
+ "entries": [
+  {
+   "id": "40609462-a4af-8125-8abb-fb0c7a0bb7ce",
+   "date": "2026-10-27",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "人均一万美金 Token，用 Manus 改造 Manus",
+     "links": [
+      {
+       "t": "人均一万美金 Token，用 Manus 改造 Manus",
+       "href": "https://mp.weixin.qq.com/s/Q-wPQLUg7v35pW5-pMmZrw",
+       "title": "人均一万美金 Token，用 Manus 改造 Manus",
+       "desc": "打造 AI Native 组织的实践与思考。"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 完成端到端验证。验证成为新的耗时环节后，我们让 Mono 用测试账号走一遍真实流程，在浏览器和手机模拟器里检查结果。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 走完发布流程。针对发布中容易卡住的环节，我们继续补齐 AI 的操作能力，但审批权仍在人这里。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 排查线上问题。在权限控制下，Mono 可以读取线上日志、配置和异常记录，拿到排查 Bug 所需的信息。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 在本地验证。过去每次改代码，推到测试环境要等 5-10 分钟。现在，完整的 Manus 可以跑在本地电脑上，验证只需几秒。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "让 AI 看见全局。补齐独立仓库之外的业务知识，让跨仓库协作成为可能，再通过 Git worktree 支持并行开发。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Mono 是一步步成长起来的，每一步都在解决上一步暴露的问题：",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "我们做了一个叫 Manus-mono 的代码仓库，下文简称 Mono。它没有把代码合并到一起，而是提供一个统一入口，配上一本给 AI 看的说明书：每个仓库做什么、彼此怎么配合、研发按什么规范工作。AI 要改哪部分，就去拉对应的仓库。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "我们做了一个叫 Ma…",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40209462-a4af-81a2-aaf0-dd5e7f805469",
+   "date": "2026-10-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "2025年11月，张源创立了丘脑智能，成为目前国内唯一做AI多模态长记忆的公司。成立半年后，2026年5月，丘脑智能联合英伟达研究院、香港科技大学、香港中文大学发布全球首个多模态长记忆Benchmark——MEMLENS。在全球最大开源AI社区与模型平台Hugging Face AI中，MEMLENS在Daily Paper中跻身前三。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40109462-a4af-81a6-9a2a-fea56af91c74",
+   "date": "2026-10-22",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "DeepSeek此次发布的并不是一套完整的推理技术栈。其文档提到，要构建完整的服务，还需要KV缓存系统、Prefill/Decode解耦，以及在数据并行副本之间进行负载均衡等功能，这些内容并未完全包含在此次开源项目中。不过，大部分核心的解耦功能已经实现",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "该框架是DeepSeek在面临美国尖端芯片出口限制下，确保大模型紧追美国顶尖AI模型的核心。推理框架负责管理模型如何使用计算资源来处理用户请求，其设计会影响延迟、吞吐量以及运行模型所需的硬件，因此是影响AI运营成本的重要因素",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "10月20日，DeepSeek宣布开源内部生产级推理框架DeepInfer。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "40009462-a4af-81b3-94d7-ddec76d2fc97",
+   "date": "2026-10-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "“算力即命运”的口号喊得很响，但现实是，如果没有廉价的资金和顺利的施工，算力只能是个画饼",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "AI 实验室（OpenAI、Anthropic）用严苛的合同条款把风险转嫁给了基建商。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "英伟达的黄仁勋依然在伦敦为 Nscale 站台，夸赞它是“英国过去 10 年最有价值的初创公司”；而华尔街和债券投资者却开始用脚投票，重新定价风险。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "全美有 1000 多个社区试图推出禁令或限制 AI 基础设施。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "社会与监管大山：物理极限与公众抵制",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Nscale 的窘境：文章特别点名了 Nscale。它计划在纽交所 IPO 估值 350 亿美元，但在当前市场环境下很难。更关键的是，截至 8 月，Nscale 只有 25,000 块先进 AI 芯片上线，而它的目标是 50 万块。如果达不到交付时间表，Anthropic 有权退出这笔 450 亿美元的巨额合同。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "成本超支：Cipher 为了延期，不得不吞下 3.59 亿美元的超支成本，甚至还要去发可转债融资。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "时间就是生命：AI 实验室在合同里留了后手。如果数据中心交付延期，AI 实验室有权直接“走人”（Walk away）。",
+     "links": []
+    },
+    {
+     "k": "numbered_list_item",
+     "t": "工程与交付大山：项目延误与“对赌”失败",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "巨大的资金缺口：软银旗下的 SB Energy 还没建完一个数据中心，却面临 1740 亿美元的资金缺口；Nebius 的 CEO 直言建 5GW 产能需要 2500 亿美元，而他们目前只筹集了 20%。",
+     "links": []
+    }
+   ],
+   "more": 22,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "3ff09462-a4af-81d2-8fb3-c8827b66053d",
+   "date": "2026-10-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Muse 和 Grok Bot",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  }
+ ]
+}
