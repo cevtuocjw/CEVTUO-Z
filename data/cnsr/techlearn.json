@@ -3,7 +3,7 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-27T11:48+08:00",
+ "updatedAt": "2026-10-29T12:29+08:00",
  "counts": {
   "days": 5,
   "lines": 18,
@@ -13,6 +13,21 @@
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40709462-a4af-81be-9999-ef5ad16e092e",
+   "date": "2026-10-28",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "，EA宣布关闭拥有31年历史的BioWare工作室，并取消了正在开发中的《质量效应》新作，约400名员工因此失业。BioWare曾缔造了《博德之门》《质量效应》《龙腾世纪》等定义了RPG类型的经典系列",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40209462-a4af-81aa-b806-f02a5bce8f60",
    "date": "2026-10-23",
@@ -101,13 +116,11 @@
     },
     {
      "k": "bookmark",
-     "t": "SWSH - Awwwards Honorable Mention",
+     "t": "swsh",
      "links": [
       {
-       "t": "SWSH - Awwwards Honorable Mention",
-       "href": "https://www.awwwards.com/sites/swsh",
-       "title": "SWSH - Awwwards Honorable Mention",
-       "desc": "SWSH is the fan engagement platform for live events. Shared albums collect fan content, deliver them instantly with opt-in facial recognition, and turn..."
+       "t": "swsh",
+       "href": "https://www.awwwards.com/sites/swsh"
       }
      ]
     },
@@ -158,21 +171,6 @@
     {
      "k": "paragraph",
      "t": "开源项目REA总星数突破11万。该工具通过MCP协议封装专业逆向软件，使开发者能用自然语言驱动AI进行逆向分析。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3f809462-a4af-8184-9256-e1363d6d36c7",
-   "date": "2026-10-13",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "ysl en official 有 Akamai",
      "links": []
     }
    ],
