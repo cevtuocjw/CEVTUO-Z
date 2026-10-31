@@ -3,7 +3,7 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-10-29T12:29+08:00",
+ "updatedAt": "2026-10-31T12:10+08:00",
  "counts": {
   "days": 5,
   "lines": 18,
@@ -116,11 +116,13 @@
     },
     {
      "k": "bookmark",
-     "t": "swsh",
+     "t": "SWSH - Awwwards Honorable Mention",
      "links": [
       {
-       "t": "swsh",
-       "href": "https://www.awwwards.com/sites/swsh"
+       "t": "SWSH - Awwwards Honorable Mention",
+       "href": "https://www.awwwards.com/sites/swsh",
+       "title": "SWSH - Awwwards Honorable Mention",
+       "desc": "SWSH is the fan engagement platform for live events. Shared albums collect fan content, deliver them instantly with opt-in facial recognition, and turn..."
       }
      ]
     },
