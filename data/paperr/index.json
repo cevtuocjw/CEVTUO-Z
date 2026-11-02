@@ -1,6 +1,21 @@
 {
   "books": [
     {
+      "authors": "cev",
+      "estFinishedAt": "2026-11-03",
+      "highlights": 0,
+      "id": "102",
+      "lastOpen": "2026-11-02T14:49+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 146,
+      "progressPct": 27.397260273972602,
+      "series": null,
+      "title": "Cev1-11-022026",
+      "totalReadPages": 30,
+      "totalReadTime": 1025
+    },
+    {
       "authors": "N/A",
       "estFinishedAt": "2026-11-04",
       "highlights": 0,
@@ -1427,7 +1442,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-12-11",
+      "estFinishedAt": "2026-12-10",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -1442,19 +1457,19 @@
     }
   ],
   "current": {
-    "authors": "N/A",
-    "estFinishedAt": "2026-11-04",
+    "authors": "cev",
+    "estFinishedAt": "2026-11-03",
     "highlights": 0,
-    "id": "101",
-    "lastOpen": "2026-11-02T14:18+08:00",
+    "id": "102",
+    "lastOpen": "2026-11-02T14:49+08:00",
     "notes": 0,
     "originalTitle": null,
-    "pages": 251,
-    "progressPct": 98.00796812749005,
+    "pages": 146,
+    "progressPct": 27.397260273972602,
     "series": null,
-    "title": "Aphrodite Made Me Do It (Trista Mateer) ",
-    "totalReadPages": 97,
-    "totalReadTime": 1363
+    "title": "Cev1-11-022026",
+    "totalReadPages": 30,
+    "totalReadTime": 1025
   },
   "daily": [
     {
@@ -1679,11 +1694,11 @@
     },
     {
       "d": "2026-11-02",
-      "p": 4,
-      "s": 153
+      "p": 34,
+      "s": 1178
     }
   ],
-  "dataVersion": "8199e06b2ace",
+  "dataVersion": "e80a5abd96e9",
   "hourly": [
     {
       "h": 0,
@@ -1743,7 +1758,7 @@
     },
     {
       "h": 14,
-      "s": 5881
+      "s": 6906
     },
     {
       "h": 15,
@@ -1796,15 +1811,15 @@
     },
     {
       "m": "2026-11",
-      "p": 452,
-      "s": 8635
+      "p": 482,
+      "s": 9660
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
-    "booksStarted": 96,
-    "pagesTurned": 7239,
-    "readSeconds": 180179
+    "booksStarted": 97,
+    "pagesTurned": 7269,
+    "readSeconds": 181204
   }
 }
