@@ -5,15 +5,15 @@
       "estFinishedAt": "2026-11-03",
       "highlights": 0,
       "id": "102",
-      "lastOpen": "2026-11-02T14:49+08:00",
+      "lastOpen": "2026-11-02T15:23+08:00",
       "notes": 0,
       "originalTitle": null,
       "pages": 146,
-      "progressPct": 27.397260273972602,
+      "progressPct": 34.24657534246575,
       "series": null,
       "title": "Cev1-11-022026",
-      "totalReadPages": 30,
-      "totalReadTime": 1025
+      "totalReadPages": 38,
+      "totalReadTime": 1501
     },
     {
       "authors": "N/A",
@@ -1461,15 +1461,15 @@
     "estFinishedAt": "2026-11-03",
     "highlights": 0,
     "id": "102",
-    "lastOpen": "2026-11-02T14:49+08:00",
+    "lastOpen": "2026-11-02T15:23+08:00",
     "notes": 0,
     "originalTitle": null,
     "pages": 146,
-    "progressPct": 27.397260273972602,
+    "progressPct": 34.24657534246575,
     "series": null,
     "title": "Cev1-11-022026",
-    "totalReadPages": 30,
-    "totalReadTime": 1025
+    "totalReadPages": 38,
+    "totalReadTime": 1501
   },
   "daily": [
     {
@@ -1694,11 +1694,11 @@
     },
     {
       "d": "2026-11-02",
-      "p": 34,
-      "s": 1178
+      "p": 42,
+      "s": 1654
     }
   ],
-  "dataVersion": "e80a5abd96e9",
+  "dataVersion": "2b02159cd600",
   "hourly": [
     {
       "h": 0,
@@ -1758,11 +1758,11 @@
     },
     {
       "h": 14,
-      "s": 6906
+      "s": 7120
     },
     {
       "h": 15,
-      "s": 7010
+      "s": 7272
     },
     {
       "h": 16,
@@ -1811,15 +1811,15 @@
     },
     {
       "m": "2026-11",
-      "p": 482,
-      "s": 9660
+      "p": 490,
+      "s": 10136
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
     "booksStarted": 97,
-    "pagesTurned": 7269,
-    "readSeconds": 181204
+    "pagesTurned": 7277,
+    "readSeconds": 181680
   }
 }
