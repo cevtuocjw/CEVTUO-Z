@@ -3,16 +3,38 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-01T12:30+08:00",
+ "updatedAt": "2026-11-03T13:26+08:00",
  "counts": {
   "days": 5,
   "lines": 21,
   "hidden": 4,
-  "links": 1,
+  "links": 2,
   "images": 2,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "40c09462-a4af-8103-89fa-ff306440586f",
+   "date": "2026-11-02",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Vinted | Sell and buy clothes, shoes and accessories",
+     "links": [
+      {
+       "t": "Vinted | Sell and buy clothes, shoes and accessories",
+       "href": "https://www.vinted.co.uk/",
+       "title": "Vinted | Sell and buy clothes, shoes and accessories",
+       "desc": "One community, thousands of brands, and a whole lot of second-hand style. Ready to get started? Here’s how it works."
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40709462-a4af-81a8-b7b4-c3dc0beb8156",
    "date": "2026-10-28",
@@ -169,21 +191,6 @@
     }
    ],
    "imagesSeen": 1
-  },
-  {
-   "id": "40009462-a4af-817e-9adb-dc667a33e3d2",
-   "date": "2026-10-21",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "M42 卡口老镜头（比如八羽怪 Helios 44-2，带旋转焦外）或者任何几十年前的老玻璃镜头。老镜头的镀膜和眩光，能立刻给你的照片注入这种“脏、糊、暗”的艺术感。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
   }
  ]
 }
