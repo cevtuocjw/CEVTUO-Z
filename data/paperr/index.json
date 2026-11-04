@@ -2,18 +2,18 @@
   "books": [
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-06",
+      "estFinishedAt": "2026-11-05",
       "highlights": 0,
       "id": "108",
-      "lastOpen": "2026-11-04T14:59+08:00",
+      "lastOpen": "2026-11-04T15:58+08:00",
       "notes": 0,
       "originalTitle": "ART＆FASHION · 2026-11-02",
       "pages": 211,
-      "progressPct": 22.274881516587676,
+      "progressPct": 94.3127962085308,
       "series": null,
       "title": "news58 (ART＆FASHION · 2026-11-02)",
-      "totalReadPages": 39,
-      "totalReadTime": 956
+      "totalReadPages": 93,
+      "totalReadTime": 2383
     },
     {
       "authors": "cjw",
@@ -302,7 +302,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-07",
+      "estFinishedAt": "2026-11-06",
       "highlights": 0,
       "id": "88",
       "lastOpen": "2026-10-28T16:56+08:00",
@@ -782,7 +782,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-07",
+      "estFinishedAt": "2026-11-06",
       "highlights": 1,
       "id": "56",
       "lastOpen": "2026-10-08T11:03+08:00",
@@ -1532,7 +1532,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2026-12-11",
+      "estFinishedAt": "2026-12-10",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -1548,18 +1548,18 @@
   ],
   "current": {
     "authors": "cjw",
-    "estFinishedAt": "2026-11-06",
+    "estFinishedAt": "2026-11-05",
     "highlights": 0,
     "id": "108",
-    "lastOpen": "2026-11-04T14:59+08:00",
+    "lastOpen": "2026-11-04T15:58+08:00",
     "notes": 0,
     "originalTitle": "ART＆FASHION · 2026-11-02",
     "pages": 211,
-    "progressPct": 22.274881516587676,
+    "progressPct": 94.3127962085308,
     "series": null,
     "title": "news58 (ART＆FASHION · 2026-11-02)",
-    "totalReadPages": 39,
-    "totalReadTime": 956
+    "totalReadPages": 93,
+    "totalReadTime": 2383
   },
   "daily": [
     {
@@ -1794,11 +1794,11 @@
     },
     {
       "d": "2026-11-04",
-      "p": 32,
-      "s": 740
+      "p": 86,
+      "s": 2167
     }
   ],
-  "dataVersion": "1c677374f32f",
+  "dataVersion": "19fef356e93b",
   "hourly": [
     {
       "h": 0,
@@ -1858,11 +1858,11 @@
     },
     {
       "h": 14,
-      "s": 8826
+      "s": 8857
     },
     {
       "h": 15,
-      "s": 8882
+      "s": 10278
     },
     {
       "h": 16,
@@ -1911,15 +1911,15 @@
     },
     {
       "m": "2026-11",
-      "p": 798,
-      "s": 19684
+      "p": 852,
+      "s": 21111
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
     "booksStarted": 103,
-    "pagesTurned": 7572,
-    "readSeconds": 191228
+    "pagesTurned": 7626,
+    "readSeconds": 192655
   }
 }
