@@ -1,0 +1,66 @@
+/*!
+ * Platform.js v1.3.6
+ * Copyright 2014-2020 Benjamin Tan
+ * Copyright 2011-2013 John-David Dalton
+ * Available under MIT license
+ */
+
+/*!
+ * liquid-glass.js — physically-derived Liquid Glass for the web.
+ *
+ * Real refraction (not glassmorphism): builds a rounded-rect SDF, derives a
+ * surface-normal displacement vector field from a convex-squircle bezel
+ * profile, rasterises it into an R/G displacement map, and feeds it to
+ * <feDisplacementMap> used as `backdrop-filter`.
+ *
+ * Chromium-only for the refraction tier. Safari/Firefox get a convincing
+ * layered fallback (blur + tint + rim + specular). See SKILL.md.
+ *
+ * No dependencies. MIT.
+ */
+
+/*! Universal Router | MIT License | https://www.kriasoft.com/universal-router/ */
+
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
+
+/*!__STENCIL_STATIC_IMPORT_SWITCH__*/
+
+/**
+ * @license React
+ * react-dom.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-jsx-runtime.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * scheduler.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
