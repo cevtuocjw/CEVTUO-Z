@@ -1,8 +1,31 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "5123b914bbcb",
+  "dataVersion": "3c74c3aa1d90",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "41109462-a4af-8125-8a26-dbe783755cb6",
+      "mediaType": "剧",
+      "note": "BBC",
+      "order": 178,
+      "poster": "data/coof/posters/41109462-a4af-8125-8a26-dbe783755cb6.jpg",
+      "rating": null,
+      "runtimeMin": 60,
+      "status": "watched",
+      "title": "警之光 第四季 Blue Lights Season 4",
+      "watchedAt": "2026-11-07",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
