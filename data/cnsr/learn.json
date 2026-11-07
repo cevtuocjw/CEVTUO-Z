@@ -3,16 +3,31 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-06T01:51+08:00",
+ "updatedAt": "2026-11-08T03:15+08:00",
  "counts": {
   "days": 5,
-  "lines": 24,
+  "lines": 23,
   "hidden": 53,
-  "links": 1,
+  "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41009462-a4af-8187-b724-d96784eb821b",
+   "date": "2026-11-06",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "甲状腺结节患者饮食需分类忌口。合并甲亢者须严格限碘，避免海带、紫菜等；合并甲减者应少吃西蓝花、卷心菜等十字花科蔬菜。多数结节为良性，若出现声音嘶哑、呼吸不畅等症状需警惕恶性可能，建议及时就诊",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40c09462-a4af-8176-a30b-da158db43f71",
    "date": "2026-11-02",
@@ -157,33 +172,6 @@
      "k": "paragraph",
      "t": "“Fraud”在中文里通常译为 “欺诈”或“诈骗”",
      "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40209462-a4af-811a-a628-f81bafeef4b2",
-   "date": "2026-10-23",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "unheimlich（令人生畏的）\n白川乡 日本",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
-     "links": [
-      {
-       "t": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
-       "href": "https://www.rmit.edu.au/news/all-news/2026/oct/coffee-waste-architecture",
-       "title": "Turning coffee waste into 3D-printed architectural forms - RMIT University",
-       "desc": ""
-      }
-     ]
     }
    ],
    "more": 0,
