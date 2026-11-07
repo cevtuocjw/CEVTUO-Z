@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 176,
-      "latestAt": "2026-10-25",
+      "count": 177,
+      "latestAt": "2026-11-07",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 176
+    "total": 177
   },
-  "dataVersion": "7b7f3a818a60",
+  "dataVersion": "f5de2cf56872",
   "genres": [
     {
-      "count": 125,
+      "count": 126,
       "name": "剧情"
     },
     {
@@ -63,7 +63,7 @@
       "name": "惊悚"
     },
     {
-      "count": 21,
+      "count": 22,
       "name": "犯罪"
     },
     {
@@ -155,31 +155,49 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "罗马尼亚",
-      "法国",
-      "挪威",
-      "丹麦",
-      "芬兰",
-      "瑞典"
+      "英国"
     ],
     "director": [],
     "genres": [
       "剧情",
-      "惊悚"
+      "犯罪"
     ],
-    "id": "40409462-a4af-813a-ae41-e26aea3c3e7e",
-    "mediaType": "影",
-    "note": null,
-    "order": 177,
-    "poster": "data/coof/posters/40409462-a4af-813a-ae41-e26aea3c3e7e.jpg",
+    "id": "41109462-a4af-8125-8a26-dbe783755cb6",
+    "mediaType": "剧",
+    "note": "BBC",
+    "order": 178,
+    "poster": "data/coof/posters/41109462-a4af-8125-8a26-dbe783755cb6.jpg",
     "rating": null,
-    "runtimeMin": 146,
+    "runtimeMin": 60,
     "status": "watched",
-    "title": "峡湾 Fjord",
-    "watchedAt": "2026-10-25",
+    "title": "警之光 第四季 Blue Lights Season 4",
+    "watchedAt": "2026-11-07",
     "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "英国"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "犯罪"
+      ],
+      "id": "41109462-a4af-8125-8a26-dbe783755cb6",
+      "mediaType": "剧",
+      "note": "BBC",
+      "order": 178,
+      "poster": "data/coof/posters/41109462-a4af-8125-8a26-dbe783755cb6.jpg",
+      "rating": null,
+      "runtimeMin": 60,
+      "status": "watched",
+      "title": "警之光 第四季 Blue Lights Season 4",
+      "watchedAt": "2026-11-07",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -630,30 +648,6 @@
       "title": "罗斯 Rose",
       "watchedAt": "2026-10-02",
       "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国",
-        "德国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情",
-        "爱情"
-      ],
-      "id": "3ed09462-a4af-81d7-a61a-f6ef6019a24a",
-      "mediaType": "影",
-      "note": "金球奖提名",
-      "order": 157,
-      "poster": "data/coof/posters/3ed09462-a4af-81d7-a61a-f6ef6019a24a.jpg",
-      "rating": null,
-      "runtimeMin": 124,
-      "status": "watched",
-      "title": "朗读者 The Reader",
-      "watchedAt": "2026-10-02",
-      "year": 2008
     }
   ],
   "schemaVersion": 1
