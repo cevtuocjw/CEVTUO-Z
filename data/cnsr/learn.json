@@ -3,16 +3,36 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-08T03:15+08:00",
+ "updatedAt": "2026-11-09T21:37+08:00",
  "counts": {
   "days": 5,
-  "lines": 23,
+  "lines": 24,
   "hidden": 53,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41309462-a4af-818c-906c-dab84e543f7e",
+   "date": "2026-11-09",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "在驾驶语境中：指紧贴前车的司机：这可能是最常见的用法之一。“Bar”在这里可能指道路或场所，而“humper”源于动词“hump”，有“紧贴、尾随”的意味。类似的说法是 “bumper humper”，专门用来形容在红灯前紧贴着你的车尾，或在高速上跟车过近的讨厌司机。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "，Iodine（碘） 是一种必需的微量元素",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "41009462-a4af-8187-b724-d96784eb821b",
    "date": "2026-11-06",
@@ -160,21 +180,6 @@
     }
    ],
    "more": 12,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40509462-a4af-8193-93c7-ff49b3950f24",
-   "date": "2026-10-26",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "“Fraud”在中文里通常译为 “欺诈”或“诈骗”",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }
