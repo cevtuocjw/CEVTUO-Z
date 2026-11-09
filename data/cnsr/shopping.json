@@ -3,16 +3,80 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-07T12:44+08:00",
+ "updatedAt": "2026-11-09T12:45+08:00",
  "counts": {
   "days": 5,
-  "lines": 26,
+  "lines": 28,
   "hidden": 6,
-  "links": 1,
-  "images": 0,
+  "links": 2,
+  "images": 4,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41309462-a4af-818c-bbe7-c776c03c92ee",
+   "date": "2026-11-09",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Home",
+     "links": [
+      {
+       "t": "Home",
+       "href": "https://www.jdwetherspoon.com/",
+       "title": "Home",
+       "desc": "Find your local Wetherspoon"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "2010 年 4 月，伯金到雅典参加第 11 届法语电影节，同时宣传专辑《Jane Birkin au Palace》。同一时间，冰岛南部的埃亚菲亚德拉火山喷发，火山灰压掉大半个欧洲空域，她原定飞美国与女儿夏洛特·甘斯布会合的行程作废。她改去雅典的朋友 Georgia 那里，把这只包留给了对方，在包的内侧写下那四行字，落款写着雅典",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "不牢靠而且慢的自动对焦表现”，直接列在缺点里",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Caira，号称“全球首款AI原生无反相机”。磁吸在iPhone背面，M4/3卡口可换镜头，内置高通骁龙和Google Edge TPU两块AI芯片",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "如果觉得戴着一个香水瓶太高调，韩国质感香氛品牌sujipmihak的「精油扩香（Portable Perfume）」则走更低调的路线。之前有一期我还专门介绍了这个品牌。外型像一支精致的复古金属口哨，长约8cm，里面放入专用石膏芯，再滴入香氛精油，让香气慢慢从石膏中散出🥰。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "泰国香氛品牌SUMMERSTUFF.MARINE联手珠宝品牌MORMORMOR推出的「Untoxiclet」香膏项链，是近期很有话题性的「香氛护身符」😸！",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/41309462a4af81c29fb8d5c1bb3febac.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/41309462a4af814692c6f3e4c83ccbea.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/41309462a4af813ca530d61f6a77b081.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/41309462a4af8123b627f409446c6980.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 4
+  },
   {
    "id": "40f09462-a4af-817a-9e38-dd4db09c0bee",
    "date": "2026-11-05",
@@ -167,36 +231,6 @@
     }
    ],
    "more": 4,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40509462-a4af-81b1-9a52-c3c79a2c28b9",
-   "date": "2026-10-26",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "康科技公司Alloop在纽约发布了一款模块化“三合一”的可穿戴设备——Trio。与传统的、采用固定外形设计的健康可穿戴设备不同，Trio可以将一枚可拆卸的核心传感模块（Cube模块），和不同的配件搭配，组合成戒指、无屏普通手环、带Halo的腕带这三种不同的“产品形态”，用户可以根据不同的场景进行切换",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "需要警惕的类型：303不锈钢的镍释放率被实测可达2.06 μg/cm²/周，远超欧盟安全标准（0.5 μg/cm²/周），因此研究不建议将其用作首饰材料。此外，即便同为不锈钢，如果表面处理不佳、存在夹杂物或冷变形，也会促进镍的释放。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "相对安全的类型：300系列不锈钢（如316L）通常被认为是亲肤的。瑞典化学品管理局指出，不锈钢中的镍被牢固结合，不易释放，因此不易引起过敏问题。316L不锈钢（有时被商家称为“钛钢”）因耐腐蚀性强，常被用于饰品。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "广交会现场，番禺一品牌好推出多款不锈钢饰品，吸引各国采购商。依托本地成熟工艺，不锈钢饰品轻盈保色、性价比高，近年需求上涨，该品牌展会三天便追平上届销售额。‌‌",
-     "links": []
-    }
-   ],
-   "more": 0,
    "images": [],
    "imagesSeen": 0
   }
