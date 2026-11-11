@@ -3,10 +3,10 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-09T12:45+08:00",
+ "updatedAt": "2026-11-11T08:25+08:00",
  "counts": {
   "days": 5,
-  "lines": 28,
+  "lines": 29,
   "hidden": 6,
   "links": 2,
   "images": 4,
@@ -20,13 +20,16 @@
    "lines": [
     {
      "k": "paragraph",
-     "t": "Home",
+     "t": "近日，lululemon正式发布品牌首个GORE-TEX合作外套系列「Silent Type」，与GORE-TEX共同开发全新的高性能防护服装，一口气带来6款男女装单品，并将在日本BEAMS独家发售。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "jdwetherspoon.com",
      "links": [
       {
-       "t": "Home",
-       "href": "https://www.jdwetherspoon.com/",
-       "title": "Home",
-       "desc": "Find your local Wetherspoon"
+       "t": "jdwetherspoon.com",
+       "href": "https://www.jdwetherspoon.com/"
       }
      ]
     },
