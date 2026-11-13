@@ -3,7 +3,7 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-11T08:25+08:00",
+ "updatedAt": "2026-11-13T08:53+08:00",
  "counts": {
   "days": 5,
   "lines": 29,
@@ -25,11 +25,13 @@
     },
     {
      "k": "paragraph",
-     "t": "jdwetherspoon.com",
+     "t": "Home",
      "links": [
       {
-       "t": "jdwetherspoon.com",
-       "href": "https://www.jdwetherspoon.com/"
+       "t": "Home",
+       "href": "https://www.jdwetherspoon.com/",
+       "title": "Home",
+       "desc": "Find your local Wetherspoon"
       }
      ]
     },
