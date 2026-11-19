@@ -3,16 +3,88 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-17T14:39+08:00",
+ "updatedAt": "2026-11-19T13:58+08:00",
  "counts": {
   "days": 5,
   "lines": 29,
-  "hidden": 6,
-  "links": 2,
-  "images": 4,
+  "hidden": 7,
+  "links": 3,
+  "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41c09462-a4af-8164-a5f8-c8b27925b2be",
+   "date": "2026-11-18",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "2021年，伦敦时尚品牌孵化及分销公司 Tomorrow 收购了 Martine Rose 同名品牌60%的股权。交易还包含股权置换，让 Rose 获得 Tomorrow 的部分股份。双方当时希望借助公司的生产、销售与分销资源，进一步扩大品牌规模。2023年接受采访时，Rose 坦言独立经营始终充满不确定性，而 Tomorrow 的支持终于让她能够将更多精力放在创作上。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "2016年6月，Balenciaga 举办了品牌历史上首场独立男装时装秀（2017春夏男装系列）。为了寻找合适的宗教提花面料与蕾丝，Martine Rose 曾亲自前往巴黎一家为教廷供货的商家采购。尴尬的是，她当时穿着一件背后写有粗话的皮夹克，到了现场才发现接待她的竟然是修女，只好赶紧把外套脱下来。这段经历后来被她讲给时尚记者 Alexander Fury，颇有几分喜剧色彩，也让人看见这位伦敦设计师与传统奢侈品体系初次接触时的反差。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "11月17日，Amflow 官宣 UE Carbon 全球正式开售，高配的 UE Carbon Pro 同步开售。这也是Amflow推出的首款城市电动自行车，标志着品牌正式将产品线延伸至大众城市出行场景。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Dix Hectares",
+     "links": [
+      {
+       "t": "Dix Hectares",
+       "href": "https://dixhectares.com/en-eu?srsltid=AYCX9vJIKdRuPVo_5CbFNr7bg6DdmTjt7P7_9P1xzg80YI6jMKqWyk5o",
+       "title": "Dix Hectares",
+       "desc": "Dix Hectares offers exceptional skincare products that are 100% natural, grown on the bicentennial Grand Cru terroir of Château Montrose, and formulated in harmony with the seasons for radiant skin th"
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "• Product Line: Includes seasonal facial serums, rich/gel creams, and cleansers (e.g., The Seasonal Serum, The Seasonal Cream, The Fertile Balm).",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "• Packaging: Designed in collaboration with Dorothée Meilichzon, featuring lightweight recycled glass, marbled bio-sourced Sulapac caps, and refillable bioresin capsules.",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "• Farming & Production: Uses regenerative agriculture, on-site laboratory research, and low-temperature extraction techniques (like ultrasonic extraction) for ingredients such as yarrow, germinated barley, comfrey, and clover.",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "• Concept: It offers biocyclic, 100% natural-origin skincare formulated to align with the changing seasons (such as separate targeted collections for Autumn–Winter and Spring–Summer).",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "• Origin: Cultivated and produced on a 10-hectare plot of land at the historic Château Montrose estate in Saint-Estèphe, Médoc (Bordeaux wine country), where plants are grown in rich soil unsuited for grapevines.",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Key Details",
+     "links": []
+    }
+   ],
+   "more": 5,
+   "images": [
+    {
+     "src": "data/cnsr/img/41c09462a4af811793fef3daf83c1a66.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 1
+  },
   {
    "id": "41309462-a4af-818c-bbe7-c776c03c92ee",
    "date": "2026-11-09",
@@ -176,66 +248,6 @@
     }
    ],
    "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40709462-a4af-81a8-b7b4-c3dc0beb8156",
-   "date": "2026-10-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "腰臀贴合度是基础：优秀的A字裤应该在腰臀处贴合但不紧绷。如果腰臀处就松垮，整体会显得拖沓；如果腰臀过紧而裤腿过宽，则会凸显比例失调。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "裤管宽度需克制：下摆过度外扩会“吞没”小骨架。有建议指出，裤脚的周长最好不超过20英寸（约50厘米），以保持“可控的宽腿”。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "裤长是关键：长度不当（如尴尬的五分长度）会明确产生横向膨胀感，反而显矮显胖。合适的长度应在脚踝附近或大腿中部。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "A字裤的显高效果高度依赖于精确的版型参数，并非所有标着“A字”的裤子都适合小个子。",
-     "links": []
-    },
-    {
-     "k": "numbered_list_item",
-     "t": "A字裤本身有严格的“及格线”，穿不好反而显矮",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "有分析直言，对于小个子，一条长度合适的直筒裤能创造“从臀部到裤脚不间断的线条”，是最显修长的廓形之一。它的利落感是A字裤的宽松感无法替代的。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Vogue和NYMag在推荐小个子牛仔裤时，都将直筒裤列为核心款式，认为它能创造干净利落的线条。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "多个权威时尚来源在推荐小个子牛仔裤时，直筒裤依然是与A字裤并列甚至更受推崇的“万能选项”。",
-     "links": []
-    },
-    {
-     "k": "numbered_list_item",
-     "t": "直筒裤的“王牌”地位依然稳固",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "将A字裤视为唯一答案，会忽略两个关键事实：其他裤型的不可替代性，以及A字裤本身的驾驭门槛。",
-     "links": []
-    }
-   ],
-   "more": 4,
    "images": [],
    "imagesSeen": 0
   }
