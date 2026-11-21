@@ -3,16 +3,41 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-20T02:52+08:00",
+ "updatedAt": "2026-11-22T01:06+08:00",
  "counts": {
   "days": 5,
-  "lines": 19,
-  "hidden": 41,
+  "lines": 12,
+  "hidden": 0,
   "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41e09462-a4af-8103-8271-ebfdbf4be470",
+   "date": "2026-11-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "它被广泛认为是将家用食物处理器（Food Processor） 引入家庭厨房的鼻祖，并以此为核心产品，在美国厨房小家电市场占据领导地位。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Cuisinart 本身是一个源自美国的知名厨具品牌，中文名为美膳雅",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "它描述的是一种视觉上丰盛、快要溢出来的状态。柯林斯词典给出的例句就是 “a brimming bowl of chicken soup”（一碗满溢的鸡汤）",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "41c09462-a4af-81c4-ae83-fe399e505a0f",
    "date": "2026-11-18",
@@ -95,66 +120,6 @@
     }
    ],
    "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40709462-a4af-81fa-a429-ca75ab9f6c05",
-   "date": "2026-10-28",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Dual event tickets are available to purchase. For more information about",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "The Nutra Healthspan Summit will be preceded by the Sports & Active Nutrition Summit – Europe (SANSE) on 9th November 2026.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Sports & Active Nutrition Summit – Europe",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "For more information and to book your place, click HERE",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "According to our post-event survey for the 2025 event, 91% of attendees rated the summit as Excellent or Good, and 87% said they would recommend it.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Described by one attendee of our 2025 edition as “an event with wall-to-wall speakers who delivered insightful, topical, useable information”, the Nutra Healthspan Summit is designed to cut through the noise and hype around longevity and healthspan to deliver actionable insights from the world’s leading scientists, brands and innovators in cellular aging and healthspan promotion.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Nutra Healthspan Summit",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Its flagship ingredient, CellVive NMN, anchors an expanding portfolio targeting pathways involved in cellular energy, repair and resilience. Through partnerships with universities, researchers and technology specialists, Longevity Life Sciences is building the scientific foundations to advance cellular health and support healthy ageing.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "This Australia company aims to advance cellular health through its CellVive Platform. Combining clinical research, regulatory expertise and formulation innovation, the company translates emerging science into safe, high-quality ingredients and products.",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Longevity Life Sciences",
-     "links": []
-    }
-   ],
-   "more": 41,
    "images": [],
    "imagesSeen": 0
   }
