@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 177,
-      "latestAt": "2026-11-07",
+      "count": 178,
+      "latestAt": "2026-11-21",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,12 +46,12 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 177
+    "total": 178
   },
-  "dataVersion": "f5de2cf56872",
+  "dataVersion": "b74021ad8ea8",
   "genres": [
     {
-      "count": 126,
+      "count": 127,
       "name": "剧情"
     },
     {
@@ -79,7 +79,7 @@
       "name": "纪录片"
     },
     {
-      "count": 11,
+      "count": 12,
       "name": "传记"
     },
     {
@@ -103,12 +103,12 @@
       "name": "历史"
     },
     {
-      "count": 6,
-      "name": "同性"
+      "count": 7,
+      "name": "音乐"
     },
     {
       "count": 6,
-      "name": "音乐"
+      "name": "同性"
     },
     {
       "count": 5,
@@ -155,26 +155,53 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "英国"
+      "法国",
+      "比利时"
     ],
     "director": [],
     "genres": [
       "剧情",
-      "犯罪"
+      "音乐",
+      "传记"
     ],
-    "id": "41109462-a4af-8125-8a26-dbe783755cb6",
-    "mediaType": "剧",
-    "note": "BBC",
-    "order": 178,
-    "poster": "data/coof/posters/41109462-a4af-8125-8a26-dbe783755cb6.jpg",
+    "id": "41f09462-a4af-81f9-a205-f88fa1120210",
+    "mediaType": "影",
+    "note": null,
+    "order": 179,
+    "poster": "data/coof/posters/41f09462-a4af-81f9-a205-f88fa1120210.jpg",
     "rating": null,
-    "runtimeMin": 60,
+    "runtimeMin": 120,
     "status": "watched",
-    "title": "警之光 第四季 Blue Lights Season 4",
-    "watchedAt": "2026-11-07",
-    "year": 2026
+    "title": "博莱罗 Boléro",
+    "watchedAt": "2026-11-21",
+    "year": 2024
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "音乐",
+        "传记"
+      ],
+      "id": "41f09462-a4af-81f9-a205-f88fa1120210",
+      "mediaType": "影",
+      "note": null,
+      "order": 179,
+      "poster": "data/coof/posters/41f09462-a4af-81f9-a205-f88fa1120210.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "博莱罗 Boléro",
+      "watchedAt": "2026-11-21",
+      "year": 2024
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -623,29 +650,6 @@
       "runtimeMin": 101,
       "status": "watched",
       "title": "歪心狼对阵ACME Coyote v. Acme",
-      "watchedAt": "2026-10-02",
-      "year": 2026
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "奥地利",
-        "德国"
-      ],
-      "director": [],
-      "genres": [
-        "剧情"
-      ],
-      "id": "3ed09462-a4af-817f-b331-feeec880a6f7",
-      "mediaType": "影",
-      "note": "柏林电影节 故事取材于欧洲历史上多起女扮男装的真实事件。十七世纪早期，三十年战争结束后，一个女人伪装成一名叫“罗斯”的士兵出现在一个偏僻的新教村庄，声称自己是一座荒废庄园的继承者，努力获得村民的接纳。",
-      "order": 158,
-      "poster": "data/coof/posters/3ed09462-a4af-817f-b331-feeec880a6f7.jpg",
-      "rating": null,
-      "runtimeMin": 94,
-      "status": "watched",
-      "title": "罗斯 Rose",
       "watchedAt": "2026-10-02",
       "year": 2026
     }

@@ -3,16 +3,75 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-19T13:58+08:00",
+ "updatedAt": "2026-11-21T13:43+08:00",
  "counts": {
   "days": 5,
-  "lines": 29,
-  "hidden": 7,
-  "links": 3,
+  "lines": 24,
+  "hidden": 5,
+  "links": 2,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "41f09462-a4af-8121-b33d-f9d12d9be900",
+   "date": "2026-11-21",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "如今，哈维兰是少有的仍保持100%在利摩日生产的瓷器品牌之一，这本身就是其品质与纯正法国血统的保证。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "品牌的一个关键转折点是，David Haviland不满当时利摩日白瓷需送往巴黎装饰的传统模式，于是在当地开设装饰学校，自行设计符合美国市场审美的餐具，并首次将生产与装饰集中于同一工厂完成。这一革新奠定了哈维兰日后发展的基础。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "哈维兰的故事始于一位美国陶艺家 David Haviland。为了寻找更优质的瓷器，他于1842年从纽约迁至法国利摩日，并在此建立了自己的工厂。利摩日地区盛产高品质的高岭土，为制造顶级瓷器提供了绝佳条件。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "🏺 品牌核心：诞生于利摩日的法国奢华瓷器",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "哈维兰（Haviland）是法国顶级瓷器品牌，与利摩日（Limoges）的瓷器史紧密相连。它自1842年创立以来，一直是奢华餐桌艺术的代表，以精湛的手工技艺和深厚的艺术底蕴闻名。",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "41e09462-a4af-8162-8c3a-d4ebd5abd76c",
+   "date": "2026-11-20",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "drunkelephants's f--blam electrolyte warefacial",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [
+    {
+     "src": "data/cnsr/img/41e09462a4af819f8849e90989e99a05.jpg",
+     "caption": ""
+    },
+    {
+     "src": "data/cnsr/img/41e09462a4af8143ae99dd402e7669f9.jpg",
+     "caption": ""
+    }
+   ],
+   "imagesSeen": 2
+  },
   {
    "id": "41c09462-a4af-8164-a5f8-c8b27925b2be",
    "date": "2026-11-18",
@@ -142,14 +201,6 @@
     {
      "src": "data/cnsr/img/41309462a4af814692c6f3e4c83ccbea.jpg",
      "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/41309462a4af813ca530d61f6a77b081.jpg",
-     "caption": ""
-    },
-    {
-     "src": "data/cnsr/img/41309462a4af8123b627f409446c6980.jpg",
-     "caption": ""
     }
    ],
    "imagesSeen": 4
@@ -163,88 +214,6 @@
      "k": "paragraph",
      "t": "Gleb Kostin 曾参与俄罗斯青年创意团体 Bohema Leningrad，通过服装、配饰与影像内容探索青年文化和视觉表达。此后，他逐渐将个人创作发展为 solutions。最初只是一个展示个人作品的线上空间，随着创作领域不断扩展，逐渐演变为如今更具开放性的设计项目。",
      "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40e09462-a4af-81fa-9638-dedc553eb24c",
-   "date": "2026-11-04",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "这种模式在纽约、洛杉矶等地很流行，后来扩展到更多城市。顾客群体很广，既有追求高效的职场人士，也有将其视为一种日常护理方式的消费者。服务价格通常在30到60美元之间，具体取决于发型的复杂程度。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "这是最常见的用法，特指一种只提供“吹风造型”服务的美发沙龙，也叫“干发吧”。这种店通常不提供剪发或染发服务，核心业务就是洗头、吹干并做出能维持2到5天的精致发型。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "Blowout Bar / Dry Bar）",
-     "links": []
-    },
-    {
-     "k": "toggle",
-     "t": "Blowout Ba…",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "victoria beckham fiery \"chili-pepper nails\" winter's most expensive looking manicure",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "质感：高光泽镜面效果：整个美甲覆有一层高光泽的顶油，形成镜面般的光泽感。这一点至关重要，它能捕捉光线，让深酒红的底色得以展现，避免颜色显得扁平，从而赋予指甲必要的立体感和深度。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "甲形：柔和短方圆形（Squoval）：她选择了短而柔和的方圆形指甲，这种形状干净利落，既保证了日常活动的便利性，又显得十分优雅。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "颜色：深邃如墨，暗藏酒红：这是一种比传统酒红色更深、更厚重的色调，甚至带有一点“牛血红”的质感。在特定光线下，它几乎接近黑色，但又会透出迷人的暗红酒色底色，因此显得高级而现代，完全避开了传统酒红可能带来的“哥特感”。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "它之所以特别，在于精准地平衡了深邃感与精致感。",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "💅 风格解析：何为“Dark Bordeaux”？",
-     "links": []
-    }
-   ],
-   "more": 2,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40c09462-a4af-8103-89fa-ff306440586f",
-   "date": "2026-11-02",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Vinted | Sell and buy clothes, shoes and accessories",
-     "links": [
-      {
-       "t": "Vinted | Sell and buy clothes, shoes and accessories",
-       "href": "https://www.vinted.co.uk/",
-       "title": "Vinted | Sell and buy clothes, shoes and accessories",
-       "desc": "One community, thousands of brands, and a whole lot of second-hand style. Ready to get started? Here’s how it works."
-      }
-     ]
     }
    ],
    "more": 0,
