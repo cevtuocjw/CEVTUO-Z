@@ -1,8 +1,33 @@
 {
   "collection": "COOF2026",
-  "dataVersion": "3c74c3aa1d90",
+  "dataVersion": "60ce9636ddf0",
   "schemaVersion": 1,
   "titles": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "法国",
+        "比利时"
+      ],
+      "director": [],
+      "genres": [
+        "剧情",
+        "音乐",
+        "传记"
+      ],
+      "id": "41f09462-a4af-81f9-a205-f88fa1120210",
+      "mediaType": "影",
+      "note": null,
+      "order": 179,
+      "poster": "data/coof/posters/41f09462-a4af-81f9-a205-f88fa1120210.jpg",
+      "rating": null,
+      "runtimeMin": 120,
+      "status": "watched",
+      "title": "博莱罗 Boléro",
+      "watchedAt": "2026-11-21",
+      "year": 2024
+    },
     {
       "cast": [],
       "collection": "COOF2026",
