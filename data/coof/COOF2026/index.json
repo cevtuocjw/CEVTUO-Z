@@ -2,8 +2,8 @@
   "collection": "COOF2026",
   "collections": [
     {
-      "count": 178,
-      "latestAt": "2026-11-21",
+      "count": 179,
+      "latestAt": "2026-11-22",
       "name": "COOF2026",
       "path": "data/coof/COOF2026/index.json"
     },
@@ -46,9 +46,9 @@
   ],
   "counts": {
     "rated": 0,
-    "total": 178
+    "total": 179
   },
-  "dataVersion": "b74021ad8ea8",
+  "dataVersion": "a81c3a663c3e",
   "genres": [
     {
       "count": 127,
@@ -59,15 +59,15 @@
       "name": "喜剧"
     },
     {
-      "count": 28,
+      "count": 29,
       "name": "惊悚"
     },
     {
-      "count": 22,
+      "count": 23,
       "name": "犯罪"
     },
     {
-      "count": 20,
+      "count": 21,
       "name": "动作"
     },
     {
@@ -155,28 +155,51 @@
     "cast": [],
     "collection": "COOF2026",
     "country": [
-      "法国",
-      "比利时"
+      "美国"
     ],
     "director": [],
     "genres": [
-      "剧情",
-      "音乐",
-      "传记"
+      "动作",
+      "惊悚",
+      "犯罪"
     ],
-    "id": "41f09462-a4af-81f9-a205-f88fa1120210",
+    "id": "42009462-a4af-815f-af9f-d4423748d27a",
     "mediaType": "影",
     "note": null,
-    "order": 179,
-    "poster": "data/coof/posters/41f09462-a4af-81f9-a205-f88fa1120210.jpg",
+    "order": 180,
+    "poster": "data/coof/posters/42009462-a4af-815f-af9f-d4423748d27a.jpg",
     "rating": null,
-    "runtimeMin": 120,
+    "runtimeMin": 107,
     "status": "watched",
-    "title": "博莱罗 Boléro",
-    "watchedAt": "2026-11-21",
-    "year": 2024
+    "title": "不择手段 By Any Means",
+    "watchedAt": "2026-11-22",
+    "year": 2026
   },
   "recent": [
+    {
+      "cast": [],
+      "collection": "COOF2026",
+      "country": [
+        "美国"
+      ],
+      "director": [],
+      "genres": [
+        "动作",
+        "惊悚",
+        "犯罪"
+      ],
+      "id": "42009462-a4af-815f-af9f-d4423748d27a",
+      "mediaType": "影",
+      "note": null,
+      "order": 180,
+      "poster": "data/coof/posters/42009462-a4af-815f-af9f-d4423748d27a.jpg",
+      "rating": null,
+      "runtimeMin": 107,
+      "status": "watched",
+      "title": "不择手段 By Any Means",
+      "watchedAt": "2026-11-22",
+      "year": 2026
+    },
     {
       "cast": [],
       "collection": "COOF2026",
@@ -628,30 +651,6 @@
       "title": "乌泽多姆岛：清澈海景 Usedom – Der freie Blick aufs Meer",
       "watchedAt": "2026-10-02",
       "year": 2017
-    },
-    {
-      "cast": [],
-      "collection": "COOF2026",
-      "country": [
-        "美国"
-      ],
-      "director": [],
-      "genres": [
-        "喜剧",
-        "动画",
-        "奇幻"
-      ],
-      "id": "3ed09462-a4af-81e7-aa17-d678ccc73632",
-      "mediaType": "影",
-      "note": null,
-      "order": 160,
-      "poster": "data/coof/posters/3ed09462-a4af-81e7-aa17-d678ccc73632.jpg",
-      "rating": null,
-      "runtimeMin": 101,
-      "status": "watched",
-      "title": "歪心狼对阵ACME Coyote v. Acme",
-      "watchedAt": "2026-10-02",
-      "year": 2026
     }
   ],
   "schemaVersion": 1
