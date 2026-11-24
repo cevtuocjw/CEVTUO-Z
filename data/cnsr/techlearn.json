@@ -3,16 +3,76 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-22T08:05+08:00",
+ "updatedAt": "2026-11-24T16:30+08:00",
  "counts": {
   "days": 5,
-  "lines": 18,
-  "hidden": 22,
+  "lines": 26,
+  "hidden": 26,
   "links": 4,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "42109462-a4af-8109-9aa7-f176c05daaa9",
+   "date": "2026-11-23",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "你可以把它想象成在酒店办理入住时刷信用卡预授权。酒店会先冻结你卡里的一笔押金（原子预扣），确保你有支付能力。等你退房时，酒店再根据你的实际消费进行结算，并解冻剩余的资金。整个过程确保了酒店在你入住期间，不会因为你的其他消费而导致它最终收不到钱。",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "💎 一个简单的类比",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "预算/配额控制（防透支）：在调用大模型API等场景中，由于最终消耗未知，系统会先根据预估上限（如请求的max_tokens）原子地预扣一笔预算。调用完成后，再根据实际消耗进行结算，多扣的部分会退回来。这就是“预扣-结算”或“三阶段协议”的核心。",
+     "links": []
+    },
+    {
+     "k": "bulleted_list_item",
+     "t": "库存管理（防超卖）：在秒杀或抢购中，先在高速缓存（如Redis）中原子地预扣库存。扣减成功的请求才进入后续下单流程，扣减失败的则直接返回“售罄”，从而保护数据库不被海量请求冲垮，也避免了超卖。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这个概念在多个技术领域都有应用，核心逻辑是相通的：",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "💻 典型应用场景",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "因此，“原子预扣”意味着“判断余额是否充足”和“执行扣减”这两个步骤是作为一个整体一次性完成的，中间没有任何空隙让其他并发请求“插队”，从而杜绝了竞态条件。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这里的“原子”借用了物理学中“不可再分”的概念。在计算机中，一个“原子操作”指的是一系列动作被打包成一个整体，执行时要么全部成功，要么全部失败，绝不会出现只执行了一半的中间状态。",
+     "links": []
+    },
+    {
+     "k": "heading_3",
+     "t": "⚛️ “原子”的含义：不可分割，要么全成，要么全败",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "“原子预扣”的思路，是将检查与扣减合并成一个不可分割的动作。系统在请求开始前，就先从总资源中“预留”（预扣）一笔额度。只有预扣成功了，请求才会被允许继续执行。这本质上是一种用“确定性”的预留，来对抗“不确定性”的并发风险的策略。",
+     "links": []
+    }
+   ],
+   "more": 4,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "40709462-a4af-81be-9999-ef5ad16e092e",
    "date": "2026-10-28",
@@ -128,13 +188,13 @@
     },
     {
      "k": "bookmark",
-     "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+     "t": "Serus — Agentic Privacy & Intelligence",
      "links": [
       {
-       "t": "Serus Protection: Find and Remove Your Exposed Personal Data",
+       "t": "Serus — Agentic Privacy & Intelligence",
        "href": "https://www.serus.ai/protection/?referer_url=https%3A%2F%2Fwww.awwwards.com%2F",
-       "title": "Serus Protection: Find and Remove Your Exposed Personal Data",
-       "desc": "Map what"
+       "title": "Serus — Agentic Privacy & Intelligence",
+       "desc": "Your own privacy agent: finds what"
       }
      ]
     },
@@ -153,26 +213,6 @@
     {
      "k": "paragraph",
      "t": "NEW Creators Club 是 2019 年设立、2021 年正式注册的日本跨领域创意团队，由坂本俊太等四位多元背景创作者联合创立。团队以平面设计为基底，融合产品设计、编程开发、化学应用等能力，秉持 “贴近人类情感的实用创意” 理念，打破专业壁垒跨界创作。作品斩获 JAGDA 新人奖、D&AD、GOOD DESIGN AWARD 等权威奖项，代表项目有纸扣包装、塗紙 - NURIKAMI，是日本新生代创意力量的标杆。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3fb09462-a4af-81fb-93e6-c92ac2796b11",
-   "date": "2026-10-16",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "REA 全称 Reverse Engineer Anything，仓库是 morluto/rea",
-     "links": []
-    },
-    {
-     "k": "paragraph",
-     "t": "开源项目REA总星数突破11万。该工具通过MCP协议封装专业逆向软件，使开发者能用自然语言驱动AI进行逆向分析。",
      "links": []
     }
    ],
