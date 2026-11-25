@@ -2,18 +2,18 @@
   "books": [
     {
       "authors": "cev",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "127",
-      "lastOpen": "2026-11-25T11:10+08:00",
+      "lastOpen": "2026-11-25T11:43+08:00",
       "notes": 0,
       "originalTitle": null,
       "pages": 185,
-      "progressPct": 50.27027027027027,
+      "progressPct": 100,
       "series": null,
       "title": "Cev2-112326for",
-      "totalReadPages": 74,
-      "totalReadTime": 2422
+      "totalReadPages": 127,
+      "totalReadTime": 4116
     },
     {
       "authors": "cev",
@@ -32,7 +32,7 @@
     },
     {
       "authors": "Elizabeth David",
-      "estFinishedAt": "2026-12-06",
+      "estFinishedAt": "2026-12-05",
       "highlights": 0,
       "id": "125",
       "lastOpen": "2026-11-23T10:12+08:00",
@@ -482,7 +482,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-29",
+      "estFinishedAt": "2026-11-28",
       "highlights": 0,
       "id": "96",
       "lastOpen": "2026-11-01T15:32+08:00",
@@ -542,7 +542,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-12-05",
+      "estFinishedAt": "2026-12-04",
       "highlights": 0,
       "id": "91",
       "lastOpen": "2026-10-30T23:44+08:00",
@@ -602,7 +602,7 @@
     },
     {
       "authors": "cev",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "87",
       "lastOpen": "2026-10-28T11:39+08:00",
@@ -617,7 +617,7 @@
     },
     {
       "authors": "cev",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "86",
       "lastOpen": "2026-10-28T10:44+08:00",
@@ -1007,7 +1007,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "60",
       "lastOpen": "2026-10-10T17:17+08:00",
@@ -1082,7 +1082,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 1,
       "id": "55",
       "lastOpen": "2026-10-05T12:46+08:00",
@@ -1097,7 +1097,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-12-01",
+      "estFinishedAt": "2026-11-30",
       "highlights": 0,
       "id": "54",
       "lastOpen": "2026-10-05T12:19+08:00",
@@ -1487,7 +1487,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-12-04",
+      "estFinishedAt": "2026-12-03",
       "highlights": 0,
       "id": "29",
       "lastOpen": "2026-09-09T18:08+08:00",
@@ -1817,7 +1817,7 @@
     },
     {
       "authors": "N/A",
-      "estFinishedAt": "2027-01-31",
+      "estFinishedAt": "2027-01-28",
       "highlights": 0,
       "id": "2",
       "lastOpen": "2026-09-04T13:49+08:00",
@@ -1833,18 +1833,18 @@
   ],
   "current": {
     "authors": "cev",
-    "estFinishedAt": "2026-11-27",
+    "estFinishedAt": "2026-11-26",
     "highlights": 0,
     "id": "127",
-    "lastOpen": "2026-11-25T11:10+08:00",
+    "lastOpen": "2026-11-25T11:43+08:00",
     "notes": 0,
     "originalTitle": null,
     "pages": 185,
-    "progressPct": 50.27027027027027,
+    "progressPct": 100,
     "series": null,
     "title": "Cev2-112326for",
-    "totalReadPages": 74,
-    "totalReadTime": 2422
+    "totalReadPages": 127,
+    "totalReadTime": 4116
   },
   "daily": [
     {
@@ -2139,11 +2139,11 @@
     },
     {
       "d": "2026-11-25",
-      "p": 12,
-      "s": 453
+      "p": 67,
+      "s": 2147
     }
   ],
-  "dataVersion": "06fe28a9ff1a",
+  "dataVersion": "515651afd482",
   "hourly": [
     {
       "h": 0,
@@ -2191,7 +2191,7 @@
     },
     {
       "h": 11,
-      "s": 30436
+      "s": 32130
     },
     {
       "h": 12,
@@ -2256,15 +2256,15 @@
     },
     {
       "m": "2026-11",
-      "p": 2687,
-      "s": 75538
+      "p": 2742,
+      "s": 77232
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
     "booksStarted": 122,
-    "pagesTurned": 9415,
-    "readSeconds": 247056
+    "pagesTurned": 9468,
+    "readSeconds": 248750
   }
 }
