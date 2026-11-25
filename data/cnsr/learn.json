@@ -3,16 +3,105 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-24T05:54+08:00",
+ "updatedAt": "2026-11-26T03:46+08:00",
  "counts": {
   "days": 5,
-  "lines": 12,
-  "hidden": 0,
-  "links": 0,
+  "lines": 21,
+  "hidden": 72,
+  "links": 2,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "42309462-a4af-8131-b4d9-ee392de4173c",
+   "date": "2026-11-25",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "Levent Alpöge",
+     "links": [
+      {
+       "t": "Levent Alpöge",
+       "href": "https://alpo.ge/",
+       "title": "Levent Alpöge",
+       "desc": ""
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
+  {
+   "id": "42209462-a4af-81f6-b91e-dd039b405c5d",
+   "date": "2026-11-24",
+   "title": "",
+   "lines": [
+    {
+     "k": "bookmark",
+     "t": "Comely Bank - Wikipedia",
+     "links": [
+      {
+       "t": "Comely Bank - Wikipedia",
+       "href": "https://en.wikipedia.org/wiki/Comely_Bank",
+       "title": "Comely Bank - Wikipedia",
+       "desc": ""
+      }
+     ]
+    },
+    {
+     "k": "paragraph",
+     "t": "多品牌分层：为了精准匹配不同场景，Compass 旗下运营着众多B2B品牌。例如，在工商业领域有 Eurest、Bon Appétit、Restaurant Associates；在医疗与养老领域有 Morrison Healthcare、Medirest；在教育领域有 Chartwells；在体育与休闲领域有 Levy；在国防与偏远地区则使用 ESS 等品牌。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "服务场景广泛：从企业员工餐厅、学校食堂、医院病患餐，到军事基地、海上钻井平台以及体育场馆的餐饮供应，覆盖全天各个时段。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "运营模式：Compass 并非集中配送，而是在客户场所内运营其食堂、餐厅和咖啡馆，现场制作并提供餐食。这种模式能更好地适应不同机构的口味和需求。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "餐饮是 Compass 的绝对核心，贡献了超过 85% 的收入，本质上是一种“合约制”服务。",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "餐饮是 Compas…",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "它的业务聚焦于外包餐饮与配套支持服务，运营覆盖五个核心领域：工商企业（Business & Industry）、医疗与养老（Healthcare & Senior Living）、教育（Education）、体育与休闲（Sports & Leisure），以及国防、离岸与偏远地区（Defence, Offshore & Remote）。客户包括谷歌、亚马逊、微软等大型企业，服务场景从公司食堂、医院病患餐食，到学校餐厅、体育场馆的餐饮供应，甚至延伸至数据中心和航空休息室的配套服务。2025财年，Compass Group的营收高达461亿美元，在全球拥有超过60万名员工。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "这是一家英国公司，也是全球最大的合约餐饮（catering） 集团。它的名字非常形象地描述了业务：“你很可能见过我们，但未必知道我们的名字”——它通过众多B2B品牌，为各类场所提供你日常接触到的餐饮和支持服务。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Compass Group (LSE: CPG)：全球食品服务与支持服务巨头",
+     "links": []
+    },
+    {
+     "k": "toggle",
+     "t": "Compass Gr…",
+     "links": []
+    }
+   ],
+   "more": 72,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "41e09462-a4af-8103-8271-ebfdbf4be470",
    "date": "2026-11-20",
@@ -86,36 +175,6 @@
     {
      "k": "paragraph",
      "t": "，Iodine（碘） 是一种必需的微量元素",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "41009462-a4af-8187-b724-d96784eb821b",
-   "date": "2026-11-06",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "甲状腺结节患者饮食需分类忌口。合并甲亢者须严格限碘，避免海带、紫菜等；合并甲减者应少吃西蓝花、卷心菜等十字花科蔬菜。多数结节为良性，若出现声音嘶哑、呼吸不畅等症状需警惕恶性可能，建议及时就诊",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "40c09462-a4af-8176-a30b-da158db43f71",
-   "date": "2026-11-02",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Dementia（痴呆症）并非一种单一的疾病，而是一个总称，用来描述由大脑功能受损引起的一系列症状的集合。其核心特征是认知功能（如记忆、思考、判断和学习能力）出现进行性、通常是不可逆的衰退，严重到足以影响日常生活",
      "links": []
     }
    ],
