@@ -2,6 +2,21 @@
   "books": [
     {
       "authors": "cev",
+      "estFinishedAt": "2026-11-27",
+      "highlights": 0,
+      "id": "128",
+      "lastOpen": "2026-11-26T11:59+08:00",
+      "notes": 0,
+      "originalTitle": null,
+      "pages": 150,
+      "progressPct": 8,
+      "series": null,
+      "title": "Cev1-112426",
+      "totalReadPages": 9,
+      "totalReadTime": 255
+    },
+    {
+      "authors": "cev",
       "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "127",
@@ -767,7 +782,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-27",
+      "estFinishedAt": "2026-11-26",
       "highlights": 0,
       "id": "76",
       "lastOpen": "2026-10-19T14:40+08:00",
@@ -827,7 +842,7 @@
     },
     {
       "authors": "cjw",
-      "estFinishedAt": "2026-11-29",
+      "estFinishedAt": "2026-11-28",
       "highlights": 0,
       "id": "72",
       "lastOpen": "2026-10-14T09:52+08:00",
@@ -1833,18 +1848,18 @@
   ],
   "current": {
     "authors": "cev",
-    "estFinishedAt": "2026-11-26",
+    "estFinishedAt": "2026-11-27",
     "highlights": 0,
-    "id": "127",
-    "lastOpen": "2026-11-25T11:43+08:00",
+    "id": "128",
+    "lastOpen": "2026-11-26T11:59+08:00",
     "notes": 0,
     "originalTitle": null,
-    "pages": 185,
-    "progressPct": 100,
+    "pages": 150,
+    "progressPct": 8,
     "series": null,
-    "title": "Cev2-112326for",
-    "totalReadPages": 127,
-    "totalReadTime": 4116
+    "title": "Cev1-112426",
+    "totalReadPages": 9,
+    "totalReadTime": 255
   },
   "daily": [
     {
@@ -2139,11 +2154,11 @@
     },
     {
       "d": "2026-11-25",
-      "p": 67,
-      "s": 2147
+      "p": 76,
+      "s": 2402
     }
   ],
-  "dataVersion": "515651afd482",
+  "dataVersion": "4c4da505fefb",
   "hourly": [
     {
       "h": 0,
@@ -2191,7 +2206,7 @@
     },
     {
       "h": 11,
-      "s": 32130
+      "s": 32385
     },
     {
       "h": 12,
@@ -2256,15 +2271,15 @@
     },
     {
       "m": "2026-11",
-      "p": 2742,
-      "s": 77232
+      "p": 2751,
+      "s": 77487
     }
   ],
   "schemaVersion": 1,
   "totals": {
     "booksFinished": 4,
-    "booksStarted": 122,
-    "pagesTurned": 9468,
-    "readSeconds": 248750
+    "booksStarted": 123,
+    "pagesTurned": 9477,
+    "readSeconds": 249005
   }
 }
