@@ -3,7 +3,7 @@
  "label": "Learn",
  "notionId": "d6d5f4924b904e8c94ff4ab1a27c1af3",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-26T03:46+08:00",
+ "updatedAt": "2026-11-28T03:20+08:00",
  "counts": {
   "days": 5,
   "lines": 21,
@@ -42,13 +42,11 @@
    "lines": [
     {
      "k": "bookmark",
-     "t": "Comely Bank - Wikipedia",
+     "t": "Comely Bank",
      "links": [
       {
-       "t": "Comely Bank - Wikipedia",
-       "href": "https://en.wikipedia.org/wiki/Comely_Bank",
-       "title": "Comely Bank - Wikipedia",
-       "desc": ""
+       "t": "Comely Bank",
+       "href": "https://en.wikipedia.org/wiki/Comely_Bank"
       }
      ]
     },
