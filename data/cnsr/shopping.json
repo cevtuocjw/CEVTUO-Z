@@ -3,16 +3,48 @@
  "label": "Shopping",
  "notionId": "3dff24c4e01f496d86b5a7fb5b3b133b",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-25T15:05+08:00",
+ "updatedAt": "2026-11-27T14:50+08:00",
  "counts": {
   "days": 5,
-  "lines": 24,
+  "lines": 26,
   "hidden": 5,
-  "links": 2,
+  "links": 3,
   "images": 5,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "42509462-a4af-81e1-8a5b-ec09c0017e17",
+   "date": "2026-11-27",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "国际牛仔行业专业展会 Denim Première Vision 日前宣布重大模式调整，从 2027 年起由一年两届改为年度单届举办，并且打破纯 B2B 边界，首次面向普通爱好者售票开放，本届主题定为“Indigoers, make some noise!”。",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Studio Nicholson",
+     "links": []
+    },
+    {
+     "k": "paragraph",
+     "t": "Gentle Monster 国际官方网站",
+     "links": [
+      {
+       "t": "Gentle Monster 国际官方网站",
+       "href": "https://www.gentlemonster.com/int/zh-CN/intelligent-eyewear/user-guide",
+       "title": "Gentle Monster 国际官方网站",
+       "desc": "在 Gentle Monster 国际官方网站查看最新合作系列和各款眼镜，包括不同款式的太阳镜和眼镜。"
+      }
+     ]
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "41f09462-a4af-8121-b33d-f9d12d9be900",
    "date": "2026-11-21",
@@ -204,21 +236,6 @@
     }
    ],
    "imagesSeen": 4
-  },
-  {
-   "id": "40f09462-a4af-817a-9e38-dd4db09c0bee",
-   "date": "2026-11-05",
-   "title": "",
-   "lines": [
-    {
-     "k": "paragraph",
-     "t": "Gleb Kostin 曾参与俄罗斯青年创意团体 Bohema Leningrad，通过服装、配饰与影像内容探索青年文化和视觉表达。此后，他逐渐将个人创作发展为 solutions。最初只是一个展示个人作品的线上空间，随着创作领域不断扩展，逐渐演变为如今更具开放性的设计项目。",
-     "links": []
-    }
-   ],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
   }
  ]
 }
