@@ -3,16 +3,31 @@
  "label": "tech-learn",
  "notionId": "045f87789ebd4741a0059c898a9089d4",
  "window": "最近 5 个 @日期",
- "updatedAt": "2026-11-26T10:39+08:00",
+ "updatedAt": "2026-11-28T10:28+08:00",
  "counts": {
   "days": 5,
-  "lines": 26,
+  "lines": 22,
   "hidden": 26,
-  "links": 4,
+  "links": 0,
   "images": 0,
   "skippedSubtrees": 0
  },
  "entries": [
+  {
+   "id": "42509462-a4af-81ce-930f-c3a137b9108a",
+   "date": "2026-11-27",
+   "title": "",
+   "lines": [
+    {
+     "k": "paragraph",
+     "t": "华为于11月26日正式公开‌鸿蒙星河互联、星盾安全、方舟引擎、小艺、空间计算‌五大技术品牌，推动终端体验重塑",
+     "links": []
+    }
+   ],
+   "more": 0,
+   "images": [],
+   "imagesSeen": 0
+  },
   {
    "id": "42109462-a4af-8109-9aa7-f176c05daaa9",
    "date": "2026-11-23",
@@ -153,69 +168,6 @@
    "date": "2026-10-20",
    "title": "",
    "lines": [],
-   "more": 0,
-   "images": [],
-   "imagesSeen": 0
-  },
-  {
-   "id": "3fe09462-a4af-817a-8a85-dfabc8edd45c",
-   "date": "2026-10-19",
-   "title": "",
-   "lines": [
-    {
-     "k": "bookmark",
-     "t": "Duda Lima",
-     "links": [
-      {
-       "t": "Duda Lima",
-       "href": "https://www.duda.works/",
-       "title": "Duda Lima",
-       "desc": ""
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "SWSH - Awwwards Honorable Mention",
-     "links": [
-      {
-       "t": "SWSH - Awwwards Honorable Mention",
-       "href": "https://www.awwwards.com/sites/swsh",
-       "title": "SWSH - Awwwards Honorable Mention",
-       "desc": "SWSH is the fan engagement platform for live events. Shared albums collect fan content, deliver them instantly with opt-in facial recognition, and turn..."
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "Serus — Agentic Privacy & Intelligence",
-     "links": [
-      {
-       "t": "Serus — Agentic Privacy & Intelligence",
-       "href": "https://www.serus.ai/protection/?referer_url=https%3A%2F%2Fwww.awwwards.com%2F",
-       "title": "Serus — Agentic Privacy & Intelligence",
-       "desc": "Your own privacy agent: finds what"
-      }
-     ]
-    },
-    {
-     "k": "bookmark",
-     "t": "NEW",
-     "links": [
-      {
-       "t": "NEW",
-       "href": "https://www.new-creators.club/",
-       "title": "NEW",
-       "desc": "「NEW」 は、2021年に活動を開始したクリエイターズクラブです。さまざまな専門性と飽くなき探究心をもった多彩なクリエイターが集まっています。"
-      }
-     ]
-    },
-    {
-     "k": "paragraph",
-     "t": "NEW Creators Club 是 2019 年设立、2021 年正式注册的日本跨领域创意团队，由坂本俊太等四位多元背景创作者联合创立。团队以平面设计为基底，融合产品设计、编程开发、化学应用等能力，秉持 “贴近人类情感的实用创意” 理念，打破专业壁垒跨界创作。作品斩获 JAGDA 新人奖、D&AD、GOOD DESIGN AWARD 等权威奖项，代表项目有纸扣包装、塗紙 - NURIKAMI，是日本新生代创意力量的标杆。",
-     "links": []
-    }
-   ],
    "more": 0,
    "images": [],
    "imagesSeen": 0
